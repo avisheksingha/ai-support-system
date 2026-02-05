@@ -1,0 +1,20 @@
+# Ignore GitHub workflows
+.github/
+
+# Ignore Eclipse project files
+.metadata/
+
+# Ignore SonarLint files
+.sonarlint/
+
+# Ignore Visual Studio Code settings
+.vscode/
+
+# Ignore common temporary files
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+*.DS_Store
+Thumbs.db

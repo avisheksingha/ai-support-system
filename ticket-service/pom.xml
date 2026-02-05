@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- Parent POM Reference -->
+    <parent>
+        <groupId>com.aisupport</groupId>
+        <artifactId>aisupport-parent</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../aisupport-parent</relativePath>
+    </parent>
+
+	<!-- This Module's Identity -->
+	<artifactId>ticket-service</artifactId>
+	<name>Ticket Service</name>
+	<description>A microservice for ticket management</description>
+
+	<!-- Dependencies specific to this module -->
+	<dependencies>
+		<!-- No need to specify dependencies here unless they are specific to this module -->
+	</dependencies>
+</project>
