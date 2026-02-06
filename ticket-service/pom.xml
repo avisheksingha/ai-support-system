@@ -14,7 +14,7 @@
 	<!-- This Module's Identity -->
 	<artifactId>ticket-service</artifactId>
 	<name>Ticket Service</name>
-	<description>A microservice for ticket management</description>
+	<description>A microservice for managing support tickets</description>
 
 	<!-- Dependencies specific to this module -->
 	<dependencies>

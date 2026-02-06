@@ -14,8 +14,8 @@
 	<artifactId>discovery-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	
-	<name>Eureka Discovery Service</name>
-	<description>Eureka service registry</description>
+	<name>Discovery Service</name>
+	<description>Eureka Discovery Service for microservices architecture</description>
 	
 	<url/>
 	<licenses>

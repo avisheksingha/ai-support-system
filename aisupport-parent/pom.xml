@@ -15,8 +15,8 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	
-	<name>AI Support System Parent</name>
-	<description>A parent POM for AI Support System microservices.  It includes a complete dependency tree and default configurations for Maven plugins.</description>
+	<name>AI Support Parent</name>
+	<description>Parent POM for AI Support System microservices</description>
 	
 	<url/>
 	<licenses>
@@ -33,6 +33,7 @@
 	</scm>
 		
 	<modules>
+	    <module>../discovery-service</module>
 	    <module>../ticket-service</module>
         <!-- <module>../ai-service</module> -->
         <!-- <module>../rule-based-service</module> -->
