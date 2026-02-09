@@ -9,7 +9,7 @@
 		<version>4.0.2</version>
 		<relativePath/>
 	</parent>
-	
+
 	<groupId>com.aisupport</groupId>
 	<artifactId>aisupport-parent</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
@@ -31,12 +31,13 @@
 		<tag/>
 		<url/>
 	</scm>
-		
+
 	<modules>
-	    <module>../discovery-service</module>
+	    <!-- <module>../discovery-service</module> -->
 	    <module>../ticket-service</module>
-        <!-- <module>../ai-service</module> -->
+        <module>../ai-analysis-service</module>
         <!-- <module>../rule-based-service</module> -->
+        <module>../common-library</module>
 	</modules>
 	
 	<properties>
@@ -44,9 +45,9 @@
         
         <!-- Dependency Versions -->
         <spring-cloud.version>2025.1.0</spring-cloud.version>
-        <lombok.version>1.18.42</lombok.version>
         <mapstruct.version>1.6.3</mapstruct.version>
-        <jackson-datatype-jsr310.version>3.0.0-rc2</jackson-datatype-jsr310.version>
+        <lombok.version>1.18.42</lombok.version>
+		<jackson-datatype-jsr310.version>3.0.0-rc2</jackson-datatype-jsr310.version>
         <springdoc-openapi.version>3.0.1</springdoc-openapi.version>
         
         <!-- Plugin Versions -->
@@ -56,8 +57,23 @@
 	<dependencies>        
         <!-- Spring Boot Starters -->
         <dependency>
+	      	<groupId>org.springframework.boot</groupId>
+	      	<artifactId>spring-boot-starter</artifactId>
+	    </dependency>
+	    <dependency>
+	      	<groupId>org.springframework.boot</groupId>
+	      	<artifactId>spring-boot-devtools</artifactId>
+	      	<scope>runtime</scope>
+	      	<optional>true</optional>
+	    </dependency>	    
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-configuration-processor</artifactId>
+			<optional>true</optional>
+		</dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <artifactId>spring-boot-starter-webmvc</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -73,34 +89,36 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         
-        <!-- OpenAPI Documentation -->
+        <!-- OpenAPI Documentation with Springdoc -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>${springdoc-openapi.version}</version>
         </dependency>
         
-        <!-- Spring Cloud -->
+        <!-- Spring Cloud Netflix Eureka Client for Service Discovery -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
         
-        <!-- Database -->
+        <!-- OpenFeign for Declarative REST Clients for Inter-Service Communication -->
+        <dependency>
+		    <groupId>org.springframework.cloud</groupId>
+		    <artifactId>spring-cloud-starter-openfeign</artifactId>
+		</dependency>
+        
+        <!-- PostgreSQL Driver -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
         
-        <!-- MapStruct -->
+        <!-- MapStruct for Object Mapping -->
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
@@ -113,26 +131,62 @@
             <scope>provided</scope>
         </dependency>
         
-        <!-- Lombok -->
+        <!-- Lombok for Boilerplate Code Reduction -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
         
-        <!-- Jackson -->
+        <!-- Jackson Core for JSON processing -->
         <dependency>
-            <groupId>tools.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>${jackson-datatype-jsr310.version}</version>
+            <groupId>tools.jackson.core</groupId>
+    		<artifactId>jackson-core</artifactId>    					
         </dependency>
+        
+        <!-- Jackson Databind for JSON processing -->
+        <dependency>
+		    <groupId>tools.jackson.core</groupId>
+		    <artifactId>jackson-databind</artifactId>
+		</dependency>
+
+		<!-- Jackson Datatype for Java 8 Date/Time API -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+		</dependency>
         
         <!-- Test Dependencies -->
         <dependency>
+	      	<groupId>org.springframework.boot</groupId>
+	      	<artifactId>spring-boot-starter-test</artifactId>
+	      	<scope>test</scope>
+	    </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+	      	<groupId>org.springframework.boot</groupId>
+	      	<artifactId>spring-boot-starter-data-jpa-test</artifactId>
+	      	<scope>test</scope>
+	    </dependency>
+	    <dependency>
+	      	<groupId>org.springframework.boot</groupId>
+	      	<artifactId>spring-boot-starter-validation-test</artifactId>
+	      	<scope>test</scope>
+	    </dependency>
+	    <dependency>
+	      	<groupId>org.springframework.boot</groupId>
+	      	<artifactId>spring-boot-starter-mail-test</artifactId>
+	      	<scope>test</scope>
+	    </dependency>
+	    <dependency>
+	      	<groupId>org.springframework.boot</groupId>
+	      	<artifactId>spring-boot-starter-actuator-test</artifactId>
+	      	<scope>test</scope>
+	    </dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
@@ -146,6 +200,11 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-launcher</artifactId>			
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

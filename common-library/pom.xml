@@ -12,18 +12,17 @@
     </parent>
 
 	<!-- This Module's Identity -->
-	<artifactId>ticket-service</artifactId>
-	<name>Ticket Service</name>
-	<description>A microservice for managing support tickets</description>
+	<artifactId>common-library</artifactId>
+	<name>Common Library</name>
+	<description>Shared utilities and components for AI Support System</description>
 
-	<!-- Dependencies specific to this module -->
+    <!-- Dependencies specific to this module -->
 	<dependencies>
-        <!-- Shared Common Library -->
+		<!-- Apache Commons Lang for String and Object Utilities -->
 		<dependency>
-			<groupId>com.aisupport</groupId>
-			<artifactId>common-library</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>					
 		</dependency>
-		
 	</dependencies>
+	
 </project>

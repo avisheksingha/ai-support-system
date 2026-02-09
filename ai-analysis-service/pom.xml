@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+	<modelVersion>4.0.0</modelVersion>	
 
 	<!-- Parent POM Reference -->
     <parent>
@@ -10,20 +10,25 @@
         <version>0.0.1-SNAPSHOT</version>
         <relativePath>../aisupport-parent</relativePath>
     </parent>
-
+    
 	<!-- This Module's Identity -->
-	<artifactId>ticket-service</artifactId>
-	<name>Ticket Service</name>
-	<description>A microservice for managing support tickets</description>
-
+	<artifactId>ai-analysis-service</artifactId>
+	<name>AI Analysis Service</name>
+	<description>AI-powered ticket analysis using Google Gemini</description>
+	
 	<!-- Dependencies specific to this module -->
 	<dependencies>
+		<!-- Spring Boot WebFlux for reactive REST API for Google Gemini integration -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
         <!-- Shared Common Library -->
 		<dependency>
 			<groupId>com.aisupport</groupId>
 			<artifactId>common-library</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-		
 	</dependencies>
 </project>
