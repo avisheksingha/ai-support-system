@@ -140,13 +140,13 @@
         
         <!-- Jackson Core for JSON processing -->
         <dependency>
-            <groupId>tools.jackson.core</groupId>
+            <groupId>com.fasterxml.jackson.core</groupId>
     		<artifactId>jackson-core</artifactId>    					
         </dependency>
         
         <!-- Jackson Databind for JSON processing -->
         <dependency>
-		    <groupId>tools.jackson.core</groupId>
+		    <groupId>com.fasterxml.jackson.core</groupId>
 		    <artifactId>jackson-databind</artifactId>
 		</dependency>
 
