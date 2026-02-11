@@ -105,11 +105,17 @@
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
         
-        <!-- OpenFeign for Declarative REST Clients for Inter-Service Communication -->
+        <!-- Spring Cloud LoadBalancer for Client-Side Load Balancing -->
         <dependency>
 		    <groupId>org.springframework.cloud</groupId>
-		    <artifactId>spring-cloud-starter-openfeign</artifactId>
+		    <artifactId>spring-cloud-starter-loadbalancer</artifactId>
 		</dependency>
+		
+		<!-- Spring WebFlux for Reactive Programming -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
         
         <!-- PostgreSQL Driver -->
         <dependency>

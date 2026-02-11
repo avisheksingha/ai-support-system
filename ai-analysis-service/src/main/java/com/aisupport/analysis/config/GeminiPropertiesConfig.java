@@ -1,7 +1,5 @@
 package com.aisupport.analysis.config;
 
-
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
@@ -20,7 +18,7 @@ import reactor.netty.transport.logging.AdvancedByteBufFormat;
 @NoArgsConstructor
 @Validated
 @ConfigurationProperties(prefix = "gemini")
-public class GeminiProperties {
+public class GeminiPropertiesConfig {
 
     @NotBlank
     private String apiKey;

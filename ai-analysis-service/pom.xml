@@ -18,13 +18,7 @@
 	
 	<!-- Dependencies specific to this module -->
 	<dependencies>
-		<!-- Spring Boot WebFlux for reactive REST API for Google Gemini integration -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
-        </dependency>
-
-        <!-- Shared Common Library -->
+		<!-- Shared Common Library -->
 		<dependency>
 			<groupId>com.aisupport</groupId>
 			<artifactId>common-library</artifactId>

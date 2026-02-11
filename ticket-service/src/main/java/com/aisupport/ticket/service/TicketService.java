@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.aisupport.common.dto.AnalysisResultDTO;
-import com.aisupport.ticket.client.AIAnalysisClient;
+import com.aisupport.ticket.client.AIAnalysisWebClient;
 import com.aisupport.ticket.client.AnalysisRequest;
 import com.aisupport.ticket.dto.TicketRequest;
 import com.aisupport.ticket.dto.TicketResponse;
@@ -23,10 +23,12 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class TicketService {
+	
+	private static final String TICKET_NOT_FOUND_MSG = "Ticket not found: ";
     
     private final TicketRepository ticketRepository;
     private final TicketMapper ticketMapper;
-    private final AIAnalysisClient aiAnalysisClient;
+    private final AIAnalysisWebClient aiAnalysisWebClient;
     
     @Transactional
     public TicketResponse createTicket(TicketRequest request) {
@@ -52,7 +54,8 @@ public class TicketService {
                     .message(ticket.getMessage())
                     .build();
             
-            AnalysisResultDTO analysisResult = aiAnalysisClient.analyzeTicket(analysisRequest);
+            // Block until analysis is complete (synchronous style)
+            AnalysisResultDTO analysisResult = aiAnalysisWebClient.analyzeTicket(analysisRequest).block();
             
             // Update ticket with analysis results
             ticket.setIntent(analysisResult.getIntent());
@@ -76,7 +79,7 @@ public class TicketService {
     public TicketResponse getTicketByNumber(String ticketNumber) {
         log.info("Fetching ticket: {}", ticketNumber);
         Ticket ticket = ticketRepository.findByTicketNumber(ticketNumber)
-                .orElseThrow(() -> new TicketNotFoundException("Ticket not found: " + ticketNumber));
+                .orElseThrow(() -> new TicketNotFoundException(TICKET_NOT_FOUND_MSG + ticketNumber));
         return ticketMapper.toResponse(ticket);
     }
     
@@ -115,7 +118,7 @@ public class TicketService {
     public TicketResponse updateTicketStatus(String ticketNumber, String newStatus) {
         log.info("Updating ticket {} to status: {}", ticketNumber, newStatus);
         Ticket ticket = ticketRepository.findByTicketNumber(ticketNumber)
-                .orElseThrow(() -> new TicketNotFoundException("Ticket not found: " + ticketNumber));
+                .orElseThrow(() -> new TicketNotFoundException(TICKET_NOT_FOUND_MSG + ticketNumber));
         
         ticket.setStatus(Ticket.TicketStatus.valueOf(newStatus.toUpperCase()));
         ticket = ticketRepository.save(ticket);
@@ -127,7 +130,7 @@ public class TicketService {
     public TicketResponse updateTicketPriority(String ticketNumber, String newPriority) {
         log.info("Updating ticket {} to priority: {}", ticketNumber, newPriority);
         Ticket ticket = ticketRepository.findByTicketNumber(ticketNumber)
-                .orElseThrow(() -> new TicketNotFoundException("Ticket not found: " + ticketNumber));
+                .orElseThrow(() -> new TicketNotFoundException(TICKET_NOT_FOUND_MSG + ticketNumber));
         
         ticket.setPriority(Ticket.Priority.valueOf(newPriority.toUpperCase()));
         ticket = ticketRepository.save(ticket);
@@ -139,7 +142,7 @@ public class TicketService {
     public TicketResponse assignTicket(String ticketNumber, String assignedTo) {
         log.info("Assigning ticket {} to: {}", ticketNumber, assignedTo);
         Ticket ticket = ticketRepository.findByTicketNumber(ticketNumber)
-                .orElseThrow(() -> new TicketNotFoundException("Ticket not found: " + ticketNumber));
+                .orElseThrow(() -> new TicketNotFoundException(TICKET_NOT_FOUND_MSG + ticketNumber));
         
         ticket.setAssignedTo(assignedTo);
         ticket.setStatus(Ticket.TicketStatus.ASSIGNED);
@@ -152,7 +155,7 @@ public class TicketService {
     public void deleteTicket(String ticketNumber) {
         log.info("Deleting ticket: {}", ticketNumber);
         Ticket ticket = ticketRepository.findByTicketNumber(ticketNumber)
-                .orElseThrow(() -> new TicketNotFoundException("Ticket not found: " + ticketNumber));
+                .orElseThrow(() -> new TicketNotFoundException(TICKET_NOT_FOUND_MSG + ticketNumber));
         
         ticketRepository.delete(ticket);
         log.info("Ticket {} deleted successfully", ticketNumber);

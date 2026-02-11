@@ -2,6 +2,7 @@ package com.aisupport.ticket.config;
 
 import java.util.List;
 
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,7 +13,10 @@ import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.servers.Server;
 
 @Configuration
-public class OpenAPIConfig {
+@ConfigurationPropertiesScan("com.aisupport.ticket.config")
+public class ApplicationConfig {
+	
+	// OpenAPI bean for API documentation
 	@Bean
 	OpenAPI customOpenAPI() {
 		return new OpenAPI()
@@ -32,3 +36,5 @@ public class OpenAPIConfig {
 			));
 	}
 }
+
+

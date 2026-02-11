@@ -19,9 +19,9 @@ import reactor.netty.resources.ConnectionProvider;
 @Configuration
 public class GeminiConfig {
 
-    private final GeminiProperties props;
+    private final GeminiPropertiesConfig props;
 
-    public GeminiConfig(GeminiProperties props) {
+    public GeminiConfig(GeminiPropertiesConfig props) {
         this.props = props;
     }
 

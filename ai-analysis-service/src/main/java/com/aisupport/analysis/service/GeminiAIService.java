@@ -12,7 +12,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import com.aisupport.analysis.config.GeminiProperties;
+import com.aisupport.analysis.config.GeminiPropertiesConfig;
 import com.aisupport.analysis.dto.GeminiRequest;
 import com.aisupport.analysis.dto.ParsedAnalysis;
 import com.aisupport.analysis.exception.AIAnalysisException;
@@ -29,7 +29,7 @@ import reactor.util.retry.Retry;
 public class GeminiAIService {
 
     private final WebClient geminiWebClient;
-    private final GeminiProperties props;
+    private final GeminiPropertiesConfig props;
     private final ObjectMapper objectMapper;
 
     private static final Pattern JSON_BLOCK_PATTERN = Pattern.compile("\\{.*\\}", Pattern.DOTALL);
