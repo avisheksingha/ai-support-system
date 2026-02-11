@@ -2,12 +2,15 @@ package com.aisupport.analysis.service;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import com.aisupport.analysis.config.GeminiProperties;
 import com.aisupport.analysis.dto.GeminiRequest;
@@ -18,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import reactor.util.retry.Retry;
 
 @Service
 @RequiredArgsConstructor
@@ -50,7 +54,8 @@ public class GeminiAIService {
     );
 
     /**
-     * Analyze a support ticket using Gemini AI. This method builds the prompt, calls the Gemini API, and parses the response into a structured ParsedAnalysis object.
+     * Analyze a support ticket using Gemini AI. This method builds the prompt, calls the Gemini API,
+     * and parses the response into a structured ParsedAnalysis object.
      * 
      * @param subject
      * @param message
@@ -62,7 +67,8 @@ public class GeminiAIService {
     }
 
     /**
-	 * Core method that handles the entire flow of building the Gemini request, calling the API, and parsing the response.
+	 * Core method that handles the entire flow of building the Gemini request,
+	 * calling the API, and parsing the response.
 	 * It includes robust error handling to catch and log any issues that arise during the process.
 	 * 
 	 * @param prompt
@@ -93,7 +99,8 @@ public class GeminiAIService {
 
     /**
 	 * Build the GeminiRequest object using the provided prompt and the configuration properties.
-	 * This method constructs the request in the format expected by the Gemini API, including the generation configuration and safety settings.
+	 * This method constructs the request in the format expected by the Gemini API,
+	 * including the generation configuration and safety settings.
 	 * 
 	 * @param prompt
 	 * @return
@@ -122,8 +129,9 @@ public class GeminiAIService {
     }
 
     /**
-     * Call the Gemini API using the WebClient. This method sends the request to the configured Gemini endpoint and retrieves the raw response as a string.
-     * It includes error handling to catch any issues that occur during the API call, such as timeouts or network errors, and logs the details for troubleshooting.
+     * Call the Gemini API with the given request and return the raw response as a string.
+     * This method uses WebClient to make a POST request to the Gemini endpoint, including the API key as a query parameter.
+     * It includes error handling to catch specific HTTP errors (like 503 Service Unavailable) and timeouts, providing fallbacks where appropriate.
      * 
      * @param request
      * @return
@@ -138,9 +146,25 @@ public class GeminiAIService {
                     .retrieve()
                     .bodyToMono(String.class)
                     .timeout(Duration.ofMillis(props.getResponseTimeoutMs()))
-                    .block(Duration.ofMillis(props.getResponseTimeoutMs() + 2000L)); // Add extra buffer to block timeout
+                    .retryWhen(
+                        Retry.backoff(3, Duration.ofSeconds(2))
+                            .filter(ex -> ex instanceof WebClientResponseException webEx &&
+                                          webEx.getStatusCode() == HttpStatus.SERVICE_UNAVAILABLE
+                                       || ex instanceof TimeoutException)
+                            .onRetryExhaustedThrow((retrySpec, signal) -> signal.failure())
+                    )
+                    .onErrorReturn(TimeoutException.class, "{}") // fallback for timeout
+                    .block(Duration.ofMillis(props.getResponseTimeoutMs() + 2000L));
+
+        } catch (WebClientResponseException webEx) {
+            if (webEx.getStatusCode() == HttpStatus.SERVICE_UNAVAILABLE) {
+                log.warn("Gemini API unavailable (503), returning empty analysis");
+                return "{}"; // safe fallback
+            }
+            log.error("Error calling Gemini API", webEx);
+            throw new AIAnalysisException("Failed to call Gemini API: " + webEx.getMessage(), webEx);
         } catch (Exception e) {
-            log.error("Error calling Gemini API", e);
+            log.error("Unexpected error calling Gemini API", e);
             throw new AIAnalysisException("Failed to call Gemini API: " + e.getMessage(), e);
         }
     }
