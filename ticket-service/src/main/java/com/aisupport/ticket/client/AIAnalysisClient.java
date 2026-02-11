@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import com.aisupport.common.dto.AnalysisResultDTO;
 
-@FeignClient(name = "AI-ANALYSIS-SERVICE", url = "${api.ai.analysis.service.url}")
+@FeignClient(name = "AI-ANALYSIS-SERVICE")
 public interface AIAnalysisClient {
 	
 	@PostMapping("/api/v1/analysis/analyze")

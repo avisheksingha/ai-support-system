@@ -24,9 +24,11 @@ public class AnalysisResultDTO implements Serializable {
     private String sentiment;
     private String urgency;
     private BigDecimal confidenceScore;
-    private List<String> keywords;
+    private List<String> keywords; // converted from String[]
     private String suggestedCategory;
-    private String analysisProvider;
-    private LocalDateTime analyzedAt;
+    private String rawResponse;
+    
+    private String analysisProvider; // always "Gemini AI"
+    private LocalDateTime analyzedAt; // maps from createdAt
 
 }
