@@ -2,6 +2,7 @@ package com.aisupport.analysis.config;
 
 import java.time.Duration;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -26,12 +27,13 @@ public class GeminiConfig {
     }
 
     @Bean
+    @Qualifier("geminiWebClient")
     WebClient geminiWebClient() {
     	
     	// Create a connection provider with a custom name and max connections
         ConnectionProvider provider = ConnectionProvider.builder("gemini-pool")
                 .maxConnections(props.getMaxConnections())
-                .pendingAcquireTimeout(Duration.ofSeconds(10))
+                .pendingAcquireTimeout(Duration.ofMillis(props.getConnectTimeoutMs()))
                 .build();
         
         // Create and configure the HttpClient using the properties
@@ -40,8 +42,8 @@ public class GeminiConfig {
 
         return WebClient.builder()
                 .baseUrl(props.getApiUrl())
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .filter(logRequest())
                 .filter(logResponse())
                 .build();
@@ -58,7 +60,11 @@ public class GeminiConfig {
     // Log response status code
     private ExchangeFilterFunction logResponse() {
         return ExchangeFilterFunction.ofResponseProcessor(resp -> {
-            log.debug("Gemini response status: {}", resp.statusCode());
+        	if (resp.statusCode().isError()) {
+                log.error("Gemini response error: {}", resp.statusCode());
+            } else {
+                log.debug("Gemini response status: {}", resp.statusCode());
+            }
             return Mono.just(resp);
         });
     }

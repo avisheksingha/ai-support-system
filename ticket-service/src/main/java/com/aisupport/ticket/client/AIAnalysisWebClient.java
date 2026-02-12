@@ -10,9 +10,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.aisupport.common.dto.AnalysisResultDTO;
 
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
+@Slf4j
 @Component
 public class AIAnalysisWebClient {
 
@@ -23,33 +25,39 @@ public class AIAnalysisWebClient {
     public AIAnalysisWebClient(WebClient.Builder builder,
                                @Value("${api.services.ai-analysis.url}") String baseUrl) {
         this.webClient = builder
-                .baseUrl(baseUrl)
-                .build();
+            .baseUrl(baseUrl)
+            .build();
     }
 
     public Mono<AnalysisResultDTO> analyzeTicket(AnalysisRequest request) {
         return webClient.post()
-                .uri(ANALYSIS_ENDPOINT)
-                .bodyValue(request)
-                .retrieve()
-                .bodyToMono(AnalysisResultDTO.class)
-                // Optional per-call timeout (global timeout already in ApplicationConfig)
-                // .timeout(Duration.ofSeconds(5))
-                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2)))
-                .onErrorResume(ex -> {
-                    // Default fallback response in case of errors
-                    AnalysisResultDTO fallback = AnalysisResultDTO.builder()
-                            .ticketId(request.getTicketId())
-                            .intent("UNKNOWN")
-                            .sentiment("NEUTRAL")
-                            .urgency("LOW")
-                            .confidenceScore(BigDecimal.ZERO)
-                            .suggestedCategory("Fallback")
-                            .rawResponse("Service unavailable")
-                            .analysisProvider("Fallback")
-                            .analyzedAt(LocalDateTime.now())
-                            .build();
-                    return Mono.just(fallback);
-                });
+            .uri(ANALYSIS_ENDPOINT)
+            .bodyValue(request)
+            .retrieve()
+            .bodyToMono(AnalysisResultDTO.class)
+            // Optional per-call timeout (global timeout already in WebClientConfig)
+            // .timeout(Duration.ofSeconds(5))
+            .retryWhen(Retry.backoff(3, Duration.ofSeconds(2))
+            	.doBeforeRetry(retrySignal -> {
+                	log.warn("Retrying AI analysis due to error: {}", retrySignal.failure().getMessage());
+                	log.error("Retry attempt #{} for request {}", retrySignal.totalRetries(), request);
+            	})
+            )
+            .onErrorResume(ex -> {
+            	log.error("Error occurred while analyzing ticket", ex);
+                // Default fallback response in case of errors
+                AnalysisResultDTO fallback = AnalysisResultDTO.builder()
+                    .ticketId(request.getTicketId())
+                    .intent("UNKNOWN")
+                    .sentiment("NEUTRAL")
+                    .urgency("LOW")
+                    .confidenceScore(BigDecimal.ZERO)
+                    .suggestedCategory("Fallback")
+                    .rawResponse("Service unavailable")
+                    .analysisProvider("Fallback")
+                    .analyzedAt(LocalDateTime.now())
+                    .build();
+                return Mono.just(fallback);
+            });
     }
 }
