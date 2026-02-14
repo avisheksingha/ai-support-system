@@ -4,14 +4,15 @@
 AI Support System is a microservices-based ticket management platform with AI-powered assistance and rule-based automation.
 
 ## Architecture
+- **discovery-service**: Eureka Service Discovery Server
 - **ticket-service**: Core ticket management functionality
-- **ai-service**: AI-powered ticket analysis and suggestions
-- **rule-based-service**: Automated ticket routing and processing
+- **ai-analysis-service**: AI-powered ticket analysis and suggestions
+- **common-library**: Shared DTOs, exceptions, and utilities
 
 ## Technology Stack
 - **Java**: 21
-- **Spring Boot**: 4.0.2
-- **Spring Cloud**: 2025.1.0
+- **Spring Boot**: 3.4.2
+- **Spring Cloud**: 2024.0.0
 - **Database**: PostgreSQL
 - **Build Tool**: Maven
 - **Service Discovery**: Eureka
@@ -31,38 +32,39 @@ mvn clean install
 ```
 
 ### Run Specific Service
-```bash
-cd ticket-service
-mvn spring-boot:run
-```
-
-### Run Tests
-```bash
-mvn test
-```
-
-### Run with Testcontainers
-```bash
-mvn verify
-```
+1. **Discovery Service** (Start first):
+   ```bash
+   cd discovery-service
+   mvn spring-boot:run
+   ```
+2. **Ticket Service**:
+   ```bash
+   cd ticket-service
+   mvn spring-boot:run
+   ```
+3. **AI Analysis Service**:
+   ```bash
+   cd ai-analysis-service
+   mvn spring-boot:run
+   ```
 
 ## Project Structure
 ```
 aisupport-project/
 ├── pom.xml                    # Parent POM
+├── discovery-service/         # Service Discovery (Eureka)
 ├── ticket-service/            # Ticket management microservice
-├── ai-service/                # AI-powered analysis microservice
-└── rule-based-service/        # Rule-based automation microservice
+├── ai-analysis-service/       # AI-powered analysis microservice
+└── common-library/            # Shared components
 ```
 
 ## Configuration
-Each microservice has its own `application.yml` in `src/main/resources/`.
+Each microservice has its own `application.properties`/`application.yml` in `src/main/resources/`.
 
 ## API Documentation
 Once running, access Swagger UI:
-- Ticket Service: http://localhost:8081/swagger-ui.html
-- AI Service: http://localhost:8082/swagger-ui.html
-- Rule-based Service: http://localhost:8083/swagger-ui.html
+- Ticket Service: http://localhost:8082/swagger-ui.html
+- AI Analysis Service: http://localhost:8083/swagger-ui.html
 
 ## Code Quality
 ```bash
@@ -74,7 +76,7 @@ mvn clean verify sonar:sonar
 1. Follow layered architecture (Controller → Service → Repository)
 2. Use constructor-based dependency injection
 3. Write unit tests (JUnit 5 + Mockito)
-4. Write integration tests (Testcontainers)
+4. Write integration tests
 5. Ensure SonarQube compliance
 
 ## License
