@@ -137,6 +137,12 @@ public class GeminiAIService {
      * @return
      */
     private String callGeminiAPI(GeminiRequest request) {
+        // Defensive check for API key
+        if (!StringUtils.hasText(props.getApiKey()) || props.getApiKey().startsWith("${")) {
+            log.warn("Gemini API Key is missing or not configured. Skipping analysis.");
+            return "{}";
+        }
+
         try {
             return geminiWebClient.post()
                     .uri(uriBuilder -> uriBuilder

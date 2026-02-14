@@ -3,6 +3,8 @@ package com.aisupport.ticket.service;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +31,7 @@ public class TicketService {
     private final TicketRepository ticketRepository;
     private final TicketMapper ticketMapper;
     private final AIAnalysisWebClient aiAnalysisWebClient;
+    private final ApplicationContext applicationContext;
     
     @Transactional
     public TicketResponse createTicket(TicketRequest request) {
@@ -37,25 +40,37 @@ public class TicketService {
         // Create and save ticket
         Ticket ticket = ticketMapper.toEntity(request);
         ticket.setTicketNumber(generateTicketNumber());
-        ticket.setStatus(Ticket.TicketStatus.NEW);
+        ticket.setStatus(Ticket.TicketStatus.ANALYZING); // Set initial status to ANALYZING
         ticket.setPriority(Ticket.Priority.MEDIUM);
         
         ticket = ticketRepository.save(ticket);
         log.info("Ticket created with number: {}", ticket.getTicketNumber());
         
-        // Call AI Analysis Service synchronously
+        // Prepare analysis request
+        AnalysisRequest analysisRequest = AnalysisRequest.builder()
+                .ticketId(ticket.getId())
+                .subject(ticket.getSubject())
+                .message(ticket.getMessage())
+                .build();
+        
+        // Call AI Analysis Service Asynchronously
+        // Use ApplicationContext to get the proxy of the current bean to ensure @Async works
+        applicationContext.getBean(TicketService.class).initiateAnalysis(ticket.getId(), analysisRequest);
+        
+        // Return response immediately
+        return ticketMapper.toResponse(ticket);
+    }
+    
+    @Async
+    public void initiateAnalysis(Long ticketId, AnalysisRequest analysisRequest) {
+        log.info("Starting async analysis for ticket ID: {}", ticketId);
         try {
-            ticket.setStatus(Ticket.TicketStatus.ANALYZING);
-            ticketRepository.save(ticket);
-            
-            AnalysisRequest analysisRequest = AnalysisRequest.builder()
-                    .ticketId(ticket.getId())
-                    .subject(ticket.getSubject())
-                    .message(ticket.getMessage())
-                    .build();
-            
-            // Block until analysis is complete (synchronous style)
+            // Block until analysis is complete (now safe in async thread)
             AnalysisResultDTO analysisResult = aiAnalysisWebClient.analyzeTicket(analysisRequest).block();
+            
+            // Fetch fresh ticket record
+            Ticket ticket = ticketRepository.findById(ticketId)
+                    .orElseThrow(() -> new TicketNotFoundException("Ticket not found during async analysis: " + ticketId));
             
             // Update ticket with analysis results
             ticket.setIntent(analysisResult.getIntent());
@@ -63,16 +78,17 @@ public class TicketService {
             ticket.setUrgency(analysisResult.getUrgency());
             ticket.setStatus(Ticket.TicketStatus.ANALYZED);
             
-            ticket = ticketRepository.save(ticket);
-            log.info("Ticket {} analyzed successfully", ticket.getTicketNumber());
+            ticketRepository.save(ticket);
+            log.info("Ticket {} analyzed and updated successfully", ticket.getTicketNumber());
             
         } catch (Exception e) {
-            log.error("Failed to analyze ticket: {}", ticket.getTicketNumber(), e);
-            ticket.setStatus(Ticket.TicketStatus.NEW);
-            ticketRepository.save(ticket);
+            log.error("Failed to analyze ticket asynchronously: {}", ticketId, e);
+            // Fallback status
+            ticketRepository.findById(ticketId).ifPresent(t -> {
+                t.setStatus(Ticket.TicketStatus.NEW); // Revert to NEW if analysis fails
+                ticketRepository.save(t);
+            });
         }
-        
-        return ticketMapper.toResponse(ticket);
     }
     
     @Transactional(readOnly = true)
