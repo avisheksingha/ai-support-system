@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,7 +30,7 @@ public class ParsedAnalysis {
     @Schema(description = "Confidence score of the analysis", example = "0.95")
     private Double confidenceScore;
     
-    @Schema(description = "List of keywords extracted from the ticket", example = "["login", "password", "error"]")
+    @Schema(description = "List of keywords extracted from the ticket", example = "[\"login\", \"password\", \"error\"]")
     private List<String> keywords;
     
     @JsonProperty("suggested_category")

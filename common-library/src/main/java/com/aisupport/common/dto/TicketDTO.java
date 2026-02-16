@@ -2,6 +2,7 @@ package com.aisupport.common.dto;
 
 import java.io.Serializable;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -14,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Schema(description = "Ticket DTO")
+@Schema(description = "Ticket DTO", requiredProperties = {"ticketNumber", "customerEmail", "subject", "message"})
 public class TicketDTO implements Serializable {
 	
 	private static final long serialVersionUID = 1L;

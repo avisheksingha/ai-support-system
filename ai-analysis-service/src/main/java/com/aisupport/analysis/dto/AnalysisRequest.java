@@ -1,5 +1,6 @@
 package com.aisupport.analysis.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -11,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Schema(description = "Request payload for AI analysis")
+@Schema(description = "Request payload for AI analysis", requiredProperties = {"ticketId", "subject", "message"})
 public class AnalysisRequest {
     
     @NotNull(message = "Ticket ID is required")
