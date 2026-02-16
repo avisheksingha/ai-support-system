@@ -67,10 +67,25 @@ private final TicketService ticketService;
     		description = "Retrieves a support ticket by its unique ticket number"
     )
     @ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Ticket retrieved successfully"),
-			@ApiResponse(responseCode = "404", description = "Ticket not found"),
-			@ApiResponse(responseCode = "500", description = "Internal server error")
-	})
+    @ApiResponse(responseCode = "200", description = "Ticket retrieved successfully",
+        content = @io.swagger.v3.oas.annotations.media.Content(
+            mediaType = "application/json",
+            schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = TicketResponse.class)
+        )
+    ),
+    @ApiResponse(responseCode = "404", description = "Ticket not found",
+        content = @io.swagger.v3.oas.annotations.media.Content(
+            mediaType = "application/json",
+            schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = com.aisupport.common.exception.ErrorResponse.class)
+        )
+    ),
+    @ApiResponse(responseCode = "500", description = "Internal server error",
+        content = @io.swagger.v3.oas.annotations.media.Content(
+            mediaType = "application/json",
+            schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = com.aisupport.common.exception.ErrorResponse.class)
+        )
+    )
+})
     @Tag(name = "Ticket Management", description = "Endpoints for managing support tickets")
     @GetMapping("/{ticketNumber}")
     public ResponseEntity<TicketResponse> getTicket(
