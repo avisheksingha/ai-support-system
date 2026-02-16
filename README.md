@@ -11,8 +11,8 @@ AI Support System is a microservices-based ticket management platform with AI-po
 
 ## Technology Stack
 - **Java**: 21
-- **Spring Boot**: 3.4.2
-- **Spring Cloud**: 2024.0.0
+- **Spring Boot**: 4.0.2
+- **Spring Cloud**: 2025.1.0
 - **Database**: PostgreSQL
 - **Build Tool**: Maven
 - **Service Discovery**: Eureka
@@ -21,7 +21,7 @@ AI Support System is a microservices-based ticket management platform with AI-po
 ## Prerequisites
 - Java 21 or higher
 - Maven 3.9+ or use included Maven wrapper
-- PostgreSQL 16+
+- PostgreSQL 18+
 - Docker (optional, for containerization)
 
 ## Getting Started
@@ -59,7 +59,7 @@ aisupport-project/
 ```
 
 ## Configuration
-Each microservice has its own `application.properties`/`application.yml` in `src/main/resources/`.
+Each microservice has its own `application.properties` or `application.yml` in `src/main/resources/`.
 
 ## API Documentation
 Once running, access Swagger UI:

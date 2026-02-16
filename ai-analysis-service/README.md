@@ -17,6 +17,7 @@ Microservice that uses Google Gemini AI to analyze support tickets for sentiment
 | Server Port | 8083 | Port where service runs |
 | AI Model | Gemini Pro | Google Generative AI |
 | Database | PostgreSQL | `analysis_db` |
+| Service Discovery | Enabled | Registers with Eureka |
 
 ### Environment Variables
 - `GEMINI_API_KEY`: Your Google Cloud Project API Key for Gemini.
