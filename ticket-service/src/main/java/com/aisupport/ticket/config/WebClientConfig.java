@@ -3,7 +3,6 @@ package com.aisupport.ticket.config;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.loadbalancer.reactive.LoadBalancedExchangeFilterFunction;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,12 +29,11 @@ public class WebClientConfig {
     private static final int WRITE_TIMEOUT = 60000; // 1 minute
     private static final int MAX_IN_MEMORY_SIZE = 10 * 1024 * 1024; // 10MB
     
-    private final boolean loggingEnabled = true; // Could be made configurable
-    private final boolean logRequests = true;
-    private final boolean logResponses = true;
+    private static final boolean LOGGING_ENABLED = true; // Could be made configurable
+    private static final boolean LOG_REQUESTS = true;
+    private static final boolean LOG_RESPONSES = true;
 
-    @Bean
-    @Qualifier("loadBalancedWebClientBuilder")
+    @Bean    
     WebClient.Builder loadBalancedWebClientBuilder(LoadBalancedExchangeFilterFunction lbFunction) {
     	
     	// Configure HttpClient with timeouts and connection pool settings
@@ -71,7 +69,7 @@ public class WebClientConfig {
      */
     private ExchangeFilterFunction loggingFilter() {
         return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {
-            if (loggingEnabled && logRequests) {
+            if (LOGGING_ENABLED && LOG_REQUESTS) {
                 log.debug("Composing request: {} {}", clientRequest.method(), clientRequest.url());
                 log.trace("Request Headers: {}", clientRequest.headers());
             }
@@ -93,7 +91,7 @@ public class WebClientConfig {
                         });
             }
             
-            if (loggingEnabled && logResponses) {
+            if (LOGGING_ENABLED && LOG_RESPONSES) {
                 log.debug("Received response: Status {}", clientResponse.statusCode());
             }
             
@@ -108,7 +106,7 @@ public class WebClientConfig {
         return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {
             // TODO: Implement proper rate limiting with Redis or external service
             // For now, just log
-            if (loggingEnabled) {
+            if (LOGGING_ENABLED) {
                 log.trace("Rate limit check for request: {}", clientRequest.url());
             }
             return Mono.just(clientRequest);

@@ -2,7 +2,6 @@ package com.aisupport.analysis.config;
 
 import java.util.List;
 
-import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -13,8 +12,7 @@ import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.servers.Server;
 
 @Configuration
-@ConfigurationPropertiesScan("com.aisupport.analysis.config")
-public class ApplicationConfig {
+public class OpenAPIConfig {
 	
 	// OpenAPI bean for API documentation
 	@Bean

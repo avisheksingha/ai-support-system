@@ -2,7 +2,6 @@ package com.aisupport.analysis.config;
 
 import java.time.Duration;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -26,8 +25,7 @@ public class GeminiConfig {
         this.props = props;
     }
 
-    @Bean
-    @Qualifier("geminiWebClient")
+    @Bean    
     WebClient geminiWebClient() {
     	
     	// Create a connection provider with a custom name and max connections
