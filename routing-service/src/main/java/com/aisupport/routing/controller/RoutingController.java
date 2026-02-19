@@ -1,0 +1,48 @@
+package com.aisupport.routing.controller;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.aisupport.routing.dto.RoutingRequest;
+import com.aisupport.routing.dto.RoutingResponse;
+import com.aisupport.routing.service.RoutingOrchestrationService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@RestController
+@RequestMapping("/api/v1/routing")
+@RequiredArgsConstructor
+@Slf4j
+@Tag(name = "Routing", description = "Ticket routing orchestration endpoints using WebClient")
+public class RoutingController {
+    
+    private final RoutingOrchestrationService routingService;
+    
+    @PostMapping("/route")
+    @Operation(summary = "Route a ticket through the complete workflow")
+    public ResponseEntity<RoutingResponse> routeTicket(
+            @Valid @RequestBody RoutingRequest request) {
+        log.info("Received routing request for ticket ID: {}", request.getTicketId());
+        RoutingResponse response = routingService.routeTicket(request);
+        return ResponseEntity.ok(response);
+    }
+    
+    @PostMapping("/route/{ticketId}")
+    @Operation(summary = "Route a ticket by ID")
+    public ResponseEntity<RoutingResponse> routeTicketById(@PathVariable Long ticketId) {
+        log.info("Received routing request for ticket ID: {}", ticketId);
+        RoutingRequest request = RoutingRequest.builder()
+                .ticketId(ticketId)
+                .build();
+        RoutingResponse response = routingService.routeTicket(request);
+        return ResponseEntity.ok(response);
+    }
+}

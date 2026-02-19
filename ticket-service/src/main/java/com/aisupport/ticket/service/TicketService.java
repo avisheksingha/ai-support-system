@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.aisupport.common.dto.AnalysisResultDTO;
-import com.aisupport.ticket.client.AIAnalysisWebClient;
+import com.aisupport.ticket.client.AIAnalysisServiceClient;
 import com.aisupport.ticket.client.AnalysisRequest;
 import com.aisupport.ticket.dto.TicketRequest;
 import com.aisupport.ticket.dto.TicketResponse;
@@ -30,7 +30,7 @@ public class TicketService {
     
     private final TicketRepository ticketRepository;
     private final TicketMapper ticketMapper;
-    private final AIAnalysisWebClient aiAnalysisWebClient;
+    private final AIAnalysisServiceClient aiAnalysisWebClient;
     private final ApplicationContext applicationContext;
     
     @Transactional

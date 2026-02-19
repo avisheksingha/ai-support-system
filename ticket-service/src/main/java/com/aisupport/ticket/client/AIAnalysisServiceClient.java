@@ -17,7 +17,7 @@ import reactor.util.retry.Retry;
 
 @Slf4j
 @Component
-public class AIAnalysisWebClient {
+public class AIAnalysisServiceClient {
 
     private final WebClient webClient;
     private static final String ANALYSIS_ENDPOINT = "/api/v1/analysis/analyze";
@@ -27,7 +27,7 @@ public class AIAnalysisWebClient {
     private static final String FALLBACK = "Fallback";
 
     // Inject base URL from application.properties for flexibility
-    public AIAnalysisWebClient(WebClient.Builder builder, AIAnalysisServicePropertiesConfig properties) {
+    public AIAnalysisServiceClient(WebClient.Builder builder, AIAnalysisServicePropertiesConfig properties) {
         this.webClient = builder
             .baseUrl(properties.getUrl())
             .build();
