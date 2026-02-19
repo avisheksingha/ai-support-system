@@ -1,5 +1,8 @@
 package com.aisupport.rule.enums;
 
-public class RuleConditionType {
-
+public enum RuleConditionType {
+    INTENT,
+    SENTIMENT,
+    URGENCY,
+    KEYWORD
 }

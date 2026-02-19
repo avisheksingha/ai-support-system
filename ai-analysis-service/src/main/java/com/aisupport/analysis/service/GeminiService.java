@@ -15,7 +15,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import com.aisupport.analysis.config.GeminiPropertiesConfig;
 import com.aisupport.analysis.dto.GeminiRequest;
 import com.aisupport.analysis.dto.ParsedAnalysis;
-import com.aisupport.analysis.exception.AIAnalysisException;
+import com.aisupport.analysis.exception.AnalysisException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -26,7 +26,7 @@ import reactor.util.retry.Retry;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class GeminiAIService {
+public class GeminiService {
 
     private final WebClient geminiWebClient;
     private final GeminiPropertiesConfig props;
@@ -56,7 +56,7 @@ public class GeminiAIService {
     /**
      * Analyze a support ticket using Gemini AI. This method builds the prompt, calls the Gemini API,
      * and parses the response into a structured ParsedAnalysis object.
-     * 
+     *
      * @param subject
      * @param message
      * @return
@@ -67,13 +67,13 @@ public class GeminiAIService {
     }
 
     /**
-	 * Core method that handles the entire flow of building the Gemini request,
-	 * calling the API, and parsing the response.
-	 * It includes robust error handling to catch and log any issues that arise during the process.
-	 * 
-	 * @param prompt
-	 * @return
-	 */
+     * Core method that handles the entire flow of building the Gemini request,
+     * calling the API, and parsing the response.
+     * It includes robust error handling to catch and log any issues that arise during the process.
+     *
+     * @param prompt
+     * @return
+     */
     private ParsedAnalysis analyzeWithPrompt(String prompt) {
         try {
             log.debug("Building Gemini request");
@@ -89,22 +89,22 @@ public class GeminiAIService {
 
             return parsed;
 
-        } catch (AIAnalysisException e) {
+        } catch (AnalysisException e) {
             throw e;
         } catch (Exception e) {
             log.error("Unexpected error during AI analysis", e);
-            throw new AIAnalysisException("AI analysis failed: " + e.getMessage(), e);
+            throw new AnalysisException("AI analysis failed: " + e.getMessage(), e);
         }
     }
 
     /**
-	 * Build the GeminiRequest object using the provided prompt and the configuration properties.
-	 * This method constructs the request in the format expected by the Gemini API,
-	 * including the generation configuration and safety settings.
-	 * 
-	 * @param prompt
-	 * @return
-	 */
+     * Build the GeminiRequest object using the provided prompt and the configuration properties.
+     * This method constructs the request in the format expected by the Gemini API,
+     * including the generation configuration and safety settings.
+     *
+     * @param prompt
+     * @return
+     */
     private GeminiRequest buildGeminiRequest(String prompt) {
         GeminiRequest.Part part = GeminiRequest.Part.builder()
                 .text(prompt)
@@ -132,7 +132,7 @@ public class GeminiAIService {
      * Call the Gemini API with the given request and return the raw response as a string.
      * This method uses WebClient to make a POST request to the Gemini endpoint, including the API key as a query parameter.
      * It includes error handling to catch specific HTTP errors (like 503 Service Unavailable) and timeouts, providing fallbacks where appropriate.
-     * 
+     *
      * @param request
      * @return
      */
@@ -168,20 +168,20 @@ public class GeminiAIService {
                 return "{}"; // safe fallback
             }
             log.error("Error calling Gemini API", webEx);
-            throw new AIAnalysisException("Failed to call Gemini API: " + webEx.getMessage(), webEx);
+            throw new AnalysisException("Failed to call Gemini API: " + webEx.getMessage(), webEx);
         } catch (Exception e) {
             log.error("Unexpected error calling Gemini API", e);
-            throw new AIAnalysisException("Failed to call Gemini API: " + e.getMessage(), e);
+            throw new AnalysisException("Failed to call Gemini API: " + e.getMessage(), e);
         }
     }
-    
+
     /**
-	 * Parse the raw response from Gemini to extract the relevant analysis information. This method handles the nested structure of the Gemini response, extracts the inner JSON, and maps it to the ParsedAnalysis class.
-	 * It includes error handling to catch any issues that arise during parsing, such as missing fields or invalid JSON, and logs the details for troubleshooting.
-	 * 
-	 * @param rawResponse
-	 * @return
-	 */
+     * Parse the raw response from Gemini to extract the relevant analysis information. This method handles the nested structure of the Gemini response, extracts the inner JSON, and maps it to the ParsedAnalysis class.
+     * It includes error handling to catch any issues that arise during parsing, such as missing fields or invalid JSON, and logs the details for troubleshooting.
+     *
+     * @param rawResponse
+     * @return
+     */
     private ParsedAnalysis parseGeminiResponse(String rawResponse) {
         try {
             // Step 1: Parse the outer Gemini response
@@ -221,18 +221,17 @@ public class GeminiAIService {
 
         } catch (Exception e) {
             log.error("Failed to parse Gemini response: {}", rawResponse, e);
-            throw new AIAnalysisException("Failed to parse AI response", e);
+            throw new AnalysisException("Failed to parse AI response", e);
         }
     }
 
-
     /**
-	 * Normalize the parsed analysis by trimming and uppercasing string fields, and ensuring the confidence score is between 0.0 and 1.0.
-	 * This method ensures that the ParsedAnalysis object has consistent formatting and valid values, which can help downstream processing and categorization.
-	 * It also ensures that the keywords list is never null, defaulting to an empty list if not provided.
-	 * 
-	 * @param parsed
-	 */
+     * Normalize the parsed analysis by trimming and uppercasing string fields, and ensuring the confidence score is between 0.0 and 1.0.
+     * This method ensures that the ParsedAnalysis object has consistent formatting and valid values, which can help downstream processing and categorization.
+     * It also ensures that the keywords list is never null, defaulting to an empty list if not provided.
+     *
+     * @param parsed
+     */
     private void normalizeParsedAnalysis(ParsedAnalysis parsed) {
         if (parsed == null) return;
         if (parsed.getIntent() != null) parsed.setIntent(parsed.getIntent().trim().toUpperCase());
@@ -249,7 +248,7 @@ public class GeminiAIService {
 
     /**
      * Clean the inner JSON response from Gemini by removing markdown fences and extracting the first JSON object. This method handles cases where the model may include markdown formatting or additional text around the JSON, ensuring that we can still extract a valid JSON object for parsing.
-     * 
+     *
      * @param response
      * @return
      */
@@ -275,13 +274,13 @@ public class GeminiAIService {
     }
 
     /**
-	 * Build the prompt for the Gemini model using the ticket subject and message. This method constructs a detailed prompt that instructs the model to respond with a specific JSON format, and provides context about the ticket.
-	 * The prompt includes clear instructions on the expected output format, as well as examples of how to categorize urgency and intent. This helps guide the model towards producing consistent and structured responses.
-	 * 
-	 * @param subject
-	 * @param message
-	 * @return
-	 */
+     * Build the prompt for the Gemini model using the ticket subject and message. This method constructs a detailed prompt that instructs the model to respond with a specific JSON format, and provides context about the ticket.
+     * The prompt includes clear instructions on the expected output format, as well as examples of how to categorize urgency and intent. This helps guide the model towards producing consistent and structured responses.
+     *
+     * @param subject
+     * @param message
+     * @return
+     */
     private String buildAnalysisPrompt(String subject, String message) {
         return """
             You are an AI support ticket analyzer.

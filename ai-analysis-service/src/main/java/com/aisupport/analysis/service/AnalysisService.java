@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AnalysisService {
     
-    private final GeminiAIService geminiAIService;
+    private final GeminiService geminiService;
     private final AnalysisResultRepository analysisResultRepository;
     private final ObjectMapper objectMapper;
     private final AnalysisResultMapper analysisResultMapper;
@@ -39,7 +39,7 @@ public class AnalysisService {
     
     private AnalysisResultDTO performNewAnalysis(AnalysisRequest request) {
         // Call Gemini AI
-        ParsedAnalysis parsedAnalysis = geminiAIService.analyzeTicket(
+        ParsedAnalysis parsedAnalysis = geminiService.analyzeTicket(
                 request.getSubject(), 
                 request.getMessage()
         );

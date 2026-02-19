@@ -19,9 +19,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class GlobalExceptionHandler {
     
-    @ExceptionHandler(AIAnalysisException.class)
-    public ResponseEntity<ErrorResponse> handleAIAnalysisException(
-            AIAnalysisException ex, WebRequest request) {
+    @ExceptionHandler(AnalysisException.class)
+    public ResponseEntity<ErrorResponse> handleAnalysisException(
+            AnalysisException ex, WebRequest request) {
         log.error("AI Analysis error: {}", ex.getMessage(), ex);
         
         ErrorResponse error = ErrorResponse.of(

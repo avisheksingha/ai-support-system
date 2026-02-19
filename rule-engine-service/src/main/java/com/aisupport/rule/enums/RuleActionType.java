@@ -1,5 +1,7 @@
 package com.aisupport.rule.enums;
 
-public class RuleActionType {
-
+public enum RuleActionType {
+    ASSIGN_TEAM,
+    OVERRIDE_PRIORITY,
+    SET_SLA
 }
