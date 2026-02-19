@@ -3,7 +3,14 @@
 Eureka Server for Service Discovery and Registration in the AI Support System.
 
 ## Overview
-This service acts as the registry where other microservices (Ticket Service, AI Analysis Service) register themselves. Clients can use this service to locate other services without hardcoding hostnames and ports.
+This service acts as the central registry where all microservices in the platform register themselves. It enables dynamic service-to-service communication without hardcoded URLs.
+
+Registered services include:
+- `api-gateway`
+- `ticket-service`
+- `ai-analysis-service`
+- `rule-engine-service`
+- `routing-service`
 
 ## Configuration
 | Property | Value | Description |
@@ -12,7 +19,7 @@ This service acts as the registry where other microservices (Ticket Service, AI 
 | Dashboard | Enabled | Access UI at http://localhost:8761 |
 
 ## Accessing the Dashboard
-Once the service is running, open [http://localhost:8761](http://localhost:8761) to view registered instances.
+Once the service is running, open [http://localhost:8761](http://localhost:8761) to view registered instances and their health status.
 
 ## Running Locally
 ```bash

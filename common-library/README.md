@@ -1,11 +1,11 @@
 # Common Library
 
-Shared module containing reusable components for the AI Support System.
+Shared module containing reusable components, DTOs, and utilities for the AI Support System microservices.
 
 ## Contents
-- **DTOs**: Shared Data Transfer Objects (e.g., `AnalysisResultDTO`, `TicketDTO`)
-- **Exceptions**: Common exception classes (e.g., `ResourceNotFoundException`)
-- **Utilities**: Helper classes and constants
+- **DTOs**: Shared Data Transfer Objects (e.g., `AnalysisResultDTO`, `TicketDTO`, `RuleEvaluationRequest`)
+- **Exceptions**: Common exception classes and global error handlers
+- **Utilities**: Helper classes, constants, and shared configurations
 
 ## Usage
 Add this dependency to your service's `pom.xml`:

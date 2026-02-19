@@ -5,10 +5,12 @@ Microservice responsible for managing support tickets throughout their lifecycle
 ## Features
 
 - Create, read, update, and delete tickets
-- Assign tickets to agents
+- Assign tickets to agents manually or via automated routing
 - Track ticket status and priority
-- Integration with AI Analysis Service for automated tagging
+- Integration with **AI Analysis Service** for automated tagging
+- Integration with **Routing Service** for intelligent ticket assignment
 - Service Discovery via Eureka
+- Resilient communication using Circuit Breaker (Resilience4j)
 
 ## API Endpoints
 
@@ -30,6 +32,4 @@ Microservice responsible for managing support tickets throughout their lifecycle
 
 ```bash
 mvn spring-boot:run
-# OR
-java -jar target/ticket-service-0.0.1-SNAPSHOT.jar
 ```
