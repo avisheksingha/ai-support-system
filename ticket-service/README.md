@@ -3,6 +3,7 @@
 Microservice responsible for managing support tickets throughout their lifecycle.
 
 ## Features
+
 - Create, read, update, and delete tickets
 - Assign tickets to agents
 - Track ticket status and priority
@@ -10,6 +11,7 @@ Microservice responsible for managing support tickets throughout their lifecycle
 - Service Discovery via Eureka
 
 ## API Endpoints
+
 - `POST /api/v1/tickets`: Create a new ticket
 - `GET /api/v1/tickets/{ticketNumber}`: Get ticket details
 - `GET /api/v1/tickets`: List all tickets (optional status filter)
@@ -17,6 +19,7 @@ Microservice responsible for managing support tickets throughout their lifecycle
 - `PATCH /api/v1/tickets/{ticketNumber}/assign`: Assign to agent
 
 ## Configuration
+
 | Property | Value | Description |
 |----------|-------|-------------|
 | Server Port | 8082 | Port where service runs |
@@ -24,6 +27,7 @@ Microservice responsible for managing support tickets throughout their lifecycle
 | Service Discovery | Enabled | Registers with Eureka |
 
 ## Running Locally
+
 ```bash
 mvn spring-boot:run
 # OR
