@@ -35,8 +35,8 @@ public class RuleExecutionHistory {
     @Column(nullable = false)
     private Boolean matched;
     
-    @Column(name = "execution_time_ms", nullable = false)
-    private Long executionTimeMs;
+    @Column(name = "execution_time_ns", nullable = false)
+    private Long executionTimeNs;
     
     @Column(name = "executed_at", nullable = false, updatable = false)
     private LocalDateTime executedAt;

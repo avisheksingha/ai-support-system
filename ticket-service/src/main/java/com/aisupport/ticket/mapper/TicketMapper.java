@@ -14,6 +14,7 @@ import com.aisupport.ticket.model.Ticket;
 )
 public interface TicketMapper {
 	
+	@Mapping(target = "slaHours", ignore = true)
 	@Mapping(target = "id", ignore = true)
 	@Mapping(target = "ticketNumber", ignore = true)
 	@Mapping(target = "status", ignore = true)

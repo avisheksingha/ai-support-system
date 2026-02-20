@@ -27,8 +27,8 @@ public class RuleExecutionHistoryResponse {
     @Schema(description = "Whether the rule matched the ticket", example = "true")
     private Boolean matched;
 
-    @Schema(description = "Time taken to execute this rule in milliseconds", example = "5")
-    private Long executionTimeMs;
+    @Schema(description = "Time taken to execute this rule in nanoseconds", example = "500000")
+    private Long executionTimeNs;
 
     @Schema(description = "Timestamp when this rule was executed")
     private LocalDateTime executedAt;

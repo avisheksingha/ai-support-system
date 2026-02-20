@@ -41,21 +41,21 @@ public class RuleEvaluationService {
     public RuleEvaluationResponse evaluateRules(RuleEvaluationRequest request) {
         log.info("Evaluating rules for ticket ID: {}", request.getTicketId());
         
-        long startTime = System.currentTimeMillis();
+        long startTime = System.nanoTime();
         
         List<RoutingRule> activeRules = routingRuleRepository.findActiveRulesOrderedByPriority();
         log.debug("Found {} active rules to evaluate", activeRules.size());
         
         for (RoutingRule rule : activeRules) {
-            long ruleStartTime = System.currentTimeMillis();
+            long ruleStartTime = System.nanoTime();
             boolean matches = evaluateRule(rule, request);
-            long ruleExecutionTime = System.currentTimeMillis() - ruleStartTime;
+            long ruleExecutionTimeNs = System.nanoTime() - ruleStartTime;
             
             // Save execution history
-            saveExecutionHistory(rule.getId(), request.getTicketId(), matches, ruleExecutionTime);
+            saveExecutionHistory(rule.getId(), request.getTicketId(), matches, ruleExecutionTimeNs);
             
             if (matches) {
-                long totalTime = System.currentTimeMillis() - startTime;
+                long totalTimeMs = (System.nanoTime() - startTime) / 1_000_000;
                 log.info("Rule '{}' matched for ticket {}", rule.getRuleName(), request.getTicketId());
                 
                 return RuleEvaluationResponse.builder()
@@ -66,13 +66,13 @@ public class RuleEvaluationService {
                         .priorityOverride(rule.getPriorityOverride())
                         .slaHours(rule.getSlaHours())
                         .reason(buildMatchReason(rule, request))
-                        .evaluationTimeMs(totalTime)
+                        .evaluationTimeMs(totalTimeMs)
                         .build();
             }
         }
         
         // No rule matched - return default
-        long totalTime = System.currentTimeMillis() - startTime;
+        long totalTimeMs = (System.nanoTime() - startTime) / 1_000_000;
         log.warn("No rule matched for ticket {}, using default assignment", request.getTicketId());
         
         return RuleEvaluationResponse.builder()
@@ -176,12 +176,12 @@ public class RuleEvaluationService {
         return reason.toString();
     }
     
-    private void saveExecutionHistory(Long ruleId, Long ticketId, boolean matched, long executionTimeMs) {
+    private void saveExecutionHistory(Long ruleId, Long ticketId, boolean matched, long executionTimeNs) {
         RuleExecutionHistory history = RuleExecutionHistory.builder()
                 .ruleId(ruleId)
                 .ticketId(ticketId)
                 .matched(matched)
-                .executionTimeMs(executionTimeMs)
+                .executionTimeNs(executionTimeNs)
                 .build();
         
         historyRepository.save(history);

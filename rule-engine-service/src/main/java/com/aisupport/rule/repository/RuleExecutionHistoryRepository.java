@@ -23,6 +23,6 @@ public interface RuleExecutionHistoryRepository extends JpaRepository<RuleExecut
     @Query("SELECT COUNT(h) FROM RuleExecutionHistory h WHERE h.ruleId = :ruleId AND h.matched = true")
     Long countMatchedExecutions(@Param("ruleId") Long ruleId);
     
-    @Query("SELECT AVG(h.executionTimeMs) FROM RuleExecutionHistory h WHERE h.ruleId = :ruleId")
+    @Query("SELECT AVG(h.executionTimeNs) FROM RuleExecutionHistory h WHERE h.ruleId = :ruleId")
     Double averageExecutionTime(@Param("ruleId") Long ruleId);
 }
