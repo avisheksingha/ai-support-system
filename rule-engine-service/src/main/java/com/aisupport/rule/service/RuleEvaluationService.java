@@ -83,7 +83,7 @@ public class RuleEvaluationService {
                 .priorityOverride(defaultPriority)
                 .slaHours(defaultSlaHours)
                 .reason("No matching rule found, using default assignment")
-                .evaluationTimeMs(totalTime)
+                .evaluationTimeMs(totalTimeMs)
                 .build();
     }
     
