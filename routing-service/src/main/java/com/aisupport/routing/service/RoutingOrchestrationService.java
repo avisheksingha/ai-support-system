@@ -39,6 +39,9 @@ public class RoutingOrchestrationService {
     @Value("${routing.fallback.default-priority:MEDIUM}")
     private String defaultPriority;
     
+    @Value("${rule.fallback.default-sla-hours:24}")
+    private Integer defaultSlaHours;
+    
     public RoutingResponse routeTicket(RoutingRequest request) {
         log.info("Starting routing workflow for ticket ID: {}", request.getTicketId());
         
@@ -221,7 +224,7 @@ public class RoutingOrchestrationService {
                     .ticketNumber(ticket.getTicketNumber())
                     .assignedTo(defaultTeam)
                     .priority(defaultPriority)
-                    .slaHours(24)
+                    .slaHours(defaultSlaHours)
                     .matchedRule("Fallback Routing")
                     .routingReason("Workflow failed, using default routing: " + error.getMessage())
                     .success(true)

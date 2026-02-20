@@ -46,7 +46,8 @@ public class WebClientConfig {
                 .doOnConnected(conn -> 
                     conn.addHandlerLast(new ReadTimeoutHandler(readTimeout, TimeUnit.MILLISECONDS))
                         .addHandlerLast(new WriteTimeoutHandler(writeTimeout, TimeUnit.MILLISECONDS))
-                ).wiretap("reactor.netty.http.client.HttpClient", io.netty.handler.logging.LogLevel.INFO);
+                );
+                //.wiretap("reactor.netty.http.client.HttpClient", io.netty.handler.logging.LogLevel.INFO);
     	
     	// Configure exchange strategies with larger buffer size 
     	ExchangeStrategies strategies = ExchangeStrategies.builder()

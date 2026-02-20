@@ -17,11 +17,9 @@ import lombok.extern.slf4j.Slf4j;
 public class RuleEngineServiceClient {
     
     private final WebClient webClient;
-    private final String baseUrl;
     
     public RuleEngineServiceClient(WebClient.Builder webClientBuilder,
                                   @Value("${api.services.rule-engine.url}") String baseUrl) {
-        this.baseUrl = baseUrl;
         this.webClient = webClientBuilder.baseUrl(baseUrl).build();
     }
     

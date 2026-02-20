@@ -3,6 +3,7 @@ package com.aisupport.rule.service;
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,18 @@ public class RuleEvaluationService {
     
     private final RoutingRuleRepository routingRuleRepository;
     private final RuleExecutionHistoryRepository historyRepository;
+    
+    @Value("${routing.fallback.enabled:true}")
+    private Boolean fallbackEnabled;
+    
+    @Value("${rule.fallback.default-team:general-support}")
+    private String defaultTeam;
+    
+    @Value("${rule.fallback.default-priority:MEDIUM}")
+    private String defaultPriority;
+    
+    @Value("${rule.fallback.default-sla-hours:24}")
+    private Integer defaultSlaHours;
     
     @Transactional
     public RuleEvaluationResponse evaluateRules(RuleEvaluationRequest request) {
@@ -66,9 +79,9 @@ public class RuleEvaluationService {
                 .ticketId(request.getTicketId())
                 .matchedRuleId(null)
                 .matchedRuleName("Default Assignment")
-                .assignToTeam("general-support")
-                .priorityOverride("MEDIUM")
-                .slaHours(24)
+                .assignToTeam(defaultTeam)
+                .priorityOverride(defaultPriority)
+                .slaHours(defaultSlaHours)
                 .reason("No matching rule found, using default assignment")
                 .evaluationTimeMs(totalTime)
                 .build();

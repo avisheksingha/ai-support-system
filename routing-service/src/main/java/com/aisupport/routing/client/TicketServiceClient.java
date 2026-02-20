@@ -16,11 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 public class TicketServiceClient {
     
     private final WebClient webClient;
-    private final String baseUrl;
     
     public TicketServiceClient(WebClient.Builder webClientBuilder,
                               @Value("${api.services.ticket.url}") String baseUrl) {
-        this.baseUrl = baseUrl;
         this.webClient = webClientBuilder.baseUrl(baseUrl).build();
     }
     
@@ -29,7 +27,7 @@ public class TicketServiceClient {
         
         try {
             return webClient.get()
-                    .uri("/api/v1/tickets/{id}", ticketId)
+                    .uri("/api/v1/tickets/id/{id}", ticketId)
                     .retrieve()
                     .bodyToMono(TicketDTO.class)
                     .timeout(Duration.ofSeconds(10))

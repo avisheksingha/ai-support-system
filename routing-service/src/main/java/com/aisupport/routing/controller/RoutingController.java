@@ -2,7 +2,6 @@ package com.aisupport.routing.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,17 +32,6 @@ public class RoutingController {
     public ResponseEntity<RoutingResponse> routeTicket(
             @Valid @RequestBody RoutingRequest request) {
         log.info("Received routing request for ticket ID: {}", request.getTicketId());
-        RoutingResponse response = routingService.routeTicket(request);
-        return ResponseEntity.ok(response);
-    }
-    
-    @PostMapping("/route/{ticketId}")
-    @Operation(summary = "Route a ticket by ID")
-    public ResponseEntity<RoutingResponse> routeTicketById(@PathVariable Long ticketId) {
-        log.info("Received routing request for ticket ID: {}", ticketId);
-        RoutingRequest request = RoutingRequest.builder()
-                .ticketId(ticketId)
-                .build();
         RoutingResponse response = routingService.routeTicket(request);
         return ResponseEntity.ok(response);
     }

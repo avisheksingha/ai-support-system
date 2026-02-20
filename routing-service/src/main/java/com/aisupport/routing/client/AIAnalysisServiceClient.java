@@ -16,11 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 public class AIAnalysisServiceClient {
     
     private final WebClient webClient;
-    private final String baseUrl;
     
     public AIAnalysisServiceClient(WebClient.Builder webClientBuilder,
                                   @Value("${api.services.ai-analysis.url}") String baseUrl) {
-        this.baseUrl = baseUrl;
         this.webClient = webClientBuilder.baseUrl(baseUrl).build();
     }
     
