@@ -1,6 +1,7 @@
 package com.aisupport.analysis.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.annotation.Validated;
 
 import io.netty.channel.ChannelOption;
@@ -17,6 +18,7 @@ import reactor.netty.transport.logging.AdvancedByteBufFormat;
 @Data
 @NoArgsConstructor
 @Validated
+@Configuration
 @ConfigurationProperties(prefix = "gemini")
 public class GeminiPropertiesConfig {
 

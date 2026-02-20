@@ -1,6 +1,7 @@
 package com.aisupport.routing.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/v1/routing")
+@CrossOrigin(origins = "http://localhost:8085")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Routing", description = "Ticket routing orchestration endpoints using WebClient")

@@ -1,14 +1,15 @@
 package com.aisupport.routing.client;
 
-import com.aisupport.common.dto.TicketDTO;
-import com.aisupport.routing.exception.ServiceCommunicationException;
-import lombok.extern.slf4j.Slf4j;
+import java.time.Duration;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
-import java.time.Duration;
+import com.aisupport.common.dto.TicketDTO;
+import com.aisupport.routing.exception.ServiceCommunicationException;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -18,7 +19,7 @@ public class TicketServiceClient {
     private final String baseUrl;
     
     public TicketServiceClient(WebClient.Builder webClientBuilder,
-                              @Value("${webclient.service.ticket-service}") String baseUrl) {
+                              @Value("${api.services.ticket.url}") String baseUrl) {
         this.baseUrl = baseUrl;
         this.webClient = webClientBuilder.baseUrl(baseUrl).build();
     }

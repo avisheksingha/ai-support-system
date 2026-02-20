@@ -1,20 +1,25 @@
 package com.aisupport.routing.service;
 
+import java.time.LocalDateTime;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 import com.aisupport.common.dto.AnalysisResultDTO;
 import com.aisupport.common.dto.TicketDTO;
 import com.aisupport.routing.client.AIAnalysisServiceClient;
 import com.aisupport.routing.client.RuleEngineServiceClient;
 import com.aisupport.routing.client.TicketServiceClient;
-import com.aisupport.routing.dto.*;
+import com.aisupport.routing.dto.RoutingRequest;
+import com.aisupport.routing.dto.RoutingResponse;
+import com.aisupport.routing.dto.RuleEvaluationRequest;
+import com.aisupport.routing.dto.RuleEvaluationResponse;
 import com.aisupport.routing.exception.RoutingException;
+
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor

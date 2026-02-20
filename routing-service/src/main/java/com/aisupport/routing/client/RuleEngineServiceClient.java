@@ -1,15 +1,16 @@
 package com.aisupport.routing.client;
 
-import com.aisupport.routing.dto.RuleEvaluationRequest;
-import com.aisupport.routing.dto.RuleEvaluationResponse;
-import com.aisupport.routing.exception.ServiceCommunicationException;
-import lombok.extern.slf4j.Slf4j;
+import java.time.Duration;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
-import java.time.Duration;
+import com.aisupport.routing.dto.RuleEvaluationRequest;
+import com.aisupport.routing.dto.RuleEvaluationResponse;
+import com.aisupport.routing.exception.ServiceCommunicationException;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -19,7 +20,7 @@ public class RuleEngineServiceClient {
     private final String baseUrl;
     
     public RuleEngineServiceClient(WebClient.Builder webClientBuilder,
-                                  @Value("${webclient.service.rule-engine-service}") String baseUrl) {
+                                  @Value("${api.services.rule-engine.url}") String baseUrl) {
         this.baseUrl = baseUrl;
         this.webClient = webClientBuilder.baseUrl(baseUrl).build();
     }
