@@ -52,6 +52,9 @@ public class TicketResponse {
     @Schema(description = "Calculated urgency level", example = "HIGH")
     private String urgency;
     
+    @Schema(description = "SLA hours applied to the ticket", example = "24")
+    private Integer slaHours;
+    
     @Schema(description = "Timestamp when the ticket was created")
     private LocalDateTime createdAt;
     

@@ -51,5 +51,7 @@ public class TicketDTO implements Serializable {
     private String priority;
     @Schema(description = "Assigned to of the ticket", example = "John Doe")
     private String assignedTo;
+    @Schema(description = "SLA hours for the ticket", example = "24")
+    private Integer slaHours;
 
 }

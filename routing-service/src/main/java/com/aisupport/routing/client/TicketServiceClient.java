@@ -42,14 +42,15 @@ public class TicketServiceClient {
         }
     }
     
-    public TicketDTO assignTicket(String ticketNumber, String assignedTo) {
-        log.info("Assigning ticket {} to {}", ticketNumber, assignedTo);
+    public TicketDTO assignTicket(String ticketNumber, String assignedTo, Integer slaHours) {
+        log.info("Assigning ticket {} to {} with SLA {}", ticketNumber, assignedTo, slaHours);
         
         try {
             return webClient.patch()
                     .uri(uriBuilder -> uriBuilder
                             .path("/api/v1/tickets/{ticketNumber}/assign")
                             .queryParam("assignedTo", assignedTo)
+                            .queryParamIfPresent("slaHours", java.util.Optional.ofNullable(slaHours))
                             .build(ticketNumber))
                     .retrieve()
                     .bodyToMono(TicketDTO.class)
@@ -65,14 +66,15 @@ public class TicketServiceClient {
         }
     }
     
-    public TicketDTO updatePriority(String ticketNumber, String priority) {
-        log.info("Updating priority for ticket {} to {}", ticketNumber, priority);
+    public TicketDTO updatePriority(String ticketNumber, String priority, Integer slaHours) {
+        log.info("Updating priority for ticket {} to {} with SLA {}", ticketNumber, priority, slaHours);
         
         try {
             return webClient.patch()
                     .uri(uriBuilder -> uriBuilder
-                            .path("/api/v1/tickets/{ticketNumber}/status")
-                            .queryParam("status", "ASSIGNED")
+                            .path("/api/v1/tickets/{ticketNumber}/priority")
+                            .queryParam("priority", priority)
+                            .queryParamIfPresent("slaHours", java.util.Optional.ofNullable(slaHours))
                             .build(ticketNumber))
                     .retrieve()
                     .bodyToMono(TicketDTO.class)

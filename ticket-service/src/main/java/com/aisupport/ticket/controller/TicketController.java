@@ -155,10 +155,13 @@ private final TicketService ticketService;
 			) String ticketNumber,
             @RequestParam
             @io.swagger.v3.oas.annotations.Parameter(
-					description = "New status for the ticket (e.g., NEW, ANALYZING, ANALYZED, ASSIGNED, RESOLVED, CLOSED)",
+					description = "New status for the ticket",
 					required = true
-			) String status) {
-        TicketResponse response = ticketService.updateTicketStatus(ticketNumber, status);
+			) String status,
+            @RequestParam(required = false) Integer slaHours) {
+        TicketResponse response = "ASSIGNED".equalsIgnoreCase(status) 
+            ? ticketService.assignTicket(ticketNumber, null, slaHours)
+            : ticketService.updateTicketStatus(ticketNumber, status);
         return ResponseEntity.ok(response);
     }
     
@@ -179,8 +182,22 @@ private final TicketService ticketService;
     @PatchMapping("/{ticketNumber}/assign")
     public ResponseEntity<TicketResponse> assignTicket(
             @PathVariable String ticketNumber,
-            @RequestParam String assignedTo) {
-        TicketResponse response = ticketService.assignTicket(ticketNumber, assignedTo);
+            @RequestParam String assignedTo,
+            @RequestParam(required = false) Integer slaHours) {
+        TicketResponse response = ticketService.assignTicket(ticketNumber, assignedTo, slaHours);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+			summary = "Update ticket priority",
+			description = "Updates the priority level of a support ticket"
+	)
+    @PatchMapping("/{ticketNumber}/priority")
+    public ResponseEntity<TicketResponse> updatePriority(
+            @PathVariable String ticketNumber,
+            @RequestParam String priority,
+            @RequestParam(required = false) Integer slaHours) {
+        TicketResponse response = ticketService.updateTicketPriority(ticketNumber, priority, slaHours);
         return ResponseEntity.ok(response);
     }
 }

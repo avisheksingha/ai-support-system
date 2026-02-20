@@ -143,25 +143,31 @@ public class TicketService {
     }
     
     @Transactional
-    public TicketResponse updateTicketPriority(String ticketNumber, String newPriority) {
-        log.info("Updating ticket {} to priority: {}", ticketNumber, newPriority);
+    public TicketResponse updateTicketPriority(String ticketNumber, String newPriority, Integer slaHours) {
+        log.info("Updating ticket {} to priority: {} and SLA: {}", ticketNumber, newPriority, slaHours);
         Ticket ticket = ticketRepository.findByTicketNumber(ticketNumber)
                 .orElseThrow(() -> new TicketNotFoundException(TICKET_NOT_FOUND_MSG + ticketNumber));
         
         ticket.setPriority(Ticket.Priority.valueOf(newPriority.toUpperCase()));
+        if (slaHours != null) {
+            ticket.setSlaHours(slaHours);
+        }
         ticket = ticketRepository.save(ticket);
         
         return ticketMapper.toResponse(ticket);
     }
     
     @Transactional
-    public TicketResponse assignTicket(String ticketNumber, String assignedTo) {
-        log.info("Assigning ticket {} to: {}", ticketNumber, assignedTo);
+    public TicketResponse assignTicket(String ticketNumber, String assignedTo, Integer slaHours) {
+        log.info("Assigning ticket {} to: {} with SLA: {}", ticketNumber, assignedTo, slaHours);
         Ticket ticket = ticketRepository.findByTicketNumber(ticketNumber)
                 .orElseThrow(() -> new TicketNotFoundException(TICKET_NOT_FOUND_MSG + ticketNumber));
         
         ticket.setAssignedTo(assignedTo);
         ticket.setStatus(Ticket.TicketStatus.ASSIGNED);
+        if (slaHours != null) {
+            ticket.setSlaHours(slaHours);
+        }
         ticket = ticketRepository.save(ticket);
         
         return ticketMapper.toResponse(ticket);

@@ -1,4 +1,4 @@
-{"properties": [	
+{"properties": [
   {
     "name": "api.services.ticket.url",
     "type": "java.lang.String",
@@ -48,5 +48,10 @@
     "name": "gemini.top-k",
     "type": "java.lang.String",
     "description": "A description for 'gemini.top-k'"
+  },
+  {
+    "name": "gemini.model",
+    "type": "java.lang.String",
+    "description": "A description for 'gemini.model'"
   }
 ]}

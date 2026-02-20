@@ -167,13 +167,15 @@ public class RoutingOrchestrationService {
             // Assign to team
             ticketServiceClient.assignTicket(
                     ticket.getTicketNumber(), 
-                    evaluation.getAssignToTeam());
+                    evaluation.getAssignToTeam(),
+                    evaluation.getSlaHours());
             
             // Update priority if override exists
             if (evaluation.getPriorityOverride() != null) {
                 ticketServiceClient.updatePriority(
                         ticket.getTicketNumber(), 
-                        evaluation.getPriorityOverride());
+                        evaluation.getPriorityOverride(),
+                        evaluation.getSlaHours());
             }
             
             long stepDuration = System.currentTimeMillis() - stepStart;
@@ -216,8 +218,8 @@ public class RoutingOrchestrationService {
             TicketDTO ticket = ticketServiceClient.getTicketById(ticketId);
             
             // Apply default routing
-            ticketServiceClient.assignTicket(ticket.getTicketNumber(), defaultTeam);
-            ticketServiceClient.updatePriority(ticket.getTicketNumber(), defaultPriority);
+            ticketServiceClient.assignTicket(ticket.getTicketNumber(), defaultTeam, defaultSlaHours);
+            ticketServiceClient.updatePriority(ticket.getTicketNumber(), defaultPriority, defaultSlaHours);
             
             return RoutingResponse.builder()
                     .ticketId(ticketId)

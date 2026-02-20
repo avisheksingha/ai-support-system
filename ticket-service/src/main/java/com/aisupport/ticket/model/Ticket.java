@@ -66,6 +66,9 @@ public class Ticket {
     @Column(name = "urgency")
     private String urgency;
     
+    @Column(name = "sla_hours")
+    private Integer slaHours;
+    
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     
