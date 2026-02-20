@@ -4,11 +4,11 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.aisupport.common.dto.AnalysisResultDTO;
-import com.aisupport.ticket.config.AIAnalysisServicePropertiesConfig;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
@@ -27,9 +27,9 @@ public class AIAnalysisServiceClient {
     private static final String FALLBACK = "Fallback";
 
     // Inject base URL from application.properties for flexibility
-    public AIAnalysisServiceClient(WebClient.Builder builder, AIAnalysisServicePropertiesConfig properties) {
+    public AIAnalysisServiceClient(WebClient.Builder builder, @Value("${api.services.ai-analysis.url}") String aiAnalysisUrl) {
         this.webClient = builder
-            .baseUrl(properties.getUrl())
+            .baseUrl(aiAnalysisUrl)
             .build();
     }
 
