@@ -3,7 +3,7 @@ package com.aisupport.ticket.config;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.cloud.client.loadbalancer.reactive.LoadBalancedExchangeFilterFunction;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -33,8 +33,9 @@ public class WebClientConfig {
     private static final boolean LOG_REQUESTS = true;
     private static final boolean LOG_RESPONSES = true;
 
-    @Bean    
-    WebClient.Builder loadBalancedWebClientBuilder(LoadBalancedExchangeFilterFunction lbFunction) {
+    @Bean
+    @LoadBalanced
+    WebClient.Builder loadBalancedWebClientBuilder() {
     	
     	// Configure HttpClient with timeouts and connection pool settings
     	HttpClient httpClient = HttpClient.create()
@@ -60,8 +61,7 @@ public class WebClientConfig {
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .filter(loggingFilter())
             .filter(errorHandlingFilter())
-            .filter(rateLimitFilter())
-            .filter(lbFunction); // enables service name resolution via Spring Cloud LoadBalancer
+            .filter(rateLimitFilter());
     }
     
     /**

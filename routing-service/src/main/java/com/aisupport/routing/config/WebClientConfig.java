@@ -4,8 +4,8 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Value;
+
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
-import org.springframework.cloud.client.loadbalancer.reactive.LoadBalancedExchangeFilterFunction;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -39,7 +39,7 @@ public class WebClientConfig {
 
     @Bean
     @LoadBalanced
-    WebClient.Builder loadBalancedWebClientBuilder(LoadBalancedExchangeFilterFunction lbFunction) {
+    WebClient.Builder loadBalancedWebClientBuilder() {
         HttpClient httpClient = HttpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeout)
                 .responseTimeout(Duration.ofMillis(readTimeout))
@@ -61,8 +61,7 @@ public class WebClientConfig {
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .filter(logRequest())
                 .filter(logResponse())
-                .filter(errorHandlingFilter())
-                .filter(lbFunction); // enables service name resolution via Spring Cloud LoadBalancer
+                .filter(errorHandlingFilter());
     }
     
     private ExchangeFilterFunction logRequest() {
