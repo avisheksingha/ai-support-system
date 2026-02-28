@@ -7,7 +7,7 @@ Microservice responsible for managing support tickets throughout their lifecycle
 - Create, read, update, and delete tickets
 - Assign tickets to agents manually or via automated routing
 - Track ticket status and priority
-- Integration with **AI Analysis Service** for automated tagging
+- Integration with **AI Analysis Service** (Spring AI / Vertex AI) for automated tagging
 - Integration with **Routing Service** for intelligent ticket assignment
 - Service Discovery via Eureka
 - Resilient communication using Circuit Breaker (Resilience4j)

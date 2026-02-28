@@ -1,6 +1,6 @@
 # AI Analysis Service
 
-Microservice that uses Google Gemini AI to analyze support tickets for sentiment, urgency, and intent.
+Microservice that uses Spring AI and Google Vertex AI (Gemini) to analyze support tickets for sentiment, urgency, and intent.
 
 ## Features
 - Analyzes ticket content (Subject + Message)
@@ -8,33 +8,34 @@ Microservice that uses Google Gemini AI to analyze support tickets for sentiment
 - Determines Urgency (LOW, MEDIUM, HIGH, CRITICAL)
 - Identifies User Intent (TECHNICAL, BILLING, etc.)
 - Auto-tagging with keywords
+- Built on **Spring Boot 4.0.3** and **Spring AI Vertex AI Starter**
 
 ## Configuration
 
 | Property | Value | Description |
 |----------|-------|-------------|
 | Server Port | 8083 | Port where service runs |
-| AI Model | Gemini Pro | Google Generative AI |
+| AI Model | Gemini 1.5 Flash | Google Vertex AI via Spring AI |
 | Database | PostgreSQL | `analysis_db` |
 | Service Discovery | Enabled | Registers with Eureka |
 
 > [!IMPORTANT]
-> You must set your Gemini API Key in the environment variables for security.
+> You must set your Google Cloud Project credentials and location in the environment variables or application properties.
 
 ### Environment Variables
-- `GEMINI_API_KEY`: Your Google Cloud Project API Key for Gemini.
+- `GCP_PROJECT_ID`: Your Google Cloud Project ID.
+- `GCP_LOCATION`: Your Google Cloud Project location (e.g., `us-central1`).
+- `GOOGLE_APPLICATION_CREDENTIALS`: Path to your GCP service account JSON key file.
 
 ## API Endpoints
 - `POST /api/v1/analysis/analyze`: Analyze a ticket manually
 - `GET /api/v1/analysis/{ticketId}`: Get existing analysis
 
 ## Running Locally
-```bash
-# Windows (PowerShell)
-$env:GEMINI_API_KEY="your-api-key"
-mvn spring-boot:run
 
-# Linux/macOS
-export GEMINI_API_KEY="your-api-key"
+1. Set up your Google Cloud default credentials via `gcloud auth application-default login` or set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable.
+2. Run the application:
+
+```bash
 mvn spring-boot:run
 ```

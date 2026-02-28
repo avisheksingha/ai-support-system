@@ -9,7 +9,7 @@ AI Support System is a microservices-based ticket management platform with AI-po
 - **discovery-service**: Eureka Service Discovery Server
 - **api-gateway**: Centralized entry point and request routing
 - **ticket-service**: Core ticket management functionality
-- **ai-analysis-service**: AI-powered ticket analysis using Google Gemini
+- **ai-analysis-service**: AI-powered ticket analysis using Spring AI and Google Vertex AI
 - **rule-engine-service**: Flexible rule-based logic for ticket processing
 - **routing-service**: Orchestrates ticket routing between agents and teams
 - **common-library**: Shared DTOs, exceptions, and utilities
@@ -17,7 +17,7 @@ AI Support System is a microservices-based ticket management platform with AI-po
 ## Technology Stack
 
 - **Java**: 21
-- **Spring Boot**: 4.0.2
+- **Spring Boot**: 4.0.3
 - **Spring Cloud**: 2025.1.0
 - **Database**: PostgreSQL
 - **Build Tool**: Maven
