@@ -16,7 +16,8 @@ import com.aisupport.common.dto.AnalysisResultDTO;
 )
 public interface AnalysisResultMapper {
 
-    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "version", ignore = true)
+	@Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "keywords", source = "keywords")
     AnalysisResult toEntity(AnalysisResultDTO dto);
 
