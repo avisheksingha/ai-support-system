@@ -1,4 +1,4 @@
-package com.aisupport.ticket.model;
+package com.aisupport.ticket.entity;
 
 import java.time.LocalDateTime;
 

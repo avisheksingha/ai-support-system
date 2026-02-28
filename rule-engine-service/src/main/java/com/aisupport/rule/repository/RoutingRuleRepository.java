@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import com.aisupport.rule.model.RoutingRule;
+import com.aisupport.rule.entity.RoutingRule;
 
 @Repository
 public interface RoutingRuleRepository extends JpaRepository<RoutingRule, Long> {

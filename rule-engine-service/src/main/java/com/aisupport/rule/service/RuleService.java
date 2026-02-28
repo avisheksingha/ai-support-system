@@ -7,9 +7,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.aisupport.rule.dto.RuleRequest;
 import com.aisupport.rule.dto.RuleResponse;
+import com.aisupport.rule.entity.RoutingRule;
 import com.aisupport.rule.exception.RuleNotFoundException;
 import com.aisupport.rule.mapper.RoutingRuleMapper;
-import com.aisupport.rule.model.RoutingRule;
 import com.aisupport.rule.repository.RoutingRuleRepository;
 
 import lombok.RequiredArgsConstructor;

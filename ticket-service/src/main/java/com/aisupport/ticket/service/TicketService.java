@@ -9,10 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.aisupport.ticket.dto.TicketRequest;
 import com.aisupport.ticket.dto.TicketResponse;
+import com.aisupport.ticket.entity.Ticket;
 import com.aisupport.ticket.event.TicketCreatedEvent;
 import com.aisupport.ticket.exception.TicketNotFoundException;
 import com.aisupport.ticket.mapper.TicketMapper;
-import com.aisupport.ticket.model.Ticket;
 import com.aisupport.ticket.outbox.OutboxEventService;
 import com.aisupport.ticket.repository.TicketRepository;
 

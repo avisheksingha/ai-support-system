@@ -1,4 +1,4 @@
-package com.aisupport.rule.model;
+package com.aisupport.rule.entity;
 
 import java.time.LocalDateTime;
 

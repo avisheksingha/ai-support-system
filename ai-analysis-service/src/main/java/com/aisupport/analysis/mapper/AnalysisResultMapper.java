@@ -7,7 +7,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-import com.aisupport.analysis.model.AnalysisResult;
+import com.aisupport.analysis.entity.AnalysisResult;
 import com.aisupport.common.dto.AnalysisResultDTO;
 
 @Mapper(

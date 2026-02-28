@@ -9,8 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.aisupport.rule.dto.RuleEvaluationRequest;
 import com.aisupport.rule.dto.RuleEvaluationResponse;
-import com.aisupport.rule.model.RoutingRule;
-import com.aisupport.rule.model.RuleExecutionHistory;
+import com.aisupport.rule.entity.RoutingRule;
+import com.aisupport.rule.entity.RuleExecutionHistory;
 import com.aisupport.rule.repository.RoutingRuleRepository;
 import com.aisupport.rule.repository.RuleExecutionHistoryRepository;
 

@@ -1,4 +1,4 @@
-package com.aisupport.analysis.model;
+package com.aisupport.analysis.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

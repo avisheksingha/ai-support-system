@@ -6,7 +6,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import com.aisupport.ticket.dto.TicketRequest;
 import com.aisupport.ticket.dto.TicketResponse;
-import com.aisupport.ticket.model.Ticket;
+import com.aisupport.ticket.entity.Ticket;
 
 @Mapper(
         componentModel = "spring",

@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.aisupport.rule.model.RuleExecutionHistory;
+import com.aisupport.rule.entity.RuleExecutionHistory;
 
 @Repository
 public interface RuleExecutionHistoryRepository extends JpaRepository<RuleExecutionHistory, Long> {

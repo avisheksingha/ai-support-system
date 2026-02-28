@@ -9,7 +9,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import com.aisupport.rule.dto.RuleRequest;
 import com.aisupport.rule.dto.RuleResponse;
-import com.aisupport.rule.model.RoutingRule;
+import com.aisupport.rule.entity.RoutingRule;
 
 @Mapper(
 		componentModel = "spring",

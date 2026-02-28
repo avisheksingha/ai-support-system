@@ -4,7 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import com.aisupport.rule.dto.RuleExecutionHistoryResponse;
-import com.aisupport.rule.model.RuleExecutionHistory;
+import com.aisupport.rule.entity.RuleExecutionHistory;
 
 @Mapper(
 		componentModel = "spring",
