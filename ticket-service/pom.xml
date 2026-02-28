@@ -24,12 +24,12 @@
 			<artifactId>common-library</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-
-        <!-- Resilience4j Circuit Breaker -->
+        
+        <!-- Kafka for Event-Driven Communication -->
         <dependency>
-            <groupId>io.github.resilience4j</groupId>
-            <artifactId>resilience4j-spring-boot3</artifactId>
-        </dependency>
+	      	<groupId>org.springframework.boot</groupId>
+	      	<artifactId>spring-boot-starter-kafka</artifactId>
+	    </dependency>
 	
 	</dependencies>
 </project>

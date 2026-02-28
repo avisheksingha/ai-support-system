@@ -19,8 +19,6 @@ import com.aisupport.ticket.dto.TicketResponse;
 import com.aisupport.ticket.service.TicketService;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -40,15 +38,6 @@ private final TicketService ticketService;
     		summary = "Create a new support ticket",
             description = "Creates a new support ticket and automatically analyzes it using AI"
     )
-    @ApiResponses(value = {
-    		@ApiResponse(responseCode = "201", description = "Ticket created successfully",
-    				content = @io.swagger.v3.oas.annotations.media.Content(
-    						mediaType = "application/json",
-    						schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = TicketResponse.class)
-    				)),
-    		@ApiResponse(responseCode = "400", description = "Invalid request data"),
-    		@ApiResponse(responseCode = "500", description = "Internal server error")
-    })
     @PostMapping
     public ResponseEntity<TicketResponse> createTicket(
             @Valid @RequestBody
@@ -57,6 +46,7 @@ private final TicketService ticketService;
             		required = true
             ) TicketRequest request) {
         log.info("Received request to create ticket from: {}", request.getCustomerEmail());
+        
         TicketResponse response = ticketService.createTicket(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -65,26 +55,6 @@ private final TicketService ticketService;
     		summary = "Get ticket by number",
     		description = "Retrieves a support ticket by its unique ticket number"
     )
-    @ApiResponses(value = {
-	    @ApiResponse(responseCode = "200", description = "Ticket retrieved successfully",
-	        content = @io.swagger.v3.oas.annotations.media.Content(
-	            mediaType = "application/json",
-	            schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = TicketResponse.class)
-	        )
-	    ),
-	    @ApiResponse(responseCode = "404", description = "Ticket not found",
-	        content = @io.swagger.v3.oas.annotations.media.Content(
-	            mediaType = "application/json",
-	            schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = com.aisupport.common.exception.ErrorResponse.class)
-	        )
-	    ),
-	    @ApiResponse(responseCode = "500", description = "Internal server error",
-	        content = @io.swagger.v3.oas.annotations.media.Content(
-	            mediaType = "application/json",
-	            schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = com.aisupport.common.exception.ErrorResponse.class)
-	        )
-	    )
-	})
     @GetMapping("/{ticketNumber}")
     public ResponseEntity<TicketResponse> getTicket(
             @PathVariable
@@ -92,33 +62,34 @@ private final TicketService ticketService;
             		description = "Unique ticket number",
             		required = true
             ) String ticketNumber) {
-        TicketResponse response = ticketService.getTicketByNumber(ticketNumber);
-        return ResponseEntity.ok(response);
+    	
+    	return ResponseEntity.ok(
+                ticketService.getTicketByNumber(ticketNumber)
+        );
     }
 
     @Operation(
     		summary = "Get ticket by ID",
     		description = "Retrieves a support ticket by its database ID"
     )
-    @ApiResponses(value = {
-    @ApiResponse(responseCode = "200", description = "Ticket retrieved successfully"),
-    @ApiResponse(responseCode = "404", description = "Ticket not found"),
-    @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
     @GetMapping("/id/{id}")
-    public ResponseEntity<TicketResponse> getTicketById(@PathVariable Long id) {
-        TicketResponse response = ticketService.getTicketById(id);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<TicketResponse> getTicketById(
+    		@PathVariable
+    		@io.swagger.v3.oas.annotations.Parameter(
+					description = "Database ID of the ticket",
+					required = true
+			)
+    		Long id) {
+    	
+    	return ResponseEntity.ok(
+                ticketService.getTicketById(id)
+        );
     }
     
     @Operation(
 			summary = "Get all tickets",
 			description = "Retrieves a list of all support tickets, with optional filtering by status"
 	)
-    @ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Tickets retrieved successfully"),
-			@ApiResponse(responseCode = "500", description = "Internal server error")
-    })
     @GetMapping
     public ResponseEntity<List<TicketResponse>> getAllTickets(
             @RequestParam(required = false)
@@ -126,26 +97,21 @@ private final TicketService ticketService;
 					description = "Filter tickets by status (e.g., NEW, ANALYZING, ANALYZED, ASSIGNED, RESOLVED, CLOSED)",
 					required = false
 			) String status) {
-        List<TicketResponse> responses = status != null
-                ? ticketService.getTicketsByStatus(status)
-                : ticketService.getAllTickets();
-        return ResponseEntity.ok(responses);
+    	if (status != null) {
+            return ResponseEntity.ok(
+                    ticketService.getTicketsByStatus(status)
+            );
+        }
+
+        return ResponseEntity.ok(
+                ticketService.getAllTickets()
+        );
     }
     
     @Operation(
 			summary = "Update ticket status",
 			description = "Updates the status of a support ticket (e.g., NEW, ANALYZING, ANALYZED, ASSIGNED, RESOLVED, CLOSED)"
 	)
-    @ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Ticket status updated successfully",
-					content = @io.swagger.v3.oas.annotations.media.Content(
-							mediaType = "application/json",
-							schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = TicketResponse.class)
-					)),
-			@ApiResponse(responseCode = "400", description = "Invalid status value"),
-			@ApiResponse(responseCode = "404", description = "Ticket not found"),
-			@ApiResponse(responseCode = "500", description = "Internal server error")
-    })
     @PatchMapping("/{ticketNumber}/status")
     public ResponseEntity<TicketResponse> updateStatus(
             @PathVariable
@@ -159,33 +125,25 @@ private final TicketService ticketService;
 					required = true
 			) String status,
             @RequestParam(required = false) Integer slaHours) {
-        TicketResponse response = "ASSIGNED".equalsIgnoreCase(status) 
-            ? ticketService.assignTicket(ticketNumber, null, slaHours)
-            : ticketService.updateTicketStatus(ticketNumber, status);
-        return ResponseEntity.ok(response);
+    	
+    	return ResponseEntity.ok(
+                ticketService.updateTicketStatus(ticketNumber, status)
+        );
     }
     
     @Operation(
 			summary = "Assign ticket to support agent",
 			description = "Assigns a support ticket to a specific agent and updates the ticket status to ASSIGNED"
 	)
-    @ApiResponses(value = {
-    		@ApiResponse(responseCode = "200", description = "Ticket assigned successfully",
-			content = @io.swagger.v3.oas.annotations.media.Content(
-					mediaType = "application/json",
-					schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = TicketResponse.class)
-			)),
-			@ApiResponse(responseCode = "400", description = "Invalid agent identifier"),
-			@ApiResponse(responseCode = "404", description = "Ticket not found"),
-			@ApiResponse(responseCode = "500", description = "Internal server error")
-    })
     @PatchMapping("/{ticketNumber}/assign")
     public ResponseEntity<TicketResponse> assignTicket(
             @PathVariable String ticketNumber,
             @RequestParam String assignedTo,
             @RequestParam(required = false) Integer slaHours) {
-        TicketResponse response = ticketService.assignTicket(ticketNumber, assignedTo, slaHours);
-        return ResponseEntity.ok(response);
+    	
+    	return ResponseEntity.ok(
+                ticketService.assignTicket(ticketNumber, assignedTo, slaHours)
+        );
     }
 
     @Operation(
@@ -197,7 +155,9 @@ private final TicketService ticketService;
             @PathVariable String ticketNumber,
             @RequestParam String priority,
             @RequestParam(required = false) Integer slaHours) {
-        TicketResponse response = ticketService.updateTicketPriority(ticketNumber, priority, slaHours);
-        return ResponseEntity.ok(response);
+    	
+    	return ResponseEntity.ok(
+                ticketService.updateTicketPriority(ticketNumber, priority, slaHours)
+        );
     }
 }

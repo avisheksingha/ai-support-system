@@ -1,0 +1,51 @@
+package com.aisupport.analysis.outbox;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class OutboxEventPublisherScheduler {
+
+    private final OutboxEventRepository repository;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+
+    @Scheduled(fixedDelay = 2000)
+    @Transactional
+    public void publishPendingEvents() {
+
+        List<OutboxEvent> events =
+                repository.findTop50ByStatusOrderByCreatedAtAsc(
+                        OutboxEvent.Status.PENDING
+                );
+
+        for (OutboxEvent event : events) {
+            try {
+                kafkaTemplate.send(
+                        event.getEventType(),
+                        event.getAggregateId(),
+                        event.getPayload()
+                ).get(); // synchronous to ensure delivery
+
+                event.setStatus(OutboxEvent.Status.SENT);
+                event.setProcessedAt(LocalDateTime.now());
+
+                log.info("Published outbox event {}", event.getId());
+
+            } catch (Exception e) {
+                log.error("Failed to publish outbox event {}", event.getId(), e);
+                event.setStatus(OutboxEvent.Status.FAILED);
+            }
+        }
+    }
+
+}

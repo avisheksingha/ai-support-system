@@ -24,5 +24,27 @@
 			<artifactId>common-library</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		
+		<!-- Resilience4j for Circuit Breaking and Rate Limiting -->
+		<dependency>
+		  <groupId>io.github.resilience4j</groupId>
+		  <artifactId>resilience4j-spring-boot3</artifactId>
+		</dependency>
+        
+        <!-- Kafka for Event-Driven Communication -->
+        <dependency>
+	      	<groupId>org.springframework.boot</groupId>
+	      	<artifactId>spring-boot-starter-kafka</artifactId>
+	    </dependency>
+        
+        <!-- Spring AI Vertex AI Gemini & Embedding -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-model-vertex-ai-gemini</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-model-vertex-ai-embedding</artifactId>
+        </dependency>
 	</dependencies>
 </project>

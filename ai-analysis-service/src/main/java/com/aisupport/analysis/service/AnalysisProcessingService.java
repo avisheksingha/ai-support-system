@@ -1,17 +1,17 @@
 package com.aisupport.analysis.service;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.aisupport.analysis.dto.AnalysisRequest;
 import com.aisupport.analysis.dto.ParsedAnalysis;
-import com.aisupport.analysis.mapper.AnalysisResultMapper;
+import com.aisupport.analysis.event.TicketAnalyzedEvent;
+import com.aisupport.analysis.event.TicketCreatedEvent;
 import com.aisupport.analysis.model.AnalysisResult;
+import com.aisupport.analysis.outbox.OutboxEventService;
 import com.aisupport.analysis.repository.AnalysisResultRepository;
-import com.aisupport.common.dto.AnalysisResultDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -20,83 +20,80 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AnalysisService {
-    
+public class AnalysisProcessingService {
+
     private final GeminiService geminiService;
-    private final AnalysisResultRepository analysisResultRepository;
+    private final AnalysisResultRepository repository;
     private final ObjectMapper objectMapper;
-    private final AnalysisResultMapper analysisResultMapper;
-    
+    private final OutboxEventService outboxService;
+
     @Transactional
-    public AnalysisResultDTO analyzeTicket(AnalysisRequest request) {
-        log.info("Starting analysis for ticket ID: {}", request.getTicketId());
-        
-        // Check if already analyzed
-        return analysisResultRepository.findByTicketId(request.getTicketId())
-                .map(analysisResultMapper::toDto)
-                .orElseGet(() -> performNewAnalysis(request));
-    }
-    
-    private AnalysisResultDTO performNewAnalysis(AnalysisRequest request) {
-        // Call Gemini AI
-        ParsedAnalysis parsedAnalysis = geminiService.analyzeTicket(
-                request.getSubject(), 
-                request.getMessage()
+    public void processTicket(TicketCreatedEvent event) {
+
+        Long ticketId = event.getTicketId();
+
+        // NEW: Idempotency guard
+        if (repository.existsByTicketId(ticketId)) {
+            log.info("Analysis already exists for ticketId={}, skipping", ticketId);
+            return;
+        }
+
+        log.info("Starting AI analysis for ticketId={}", ticketId);
+
+        ParsedAnalysis parsed = geminiService.analyzeTicket(
+                event.getSubject(),
+                event.getMessage()
         );
         
-        // Save to database
-        AnalysisResult analysisResult = AnalysisResult.builder()
-                .ticketId(request.getTicketId())
-                .intent(parsedAnalysis.getIntent())
-                .sentiment(parsedAnalysis.getSentiment())
-                .urgency(parsedAnalysis.getUrgency())
-                .confidenceScore(BigDecimal.valueOf(parsedAnalysis.getConfidenceScore()))
-                .keywords(parsedAnalysis.getKeywords().toArray(new String[0]))
-                .suggestedCategory(parsedAnalysis.getSuggestedCategory())
-                .rawResponse(convertToJson(parsedAnalysis))
+        BigDecimal confidence = parsed.getConfidenceScore() != null
+                ? BigDecimal.valueOf(parsed.getConfidenceScore())
+                : BigDecimal.ZERO;
+
+        AnalysisResult entity = AnalysisResult.builder()
+                .ticketId(ticketId)
+                .intent(defaultIfNull(parsed.getIntent(), "GENERAL"))
+                .sentiment(defaultIfNull(parsed.getSentiment(), "NEUTRAL"))
+                .urgency(defaultIfNull(parsed.getUrgency(), "LOW"))
+                .confidenceScore(confidence)
+                .keywords(parsed.getKeywords() != null
+                        ? parsed.getKeywords().toArray(new String[0])
+                        : new String[0])
+                .suggestedCategory(parsed.getSuggestedCategory())
+                .rawResponse(convertToJson(parsed))
                 .build();
-        
-        analysisResult = analysisResultRepository.save(analysisResult);
-        log.info("Analysis saved for ticket ID: {}", request.getTicketId());
-        
-        return analysisResultMapper.toDto(analysisResult);
+
+        repository.save(entity);
+
+        log.info("Analysis persisted for ticketId={}", ticketId);
+
+        // NEW: Publish analyzed event using Outbox
+        TicketAnalyzedEvent analyzedEvent = TicketAnalyzedEvent.builder()
+                .ticketId(ticketId)
+                .intent(parsed.getIntent())
+                .sentiment(parsed.getSentiment())
+                .urgency(parsed.getUrgency())
+                .confidenceScore(parsed.getConfidenceScore())
+                .keywords(parsed.getKeywords())
+                .suggestedCategory(parsed.getSuggestedCategory())
+                .analyzedAt(LocalDateTime.now())
+                .build();
+
+        outboxService.publishEvent(
+                "ticket-analyzed",
+                ticketId.toString(),
+                analyzedEvent
+        );
     }
-    
-    @Transactional(readOnly = true)
-    public AnalysisResultDTO getAnalysisByTicketId(Long ticketId) {
-        log.info("Fetching analysis for ticket ID: {}", ticketId);
-        return analysisResultRepository.findByTicketId(ticketId)
-                .map(analysisResultMapper::toDto)
-                .orElse(null);
-    }
-    
-    @Transactional(readOnly = true)
-    public List<AnalysisResultDTO> getAllAnalyses() {
-        return analysisResultRepository.findAll().stream()
-                .map(analysisResultMapper::toDto)
-                .toList();
-    }
-    
-    @Transactional(readOnly = true)
-    public List<AnalysisResultDTO> getAnalysesByIntent(String intent) {
-        return analysisResultRepository.findByIntent(intent).stream()
-                .map(analysisResultMapper::toDto)
-                .toList();
-    }
-    
-    @Transactional(readOnly = true)
-    public List<AnalysisResultDTO> getAnalysesByUrgency(String urgency) {
-        return analysisResultRepository.findByUrgency(urgency).stream()
-                .map(analysisResultMapper::toDto)
-                .toList();
-    }
-    
+
     private String convertToJson(ParsedAnalysis analysis) {
         try {
             return objectMapper.writeValueAsString(analysis);
         } catch (Exception e) {
-            log.error("Failed to convert analysis to JSON", e);
             return "{}";
         }
+    }
+
+    private String defaultIfNull(String value, String fallback) {
+        return value != null ? value : fallback;
     }
 }

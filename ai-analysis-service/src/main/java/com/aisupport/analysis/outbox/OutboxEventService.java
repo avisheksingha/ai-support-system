@@ -1,0 +1,39 @@
+package com.aisupport.analysis.outbox;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class OutboxEventService {
+
+    private final OutboxEventRepository repository;
+    private final ObjectMapper objectMapper;
+
+    @Transactional
+    public void publishEvent(
+            String eventType,
+            String aggregateId,
+            Object payloadObject
+    ) {
+        try {
+            String payload = objectMapper.writeValueAsString(payloadObject);
+
+            OutboxEvent event = OutboxEvent.builder()
+                    .aggregateType("TICKET")
+                    .aggregateId(aggregateId)
+                    .eventType(eventType)
+                    .payload(payload)
+                    .build();
+
+            repository.save(event);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to serialize outbox event", e);
+        }
+    }
+}

@@ -17,4 +17,6 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     List<Ticket> findByCustomerEmail(String customerEmail);
     
     List<Ticket> findByAssignedTo(String assignedTo);
+
+    boolean existsByTicketNumber(String ticketNumber);
 }

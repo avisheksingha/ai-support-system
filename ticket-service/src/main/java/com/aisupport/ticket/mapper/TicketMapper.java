@@ -14,8 +14,8 @@ import com.aisupport.ticket.model.Ticket;
 )
 public interface TicketMapper {
 	
-	@Mapping(target = "slaHours", ignore = true)
 	@Mapping(target = "id", ignore = true)
+	@Mapping(target = "version", ignore = true)
 	@Mapping(target = "ticketNumber", ignore = true)
 	@Mapping(target = "status", ignore = true)
 	@Mapping(target = "priority", ignore = true)
@@ -23,6 +23,7 @@ public interface TicketMapper {
 	@Mapping(target = "intent", ignore = true)
 	@Mapping(target = "sentiment", ignore = true)
 	@Mapping(target = "urgency", ignore = true)
+	@Mapping(target = "slaHours", ignore = true)
 	@Mapping(target = "createdAt", ignore = true)
 	@Mapping(target = "updatedAt", ignore = true)
 	Ticket toEntity(TicketRequest request);
