@@ -42,9 +42,10 @@
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-vertex-ai-gemini</artifactId>
         </dependency>
-        <dependency>
+        <!--
+		<dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-vertex-ai-embedding</artifactId>
-        </dependency>
+        </dependency> -->
 	</dependencies>
 </project>

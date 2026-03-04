@@ -17,11 +17,6 @@ public class TicketCreatedConsumer {
 
     private final AnalysisProcessingService processingService;
     private final ObjectMapper objectMapper;
-
-    @KafkaListener(
-        topics = "ticket-created",
-        groupId = "ai-analysis-group"
-    )
     
     @KafkaListener(topics = "ticket-created", groupId = "ai-analysis-group")
     public void consume(String payload) {
