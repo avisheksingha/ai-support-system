@@ -16,16 +16,16 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class GeminiService implements AiProvider {
+public class OpenAiService implements AiProvider {
 
     private final ChatClient chatClient;
 
-    public GeminiService(@Qualifier("geminiChatClient") ChatClient chatClient) {
+    public OpenAiService(@Qualifier("openAiChatClient") ChatClient chatClient) {
         this.chatClient = chatClient;
     }
 
-    @RateLimiter(name = "geminiRateLimiter")
-    @CircuitBreaker(name = "geminiCircuitBreaker", fallbackMethod = "fallbackAnalysis")
+    @RateLimiter(name = "openAiRateLimiter")
+    @CircuitBreaker(name = "openAiCircuitBreaker", fallbackMethod = "fallbackAnalysis")
     public ParsedAnalysis analyzeTicket(String subject, String message) {
 
         try {
@@ -46,10 +46,10 @@ public class GeminiService implements AiProvider {
                             .param("format", outputConverter.getFormat()))
                     .call()
                     .entity(outputConverter);
-            
+
             normalize(parsed);
-            
-            log.info("Gemini parsed → intent={}, urgency={}, confidence={}",
+
+            log.info("OpenAI parsed → intent={}, urgency={}, confidence={}",
                     parsed.getIntent(),
                     parsed.getUrgency(),
                     parsed.getConfidenceScore());
@@ -57,25 +57,25 @@ public class GeminiService implements AiProvider {
             return parsed;
 
         } catch (Exception e) {
-            log.error("Unexpected error during AI analysis", e);
-            throw new AnalysisException("AI analysis failed: " + e.getMessage(), e);
+            log.error("Unexpected error during OpenAI analysis", e);
+            throw new AnalysisException("OpenAI analysis failed: " + e.getMessage(), e);
         }
     }
 
     protected ParsedAnalysis fallbackAnalysis(String ignoredSubject, String ignoredMessage, Throwable ex) {
 
-        log.error("Gemini circuit open or analysis failed - returning fallback analysis", ex);
+        log.error("OpenAI circuit open or analysis failed - returning fallback analysis", ex);
 
         return ParsedAnalysis.builder()
                 .intent("GENERAL")
                 .sentiment("NEUTRAL")
                 .urgency("LOW")
                 .confidenceScore(0.0)
-                .keywords(java.util.List.of())
+                .keywords(List.of())
                 .suggestedCategory("Fallback")
                 .build();
     }
-    
+
     private void normalize(ParsedAnalysis parsed) {
         if (parsed == null) return;
 
@@ -90,7 +90,6 @@ public class GeminiService implements AiProvider {
 
         if (parsed.getConfidenceScore() != null) {
             double v = parsed.getConfidenceScore();
-            //parsed.setConfidenceScore(Math.max(0.0, Math.min(1.0, v)));
             parsed.setConfidenceScore(Math.clamp(v, 0.0, 1.0));
         }
 

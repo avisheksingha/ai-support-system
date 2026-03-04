@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AnalysisProcessingService {
 
-    private final GeminiService geminiService;
+    private final AiProvider aiProvider;
     private final AnalysisResultRepository repository;
     private final ObjectMapper objectMapper;
     private final OutboxEventService outboxService;
@@ -40,7 +40,7 @@ public class AnalysisProcessingService {
 
         log.info("Starting AI analysis for ticketId={}", ticketId);
 
-        ParsedAnalysis parsed = geminiService.analyzeTicket(
+        ParsedAnalysis parsed = aiProvider.analyzeTicket(
                 event.getSubject(),
                 event.getMessage()
         );
