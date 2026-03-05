@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -47,8 +49,9 @@ public class OutboxEvent {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String payload;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status; // NEW, SENT, FAILED
+    private Status status; // NEW, SENT, FAILED
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -56,11 +59,17 @@ public class OutboxEvent {
     @Column(name = "processed_at")
     private LocalDateTime processedAt;
 
+    public enum Status {
+        NEW,
+        SENT,
+        FAILED
+    }
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         if (status == null) {
-            status = "NEW";
+            status = Status.NEW;
         }
     }
 }

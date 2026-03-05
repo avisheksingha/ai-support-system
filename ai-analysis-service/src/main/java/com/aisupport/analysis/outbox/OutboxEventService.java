@@ -16,15 +16,16 @@ public class OutboxEventService {
 
     @Transactional
     public void publishEvent(
+    		String aggregateType,
+    		String aggregateId,
             String eventType,
-            String aggregateId,
             Object payloadObject
     ) {
         try {
             String payload = objectMapper.writeValueAsString(payloadObject);
 
             OutboxEvent event = OutboxEvent.builder()
-                    .aggregateType("TICKET")
+                    .aggregateType(aggregateType)
                     .aggregateId(aggregateId)
                     .eventType(eventType)
                     .payload(payload)

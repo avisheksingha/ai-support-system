@@ -24,7 +24,15 @@ public class OutboxEventPublisher {
     public void publishEvents() {
 
         List<OutboxEvent> events =
-                repository.findTop100ByStatusOrderByCreatedAtAsc("NEW");
+                repository.findTop50ByStatusOrderByCreatedAtAsc(
+                		OutboxEvent.Status.NEW
+				);
+        
+        if (events.isEmpty()) {
+            return;
+        }
+
+        log.debug("Publishing {} new outbox events", events.size());
 
         for (OutboxEvent event : events) {
 
@@ -35,14 +43,28 @@ public class OutboxEventPublisher {
                         topic,
                         event.getAggregateId(),
                         event.getPayload()
-                );
+                ).get(); // IMPORTANT → ensures Kafka ack before marking SENT
 
-                event.setStatus("SENT");
+                event.setStatus(OutboxEvent.Status.SENT);
+                event.setProcessedAt(LocalDateTime.now());
+                
+                log.info("Published outbox event {} to topic {}", event.getId(), topic);
+
+            } catch (InterruptedException e) {
+
+                Thread.currentThread().interrupt();  // IMPORTANT
+
+                log.error("Interrupted while publishing outbox event {}", event.getId(), e);
+
+                event.setStatus(OutboxEvent.Status.FAILED);
                 event.setProcessedAt(LocalDateTime.now());
 
             } catch (Exception e) {
+            	
                 log.error("Failed to publish outbox event {}", event.getId(), e);
-                event.setStatus("FAILED");
+                
+                event.setStatus(OutboxEvent.Status.FAILED);
+                event.setProcessedAt(LocalDateTime.now());
             }
         }
     }

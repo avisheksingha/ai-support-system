@@ -32,7 +32,7 @@ public class AnalysisProcessingService {
 
         Long ticketId = event.getTicketId();
 
-        // NEW: Idempotency guard
+        // Idempotency guard
         if (repository.existsByTicketId(ticketId)) {
             log.info("Analysis already exists for ticketId={}, skipping", ticketId);
             return;
@@ -45,15 +45,17 @@ public class AnalysisProcessingService {
                 event.getMessage()
         );
         
+        String normalizedIntent = normalizeIntent(parsed.getIntent());
+        
         BigDecimal confidence = parsed.getConfidenceScore() != null
                 ? BigDecimal.valueOf(parsed.getConfidenceScore())
                 : BigDecimal.ZERO;
 
         AnalysisResult entity = AnalysisResult.builder()
                 .ticketId(ticketId)
-                .intent(defaultIfNull(parsed.getIntent(), "GENERAL"))
-                .sentiment(defaultIfNull(parsed.getSentiment(), "NEUTRAL"))
-                .urgency(defaultIfNull(parsed.getUrgency(), "LOW"))
+                .intent(normalizedIntent)
+                .sentiment(defaultIfNull(parsed.getSentiment(), "NEUTRAL").toUpperCase())
+                .urgency(defaultIfNull(parsed.getUrgency(), "LOW").toUpperCase())
                 .confidenceScore(confidence)
                 .keywords(parsed.getKeywords() != null
                         ? parsed.getKeywords().toArray(new String[0])
@@ -64,14 +66,14 @@ public class AnalysisProcessingService {
 
         repository.save(entity);
 
-        log.info("Analysis persisted for ticketId={}", ticketId);
+        log.info("Analysis persisted for ticketId={}, intent={}", ticketId, normalizedIntent);
 
-        // NEW: Publish analyzed event using Outbox
+        // NEW: Publish analyzed event via Outbox
         TicketAnalyzedEvent analyzedEvent = TicketAnalyzedEvent.builder()
                 .ticketId(ticketId)
-                .intent(parsed.getIntent())
-                .sentiment(parsed.getSentiment())
-                .urgency(parsed.getUrgency())
+                .intent(normalizedIntent)
+                .sentiment(defaultIfNull(parsed.getSentiment(), "NEUTRAL").toUpperCase())
+                .urgency(defaultIfNull(parsed.getUrgency(), "LOW").toUpperCase())
                 .confidenceScore(parsed.getConfidenceScore())
                 .keywords(parsed.getKeywords())
                 .suggestedCategory(parsed.getSuggestedCategory())
@@ -79,10 +81,38 @@ public class AnalysisProcessingService {
                 .build();
 
         outboxService.publishEvent(
-                "ticket-analyzed",
+        		"TICKET",
                 ticketId.toString(),
+                "TicketAnalyzedEvent",
                 analyzedEvent
         );
+    }
+    
+    private String normalizeIntent(String intent) {
+
+        if (intent == null) return "GENERAL";
+
+        intent = intent.toUpperCase();
+
+        if (intent.contains("REFUND"))
+            return "CHECK_REFUND_STATUS";
+
+        if (intent.contains("PAYMENT"))
+            return "PAYMENT_ISSUE";
+
+        if (intent.contains("CRASH") || intent.contains("BUG"))
+            return "TECHNICAL_ISSUE";
+
+        if (intent.contains("COMPLAINT"))
+            return "GENERAL_COMPLAINT";
+
+        if (intent.contains("GRATITUDE") || intent.contains("THANK"))
+            return "GRATITUDE";
+
+        if (intent.contains("FEATURE"))
+            return "FEATURE_REQUEST";
+
+        return "GENERAL";
     }
 
     private String convertToJson(ParsedAnalysis analysis) {

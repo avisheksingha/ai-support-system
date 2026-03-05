@@ -26,13 +26,13 @@ public class OutboxEventService {
                     .aggregateId(aggregateId)
                     .eventType(eventType)
                     .payload(jsonPayload)
-                    .status("NEW")
+                    .status(OutboxEvent.Status.NEW)
                     .build();
 
             repository.save(event);
 
         } catch (Exception e) {
-            throw new RuntimeException("Failed to serialize event", e);
+            throw new RuntimeException("Failed to serialize outbox event", e);
         }
     }
 

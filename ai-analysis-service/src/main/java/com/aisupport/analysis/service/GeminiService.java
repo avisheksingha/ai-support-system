@@ -47,9 +47,8 @@ public class GeminiService implements AiProvider {
                     .call()
                     .entity(outputConverter);
             
-            normalize(parsed);
-            
-            log.info("Gemini parsed → intent={}, urgency={}, confidence={}",
+            log.info("Gemini raw → sentiment={}, intent={}, urgency={}, confidence={}",
+            		parsed.getSentiment(),
                     parsed.getIntent(),
                     parsed.getUrgency(),
                     parsed.getConfidenceScore());
@@ -57,44 +56,22 @@ public class GeminiService implements AiProvider {
             return parsed;
 
         } catch (Exception e) {
-            log.error("Unexpected error during AI analysis", e);
-            throw new AnalysisException("AI analysis failed: " + e.getMessage(), e);
+            log.error("Unexpected error during Gemini analysis", e);
+            throw new AnalysisException("Gemini analysis failed: " + e.getMessage(), e);
         }
     }
 
     protected ParsedAnalysis fallbackAnalysis(String ignoredSubject, String ignoredMessage, Throwable ex) {
 
-        log.error("Gemini circuit open or analysis failed - returning fallback analysis", ex);
+        log.error("Gemini circuit open or failed - fallback used", ex);
 
         return ParsedAnalysis.builder()
                 .intent("GENERAL")
                 .sentiment("NEUTRAL")
                 .urgency("LOW")
                 .confidenceScore(0.0)
-                .keywords(java.util.List.of())
+                .keywords(List.of())
                 .suggestedCategory("Fallback")
                 .build();
-    }
-    
-    private void normalize(ParsedAnalysis parsed) {
-        if (parsed == null) return;
-
-        if (parsed.getIntent() != null)
-            parsed.setIntent(parsed.getIntent().trim().toUpperCase());
-
-        if (parsed.getSentiment() != null)
-            parsed.setSentiment(parsed.getSentiment().trim().toUpperCase());
-
-        if (parsed.getUrgency() != null)
-            parsed.setUrgency(parsed.getUrgency().trim().toUpperCase());
-
-        if (parsed.getConfidenceScore() != null) {
-            double v = parsed.getConfidenceScore();
-            //parsed.setConfidenceScore(Math.max(0.0, Math.min(1.0, v)));
-            parsed.setConfidenceScore(Math.clamp(v, 0.0, 1.0));
-        }
-
-        if (parsed.getKeywords() == null)
-            parsed.setKeywords(List.of());
     }
 }

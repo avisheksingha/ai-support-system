@@ -27,11 +27,21 @@ public class OutboxEventPublisherScheduler {
                 repository.findTop50ByStatusOrderByCreatedAtAsc(
                         OutboxEvent.Status.PENDING
                 );
+        
+        if (events.isEmpty()) {
+            return;
+        }
+        
+        log.debug("Publishing {} pending outbox events", events.size());
 
         for (OutboxEvent event : events) {
+        	
             try {
+            	
+            	String topic = mapTopic(event.getEventType());
+            	
                 kafkaTemplate.send(
-                        event.getEventType(),
+                        topic,
                         event.getAggregateId(),
                         event.getPayload()
                 ).get(); // synchronous to ensure delivery
@@ -41,11 +51,31 @@ public class OutboxEventPublisherScheduler {
 
                 log.info("Published outbox event {}", event.getId());
 
-            } catch (Exception e) {
+            } catch (InterruptedException e) {
+            	
+				Thread.currentThread().interrupt(); // IMPORTANT: restore interrupt status
+				
+				log.error("Interrupted while publishing outbox event {}", event.getId(), e);
+				
+				event.setStatus(OutboxEvent.Status.FAILED);
+				event.setProcessedAt(LocalDateTime.now());
+				
+			} catch (Exception e) {
+				
                 log.error("Failed to publish outbox event {}", event.getId(), e);
+                
                 event.setStatus(OutboxEvent.Status.FAILED);
+                event.setProcessedAt(LocalDateTime.now());
             }
         }
     }
+    
+    private String mapTopic(String eventType) {
+
+    	return switch (eventType) {
+			case "TicketAnalyzedEvent" -> "ticket-analyzed";
+			default -> throw new IllegalArgumentException("Unknown event type: " + eventType);
+		};
+	}
 
 }

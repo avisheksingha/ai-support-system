@@ -47,9 +47,8 @@ public class OpenAiService implements AiProvider {
                     .call()
                     .entity(outputConverter);
 
-            normalize(parsed);
-
-            log.info("OpenAI parsed → intent={}, urgency={}, confidence={}",
+            log.info("OpenAI raw → sentiment={}, intent={}, urgency={}, confidence={}",
+            		parsed.getSentiment(),
                     parsed.getIntent(),
                     parsed.getUrgency(),
                     parsed.getConfidenceScore());
@@ -64,7 +63,7 @@ public class OpenAiService implements AiProvider {
 
     protected ParsedAnalysis fallbackAnalysis(String ignoredSubject, String ignoredMessage, Throwable ex) {
 
-        log.error("OpenAI circuit open or analysis failed - returning fallback analysis", ex);
+        log.error("OpenAI circuit open or failed - fallback used", ex);
 
         return ParsedAnalysis.builder()
                 .intent("GENERAL")
@@ -74,26 +73,5 @@ public class OpenAiService implements AiProvider {
                 .keywords(List.of())
                 .suggestedCategory("Fallback")
                 .build();
-    }
-
-    private void normalize(ParsedAnalysis parsed) {
-        if (parsed == null) return;
-
-        if (parsed.getIntent() != null)
-            parsed.setIntent(parsed.getIntent().trim().toUpperCase());
-
-        if (parsed.getSentiment() != null)
-            parsed.setSentiment(parsed.getSentiment().trim().toUpperCase());
-
-        if (parsed.getUrgency() != null)
-            parsed.setUrgency(parsed.getUrgency().trim().toUpperCase());
-
-        if (parsed.getConfidenceScore() != null) {
-            double v = parsed.getConfidenceScore();
-            parsed.setConfidenceScore(Math.clamp(v, 0.0, 1.0));
-        }
-
-        if (parsed.getKeywords() == null)
-            parsed.setKeywords(List.of());
     }
 }
