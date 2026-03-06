@@ -2,24 +2,26 @@
 
 ## Overview
 
-AI Support System is a microservices-based ticket management platform with AI-powered assistance and rule-based automation.
+AI Support System is a microservices-based ticket management platform with AI-powered assistance, event-driven communication (Kafka), and rule-based automation.
 
 ## Architecture
 
-- **discovery-service**: Eureka Service Discovery Server
-- **api-gateway**: Centralized entry point and request routing
-- **ticket-service**: Core ticket management functionality
-- **ai-analysis-service**: AI-powered ticket analysis using Spring AI and Google Vertex AI
-- **routing-service**: Orchestrates ticket routing between agents and teams
-- **common-library**: Shared DTOs, exceptions, and utilities
+- **discovery-service**: Eureka Service Discovery Server.
+- **api-gateway**: Centralized entry point and request routing.
+- **ticket-service**: Core ticket management and lifecycle handling.
+- **ai-analysis-service**: AI-powered analysis using Spring AI (Google Gemini & OpenAI).
+- **routing-service**: Orchestrates ticket routing and intelligent assignment.
+- **common-library**: Shared models, events, and utilities.
+- **aisupport-parent**: Central Maven parent for dependency management.
 
 ## Technology Stack
 
 - **Java**: 21
 - **Spring Boot**: 4.0.3
 - **Spring Cloud**: 2025.1.0
+- **Spring AI**: 2.0.0-M1 (Gemini & OpenAI)
+- **Messaging**: Apache Kafka
 - **Database**: PostgreSQL
-- **Build Tool**: Maven
 - **Service Discovery**: Eureka
 - **API Documentation**: SpringDoc OpenAPI
 - **Resilience**: Resilience4j (Circuit Breaker)
@@ -68,9 +70,10 @@ ai-support-system/
 ├── api-gateway/          # Spring Cloud Gateway (Port: 8081)
 ├── ticket-service/       # Ticket Management (Port: 8082)
 ├── ai-analysis-service/  # AI Powered Analysis (Port: 8083)
-├── routing-service/      # Routing Orchestrator (Port: 8084)
+├── routing-service/      # Routing Orchestrator (Port: 8085)
 ├── common-library/       # Shared Components & DTOs
-└── aisupport-parent/     # Maven Parent POM
+├── aisupport-parent/     # Maven Parent POM
+└── .github/              # GitHub Config & Copilot Instructions
 ```
 
 ## API Documentation

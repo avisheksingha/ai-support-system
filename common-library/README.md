@@ -3,11 +3,14 @@
 Shared module containing reusable components, DTOs, and utilities for the AI Support System microservices.
 
 ## Contents
-- **DTOs**: Shared Data Transfer Objects (e.g., `AnalysisResultDTO`, `TicketDTO`, `RuleEvaluationRequest`)
-- **Exceptions**: Common exception classes and global error handlers
-- **Utilities**: Helper classes, constants, and shared configurations
+
+- **DTOs**: Shared Data Transfer Objects (e.g., `AnalysisResultDTO`, `TicketDTO`, `Sentiment`, `Urgency`).
+- **Exceptions**: Common exception classes (e.g., `ResourceNotFoundException`) and global error handling structures.
+- **Utilities**: Helper classes, constants, and shared configurations used across multiple services.
+- **Events**: Shared event models for Kafka-based communication.
 
 ## Usage
+
 Add this dependency to your service's `pom.xml`:
 
 ```xml
@@ -19,6 +22,7 @@ Add this dependency to your service's `pom.xml`:
 ```
 
 ## Building
+
 To install this library into your local Maven repository so other services can find it:
 
 ```bash
