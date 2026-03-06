@@ -155,9 +155,28 @@ public class TicketService {
     public void applyRoutingResult(TicketRoutedEvent event) {
 
         Ticket ticket = ticketRepository.findById(event.getTicketId())
-                .orElseThrow(() ->
-                        new TicketNotFoundException(TICKET_NOT_FOUND_MSG + event.getTicketId()));
+                .orElseThrow(() -> new TicketNotFoundException(TICKET_NOT_FOUND_MSG + event.getTicketId()));
+        
+        // If already assigned, we assume a manual override and skip auto-assignment
+        if (ticket.getStatus() == Ticket.TicketStatus.ASSIGNED) {
+            log.info("Ticket {} already assigned — skipping", ticket.getTicketNumber());
+            return;
+        }
 
+        // Update AI fields if present
+        if (event.getIntent() != null) {
+            ticket.setIntent(event.getIntent());
+        }
+
+        if (event.getSentiment() != null) {
+            ticket.setSentiment(event.getSentiment());
+        }
+
+        if (event.getUrgency() != null) {
+            ticket.setUrgency(event.getUrgency());
+        }
+
+        // Update assignment and priority based on routing result
         ticket.setAssignedTo(event.getAssignToTeam());
 
         if (event.getPriority() != null) {
@@ -173,6 +192,12 @@ public class TicketService {
         ticket.transitionTo(Ticket.TicketStatus.ASSIGNED);
 
         log.info("Ticket {} updated from routing event", ticket.getTicketNumber());
+        
+        log.info("Routing applied ticketId={} ruleResult team={} priority={} sla={}",
+                event.getTicketId(),
+                event.getAssignToTeam(),
+                event.getPriority(),
+                event.getSlaHours());
     }
 
     private String generateTicketNumber() {

@@ -42,6 +42,9 @@ public class RoutingService {
                 .assignToTeam(team)
                 .priority(priority)
                 .slaHours(sla)
+                .intent(event.getIntent())
+                .sentiment(event.getSentiment())
+                .urgency(event.getUrgency())
                 .build();
 
         outboxService.publishEvent(

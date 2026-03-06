@@ -22,8 +22,7 @@ public class TicketCreatedConsumer {
     public void consume(String payload) {
 
         try {
-            TicketCreatedEvent event =
-                    objectMapper.readValue(payload, TicketCreatedEvent.class);
+            TicketCreatedEvent event = objectMapper.readValue(payload, TicketCreatedEvent.class);
 
             log.info("Consumed ticket-created for ticketId={}", event.getTicketId());
 

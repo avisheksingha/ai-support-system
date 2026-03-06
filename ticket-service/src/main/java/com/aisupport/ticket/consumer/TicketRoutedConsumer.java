@@ -23,12 +23,7 @@ public class TicketRoutedConsumer {
 
         try {
         	
-        	// Step 1 — unwrap double-encoded JSON            
-            String cleanJson = objectMapper.readValue(payload, String.class);
-
-            // Step 2 — map to object
-            TicketRoutedEvent event =
-                    objectMapper.readValue(cleanJson, TicketRoutedEvent.class);
+        	TicketRoutedEvent event = objectMapper.readValue(payload, TicketRoutedEvent.class);
 
             log.info("Received routed event ticketId={} team={} priority={}",
                     event.getTicketId(),
@@ -38,7 +33,7 @@ public class TicketRoutedConsumer {
             ticketService.applyRoutingResult(event);
 
         } catch (Exception e) {
-            log.error("Failed to process routed payload={}", payload, e);
+            log.error("Failed to process ticket routed payload={}", payload, e);
         }
     }
 }

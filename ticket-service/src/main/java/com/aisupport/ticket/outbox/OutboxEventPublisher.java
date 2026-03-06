@@ -8,6 +8,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,7 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 public class OutboxEventPublisher {
 
     private final OutboxEventRepository repository;
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final ObjectMapper objectMapper;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Scheduled(fixedDelay = 1000)
     @Transactional
@@ -38,11 +41,12 @@ public class OutboxEventPublisher {
 
             try {
                 String topic = mapTopic(event.getEventType());
+                Object payloadObject = objectMapper.readValue(event.getPayload(), Object.class);
 
                 kafkaTemplate.send(
                         topic,
                         event.getAggregateId(),
-                        event.getPayload()
+                        payloadObject
                 ).get(); // IMPORTANT → ensures Kafka ack before marking SENT
 
                 event.setStatus(OutboxEvent.Status.SENT);

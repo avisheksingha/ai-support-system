@@ -11,4 +11,7 @@ public class TicketRoutedEvent {
     private String assignToTeam;
     private String priority;
     private Integer slaHours;
+    private String intent;
+    private String sentiment;
+    private String urgency;
 }
