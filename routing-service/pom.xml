@@ -30,6 +30,12 @@
              <groupId>io.github.resilience4j</groupId>
              <artifactId>resilience4j-spring-boot3</artifactId>
          </dependency>
+        
+        <!-- Kafka for Event-Driven Communication -->
+        <dependency>
+	      	<groupId>org.springframework.boot</groupId>
+	      	<artifactId>spring-boot-starter-kafka</artifactId>
+	    </dependency>
 		
 	</dependencies>
 </project>

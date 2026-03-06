@@ -30,7 +30,9 @@ public class TicketCreatedConsumer {
             processingService.processTicket(event);
 
         } catch (Exception ex) {
+        	
         	log.error("Failed to deserialize/process event. Payload={}", payload, ex);
+        	
             throw new RuntimeException(ex); // allow retry
         }
     }
