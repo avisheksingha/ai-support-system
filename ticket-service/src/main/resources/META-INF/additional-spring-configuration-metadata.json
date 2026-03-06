@@ -3,5 +3,15 @@
     "name": "api.services.ai-analysis.url",
     "type": "java.lang.String",
     "description": "A description for 'api.services.ai-analysis.url'"
+  },
+  {
+    "name": "api.services.routing.url",
+    "type": "java.lang.String",
+    "description": "A description for 'api.services.routing.url'"
+  },
+  {
+    "name": "api.services.rag.url",
+    "type": "java.lang.String",
+    "description": "A description for 'api.services.rag.url'"
   }
 ]}

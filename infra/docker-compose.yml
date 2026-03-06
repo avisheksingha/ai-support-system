@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
 
   zookeeper:
@@ -29,3 +27,52 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  postgres:
+    image: ankane/pgvector:latest
+    container_name: postgres
+    environment:
+      POSTGRES_PASSWORD: pass
+    ports:
+      - "5432:5432"
+
+  discovery-service:
+    build:
+      context: ..
+      dockerfile: discovery-service/Dockerfile
+    ports:
+      - "8761:8761"
+    depends_on:
+      - postgres
+      - kafka
+
+  ticket-service:
+    build:
+      context: ..
+      dockerfile: ticket-service/Dockerfile
+    ports:
+      - "8082:8080"
+    depends_on:
+      - discovery-service
+      - postgres
+      - kafka
+
+  ai-analysis-service:
+    build:
+      context: ..
+      dockerfile: ai-analysis-service/Dockerfile
+    ports:
+      - "8083:8080"
+    depends_on:
+      - discovery-service
+      - kafka
+
+  routing-service:
+    build:
+      context: ..
+      dockerfile: routing-service/Dockerfile
+    ports:
+      - "8085:8080"
+    depends_on:
+      - discovery-service
+      - kafka

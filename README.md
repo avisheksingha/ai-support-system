@@ -70,7 +70,7 @@ ai-support-system/
 ├── api-gateway/          # Spring Cloud Gateway (Port: 8081)
 ├── ticket-service/       # Ticket Management (Port: 8082)
 ├── ai-analysis-service/  # AI Powered Analysis (Port: 8083)
-├── routing-service/      # Routing Orchestrator (Port: 8085)
+├── routing-service/      # Routing Orchestrator (Port: 8084)
 ├── common-library/       # Shared Components & DTOs
 ├── aisupport-parent/     # Maven Parent POM
 └── .github/              # GitHub Config & Copilot Instructions

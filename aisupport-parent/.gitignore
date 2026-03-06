@@ -31,3 +31,15 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### OS files ###
+.DS_Store
+Thumbs.db
+
+# Docker artifacts
+*.jar
+*.war
+*.ear
+
+### Application Logs ###
+logs/**

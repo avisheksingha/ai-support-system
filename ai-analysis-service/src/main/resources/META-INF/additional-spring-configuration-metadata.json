@@ -53,5 +53,20 @@
     "name": "gemini.model",
     "type": "java.lang.String",
     "description": "A description for 'gemini.model'"
+  },
+  {
+    "name": "api.services.routing.url",
+    "type": "java.lang.String",
+    "description": "A description for 'api.services.routing.url'"
+  },
+  {
+    "name": "api.services.rag.url",
+    "type": "java.lang.String",
+    "description": "A description for 'api.services.rag.url'"
+  },
+  {
+    "name": "ai.provider",
+    "type": "java.lang.String",
+    "description": "A description for 'ai.provider'"
   }
 ]}
