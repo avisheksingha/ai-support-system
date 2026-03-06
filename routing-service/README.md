@@ -14,8 +14,7 @@ The Routing Service is a microservice responsible for orchestrating the ticket r
 1. Receives a routing request for a ticket.
 2. Fetches ticket details from **Ticket Service**.
 3. Requests AI analysis from **AI Analysis Service**.
-4. Sends ticket details and AI analysis to **Rule Engine Service** for evaluation.
-5. Updates the **Ticket Service** with the identified routing action (e.g., assignment, status change).
+4. Updates the **Ticket Service** with the identified routing action (e.g., assignment, status change).
 
 ## API Endpoints
 

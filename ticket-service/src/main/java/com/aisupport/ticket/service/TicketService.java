@@ -11,6 +11,7 @@ import com.aisupport.ticket.dto.TicketRequest;
 import com.aisupport.ticket.dto.TicketResponse;
 import com.aisupport.ticket.entity.Ticket;
 import com.aisupport.ticket.event.TicketCreatedEvent;
+import com.aisupport.ticket.event.TicketRoutedEvent;
 import com.aisupport.ticket.exception.TicketNotFoundException;
 import com.aisupport.ticket.mapper.TicketMapper;
 import com.aisupport.ticket.outbox.OutboxEventService;
@@ -148,6 +149,30 @@ public class TicketService {
         }
 
         return ticketMapper.toResponse(ticket);
+    }
+    
+    @Transactional
+    public void applyRoutingResult(TicketRoutedEvent event) {
+
+        Ticket ticket = ticketRepository.findById(event.getTicketId())
+                .orElseThrow(() ->
+                        new TicketNotFoundException(TICKET_NOT_FOUND_MSG + event.getTicketId()));
+
+        ticket.setAssignedTo(event.getAssignToTeam());
+
+        if (event.getPriority() != null) {
+            ticket.setPriority(
+                    Ticket.Priority.valueOf(event.getPriority().toUpperCase())
+            );
+        }
+
+        if (event.getSlaHours() != null) {
+            ticket.setSlaHours(event.getSlaHours());
+        }
+
+        ticket.transitionTo(Ticket.TicketStatus.ASSIGNED);
+
+        log.info("Ticket {} updated from routing event", ticket.getTicketNumber());
     }
 
     private String generateTicketNumber() {

@@ -36,7 +36,6 @@
 	    <module>../discovery-service</module>
 	    <module>../ticket-service</module>
         <module>../ai-analysis-service</module>
-        <module>../rule-engine-service</module>
         <module>../routing-service</module>
         <module>../common-library</module>
 	</modules>

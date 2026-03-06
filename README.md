@@ -10,7 +10,6 @@ AI Support System is a microservices-based ticket management platform with AI-po
 - **api-gateway**: Centralized entry point and request routing
 - **ticket-service**: Core ticket management functionality
 - **ai-analysis-service**: AI-powered ticket analysis using Spring AI and Google Vertex AI
-- **rule-engine-service**: Flexible rule-based logic for ticket processing
 - **routing-service**: Orchestrates ticket routing between agents and teams
 - **common-library**: Shared DTOs, exceptions, and utilities
 
@@ -43,31 +42,33 @@ mvn clean install
 ### Run Services (Order Matters)
 
 1. **Discovery Service**:
+
    ```bash
    cd discovery-service
    mvn spring-boot:run
    ```
+
 2. **API Gateway**:
+
    ```bash
    cd api-gateway
    mvn spring-boot:run
    ```
+
 3. **Core Services** (Start any order):
    - Ticket Service (`cd ticket-service && mvn spring-boot:run`)
    - AI Analysis Service (`cd ai-analysis-service && mvn spring-boot:run`)
-   - Rule Engine Service (`cd rule-engine-service && mvn spring-boot:run`)
    - Routing Service (`cd routing-service && mvn spring-boot:run`)
 
 ## Project Structure
 
-```
+```plaintext
 ai-support-system/
 ├── discovery-service/    # Eureka Server (Port: 8761)
 ├── api-gateway/          # Spring Cloud Gateway (Port: 8081)
 ├── ticket-service/       # Ticket Management (Port: 8082)
 ├── ai-analysis-service/  # AI Powered Analysis (Port: 8083)
-├── rule-engine-service/  # Rule Management (Port: 8084)
-├── routing-service/      # Routing Orchestrator (Port: 8085)
+├── routing-service/      # Routing Orchestrator (Port: 8084)
 ├── common-library/       # Shared Components & DTOs
 └── aisupport-parent/     # Maven Parent POM
 ```
@@ -76,10 +77,9 @@ ai-support-system/
 
 Each service provides its own OpenAPI documentation. Once running, access via Swagger UI:
 
-- Ticket Service: http://localhost:8082/swagger-ui.html
-- AI Analysis Service: http://localhost:8083/swagger-ui.html
-- Rule Engine Service: http://localhost:8084/swagger-ui.html
-- Routing Service: http://localhost:8085/swagger-ui.html
+- Ticket Service: <http://localhost:8082/swagger-ui.html>
+- AI Analysis Service: <http://localhost:8083/swagger-ui.html>
+- Routing Service: <http://localhost:8085/swagger-ui.html>
 
 ## Code Quality
 

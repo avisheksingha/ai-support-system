@@ -1,4 +1,4 @@
-package com.aisupport.rule.repository;
+package com.aisupport.routing.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.aisupport.rule.entity.RuleExecutionHistory;
+import com.aisupport.routing.entity.RuleExecutionHistory;
 
 @Repository
 public interface RuleExecutionHistoryRepository extends JpaRepository<RuleExecutionHistory, Long> {
