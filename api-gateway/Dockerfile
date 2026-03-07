@@ -3,7 +3,7 @@ FROM maven:3.9.6-eclipse-temurin-21 AS builder
 WORKDIR /app
 
 # Copy only this service (no parent/common needed)
-COPY . ./api-gateway
+COPY api-gateway ./api-gateway
 
 # Build this service
 WORKDIR /app/api-gateway
