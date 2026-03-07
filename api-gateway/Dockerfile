@@ -6,11 +6,13 @@ WORKDIR /app
 COPY . ./api-gateway
 
 # Build this service
-RUN mvn -pl api-gateway clean package -DskipTests
+WORKDIR /app/api-gateway
+RUN mvn clean package -DskipTests \
+    && JAR=$(ls target/*.jar | grep -v 'original' | grep -v 'sources' | head -n1) \
+    && cp "$JAR" /app/app.jar
 
 # Stage 2: Runtime
 FROM eclipse-temurin:21-jdk-alpine
 WORKDIR /app
-COPY --from=builder /app/api-gateway/target/*.jar app.jar
+COPY --from=builder /app/app.jar app.jar
 ENTRYPOINT ["java","-jar","app.jar"]
-
