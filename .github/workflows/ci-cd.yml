@@ -19,12 +19,14 @@ jobs:
 
       # 4. Build Docker images for each service
       - name: Build Docker images
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USERNAME || github.actor }}
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/discovery-service:latest -f discovery-service/Dockerfile .
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/api-gateway:latest -f api-gateway/Dockerfile .
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/ticket-service:latest -f ticket-service/Dockerfile .
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/ai-analysis-service:latest -f ai-analysis-service/Dockerfile .
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/routing-service:latest -f routing-service/Dockerfile .
+          docker build -t ${DOCKER_USER}/discovery-service:latest -f discovery-service/Dockerfile .
+          docker build -t ${DOCKER_USER}/api-gateway:latest -f api-gateway/Dockerfile .
+          docker build -t ${DOCKER_USER}/ticket-service:latest -f ticket-service/Dockerfile .
+          docker build -t ${DOCKER_USER}/ai-analysis-service:latest -f ai-analysis-service/Dockerfile .
+          docker build -t ${DOCKER_USER}/routing-service:latest -f routing-service/Dockerfile .
 
       # 5. Push images to Docker Hub
       - name: Log in to Docker Hub
@@ -34,9 +36,11 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Push Docker images
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USERNAME || github.actor }}
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/discovery-service:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/api-gateway:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/ticket-service:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/ai-analysis-service:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/routing-service:latest
+          docker push ${DOCKER_USER}/discovery-service:latest
+          docker push ${DOCKER_USER}/api-gateway:latest
+          docker push ${DOCKER_USER}/ticket-service:latest
+          docker push ${DOCKER_USER}/ai-analysis-service:latest
+          docker push ${DOCKER_USER}/routing-service:latest
