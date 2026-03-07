@@ -1,10 +1,11 @@
 name: CI/CD Pipeline
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  workflow_dispatch: # Allows manual triggering from the GitHub Actions UI
+  # push:
+  #   branches: [ "main" ]
+  # pull_request:
+  #   branches: [ "main" ]
 
 jobs:
   build:
