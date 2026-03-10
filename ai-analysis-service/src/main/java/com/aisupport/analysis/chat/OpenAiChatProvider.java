@@ -1,11 +1,10 @@
-package com.aisupport.analysis.service;
+package com.aisupport.analysis.chat;
 
 import java.util.List;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.converter.BeanOutputConverter;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
 
 import com.aisupport.analysis.dto.ParsedAnalysis;
 import com.aisupport.analysis.exception.AnalysisException;
@@ -14,18 +13,27 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.extern.slf4j.Slf4j;
 
-@Service
 @Slf4j
-public class GeminiService implements AiProvider {
+public class OpenAiChatProvider implements ChatProvider {
 
     private final ChatClient chatClient;
 
-    public GeminiService(@Qualifier("geminiChatClient") ChatClient chatClient) {
+    public OpenAiChatProvider(@Qualifier("openAiChatClient") ChatClient chatClient) {
         this.chatClient = chatClient;
     }
 
-    @RateLimiter(name = "geminiRateLimiter")
-    @CircuitBreaker(name = "geminiCircuitBreaker", fallbackMethod = "fallbackAnalysis")
+    /**
+	 * Analyzes a support ticket using OpenAI's chat model.
+	 * The method is protected by a rate limiter and a circuit breaker to ensure resilience.
+	 * If the OpenAI service is unavailable or fails, it falls back to a default analysis.
+	 *
+	 * @param subject the subject of the support ticket
+	 * @param message the message content of the support ticket
+	 * @return a ParsedAnalysis object containing the analysis results
+	 */
+    @RateLimiter(name = "openAiRateLimiter")
+    @CircuitBreaker(name = "openAiCircuitBreaker", fallbackMethod = "fallbackAnalysis")
+    @Override
     public ParsedAnalysis analyzeTicket(String subject, String message) {
 
         try {
@@ -46,8 +54,8 @@ public class GeminiService implements AiProvider {
                             .param("format", outputConverter.getFormat()))
                     .call()
                     .entity(outputConverter);
-            
-            log.info("Gemini raw → sentiment={}, intent={}, urgency={}, confidence={}",
+
+            log.info("OpenAI raw → sentiment={}, intent={}, urgency={}, confidence={}",
             		parsed.getSentiment(),
                     parsed.getIntent(),
                     parsed.getUrgency(),
@@ -56,14 +64,14 @@ public class GeminiService implements AiProvider {
             return parsed;
 
         } catch (Exception e) {
-            log.error("Unexpected error during Gemini analysis", e);
-            throw new AnalysisException("Gemini analysis failed: " + e.getMessage(), e);
+            log.error("Unexpected error during OpenAI analysis", e);
+            throw new AnalysisException("OpenAI analysis failed: " + e.getMessage(), e);
         }
     }
 
     protected ParsedAnalysis fallbackAnalysis(String ignoredSubject, String ignoredMessage, Throwable ex) {
 
-        log.error("Gemini circuit open or failed - fallback used", ex);
+        log.error("OpenAI circuit open or failed - fallback used", ex);
 
         return ParsedAnalysis.builder()
                 .intent("GENERAL")

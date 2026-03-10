@@ -1,20 +1,20 @@
-package com.aisupport.analysis.service;
+package com.aisupport.analysis.chat;
 
 import com.aisupport.analysis.dto.ParsedAnalysis;
 
 /**
  * Strategy interface for AI-powered ticket analysis.
  *
- * <p>Implementations are provided for each supported AI provider
+ * Implementations are provided for each supported Chat provider
  * (e.g., Gemini, OpenAI). The active provider is selected at startup
- * via the {@code ai.provider} property — no business logic changes required.
+ * via the {@code chat.provider} property — no business logic changes required.
  *
- * <pre>
- * ai.provider=gemini   → GeminiService
- * ai.provider=openai   → OpenAiService
- * </pre>
+ * Example configuration:
+ * chat.provider=gemini → GeminiChatProvider
+ * chat.provider=openai → OpenAiChatProvider
+ * 
  */
-public interface AiProvider {
+public interface ChatProvider {
 
     /**
      * Analyze a support ticket and return structured analysis.

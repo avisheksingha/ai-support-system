@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.aisupport.analysis.chat.ChatProvider;
 import com.aisupport.analysis.dto.ParsedAnalysis;
 import com.aisupport.analysis.entity.AnalysisResult;
 import com.aisupport.analysis.event.TicketAnalyzedEvent;
@@ -22,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AnalysisProcessingService {
 
-    private final AiProvider aiProvider;
+    private final ChatProvider chatProvider;
     private final AnalysisResultRepository repository;
     private final ObjectMapper objectMapper;
     private final OutboxEventService outboxService;
@@ -40,7 +41,7 @@ public class AnalysisProcessingService {
 
         log.info("Starting AI analysis for ticketId={}", ticketId);
 
-        ParsedAnalysis parsed = aiProvider.analyzeTicket(
+        ParsedAnalysis parsed = chatProvider.analyzeTicket(
                 event.getSubject(),
                 event.getMessage()
         );

@@ -9,60 +9,53 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
-import com.aisupport.analysis.service.AiProvider;
-import com.aisupport.analysis.service.GeminiService;
-import com.aisupport.analysis.service.OpenAiService;
+import com.aisupport.analysis.chat.ChatProvider;
+import com.aisupport.analysis.chat.GeminiChatProvider;
+import com.aisupport.analysis.chat.OpenAiChatProvider;
 
 /**
- * Wires up the active {@link AiProvider} based on the {@code ai.provider} property.
- *
- * <pre>
- * ai.provider=gemini   → GeminiService  (default)
- * ai.provider=openai   → OpenAiService
- * </pre>
- *
- * Both underlying {@link ChatClient} beans are always created so that their
- * respective auto-configurations are properly initialised. Only the chosen
- * provider is exposed as the {@code @Primary} {@link AiProvider} bean.
+ * ChatConfig centralizes the configuration of AI providers and their ChatClient beans.
+ * It uses Spring's @ConditionalOnProperty to switch between Gemini and OpenAI implementations
+ * based on the "chat.provider" property, allowing for flexible provider selection without code changes.
  */
 @Configuration
-public class AIConfig {
+public class ChatConfig {
 
-    // -------------------------------------------------------------------------
-    // ChatClient beans (one per provider)
-    // -------------------------------------------------------------------------
-
+	/**
+	 * ChatClient beans for each provider. These are created regardless of which provider is active,
+	 * but only the one marked with @Primary and matching the "chat.provider" property will be injected
+	 * into the ChatProvider implementations.
+	 */
     @Bean    
     ChatClient geminiChatClient(VertexAiGeminiChatModel geminiChatModel) {
         return ChatClient.create(geminiChatModel);
     }
 
+    /**
+	 * OpenAI ChatClient bean. This will be created but only used if chat.provider=openai.
+	 */
     @Bean    
     ChatClient openAiChatClient(OpenAiChatModel openAiChatModel) {
         return ChatClient.create(openAiChatModel);
     }
 
-    // -------------------------------------------------------------------------
-    // AiProvider strategy selection — driven by ai.provider property
-    // -------------------------------------------------------------------------
-
     /**
-     * Activates GeminiService as the primary AiProvider when ai.provider=gemini (default).
-     */
+	 * Activates GeminiChatProvider as the primary ChatProvider when chat.provider=gemini or if the property is missing.
+	 */
     @Bean
     @Primary
-    @ConditionalOnProperty(name = "ai.provider", havingValue = "gemini", matchIfMissing = true)
-    AiProvider geminiProvider(@Qualifier("geminiChatClient") ChatClient chatClient) {
-        return new GeminiService(chatClient);
+    @ConditionalOnProperty(name = "chat.provider", havingValue = "gemini", matchIfMissing = true)
+    ChatProvider geminiChatProvider(@Qualifier("geminiChatClient") ChatClient chatClient) {
+        return new GeminiChatProvider(chatClient);
     }
 
     /**
-     * Activates OpenAiService as the primary AiProvider when ai.provider=openai.
+     * Activates OpenAiChatProvider as the primary ChatProvider when chat.provider=openai.
      */
     @Bean
     @Primary
-    @ConditionalOnProperty(name = "ai.provider", havingValue = "openai")
-    AiProvider openAiProvider(@Qualifier("openAiChatClient") ChatClient chatClient) {
-        return new OpenAiService(chatClient);
+    @ConditionalOnProperty(name = "chat.provider", havingValue = "openai")
+    ChatProvider openAiChatProvider(@Qualifier("openAiChatClient") ChatClient chatClient) {
+        return new OpenAiChatProvider(chatClient);
     }
 }

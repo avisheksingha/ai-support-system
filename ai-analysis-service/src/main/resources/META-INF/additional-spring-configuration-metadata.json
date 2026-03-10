@@ -5,56 +5,6 @@
     "description": "A description for 'api.services.ticket.url'"
   },
   {
-    "name": "gemini.api-url",
-    "type": "java.lang.String",
-    "description": "A description for 'gemini.api-url'"
-  },
-  {
-    "name": "gemini.api-key",
-    "type": "java.lang.String",
-    "description": "A description for 'gemini.api-key'"
-  },
-  {
-    "name": "gemini.connect-timeout-ms",
-    "type": "java.lang.String",
-    "description": "A description for 'gemini.connect-timeout-ms'"
-  },
-  {
-    "name": "gemini.response-timeout-ms",
-    "type": "java.lang.String",
-    "description": "A description for 'gemini.response-timeout-ms'"
-  },
-  {
-    "name": "gemini.max-connections",
-    "type": "java.lang.String",
-    "description": "A description for 'gemini.max-connections'"
-  },
-  {
-    "name": "gemini.temperature",
-    "type": "java.lang.String",
-    "description": "A description for 'gemini.temperature'"
-  },
-  {
-    "name": "gemini.max-output-tokens",
-    "type": "java.lang.String",
-    "description": "A description for 'gemini.max-output-tokens'"
-  },
-  {
-    "name": "gemini.top-p",
-    "type": "java.lang.String",
-    "description": "A description for 'gemini.top-p'"
-  },
-  {
-    "name": "gemini.top-k",
-    "type": "java.lang.String",
-    "description": "A description for 'gemini.top-k'"
-  },
-  {
-    "name": "gemini.model",
-    "type": "java.lang.String",
-    "description": "A description for 'gemini.model'"
-  },
-  {
     "name": "api.services.routing.url",
     "type": "java.lang.String",
     "description": "A description for 'api.services.routing.url'"
@@ -65,8 +15,8 @@
     "description": "A description for 'api.services.rag.url'"
   },
   {
-    "name": "ai.provider",
+    "name": "chat.provider",
     "type": "java.lang.String",
-    "description": "A description for 'ai.provider'"
+    "description": "A description for 'chat.provider'"
   }
 ]}
