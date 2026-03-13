@@ -23,8 +23,4 @@ public class KnowledgeArticle {
 
     @Column(columnDefinition = "TEXT")
     private String content;
-
-    @Column(columnDefinition = "vector(768)")
-    private float[] embedding;
-
 }

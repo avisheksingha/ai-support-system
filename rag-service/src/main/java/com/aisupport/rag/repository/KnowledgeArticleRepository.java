@@ -7,5 +7,4 @@ import com.aisupport.rag.entity.KnowledgeArticle;
 
 @Repository
 public interface KnowledgeArticleRepository extends JpaRepository<KnowledgeArticle, Long> {
-
 }

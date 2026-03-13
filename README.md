@@ -82,7 +82,7 @@ Each service provides its own OpenAPI documentation. Once running, access via Sw
 
 - Ticket Service: <http://localhost:8082/swagger-ui.html>
 - AI Analysis Service: <http://localhost:8083/swagger-ui.html>
-- Routing Service: <http://localhost:8085/swagger-ui.html>
+- Routing Service: <http://localhost:8084/swagger-ui.html>
 
 ## Code Quality
 

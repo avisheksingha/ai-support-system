@@ -35,7 +35,7 @@ This repository is a Spring Boot 4.0.3 microservices platform for AI-powered tic
 - **api-gateway:** Central entry point, routes requests (Port: 8081).
 - **ticket-service:** Core ticket management (Port: 8082).
 - **ai-analysis-service:** AI analysis via Spring AI (Gemini & OpenAI) (Port: 8083).
-- **routing-service:** Orchestrates ticket routing (Port: 8085).
+- **routing-service:** Orchestrates ticket routing (Port: 8084).
 - **common-library:** Shared DTOs, events, exceptions, utilities.
 - **aisupport-parent:** Shared Maven parent configuration.
 

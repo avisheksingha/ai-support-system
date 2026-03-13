@@ -1,11 +1,12 @@
 package com.aisupport.rag.consumer;
 
+import java.util.List;
+
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 import com.aisupport.rag.event.TicketAnalyzedEvent;
-import com.aisupport.rag.service.RetrievalService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.aisupport.rag.service.RagService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,29 +16,30 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TicketAnalyzedConsumer {
 
-    private final RetrievalService retrievalService;
-    private final ObjectMapper objectMapper;
+    private final RagService ragService;
 
     @KafkaListener(topics = "ticket-analyzed", groupId = "rag-group")
-    public void consume(String payload) {
+    public void consume(TicketAnalyzedEvent event) {
 
-        try {
+        log.info("RAG received ticket {}", event.getTicketId());
 
-            TicketAnalyzedEvent event = objectMapper.readValue(payload, TicketAnalyzedEvent.class);
+        String query = String.join(" ",
+                safe(event.getIntent()),
+                safe(event.getSentiment()),
+                safe(event.getUrgency()),
+                String.join(" ", safeList(event.getKeywords()))
+        );
 
-            log.info("RAG received ticket {}", event.getTicketId());
+        String response = ragService.generateResponse(query);
 
-            String text =
-                    event.getIntent() + " " +
-                    String.join(" ", event.getKeywords());
+        log.info("RAG answer: {}", response);
+    }
 
-            var articles = retrievalService.retrieveRelevant(text);
+    private String safe(String s) {
+        return s == null ? "" : s;
+    }
 
-            log.info("Top matches found: {}", articles.size());
-
-        } catch (Exception e) {
-
-            log.error("Failed to process analyzed payload={}", payload, e);
-        }
+    private List<String> safeList(List<String> list) {
+        return list == null ? List.of() : list;
     }
 }
