@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.aisupport.rag.event.TicketAnalyzedEvent;
 import com.aisupport.rag.service.RagService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,9 +18,13 @@ import lombok.extern.slf4j.Slf4j;
 public class TicketAnalyzedConsumer {
 
     private final RagService ragService;
+    private final ObjectMapper objectMapper;
 
     @KafkaListener(topics = "ticket-analyzed", groupId = "rag-group")
-    public void consume(TicketAnalyzedEvent event) {
+    public void consume(String payload) {try {
+
+        TicketAnalyzedEvent event =
+                objectMapper.readValue(payload, TicketAnalyzedEvent.class);
 
         log.info("RAG received ticket {}", event.getTicketId());
 
@@ -33,7 +38,11 @@ public class TicketAnalyzedConsumer {
         String response = ragService.generateResponse(query);
 
         log.info("RAG answer: {}", response);
+
+    } catch (Exception e) {
+        log.error("Failed to process payload={}", payload, e);
     }
+}
 
     private String safe(String s) {
         return s == null ? "" : s;

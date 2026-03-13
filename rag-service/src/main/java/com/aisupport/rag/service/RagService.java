@@ -21,24 +21,33 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RagService {
 
-    private final ChatClient chatClient;
-    private final QuestionAnswerAdvisor questionAnswerAdvisor;
+	private final ChatClient chatClient;
+	private final QuestionAnswerAdvisor questionAnswerAdvisor;
 
-    /**
-     * Generate a context-aware response for the given query using RAG.
-     *
-     * @param query the search query (typically built from ticket analysis fields)
-     * @return the AI-generated response grounded in knowledge base context
-     */
-    public String generateResponse(String query) {
+	/**
+	 * Generate a context-aware response for the given query using RAG.
+	 *
+	 * @param query the search query (typically built from ticket analysis fields)
+	 * @return the AI-generated response grounded in knowledge base context
+	 */
+	public String generateResponse(String query) {
 
-        log.info("Running RAG for query: {}", query);
+		log.info("Running RAG for query: {}", query);
 
-        return chatClient.prompt()
-                .system("You are a helpful support assistant. Answer only using the provided context.")
-                .user(query)
-                .advisors(questionAnswerAdvisor)
-                .call()
-                .content();
-    }
+		try {
+			return chatClient.prompt()
+					.system("""
+						Support assistant. Use ONLY the provided context.
+						If not found: "No relevant knowledge article found."
+						Max 3 sentences. Direct and practical.
+						""")
+					.user(query)
+					.advisors(questionAnswerAdvisor)
+					.call()
+					.content();
+		} catch (Exception e) {
+			log.error("RAG generation failed for query: {}", query, e);
+			return "Unable to generate response at this time.";
+		}	        
+	}
 }

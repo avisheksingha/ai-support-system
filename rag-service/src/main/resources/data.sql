@@ -22,4 +22,7 @@ INSERT INTO knowledge_articles (title, content) VALUES
  'Enable two-factor authentication (2FA) from Settings > Security. If you suspect unauthorized access, immediately change your password and review recent login activity. We never ask for passwords via email.'),
 
 ('Service Outage Information',
- 'Check our status page at status.example.com for real-time updates during outages. Planned maintenance is announced 48 hours in advance via email. If a specific feature is down, try clearing cache or using an incognito window.');
+ 'Check our status page at status.example.com for real-time updates during outages. Planned maintenance is announced 48 hours in advance via email. If a specific feature is down, try clearing cache or using an incognito window.'),
+ 
+('App Crash Troubleshooting',
+ 'If the app crashes repeatedly, update to the latest version. Restart your device and clear app cache. If the issue persists, reinstall the app and contact support with logs.');
