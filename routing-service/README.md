@@ -11,16 +11,13 @@ The Routing Service is a microservice responsible for orchestrating the ticket r
 
 ## Orchestration Flow
 
-1. **Receive Request**: Triggered by a routing request for a specific ticket.
-2. **Fetch Ticket Details**: Retrieves the latest ticket data from the **Ticket Service**.
-3. **Request AI Analysis**: Calls the **AI Analysis Service** to get sentiment, urgency, and intent.
-4. **Evaluate Routing Rules**: (Optional) Processes analysis results through a rule engine to determine the destination.
-5. **Execute Routing**: Updates the **Ticket Service** with the routing action (e.g., assignment to agent/team, status update).
+1. **Receive Event**: Consumes a `TicketAnalyzedEvent` from Kafka.
+2. **Evaluate Routing Rules**: Processes the AI-generated analysis results (Sentiment, Urgency, Intent) through rule logic to determine the appropriate destination (e.g., Tier-1, Billing Dept).
+3. **Execute Routing**: Dispatches a call to the **Ticket Service** to assign the ticket to the determined agent or queue.
 
 ## API Endpoints
 
-- `POST /api/v1/routing/route`: Route a ticket through the complete workflow using the provided request body.
-- `POST /api/v1/routing/route/{ticketId}`: Trigger the routing workflow for a specific ticket ID.
+The Routing Service currently operates entirely asynchronously via Kafka events. It does not expose standard public REST endpoints for the client.
 
 ## Configuration
 
