@@ -82,7 +82,7 @@ ai-support-system/
 ├── ticket-service/       # Ticket Management (Port: 8082)
 ├── ai-analysis-service/  # AI Analysis via Gemini/OpenAI (Port: 8083)
 ├── routing-service/      # Intelligent Routing Orchestrator (Port: 8084)
-├── rag-service/          # Contextual Knowledge Response (Port: 8086)
+├── rag-service/          # Contextual Knowledge Response (Port: 8085)
 ├── common-library/       # Shared DTOs and Logic
 ├── aisupport-parent/     # Maven Parent POM
 ├── infra/                # Docker Config for DB/Kafka
@@ -97,7 +97,7 @@ Each service provides its own OpenAPI documentation. Available locally at:
 - Ticket Service: `http://localhost:8082/swagger-ui.html`
 - AI Analysis Service: `http://localhost:8083/swagger-ui.html`
 - Routing Service: `http://localhost:8084/swagger-ui.html`
-- RAG Service: `http://localhost:8086/swagger-ui.html`
+- RAG Service: `http://localhost:8085/swagger-ui.html`
 
 ## License
 MIT License

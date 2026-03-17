@@ -26,7 +26,7 @@ The Routing Service is a microservice responsible for orchestrating the ticket r
 
 | Property | Value | Description |
 |----------|-------|-------------|
-| Server Port | 8085 | Port where service runs |
+| Server Port | 8084 | Port where service runs |
 | Service Discovery | Enabled | Registers with Eureka |
 
 ## Running Locally

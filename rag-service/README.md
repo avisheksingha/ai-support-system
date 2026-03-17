@@ -19,7 +19,7 @@ The RAG (Retrieval-Augmented Generation) Service is responsible for managing emb
 
 | Property | Value | Description |
 |----------|-------|-------------|
-| Server Port | 8086 | Port where service runs |
+| Server Port | 8085 | Port where service runs |
 | Vector Store | PostgreSQL | Requires `pgvector` extension |
 | Service Discovery | Enabled | Registers with Eureka |
 

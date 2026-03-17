@@ -31,7 +31,7 @@ graph TD
     API_GW -->|Route| TS[Ticket Service<br>:8082]
     API_GW -->|Route| AIS[AI Analysis Service<br>:8083]
     API_GW -->|Route| RS[Routing Service<br>:8084]
-    API_GW -->|Route| RAG[RAG Service<br>:8086]
+    API_GW -->|Route| RAG[RAG Service<br>:8085]
 
     DS[Discovery Service<br>:8761] -.->|Service Registry| API_GW
     DS -.->|Registers| TS
