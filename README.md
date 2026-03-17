@@ -2,65 +2,75 @@
 
 ## Overview
 
-AI Support System is a microservices-based ticket management platform with AI-powered assistance, event-driven communication (Kafka), and rule-based automation.
+The AI Support System is a leading-edge, microservices-based ticket management platform designed to automate and augment traditional support workflows. It leverages AI for analyzing ticket sentiment, urgency, and intent, employs event-driven communication via Apache Kafka, and utilizes rule-based orchestration to intelligently route tickets. Finally, it integrates a Retrieval-Augmented Generation (RAG) service to provide contextual AI responses.
 
-## Architecture
+> For a comprehensive mapping of the system flow, module interactions, and dependencies, please refer to the **[Project Overview](Project_Overview.md)** document.
 
-- **discovery-service**: Eureka Service Discovery Server.
-- **api-gateway**: Centralized entry point and request routing.
-- **ticket-service**: Core ticket management and lifecycle handling.
-- **ai-analysis-service**: AI-powered analysis using Spring AI (Google Gemini & OpenAI).
-- **routing-service**: Orchestrates ticket routing and intelligent assignment.
-- **common-library**: Shared models, events, and utilities.
-- **aisupport-parent**: Central Maven parent for dependency management.
+## Architecture & Key Components
+
+- **[discovery-service](discovery-service/README.md)**: Eureka Service Discovery Server.
+- **[api-gateway](api-gateway/README.md)**: Centralized entry point and request routing.
+- **[ticket-service](ticket-service/README.md)**: Core ticket management and lifecycle operations.
+- **[ai-analysis-service](ai-analysis-service/README.md)**: AI-powered analysis for sentiment and urgency (Gemini & OpenAI).
+- **[routing-service](routing-service/README.md)**: Orchestrator for intelligent ticket assignment based on analysis.
+- **[rag-service](rag-service/README.md)**: Vector embedding and RAG capabilities for automated contextual responses.
+- **[common-library](common-library/README.md)**: Shared models, DTOs, events, and utilities.
+- **[aisupport-parent](aisupport-parent/README.md)**: Central Maven POM for uniform dependency management.
+- **[infra](infra/README.md)**: Docker Compose setup for infrastructure (PostgreSQL, Kafka, pgvector).
 
 ## Technology Stack
 
 - **Java**: 21
 - **Spring Boot**: 4.0.3
 - **Spring Cloud**: 2025.1.0
-- **Spring AI**: 2.0.0-M1 (Gemini & OpenAI)
+- **Spring AI**: 2.0.0-M1
 - **Messaging**: Apache Kafka
-- **Database**: PostgreSQL
+- **Database**: PostgreSQL (with `pgvector` extension)
 - **Service Discovery**: Eureka
 - **API Documentation**: SpringDoc OpenAPI
-- **Resilience**: Resilience4j (Circuit Breaker)
 
 ## Prerequisites
 
-- Java 21 or higher
-- Maven 3.9+ or use included Maven wrapper
-- PostgreSQL 18+
-- Docker (optional, for containerization)
+- Java 21+
+- Maven 3.9+ (or use included wrapper)
+- Docker & Docker Compose (for spinning up Kafka, PostgreSQL, etc.)
 
 ## Getting Started
 
-### Build All Services
+### 1. Start Infrastructure
+
+Start the underlying database and messaging infrastructure:
+```bash
+cd infra
+docker-compose up -d
+cd ..
+```
+
+### 2. Build All Services
 
 ```bash
 mvn clean install
 ```
 
-### Run Services (Order Matters)
+### 3. Run Services (In Order)
 
 1. **Discovery Service**:
-
    ```bash
    cd discovery-service
    mvn spring-boot:run
    ```
 
 2. **API Gateway**:
-
    ```bash
    cd api-gateway
    mvn spring-boot:run
    ```
 
-3. **Core Services** (Start any order):
-   - Ticket Service (`cd ticket-service && mvn spring-boot:run`)
-   - AI Analysis Service (`cd ai-analysis-service && mvn spring-boot:run`)
-   - Routing Service (`cd routing-service && mvn spring-boot:run`)
+3. **Core Services** (Start in parallel or sequentially):
+   - Ticket Service: `cd ticket-service && mvn spring-boot:run`
+   - AI Analysis Service: `cd ai-analysis-service && mvn spring-boot:run`
+   - Routing Service: `cd routing-service && mvn spring-boot:run`
+   - RAG Service: `cd rag-service && mvn spring-boot:run`
 
 ## Project Structure
 
@@ -69,36 +79,23 @@ ai-support-system/
 ├── discovery-service/    # Eureka Server (Port: 8761)
 ├── api-gateway/          # Spring Cloud Gateway (Port: 8081)
 ├── ticket-service/       # Ticket Management (Port: 8082)
-├── ai-analysis-service/  # AI Powered Analysis (Port: 8083)
-├── routing-service/      # Routing Orchestrator (Port: 8084)
-├── common-library/       # Shared Components & DTOs
+├── ai-analysis-service/  # AI Analysis via Gemini/OpenAI (Port: 8083)
+├── routing-service/      # Intelligent Routing Orchestrator (Port: 8084)
+├── rag-service/          # Contextual Knowledge Response (Port: 8086)
+├── common-library/       # Shared DTOs and Logic
 ├── aisupport-parent/     # Maven Parent POM
-└── .github/              # GitHub Config & Copilot Instructions
+├── infra/                # Docker Config for DB/Kafka
+├── Project_Overview.md   # Architectural end-to-end details
+└── README.md             # This file
 ```
 
 ## API Documentation
 
-Each service provides its own OpenAPI documentation. Once running, access via Swagger UI:
-
-- Ticket Service: <http://localhost:8082/swagger-ui.html>
-- AI Analysis Service: <http://localhost:8083/swagger-ui.html>
-- Routing Service: <http://localhost:8084/swagger-ui.html>
-
-## Code Quality
-
-```bash
-# Run SonarQube analysis
-mvn clean verify sonar:sonar
-```
-
-## Contributing
-
-1. Follow layered architecture (Controller → Service → Repository)
-2. Use constructor-based dependency injection
-3. Write unit tests (JUnit 5 + Mockito)
-4. Use `common-library` for shared models and exceptions
-5. Ensure SonarQube compliance
+Each service provides its own OpenAPI documentation. Available locally at:
+- Ticket Service: `http://localhost:8082/swagger-ui.html`
+- AI Analysis Service: `http://localhost:8083/swagger-ui.html`
+- Routing Service: `http://localhost:8084/swagger-ui.html`
+- RAG Service: `http://localhost:8086/swagger-ui.html`
 
 ## License
-
 MIT License
