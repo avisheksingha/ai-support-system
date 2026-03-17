@@ -12,6 +12,7 @@ This service acts as the central registry where all microservices in the platfor
 - `ticket-service`
 - `ai-analysis-service`
 - `routing-service`
+- `rag-service`
 
 ## Configuration
 
