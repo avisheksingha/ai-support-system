@@ -34,8 +34,13 @@ Microservice that uses Spring AI to analyze support tickets for sentiment, urgen
 #### OpenAI
 - `SPRING_AI_OPENAI_API_KEY`: Your OpenAI API key.
 
-## API Endpoints
+## Interfaces & Endpoints
 
+### Event-Driven (Kafka)
+- **Consumes**: `TicketCreatedEvent` (Triggers AI analysis workflow)
+- **Produces**: `TicketAnalyzedEvent` (Publishes results for routing and RAG)
+
+### REST API
 - `POST /api/v1/analysis/analyze`: Analyze a ticket manually
 - `GET /api/v1/analysis/{ticketId}`: Get existing analysis
 

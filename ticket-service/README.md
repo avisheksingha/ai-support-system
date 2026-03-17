@@ -8,7 +8,7 @@ Microservice responsible for managing support tickets throughout their lifecycle
 - **Manual & Automated Assignment**: Assign tickets to agents manually or via the Routing Service.
 - **Status Tracking**: Track ticket lifecycle status (OPEN, IN_PROGRESS, RESOLVED, etc.) and priority.
 - **Event-Driven Architecture**: Uses **Apache Kafka** for asynchronous communication and status updates.
-- **AI Integration**: Integration with **AI Analysis Service** for automated tagging (sentiment, intent, urgency).
+- **AI Integration**: Integration with **AI Analysis Service** for automated tagging (sentiment, intent, urgency) and **RAG Service** for context-aware suggestions.
 - **Service Discovery**: Registers with Eureka for dynamic invocation.
 - **Resilience**: Resilient communication using Circuit Breakers (Resilience4j).
 

@@ -33,4 +33,5 @@ The parent POM manages the following modules:
 - `ticket-service`
 - `ai-analysis-service`
 - `routing-service`
+- `rag-service`
 - `common-library`
