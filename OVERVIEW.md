@@ -45,8 +45,9 @@ graph TD
     TS -->|Publishes TicketCreated| Kafka[Apache Kafka<br>Message Broker]
     Kafka -->|Consumes TicketCreated| AIS
     AIS -->|Calls API| ExternalAI[Google Vertex AI / OpenAI]
-    AIS -->|Publishes AnalysisCompleted| Kafka
-    Kafka -->|Consumes AnalysisCompleted| RS
+    AIS -->|Publishes TicketAnalyzed| Kafka
+    Kafka -->|Consumes TicketAnalyzed| RS
+    Kafka -->|Consumes TicketAnalyzed| RAG
     
     RAG <-->|Vector Search| PGV[(PostgreSQL + pgvector)]
     RAG -->|Calls API| ExternalAI
@@ -63,6 +64,7 @@ sequenceDiagram
     participant AISvc as AI Analysis Service
     participant ExternalAI as Vertex AI / OpenAI
     participant RoutingSvc as Routing Service
+    participant RAGSvc as RAG Service
 
     Client->>Gateway: POST /api/v1/tickets
     Gateway->>TicketSvc: Forward Request
@@ -76,9 +78,18 @@ sequenceDiagram
     AISvc->>ExternalAI: Send Ticket Text for Analysis
     ExternalAI-->>AISvc: Return Sentiment, Urgency, Intent
     AISvc->>TicketSvc: PATCH /api/v1/tickets/{id}/status (Update AI Tags)
-    AISvc->>Kafka: Publish "AnalysisCompletedEvent"
+    AISvc->>Kafka: Publish "TicketAnalyzedEvent"
     
-    Kafka-->>RoutingSvc: Consume "AnalysisCompletedEvent"
-    RoutingSvc->>RoutingSvc: Evaluate Rules based on AI Tags
-    RoutingSvc->>TicketSvc: PATCH /api/v1/tickets/{id}/assign (Assign Agent/Queue)
+    par AI Routing Workflow
+        Kafka-->>RoutingSvc: Consume "TicketAnalyzedEvent"
+        RoutingSvc->>RoutingSvc: Evaluate Rules based on AI Tags
+        RoutingSvc->>TicketSvc: PATCH /api/v1/tickets/{id}/assign (Assign Agent/Queue)
+    and RAG Suggestion Workflow
+        Kafka-->>RAGSvc: Consume "TicketAnalyzedEvent"
+        RAGSvc->>ExternalAI: Generate Embeddings & Search VectorDB
+        ExternalAI-->>RAGSvc: Context/Similar Articles
+        RAGSvc->>ExternalAI: Prompt QuestionAnswerAdvisor
+        ExternalAI-->>RAGSvc: Context-Aware Suggestion
+        RAGSvc->>TicketSvc: Add AI Suggestion to Ticket
+    end
 ```
