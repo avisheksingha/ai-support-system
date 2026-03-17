@@ -4,7 +4,8 @@
 
 The AI Support System is a leading-edge, microservices-based ticket management platform designed to automate and augment traditional support workflows. It leverages AI for analyzing ticket sentiment, urgency, and intent, employs event-driven communication via Apache Kafka, and utilizes rule-based orchestration to intelligently route tickets. Finally, it integrates a Retrieval-Augmented Generation (RAG) service to provide contextual AI responses.
 
-> For a comprehensive mapping of the system flow, module interactions, and dependencies, please refer to the **[Project Overview](Project_Overview.md)** document.
+> For a comprehensive mapping of the system flow, module interactions, and diagrams, please refer to the **[System Overview](OVERVIEW.md)** document.
+> For a detailed explanation of design decisions, technology stack rationale, and scalability considerations, see the **[Architecture](ARCHITECTURE.md)** document.
 
 ## Architecture & Key Components
 
@@ -85,7 +86,8 @@ ai-support-system/
 ├── common-library/       # Shared DTOs and Logic
 ├── aisupport-parent/     # Maven Parent POM
 ├── infra/                # Docker Config for DB/Kafka
-├── Project_Overview.md   # Architectural end-to-end details
+├── ARCHITECTURE.md       # Design decisions and scalability
+├── OVERVIEW.md           # Architectural end-to-end details & diagrams
 └── README.md             # This file
 ```
 
