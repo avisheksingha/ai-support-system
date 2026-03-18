@@ -18,5 +18,55 @@
     "name": "api.services.routing.url",
     "type": "java.lang.String",
     "description": "A description for 'api.services.routing.url'"
+  },
+  {
+    "name": "spring.ai.vertex.ai.gemini.project-id",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.ai.vertex.ai.gemini.project-id'"
+  },
+  {
+    "name": "spring.ai.vertex.ai.gemini.location",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.ai.vertex.ai.gemini.location'"
+  },
+  {
+    "name": "spring.ai.vertex.ai.gemini.chat.options.model",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.ai.vertex.ai.gemini.chat.options.model'"
+  },
+  {
+    "name": "spring.ai.vectorstore.pgvector.initialize-schema",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.ai.vectorstore.pgvector.initialize-schema'"
+  },
+  {
+    "name": "spring.ai.vertex.ai.embedding.project-id",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.ai.vertex.ai.embedding.project-id'"
+  },
+  {
+    "name": "spring.ai.vertex.ai.embedding.location",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.ai.vertex.ai.embedding.location'"
+  },
+  {
+    "name": "spring.ai.vertex.ai.embedding.options.model",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.ai.vertex.ai.embedding.options.model'"
+  },
+  {
+    "name": "spring.ai.vectorstore.pgvector.dimensions",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.ai.vectorstore.pgvector.dimensions'"
+  },
+  {
+    "name": "spring.ai.vectorstore.pgvector.distance-type",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.ai.vectorstore.pgvector.distance-type'"
+  },
+  {
+    "name": "spring.ai.vectorstore.pgvector.index-type",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.ai.vectorstore.pgvector.index-type'"
   }
 ]}

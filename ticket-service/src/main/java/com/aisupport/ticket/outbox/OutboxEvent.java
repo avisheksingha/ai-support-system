@@ -1,13 +1,12 @@
 package com.aisupport.ticket.outbox;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.PrePersist;
@@ -32,10 +31,11 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class OutboxEvent {
+	
+	public static final int MAX_RETRIES = 3;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     @Column(name = "aggregate_type", nullable = false)
     private String aggregateType;
@@ -53,6 +53,10 @@ public class OutboxEvent {
     @Column(nullable = false)
     private Status status; // NEW, SENT, FAILED
 
+    @Column(name = "retry_count", nullable = false)
+    @Builder.Default
+    private int retryCount = 0; // NEW: retry tracking
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -60,16 +64,17 @@ public class OutboxEvent {
     private LocalDateTime processedAt;
 
     public enum Status {
-        NEW,
-        SENT,
-        FAILED
+        PENDING, SENT, FAILED, DEAD
     }
 
     @PrePersist
     protected void onCreate() {
+        if (id == null) {
+            id = UUID.randomUUID().toString();
+        }
         createdAt = LocalDateTime.now();
         if (status == null) {
-            status = Status.NEW;
+            status = Status.PENDING;
         }
     }
 }

@@ -8,7 +8,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface OutboxEventRepository extends JpaRepository<OutboxEvent, String> {
 
-    List<OutboxEvent> findTop50ByStatusOrderByCreatedAtAsc(
-            OutboxEvent.Status status
+	List<OutboxEvent> findTop50ByStatusOrderByCreatedAtAsc(OutboxEvent.Status status);
+
+    List<OutboxEvent> findByStatus(OutboxEvent.Status status);
+
+    List<OutboxEvent> findByStatusAndRetryCountLessThan(
+            OutboxEvent.Status status, int maxRetries
     );
 }

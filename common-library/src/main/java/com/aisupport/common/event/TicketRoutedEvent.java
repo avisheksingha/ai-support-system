@@ -1,4 +1,4 @@
-package com.aisupport.routing.event;
+package com.aisupport.common.event;
 
 import lombok.Builder;
 import lombok.Data;

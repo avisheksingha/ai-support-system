@@ -18,5 +18,55 @@
     "name": "chat.provider",
     "type": "java.lang.String",
     "description": "A description for 'chat.provider'"
+  },
+  {
+    "name": "spring.ai.vertex.ai.gemini.project-id",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.ai.vertex.ai.gemini.project-id'"
+  },
+  {
+    "name": "spring.ai.vertex.ai.gemini.location",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.ai.vertex.ai.gemini.location'"
+  },
+  {
+    "name": "spring.ai.vertex.ai.gemini.chat.options.model",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.ai.vertex.ai.gemini.chat.options.model'"
+  },
+  {
+    "name": "spring.ai.vertex.ai.gemini.chat.options.temperature",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.ai.vertex.ai.gemini.chat.options.temperature'"
+  },
+  {
+    "name": "spring.ai.vertex.ai.gemini.chat.options.top-p",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.ai.vertex.ai.gemini.chat.options.top-p'"
+  },
+  {
+    "name": "spring.ai.vertex.ai.gemini.chat.options.top-k",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.ai.vertex.ai.gemini.chat.options.top-k'"
+  },
+  {
+    "name": "spring.ai.openai.api-key",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.ai.openai.api-key'"
+  },
+  {
+    "name": "spring.ai.openai.chat.options.model",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.ai.openai.chat.options.model'"
+  },
+  {
+    "name": "spring.ai.openai.chat.options.temperature",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.ai.openai.chat.options.temperature'"
+  },
+  {
+    "name": "spring.ai.openai.chat.options.top-p",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.ai.openai.chat.options.top-p'"
   }
 ]}

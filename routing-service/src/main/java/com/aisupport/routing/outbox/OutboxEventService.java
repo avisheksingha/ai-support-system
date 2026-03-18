@@ -3,7 +3,7 @@ package com.aisupport.routing.outbox;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.aisupport.common.exception.ServiceCommunicationException;
+import com.aisupport.common.exception.OutboxEventException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -35,7 +35,7 @@ public class OutboxEventService {
             repository.save(event);
 
         } catch (Exception e) {
-            throw new ServiceCommunicationException("Failed to serialize outbox event", e);
+            throw new OutboxEventException("Failed to serialize outbox event", e);
         }
     }
 }

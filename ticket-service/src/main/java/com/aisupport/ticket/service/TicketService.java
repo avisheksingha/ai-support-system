@@ -7,11 +7,13 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.aisupport.common.enums.TicketPriority;
+import com.aisupport.common.enums.TicketStatus;
+import com.aisupport.common.event.TicketCreatedEvent;
+import com.aisupport.common.event.TicketRoutedEvent;
 import com.aisupport.ticket.dto.TicketRequest;
 import com.aisupport.ticket.dto.TicketResponse;
 import com.aisupport.ticket.entity.Ticket;
-import com.aisupport.ticket.event.TicketCreatedEvent;
-import com.aisupport.ticket.event.TicketRoutedEvent;
 import com.aisupport.ticket.exception.TicketNotFoundException;
 import com.aisupport.ticket.mapper.TicketMapper;
 import com.aisupport.ticket.outbox.OutboxEventService;
@@ -36,8 +38,8 @@ public class TicketService {
 
         Ticket ticket = ticketMapper.toEntity(request);
         ticket.setTicketNumber(generateTicketNumber());
-        ticket.setStatus(Ticket.TicketStatus.NEW);
-        ticket.setPriority(Ticket.Priority.MEDIUM);
+        ticket.setStatus(TicketStatus.NEW);
+        ticket.setPriority(TicketPriority.MEDIUM);
 
         ticket = ticketRepository.save(ticket);
 
@@ -89,8 +91,8 @@ public class TicketService {
 
     @Transactional(readOnly = true)
     public List<TicketResponse> getTicketsByStatus(String status) {
-        Ticket.TicketStatus ticketStatus =
-                Ticket.TicketStatus.valueOf(status.toUpperCase());
+        TicketStatus ticketStatus =
+                TicketStatus.valueOf(status.toUpperCase());
 
         return ticketRepository.findByStatus(ticketStatus)
                 .stream()
@@ -106,7 +108,7 @@ public class TicketService {
                         TICKET_NOT_FOUND_MSG + ticketNumber));
 
         ticket.transitionTo(
-                Ticket.TicketStatus.valueOf(newStatus.toUpperCase())
+                TicketStatus.valueOf(newStatus.toUpperCase())
         );
 
         return ticketMapper.toResponse(ticket);
@@ -122,7 +124,7 @@ public class TicketService {
                         TICKET_NOT_FOUND_MSG + ticketNumber));
 
         ticket.setAssignedTo(assignedTo);
-        ticket.transitionTo(Ticket.TicketStatus.ASSIGNED);
+        ticket.transitionTo(TicketStatus.ASSIGNED);
 
         if (slaHours != null) {
             ticket.setSlaHours(slaHours);
@@ -141,7 +143,7 @@ public class TicketService {
                         TICKET_NOT_FOUND_MSG + ticketNumber));
 
         ticket.setPriority(
-                Ticket.Priority.valueOf(newPriority.toUpperCase())
+                TicketPriority.valueOf(newPriority.toUpperCase())
         );
 
         if (slaHours != null) {
@@ -158,7 +160,7 @@ public class TicketService {
                 .orElseThrow(() -> new TicketNotFoundException(TICKET_NOT_FOUND_MSG + event.getTicketId()));
         
         // If already assigned, we assume a manual override and skip auto-assignment
-        if (ticket.getStatus() == Ticket.TicketStatus.ASSIGNED) {
+        if (ticket.getStatus() == TicketStatus.ASSIGNED) {
             log.info("Ticket {} already assigned — skipping", ticket.getTicketNumber());
             return;
         }
@@ -181,7 +183,7 @@ public class TicketService {
 
         if (event.getPriority() != null) {
             ticket.setPriority(
-                    Ticket.Priority.valueOf(event.getPriority().toUpperCase())
+                    TicketPriority.valueOf(event.getPriority().toUpperCase())
             );
         }
 
@@ -189,7 +191,7 @@ public class TicketService {
             ticket.setSlaHours(event.getSlaHours());
         }
 
-        ticket.transitionTo(Ticket.TicketStatus.ASSIGNED);
+        ticket.transitionTo(TicketStatus.ASSIGNED);
 
         log.info("Ticket {} updated from routing event", ticket.getTicketNumber());
         

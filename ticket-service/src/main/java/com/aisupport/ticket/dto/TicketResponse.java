@@ -2,6 +2,9 @@ package com.aisupport.ticket.dto;
 
 import java.time.LocalDateTime;
 
+import com.aisupport.common.enums.TicketPriority;
+import com.aisupport.common.enums.TicketStatus;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,11 +36,11 @@ public class TicketResponse {
     @Schema(description = "Detailed message for the support ticket", example = "I am unable to log in with my credentials.")
     private String message;
     
-    @Schema(description = "Current status of the ticket", example = "OPEN")
-    private String status;
+    @Schema(description = "Current status of the ticket", example = "NEW")
+    private TicketStatus status;
     
     @Schema(description = "Priority level of the ticket", example = "HIGH")
-    private String priority;
+    private TicketPriority priority;
     
     @Schema(description = "Agent assigned to the ticket", example = "agent123")
     private String assignedTo;

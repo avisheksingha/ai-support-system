@@ -18,18 +18,67 @@
 
 	<!-- Dependencies specific to this module -->
 	<dependencies>
-        <!-- Shared Common Library -->
-		<dependency>
-			<groupId>com.aisupport</groupId>
-			<artifactId>common-library</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+	    <!-- Spring Web MVC for RESTful APIs -->        
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc</artifactId>
+        </dependency>
+        
+        <!-- Spring Data JPA for Database Access -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        
+        <!-- Validation Support -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        
+        <!-- Email Support -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>	
+        
+        <!-- OpenAPI Documentation with Springdoc -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>            
+        </dependency>
+        
+        <!-- PostgreSQL Driver for Database Connectivity -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        
+        <!-- Spring Cloud Netflix Eureka Client for Service Discovery -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+        
+        <!-- Spring Cloud LoadBalancer for Client-Side Load Balancing -->
+        <dependency>
+		    <groupId>org.springframework.cloud</groupId>
+		    <artifactId>spring-cloud-starter-loadbalancer</artifactId>
 		</dependency>
         
         <!-- Kafka for Event-Driven Communication -->
         <dependency>
 	      	<groupId>org.springframework.boot</groupId>
 	      	<artifactId>spring-boot-starter-kafka</artifactId>
-	    </dependency>
+	    </dependency>        
+        
+        <!-- Shared Common Library -->
+		<dependency>
+			<groupId>com.aisupport</groupId>
+			<artifactId>common-library</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 	
 	</dependencies>
 
