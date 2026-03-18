@@ -8,6 +8,7 @@ The RAG (Retrieval-Augmented Generation) Service is responsible for managing emb
 - **Vector Storage**: Stores embeddings in a PostgreSQL database using the `pgvector` extension.
 - **Contextual Generation**: Leverages the `QuestionAnswerAdvisor` pattern to retrieve relevant documents and generate accurate, context-aware answers.
 - **Kafka Integration**: Listens to domain events to trigger automated document indexing.
+- **Observability**: Utilizes a `CorrelationIdFilter` and Kafka Header extraction to ensure distributed log tracing via Logback MDC.
 
 ## Technology Stack
 

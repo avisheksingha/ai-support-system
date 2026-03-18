@@ -37,8 +37,11 @@ Microservice that uses Spring AI to analyze support tickets for sentiment, urgen
 ## Interfaces & Endpoints
 
 ### Event-Driven (Kafka)
-- **Consumes**: `TicketCreatedEvent` (Triggers AI analysis workflow)
-- **Produces**: `TicketAnalyzedEvent` (Publishes results for routing and RAG)
+- **Consumes**: `TicketCreatedEvent` (Triggers AI analysis workflow). Extracts `X-Correlation-Id` from Kafka headers for tracing.
+- **Produces**: `TicketAnalyzedEvent` (Publishes results for routing and RAG). Employs a **Resilient Outbox Pattern** with timeout/retry mechanisms to guarantee delivery.
+
+### Observability
+- All REST and Kafka interactions are traced via a `CorrelationIdFilter` binding to Logback's `MDC`.
 
 ### REST API
 - `POST /api/v1/analysis/analyze`: Analyze a ticket manually
