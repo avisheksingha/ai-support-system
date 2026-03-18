@@ -43,88 +43,54 @@
 	
 	<properties>
 		<java.version>21</java.version>
-        
-        <!-- Dependency Versions -->
+		
+		<!-- Dependency Versions -->
         <spring-cloud.version>2025.1.0</spring-cloud.version>
+        <spring-ai.version>2.0.0-M1</spring-ai.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <lombok.version>1.18.42</lombok.version>
-		<jackson-datatype-jsr310.version>3.0.0-rc2</jackson-datatype-jsr310.version>
         <springdoc-openapi.version>3.0.1</springdoc-openapi.version>
-        
-        <!-- Plugin Versions -->
+        <swagger-annotations.version>2.2.45</swagger-annotations.version>
         <sonar-maven-plugin.version>5.5.0.6356</sonar-maven-plugin.version>        
-        <spring-ai.version>2.0.0-M1</spring-ai.version>
-        
 	</properties>
 		
+	<!-- 
+        Only truly universal dependencies here.
+        Everything else belongs in each module's own pom.xml 
+    -->
 	<dependencies>        
         <!-- Spring Boot Starters -->
         <dependency>
 	      	<groupId>org.springframework.boot</groupId>
 	      	<artifactId>spring-boot-starter</artifactId>
 	    </dependency>
+	    
+	    <!-- Developer Tools for Hot Reloading during development, optional and runtime only -->
 	    <dependency>
 	      	<groupId>org.springframework.boot</groupId>
 	      	<artifactId>spring-boot-devtools</artifactId>
 	      	<scope>runtime</scope>
 	      	<optional>true</optional>
 	    </dependency>	    
+	    
+	    <!-- Configuration Processor for annotation processing of @ConfigurationProperties, optional and compile-only -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-configuration-processor</artifactId>
 			<optional>true</optional>
 		</dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webmvc</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-mail</artifactId>
-        </dependency>
+		
+		<!-- Spring Boot Actuator for monitoring and management, optional but commonly used in all modules -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         
-        <!-- OpenAPI Documentation with Springdoc -->
+        <!-- Lombok for Boilerplate Code Reduction -->
         <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>${springdoc-openapi.version}</version>
-        </dependency>
-        
-        <!-- Spring Cloud Netflix Eureka Client for Service Discovery -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
-        </dependency>
-        
-        <!-- Spring Cloud LoadBalancer for Client-Side Load Balancing -->
-        <dependency>
-		    <groupId>org.springframework.cloud</groupId>
-		    <artifactId>spring-cloud-starter-loadbalancer</artifactId>
-		</dependency>
-		
-		<!-- Spring WebFlux for Reactive Programming -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
-        </dependency>
-        
-        <!-- PostgreSQL Driver -->
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <scope>runtime</scope>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
         </dependency>
         
         <!-- MapStruct for Object Mapping -->
@@ -137,13 +103,6 @@
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct-processor</artifactId>
             <version>${mapstruct.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        
-        <!-- Lombok for Boilerplate Code Reduction -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
         
@@ -163,63 +122,20 @@
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-		</dependency>
+		</dependency>		
         
-        <!-- Test Dependencies -->
+        <!-- Test Dependencies — this single starter covers JUnit 5, Mockito, AssertJ, MockMvc -->
         <dependency>
 	      	<groupId>org.springframework.boot</groupId>
 	      	<artifactId>spring-boot-starter-test</artifactId>
 	      	<scope>test</scope>
 	    </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webmvc-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-	      	<groupId>org.springframework.boot</groupId>
-	      	<artifactId>spring-boot-starter-data-jpa-test</artifactId>
-	      	<scope>test</scope>
-	    </dependency>
-	    <dependency>
-	      	<groupId>org.springframework.boot</groupId>
-	      	<artifactId>spring-boot-starter-validation-test</artifactId>
-	      	<scope>test</scope>
-	    </dependency>
-	    <dependency>
-	      	<groupId>org.springframework.boot</groupId>
-	      	<artifactId>spring-boot-starter-mail-test</artifactId>
-	      	<scope>test</scope>
-	    </dependency>
-	    <dependency>
-	      	<groupId>org.springframework.boot</groupId>
-	      	<artifactId>spring-boot-starter-actuator-test</artifactId>
-	      	<scope>test</scope>
-	    </dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-api</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.platform</groupId>
-			<artifactId>junit-platform-launcher</artifactId>			
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 	
+	<!-- Version management only — no forced inclusion -->
 	<dependencyManagement>
 		<dependencies>
+			<!-- Spring Cloud BOM for managing versions of Spring Cloud dependencies, declare in each module that uses Spring Cloud -->
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
@@ -227,6 +143,7 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			<!-- Spring AI BOM for managing versions of Spring AI dependencies, declare in each module that uses Spring AI -->
 			<dependency>
 				<groupId>org.springframework.ai</groupId>
 				<artifactId>spring-ai-bom</artifactId>
@@ -234,6 +151,23 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			<!-- Manage springdoc version centrally, declare in each module -->
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc-openapi.version}</version>
+            </dependency>
+			<dependency>
+			    <groupId>org.springdoc</groupId>
+			    <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+			    <version>${springdoc-openapi.version}</version>
+			</dependency>
+			<!-- Swagger annotations — used by common-library for @Schema on shared DTOs -->
+	        <dependency>
+	            <groupId>io.swagger.core.v3</groupId>
+	            <artifactId>swagger-annotations-jakarta</artifactId>
+	            <version>${swagger-annotations.version}</version>
+        	</dependency>
 		</dependencies>
 	</dependencyManagement>
 

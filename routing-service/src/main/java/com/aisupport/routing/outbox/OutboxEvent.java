@@ -29,6 +29,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class OutboxEvent {
+	
+	public static final int MAX_RETRIES = 3; // retry threshold
 
     @Id
     private String id;
@@ -49,6 +51,10 @@ public class OutboxEvent {
     @Column(nullable = false)
     private Status status;
 
+    @Column(name = "retry_count", nullable = false)
+    @Builder.Default
+    private int retryCount = 0; // retry tracking
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -56,15 +62,17 @@ public class OutboxEvent {
     private LocalDateTime processedAt;
 
     public enum Status {
-        PENDING,
-        SENT,
-        FAILED
+        PENDING, SENT, FAILED, DEAD
     }
 
     @PrePersist
     public void prePersist() {
-        if (id == null) id = UUID.randomUUID().toString();
+    	if (id == null) {
+            id = UUID.randomUUID().toString();
+        }
         createdAt = LocalDateTime.now();
-        status = Status.PENDING;
+        if (status == null) {
+            status = Status.PENDING;
+        }
     }
 }

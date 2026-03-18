@@ -1,7 +1,9 @@
 package com.aisupport.ticket.outbox;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.aisupport.common.exception.OutboxEventException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,7 @@ public class OutboxEventService {
     private final OutboxEventRepository repository;
     private final ObjectMapper objectMapper;
 
+    @Transactional // atomic with calling transaction
     public void publishEvent(String aggregateType,
                              String aggregateId,
                              String eventType,
@@ -26,13 +29,13 @@ public class OutboxEventService {
                     .aggregateId(aggregateId)
                     .eventType(eventType)
                     .payload(jsonPayload)
-                    .status(OutboxEvent.Status.NEW)
+                    .status(OutboxEvent.Status.PENDING) // status + retryCount set by @PrePersist/@Builder.Default
                     .build();
 
             repository.save(event);
 
         } catch (Exception e) {
-            throw new RuntimeException("Failed to serialize outbox event", e);
+            throw new OutboxEventException("Failed to serialize outbox event", e);
         }
     }
 

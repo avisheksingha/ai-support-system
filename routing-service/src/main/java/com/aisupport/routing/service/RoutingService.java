@@ -3,9 +3,9 @@ package com.aisupport.routing.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.aisupport.common.event.TicketAnalyzedEvent;
+import com.aisupport.common.event.TicketRoutedEvent;
 import com.aisupport.routing.entity.RoutingRule;
-import com.aisupport.routing.event.TicketAnalyzedEvent;
-import com.aisupport.routing.event.TicketRoutedEvent;
 import com.aisupport.routing.outbox.OutboxEventService;
 
 import lombok.RequiredArgsConstructor;

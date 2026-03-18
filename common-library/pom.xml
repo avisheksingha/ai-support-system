@@ -23,6 +23,18 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>					
 		</dependency>
+
+	    <!-- Swagger annotations for shared DTO documentation -->
+	    <dependency>
+	        <groupId>io.swagger.core.v3</groupId>
+	        <artifactId>swagger-annotations-jakarta</artifactId>
+	    </dependency>
+	    
+	    <!-- Jakarta Validation API for shared validation annotations -->
+		<dependency>
+		    <groupId>jakarta.validation</groupId>
+		    <artifactId>jakarta.validation-api</artifactId>
+		</dependency>
 	</dependencies>
 	
 </project>

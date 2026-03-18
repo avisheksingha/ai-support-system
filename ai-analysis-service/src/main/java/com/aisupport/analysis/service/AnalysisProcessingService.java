@@ -9,10 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.aisupport.analysis.chat.ChatProvider;
 import com.aisupport.analysis.dto.ParsedAnalysis;
 import com.aisupport.analysis.entity.AnalysisResult;
-import com.aisupport.analysis.event.TicketAnalyzedEvent;
-import com.aisupport.analysis.event.TicketCreatedEvent;
 import com.aisupport.analysis.outbox.OutboxEventService;
 import com.aisupport.analysis.repository.AnalysisResultRepository;
+import com.aisupport.common.event.TicketAnalyzedEvent;
+import com.aisupport.common.event.TicketCreatedEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;

@@ -2,6 +2,8 @@ package com.aisupport.common.dto;
 
 import java.io.Serializable;
 
+import com.aisupport.common.enums.TicketStatus;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -45,12 +47,15 @@ public class TicketDTO implements Serializable {
     @Schema(description = "Message of the ticket", example = "I need help with my order.")
     private String message;
     
-    @Schema(description = "Status of the ticket", example = "Open")
-    private String status;
-    @Schema(description = "Priority of the ticket", example = "High")
+    @Schema(description = "Status of the ticket", example = "NEW")
+    private TicketStatus status;
+    
+    @Schema(description = "Priority of the ticket", example = "HIGH")
     private String priority;
+    
     @Schema(description = "Assigned to of the ticket", example = "John Doe")
     private String assignedTo;
+    
     @Schema(description = "SLA hours for the ticket", example = "24")
     private Integer slaHours;
 

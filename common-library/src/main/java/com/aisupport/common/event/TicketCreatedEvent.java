@@ -1,4 +1,4 @@
-package com.aisupport.analysis.event;
+package com.aisupport.common.event;
 
 import java.time.LocalDateTime;
 
@@ -16,6 +16,7 @@ import lombok.Setter;
 public class TicketCreatedEvent {
 
     private Long ticketId;
+    private String ticketNumber;
     private String subject;
     private String message;
     private LocalDateTime createdAt;

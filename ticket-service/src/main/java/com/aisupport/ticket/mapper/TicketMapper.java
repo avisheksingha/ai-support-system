@@ -14,6 +14,7 @@ import com.aisupport.ticket.entity.Ticket;
 )
 public interface TicketMapper {
 	
+	
 	@Mapping(target = "id", ignore = true)
 	@Mapping(target = "version", ignore = true)
 	@Mapping(target = "ticketNumber", ignore = true)
@@ -31,13 +32,4 @@ public interface TicketMapper {
     @Mapping(source = "status", target = "status")
     @Mapping(source = "priority", target = "priority")
     TicketResponse toResponse(Ticket ticket);
-    
-    // Helper methods for enum to String conversion
-    default String mapStatus(Ticket.TicketStatus status) {
-        return status != null ? status.name() : null;
-    }
-    
-    default String mapPriority(Ticket.Priority priority) {
-        return priority != null ? priority.name() : null;
-    }
 }

@@ -6,9 +6,9 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.aisupport.common.event.TicketAnalyzedEvent;
 import com.aisupport.routing.entity.RoutingRule;
 import com.aisupport.routing.entity.RuleExecutionHistory;
-import com.aisupport.routing.event.TicketAnalyzedEvent;
 import com.aisupport.routing.repository.RoutingRuleRepository;
 import com.aisupport.routing.repository.RuleExecutionHistoryRepository;
 
@@ -89,17 +89,16 @@ public class RuleEvaluationService {
         if (requestKeywords == null || requestKeywords.isEmpty()) return false;
 
         return Arrays.stream(ruleKeywords)
-                .anyMatch(ruleKeyword ->
-                        requestKeywords.stream()
-                                .anyMatch(req ->
-                                        req.toLowerCase()
-                                                .contains(ruleKeyword.toLowerCase())
-                                )
-                );
+            .anyMatch(ruleKeyword ->
+                requestKeywords.stream()
+                    .anyMatch(req ->
+                        req.toLowerCase()
+                        	.contains(ruleKeyword.toLowerCase())
+                    )
+            );
     }
 
-    private void saveExecutionHistory(Long ruleId, Long ticketId,
-                                      boolean matched, long executionTimeNs) {
+    private void saveExecutionHistory(Long ruleId, Long ticketId, boolean matched, long executionTimeNs) {
 
         RuleExecutionHistory history = RuleExecutionHistory.builder()
                 .ruleId(ruleId)

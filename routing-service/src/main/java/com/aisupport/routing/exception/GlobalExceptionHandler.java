@@ -10,7 +10,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import com.aisupport.common.exception.ErrorResponse;
 
@@ -48,28 +47,6 @@ public class GlobalExceptionHandler {
         );
         
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
-    }
-    
-    @ExceptionHandler(WebClientResponseException.class)
-    public ResponseEntity<ErrorResponse> handleWebClientException(
-            WebClientResponseException ex, WebRequest request) {
-        log.error("WebClient error: {} - {}", ex.getStatusCode(), ex.getMessage());
-        
-        String errorMessage = "Downstream service error";
-        if (ex.getStatusCode().is4xxClientError()) {
-            errorMessage = "Invalid request to downstream service";
-        } else if (ex.getStatusCode().is5xxServerError()) {
-            errorMessage = "Downstream service unavailable";
-        }
-        
-        ErrorResponse error = ErrorResponse.of(
-                ex.getStatusCode().value(),
-                "WebClient Error",
-                errorMessage,
-                request.getDescription(false)
-        );
-        
-        return ResponseEntity.status(ex.getStatusCode()).body(error);
     }
     
     @ExceptionHandler(MethodArgumentNotValidException.class)

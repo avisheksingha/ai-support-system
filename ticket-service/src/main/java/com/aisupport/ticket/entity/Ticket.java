@@ -1,6 +1,11 @@
 package com.aisupport.ticket.entity;
 
 import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.Set;
+
+import com.aisupport.common.enums.TicketPriority;
+import com.aisupport.common.enums.TicketStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,7 +19,6 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
-import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -48,7 +52,6 @@ public class Ticket {
     private String ticketNumber;
 
     @Column(name = "customer_email", nullable = false)
-    @Email(message = "Invalid email format")
     private String customerEmail;
 
     @Column(name = "customer_name")
@@ -66,7 +69,7 @@ public class Ticket {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Priority priority;
+    private TicketPriority priority;
 
     @Column(name = "assigned_to")
     private String assignedTo;
@@ -89,6 +92,17 @@ public class Ticket {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+    
+    // NEW: State machine transitions
+    private static final Map<TicketStatus, Set<TicketStatus>> VALID_TRANSITIONS = Map.of(
+        TicketStatus.NEW,          Set.of(TicketStatus.ANALYZING),
+        TicketStatus.ANALYZING,    Set.of(TicketStatus.ANALYZED),
+        TicketStatus.ANALYZED,     Set.of(TicketStatus.ASSIGNED),
+        TicketStatus.ASSIGNED,     Set.of(TicketStatus.IN_PROGRESS),
+        TicketStatus.IN_PROGRESS,  Set.of(TicketStatus.RESOLVED),
+        TicketStatus.RESOLVED,     Set.of(TicketStatus.CLOSED),
+        TicketStatus.CLOSED,       Set.of()
+    );
 
     @PrePersist
     protected void onCreate() {
@@ -100,7 +114,7 @@ public class Ticket {
         }
 
         if (priority == null) {
-            priority = Priority.MEDIUM;
+            priority = TicketPriority.MEDIUM;
         }
     }
 
@@ -111,33 +125,11 @@ public class Ticket {
 
     // NEW: Enforce state machine transitions
     public void transitionTo(TicketStatus newStatus) {
-
-        if (this.status == TicketStatus.CLOSED) {
-            throw new IllegalStateException("Closed tickets cannot transition.");
+    	if (!VALID_TRANSITIONS.getOrDefault(this.status, Set.of()).contains(newStatus)) {
+            throw new IllegalStateException(
+                "Invalid transition from " + this.status + " to " + newStatus
+            );
         }
-
-        // Example transition validation
-        if (this.status == TicketStatus.NEW && newStatus == TicketStatus.ANALYZED) {
-            throw new IllegalStateException("Must pass through ANALYZING first.");
-        }
-
         this.status = newStatus;
-    }
-
-    public enum TicketStatus {
-        NEW,
-        ANALYZING,
-        ANALYZED,
-        ASSIGNED,
-        IN_PROGRESS,
-        RESOLVED,
-        CLOSED
-    }
-
-    public enum Priority {
-        LOW,
-        MEDIUM,
-        HIGH,
-        CRITICAL
     }
 }

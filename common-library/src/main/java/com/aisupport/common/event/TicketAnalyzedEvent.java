@@ -1,4 +1,4 @@
-package com.aisupport.routing.event;
+package com.aisupport.common.event;
 
 import java.time.LocalDateTime;
 import java.util.List;

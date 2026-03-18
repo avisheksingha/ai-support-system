@@ -1,0 +1,92 @@
+{"properties": [
+  {
+    "name": "info.app.name",
+    "type": "java.lang.String",
+    "description": "A description for 'info.app.name'"
+  },
+  {
+    "name": "info.app.version",
+    "type": "java.lang.String",
+    "description": "A description for 'info.app.version'"
+  },
+  {
+    "name": "info.app.environment",
+    "type": "java.lang.String",
+    "description": "A description for 'info.app.environment'"
+  },
+  {
+    "name": "info.app.description",
+    "type": "java.lang.String",
+    "description": "A description for 'info.app.description'"
+  },
+  {
+    "name": "spring.cloud.gateway.routes[0].id",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cloud.gateway.routes[0].id'"
+  },
+  {
+    "name": "spring.cloud.gateway.routes[0].uri",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cloud.gateway.routes[0].uri'"
+  },
+  {
+    "name": "spring.cloud.gateway.routes[0].predicates[0]",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cloud.gateway.routes[0].predicates[0]'"
+  },
+  {
+    "name": "spring.cloud.gateway.routes[0].filters[0]",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cloud.gateway.routes[0].filters[0]'"
+  },
+  {
+    "name": "spring.cloud.gateway.routes[1].id",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cloud.gateway.routes[1].id'"
+  },
+  {
+    "name": "spring.cloud.gateway.routes[1].uri",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cloud.gateway.routes[1].uri'"
+  },
+  {
+    "name": "spring.cloud.gateway.routes[1].predicates[0]",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cloud.gateway.routes[1].predicates[0]'"
+  },
+  {
+    "name": "spring.cloud.gateway.routes[1].filters[0]",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cloud.gateway.routes[1].filters[0]'"
+  },
+  {
+    "name": "spring.cloud.gateway.routes[2].id",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cloud.gateway.routes[2].id'"
+  },
+  {
+    "name": "spring.cloud.gateway.routes[2].uri",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cloud.gateway.routes[2].uri'"
+  },
+  {
+    "name": "spring.cloud.gateway.routes[2].predicates[0]",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cloud.gateway.routes[2].predicates[0]'"
+  },
+  {
+    "name": "spring.cloud.gateway.routes[2].filters[0]",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cloud.gateway.routes[2].filters[0]'"
+  },
+  {
+    "name": "spring.cloud.gateway.discovery.locator.enabled",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cloud.gateway.discovery.locator.enabled'"
+  },
+  {
+    "name": "spring.cloud.gateway.globalcors.add-to-simple-url-handler-mapping",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cloud.gateway.globalcors.add-to-simple-url-handler-mapping'"
+  }
+]}
