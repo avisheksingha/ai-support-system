@@ -181,16 +181,17 @@ public class TicketService {
         // Update assignment and priority based on routing result
         ticket.setAssignedTo(event.getAssignToTeam());
 
+        // Update priority if present - direct enum assignment, no valueOf needed
         if (event.getPriority() != null) {
-            ticket.setPriority(
-                    TicketPriority.valueOf(event.getPriority().toUpperCase())
-            );
+            ticket.setPriority(event.getPriority());
         }
-
+        
+        // Update SLA if present
         if (event.getSlaHours() != null) {
             ticket.setSlaHours(event.getSlaHours());
         }
 
+        // transition to ASSIGNED — state machine allows NEW → ASSIGNED directly
         ticket.transitionTo(TicketStatus.ASSIGNED);
 
         log.info("Ticket {} updated from routing event", ticket.getTicketNumber());
