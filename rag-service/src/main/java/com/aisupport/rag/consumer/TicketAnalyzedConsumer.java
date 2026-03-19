@@ -55,7 +55,7 @@ public class TicketAnalyzedConsumer {
 	        
 	        log.debug("Constructed RAG query: {}", query);
 	
-	        String response = ragService.generateResponse(query);
+	        String response = ragService.generateResponse(event.getTicketId(), query);
 	
 	        log.info("Generated RAG response for ticketId={}: {}", event.getTicketId(), response);
 

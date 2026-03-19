@@ -9,6 +9,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.aisupport.rag.entity.KnowledgeArticle;
 import com.aisupport.rag.repository.KnowledgeArticleRepository;
 
 import lombok.extern.slf4j.Slf4j;
@@ -34,8 +35,14 @@ public class DataLoaderRunner {
     CommandLineRunner loadKnowledgeBase(KnowledgeArticleRepository repo, VectorStore vectorStore) {
         return args -> {
 
-            var articles = repo.findAll();
+            // Skip if already populated
+            long count = repo.countEmbeddedArticles();
+            if (count > 0) {
+                log.info("Vector store already populated with {} articles — skipping load", count);
+                return;
+            }
 
+            List<KnowledgeArticle> articles = repo.findAll();
             log.info("Loading {} knowledge articles into vector store...", articles.size());
 
             List<Document> docs = articles.stream()
@@ -45,9 +52,13 @@ public class DataLoaderRunner {
                     ))
                     .toList();
 
-            vectorStore.add(docs);
+            vectorStore.add(docs); // embed into PGVector first
+
+            articles.forEach(a -> a.setEmbedded(true));     // mark as embedded
+            repo.saveAll(articles);                         // persist the flag
 
             log.info("Successfully loaded {} articles into vector store.", docs.size());
         };
     }
 }
+

@@ -1,4 +1,4 @@
-package com.aisupport.analysis.outbox;
+package com.aisupport.rag.outbox;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -18,11 +18,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "outbox_events",
-       indexes = {
-           @Index(name = "idx_outbox_status", columnList = "status"),
-           @Index(name = "idx_outbox_created_at", columnList = "created_at")
-       })
+@Table(
+	name = "outbox_events",
+	indexes = {
+	    @Index(name = "idx_outbox_status", columnList = "status"),
+	    @Index(name = "idx_outbox_aggregate", columnList = "aggregate_type, aggregate_id")
+	}
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -38,13 +40,13 @@ public class OutboxEvent {
     @Column(name = "correlation_id")
     private String correlationId;
 
-    @Column(nullable = false)
+    @Column(name = "aggregate_type", nullable = false)
     private String aggregateType;
 
-    @Column(nullable = false)
+    @Column(name = "aggregate_id", nullable = false)
     private String aggregateId;
 
-    @Column(nullable = false)
+    @Column(name = "event_type", nullable = false)
     private String eventType;
 
     @Column(columnDefinition = "TEXT", nullable = false)
@@ -56,7 +58,7 @@ public class OutboxEvent {
 
     @Column(name = "retry_count", nullable = false)
     @Builder.Default
-    private int retryCount = 0; // NEW: tracks retry attempts
+    private int retryCount = 0;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -69,8 +71,8 @@ public class OutboxEvent {
     }
 
     @PrePersist
-    public void prePersist() {
-    	if (id == null) {
+    protected void onCreate() {
+        if (id == null) {
             id = UUID.randomUUID().toString();
         }
         createdAt = LocalDateTime.now();

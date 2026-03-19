@@ -2,8 +2,12 @@ package com.aisupport.routing.entity;
 
 import java.time.LocalDateTime;
 
+import com.aisupport.common.enums.TicketPriority;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -58,8 +62,9 @@ public class RoutingRule {
     @Column(name = "assign_to_team", nullable = false, length = 100)
     private String assignToTeam;
     
-    @Column(name = "priority_override", length = 50)
-    private String priorityOverride;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "priority_override")
+    private TicketPriority priorityOverride;
     
     @Column(name = "sla_hours")
     private Integer slaHours;

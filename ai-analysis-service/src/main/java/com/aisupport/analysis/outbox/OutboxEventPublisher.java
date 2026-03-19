@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class OutboxEventPublishScheduler {
+public class OutboxEventPublisher {
 
     private final OutboxEventRepository repository;
     private final ObjectMapper objectMapper;
@@ -53,16 +53,23 @@ public class OutboxEventPublishScheduler {
     private void processEvent(OutboxEvent event) {        	
         try {
         	
+        	// Restore correlationId into MDC from stored value
+            if (event.getCorrelationId() != null) {
+                MDC.put(Correlation.MDC_KEY, event.getCorrelationId());
+            }
+            
+            log.debug("Processing outbox event {} type={}", event.getId(), event.getEventType()); // after MDC restore
+        	
         	String topic = mapTopic(event.getEventType());
         	Object payloadObject = deserializePayload(event.getPayload(), event.getEventType());
             
             ProducerRecord<String, Object> producerRecord = new ProducerRecord<>(topic, null,
             		event.getAggregateId(), payloadObject);
 
-            String correlationId = MDC.get(Correlation.MDC_KEY);
-            if (correlationId != null) {
-            	producerRecord.headers().add(HttpHeaders.CORRELATION_ID,
-                        correlationId.getBytes(StandardCharsets.UTF_8));
+            // Also propagate correlationId to Kafka header
+            if (event.getCorrelationId() != null) {
+                producerRecord.headers().add(HttpHeaders.CORRELATION_ID,
+                        event.getCorrelationId().getBytes(StandardCharsets.UTF_8));
             }
             
             kafkaTemplate.send(producerRecord).get(5, TimeUnit.SECONDS);
@@ -91,6 +98,9 @@ public class OutboxEventPublishScheduler {
 			
             log.error("Failed to publish outbox event {}", event.getId(), e);
             markFailed(event);
+            
+        } finally {
+            MDC.remove(Correlation.MDC_KEY); // clean up scheduler thread MDC
         }
         
     }

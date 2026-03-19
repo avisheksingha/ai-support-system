@@ -1,4 +1,4 @@
-package com.aisupport.ticket.outbox;
+package com.aisupport.rag.outbox;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -16,7 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.aisupport.common.constant.Correlation;
 import com.aisupport.common.constant.HttpHeaders;
 import com.aisupport.common.constant.KafkaTopics;
-import com.aisupport.common.event.TicketCreatedEvent;
+import com.aisupport.common.event.TicketAnalyzedEvent;
+import com.aisupport.common.event.TicketRagResponseEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -120,7 +121,8 @@ public class OutboxEventPublisher {
     
     private Object deserializePayload(String payload, String eventType) throws Exception {
         Class<?> clazz = switch (eventType) {
-            case "TicketCreatedEvent" -> TicketCreatedEvent.class;
+        	case "TicketAnalyzedEvent"   -> TicketAnalyzedEvent.class;
+        	case "TicketRagResponseEvent" -> TicketRagResponseEvent.class; // Newly added
             default -> throw new IllegalArgumentException("Unknown event type: " + eventType);
         };
         return objectMapper.readValue(payload, clazz);
@@ -129,7 +131,8 @@ public class OutboxEventPublisher {
     private String mapTopic(String eventType) {
 
         return switch (eventType) {
-            case "TicketCreatedEvent" -> KafkaTopics.TICKET_CREATED;
+            case "TicketAnalyzedEvent" -> KafkaTopics.TICKET_ANALYZED;
+            case "TicketRagResponseEvent" -> KafkaTopics.TICKET_RAG_RESPONSE; // Newly added
             default -> throw new IllegalArgumentException("Unknown event type: " + eventType);
         };
     }

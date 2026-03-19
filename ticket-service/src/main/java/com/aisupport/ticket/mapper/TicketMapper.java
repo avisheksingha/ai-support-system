@@ -15,6 +15,8 @@ import com.aisupport.ticket.entity.Ticket;
 public interface TicketMapper {
 	
 	
+	@Mapping(target = "ragGeneratedAt", ignore = true)
+	@Mapping(target = "ragResponse", ignore = true)
 	@Mapping(target = "id", ignore = true)
 	@Mapping(target = "version", ignore = true)
 	@Mapping(target = "ticketNumber", ignore = true)

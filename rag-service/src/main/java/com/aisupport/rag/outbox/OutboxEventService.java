@@ -1,4 +1,4 @@
-package com.aisupport.ticket.outbox;
+package com.aisupport.rag.outbox;
 
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;

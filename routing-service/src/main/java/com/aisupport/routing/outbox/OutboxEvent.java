@@ -34,6 +34,9 @@ public class OutboxEvent {
 
     @Id
     private String id;
+    
+    @Column(name = "correlation_id")
+    private String correlationId;
 
     @Column(nullable = false)
     private String aggregateType;

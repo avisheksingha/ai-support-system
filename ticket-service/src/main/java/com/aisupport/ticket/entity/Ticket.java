@@ -86,6 +86,12 @@ public class Ticket {
 
     @Column(name = "sla_hours")
     private Integer slaHours;
+    
+    @Column(name = "rag_response", columnDefinition = "TEXT")
+    private String ragResponse;
+
+    @Column(name = "rag_generated_at")
+    private LocalDateTime ragGeneratedAt;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

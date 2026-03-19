@@ -1,8 +1,10 @@
 package com.aisupport.analysis.outbox;
 
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.aisupport.common.constant.Correlation;
 import com.aisupport.common.exception.OutboxEventException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -30,6 +32,7 @@ public class OutboxEventService {
                     .aggregateId(aggregateId)
                     .eventType(eventType)
                     .payload(payload)
+                    .correlationId(MDC.get(Correlation.MDC_KEY)) // ✅ capture from HTTP thread
                     .build();
 
             repository.save(event);
