@@ -22,7 +22,7 @@ The AI Support System is a leading-edge, microservices-based ticket management p
 ## Technology Stack
 
 - **Java**: 21
-- **Spring Boot**: 4.0.3
+- **Spring Boot**: 4.0.4
 - **Spring Cloud**: 2025.1.0
 - **Spring AI**: 2.0.0-M1
 - **Messaging**: Apache Kafka

@@ -86,6 +86,12 @@ public class Ticket {
 
     @Column(name = "sla_hours")
     private Integer slaHours;
+    
+    @Column(name = "rag_response", columnDefinition = "TEXT")
+    private String ragResponse;
+
+    @Column(name = "rag_generated_at")
+    private LocalDateTime ragGeneratedAt;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -95,14 +101,14 @@ public class Ticket {
     
     // NEW: State machine transitions
     private static final Map<TicketStatus, Set<TicketStatus>> VALID_TRANSITIONS = Map.of(
-        TicketStatus.NEW,          Set.of(TicketStatus.ANALYZING),
-        TicketStatus.ANALYZING,    Set.of(TicketStatus.ANALYZED),
-        TicketStatus.ANALYZED,     Set.of(TicketStatus.ASSIGNED),
-        TicketStatus.ASSIGNED,     Set.of(TicketStatus.IN_PROGRESS),
-        TicketStatus.IN_PROGRESS,  Set.of(TicketStatus.RESOLVED),
-        TicketStatus.RESOLVED,     Set.of(TicketStatus.CLOSED),
-        TicketStatus.CLOSED,       Set.of()
-    );
+	    TicketStatus.NEW,          Set.of(TicketStatus.ANALYZING, TicketStatus.ASSIGNED), // fast-path
+	    TicketStatus.ANALYZING,    Set.of(TicketStatus.ANALYZED),
+	    TicketStatus.ANALYZED,     Set.of(TicketStatus.ASSIGNED),
+	    TicketStatus.ASSIGNED,     Set.of(TicketStatus.IN_PROGRESS),
+	    TicketStatus.IN_PROGRESS,  Set.of(TicketStatus.RESOLVED),
+	    TicketStatus.RESOLVED,     Set.of(TicketStatus.CLOSED),
+	    TicketStatus.CLOSED,       Set.of()
+	);
 
     @PrePersist
     protected void onCreate() {

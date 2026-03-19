@@ -5,9 +5,10 @@ Microservice responsible for managing support tickets throughout their lifecycle
 ## Features
 
 - **CRUD Operations**: Create, read, update, and delete tickets.
+- **State Machine**: Enforces strict status transition logic (e.g., `NEW` -> `ANALYZING` -> `ANALYZED` -> `ASSIGNED`).
 - **Manual & Automated Assignment**: Assign tickets to agents manually or via the Routing Service.
-- **Status Tracking**: Track ticket lifecycle status (OPEN, IN_PROGRESS, RESOLVED, etc.) and priority.
-- **Event-Driven Architecture**: Uses **Apache Kafka** for asynchronous communication and status updates.
+- **Observability**: Implements Distributed Tracing via `CorrelationIdFilter` to propagate `X-Correlation-Id` directly into MDC for logs.
+- **Event-Driven Architecture**: Uses **Apache Kafka** for asynchronous communication and status updates. Publishes events using a robust **Outbox Pattern** with retry semantics.
 - **AI Integration**: Integration with **AI Analysis Service** for automated tagging (sentiment, intent, urgency) and **RAG Service** for context-aware suggestions.
 - **Service Discovery**: Registers with Eureka for dynamic invocation.
 - **Resilience**: Resilient communication using Circuit Breakers (Resilience4j).

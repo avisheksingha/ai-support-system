@@ -36,6 +36,9 @@ public class OutboxEvent {
 
     @Id
     private String id;
+    
+    @Column(name = "correlation_id")
+    private String correlationId;
 
     @Column(name = "aggregate_type", nullable = false)
     private String aggregateType;
@@ -51,13 +54,13 @@ public class OutboxEvent {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Status status; // NEW, SENT, FAILED
+    private Status status;
 
     @Column(name = "retry_count", nullable = false)
     @Builder.Default
-    private int retryCount = 0; // NEW: retry tracking
+    private int retryCount = 0;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "processed_at")

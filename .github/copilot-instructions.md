@@ -1,6 +1,6 @@
 # Copilot Instructions for AI Support System
 
-This repository is a Spring Boot 4.0.3 microservices platform for AI-powered ticket management, using Spring AI with Google Gemini and OpenAI integration, service discovery, and event-driven automation via Kafka.
+This repository is a Spring Boot 4.0.4 microservices platform for AI-powered ticket management, using Spring AI with Google Gemini and OpenAI integration, service discovery, and event-driven automation via Kafka.
 
 ## Build, Test, and Lint Commands
 
@@ -32,11 +32,12 @@ This repository is a Spring Boot 4.0.3 microservices platform for AI-powered tic
 ## High-Level Architecture
 
 - **discovery-service:** Eureka registry for all microservices.
-- **api-gateway:** Central entry point, routes requests (Port: 8081).
-- **ticket-service:** Core ticket management (Port: 8082).
+- **api-gateway:** Central entry point built on Spring Cloud Gateway **WebFlux**, handles CORS, and assigns `X-Correlation-Id` (Port: 8081).
+- **ticket-service:** Core ticket management with strict state machine transitions (Port: 8082).
 - **ai-analysis-service:** AI analysis via Spring AI (Gemini & OpenAI) (Port: 8083).
 - **routing-service:** Orchestrates ticket routing (Port: 8084).
-- **common-library:** Shared DTOs, events, exceptions, utilities.
+- **rag-service:** Retrieval-Augmented Generation for context-aware suggestions (pgvector) (Port: 8085).
+- **common-library:** Shared DTOs, Kafka events (`TicketCreatedEvent`, etc.), exceptions, and constants (`KafkaTopics`, `TicketStatus`).
 - **aisupport-parent:** Shared Maven parent configuration.
 
 ### Service Startup Order
@@ -51,9 +52,11 @@ Each core service exposes OpenAPI docs at `/swagger-ui.html` (e.g., http://local
 
 - **Architecture:** Layered (Controller → Service → Repository).
 - **DI:** Constructor-based dependency injection.
-- **Shared Code:** Use `common-library` for models, events, and exceptions.
+- **Shared Code:** Use `common-library` for DTOs, Enums, Kafka Topics/Groups, and Events.
 - **Testing:** JUnit 5 + Mockito.
-- **Communication:** Synchronous via Feign/LoadBalancer (where applicable) and Asynchronous via Kafka.
+- **Communication:** Synchronous via Eureka/REST and Asynchronous via Kafka.
+- **Event Publishing:** Use the **Outbox Pattern** with a dedicated scheduler and retry semantics to guarantee Kafka event delivery.
+- **Observability:** Use `CorrelationIdFilter` to map `X-Correlation-Id` to `MDC` for Logback tracing in both REST controllers and Kafka consumers.
 - **Discovery:** Eureka (no hardcoded URLs).
 
 ## Environment Variables
@@ -64,4 +67,4 @@ Each core service exposes OpenAPI docs at `/swagger-ui.html` (e.g., http://local
 
 ---
 
-Summary: Updated .github/copilot-instructions.md with the latest tech stack (Java 21, Spring Boot 4.x), OpenAI/Gemini integration details, and Kafka mention.
+Summary: Updated .github/copilot-instructions.md with the latest tech stack (Java 21, Spring Boot 4.x), OpenAI/Gemini integration details, MDC Tracing, WebFlux Gateway, Outbox pattern rules, and rag-service integration.

@@ -12,10 +12,18 @@ By introducing **Apache Kafka** as a message broker, we decoupled the execution 
 
 ### 3. Service Registry and API Gateway
 *   **Eureka (`discovery-service`)**: Instead of hardcoding IP addresses or DNS names for inter-service communication, services register with Eureka. This enables dynamic scaling where instances can come and go without manual reconfiguration.
-*   **Spring Cloud Gateway (`api-gateway`)**: Provides a unified facade for external clients, obscuring the internal microservice topology. It handles CORS, routing, and serves as a potential centralized point for authentication and rate limiting.
+*   **Spring Cloud Gateway (`api-gateway`)**: Provides a unified facade for external clients, obscuring the internal microservice topology. It uses the proactive **WebFlux (Reactive)** framework to handle massive concurrent throughput. It also handles CORS, routing, request lifecycle logging, and assigns a global `X-Correlation-Id` to all incoming requests.
 
-### 4. Shared Library (`common-library`)
-To avoid code duplication (especially around DTOs and Kafka Event schemas), a shared library was created. While microservices best practices generally advocate for entirely disjointed codebases ("share nothing"), sharing contracts/events in a strongly typed language (Java) prevents serialization errors and mismatch issues during payload parsing.
+### 4. Distributed Tracing and Observability
+To ensure deep observability across asynchronous and synchronous boundaries:
+*   A `CorrelationIdFilter` intercepts all HTTP requests across every service, binding the `X-Correlation-Id` to the `MDC` for Logback output (e.g., `%X{correlationId}`).
+*   When publishing Kafka events, the MDC correlation ID is embedded directly into the Kafka message headers and seamlessly extracted by consumers, guaranteeing traceability from gateway entry to eventual processing.
+
+### 5. Resilient Event Publishing (Outbox Pattern)
+To handle discrepancies and ensure zero-loss observability across Kafka interactions, an **Outbox Pattern** is implemented across publishing services (e.g. `ticket-service`, `ai-analysis-service`). Background asynchronous schedulers publish pending events, and maintain strict tracking with a `retryCount` mechanism (up to `MAX_RETRIES`), eventually escalating unrecoverable tasks to a `DEAD` status flag.
+
+### 6. Shared Library (`common-library`)
+To avoid code duplication (especially around DTOs and Kafka Event schemas), a shared library was created. While microservices best practices generally advocate for entirely disjointed codebases ("share nothing"), sharing contracts/events (`TicketCreatedEvent`, `TicketStatus`, `KafkaTopics`, etc.) in a strongly typed language (Java) prevents serialization errors and severe mismatch issues during payload parsing.
 
 ## Technology Stack and Rationale
 

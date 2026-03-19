@@ -4,10 +4,11 @@ Shared module containing reusable components, DTOs, and utilities for the AI Sup
 
 ## Contents
 
-- **DTOs**: Shared Data Transfer Objects (e.g., `AnalysisResultDTO`, `TicketDTO`, `Sentiment`, `Urgency`).
-- **Exceptions**: Common exception classes (e.g., `ResourceNotFoundException`) and global error handling structures.
-- **Utilities**: Helper classes, constants, and shared configurations used across multiple services.
-- **Events**: Shared event models for Kafka-based communication (e.g., `TicketCreatedEvent`, `TicketAnalyzedEvent`).
+- **DTOs**: Shared Data Transfer Objects (e.g., `AnalysisResultDTO`, `TicketDTO`).
+- **Enums**: Centralized Enums (e.g., `TicketStatus`, `TicketPriority`).
+- **Exceptions**: Common exception classes (e.g., `ResourceNotFoundException`, `OutboxEventException`) and global error handling structures.
+- **Utilities / Constants**: Helper classes and strictly defined constants (e.g., `Correlation`, `HttpHeaders`, `KafkaTopics`, `KafkaGroups`).
+- **Events**: Shared event models for Kafka-based communication (e.g., `TicketCreatedEvent`, `TicketAnalyzedEvent`, `TicketRoutedEvent`).
 
 ## Usage
 

@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.aisupport.common.enums.TicketPriority;
 import com.aisupport.common.enums.TicketStatus;
 import com.aisupport.common.event.TicketCreatedEvent;
+import com.aisupport.common.event.TicketRagResponseEvent;
 import com.aisupport.common.event.TicketRoutedEvent;
 import com.aisupport.ticket.dto.TicketRequest;
 import com.aisupport.ticket.dto.TicketResponse;
@@ -181,16 +182,17 @@ public class TicketService {
         // Update assignment and priority based on routing result
         ticket.setAssignedTo(event.getAssignToTeam());
 
+        // Update priority if present - direct enum assignment, no valueOf needed
         if (event.getPriority() != null) {
-            ticket.setPriority(
-                    TicketPriority.valueOf(event.getPriority().toUpperCase())
-            );
+            ticket.setPriority(event.getPriority());
         }
-
+        
+        // Update SLA if present
         if (event.getSlaHours() != null) {
             ticket.setSlaHours(event.getSlaHours());
         }
 
+        // transition to ASSIGNED — state machine allows NEW → ASSIGNED directly
         ticket.transitionTo(TicketStatus.ASSIGNED);
 
         log.info("Ticket {} updated from routing event", ticket.getTicketNumber());
@@ -200,6 +202,21 @@ public class TicketService {
                 event.getAssignToTeam(),
                 event.getPriority(),
                 event.getSlaHours());
+    }
+    
+    @Transactional
+    public void applyRagResponse(TicketRagResponseEvent event) {
+
+        Ticket ticket = ticketRepository.findById(event.getTicketId())
+                .orElseThrow(() -> new TicketNotFoundException(
+                        TICKET_NOT_FOUND_MSG + event.getTicketId()));
+
+        ticket.setRagResponse(event.getResponse());
+        ticket.setRagGeneratedAt(event.getGeneratedAt());
+
+        ticketRepository.save(ticket);
+
+        log.info("RAG response applied to ticket {}", ticket.getTicketNumber());
     }
 
     private String generateTicketNumber() {

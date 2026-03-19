@@ -3,6 +3,7 @@ package com.aisupport.routing.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.aisupport.common.enums.TicketPriority;
 import com.aisupport.common.event.TicketAnalyzedEvent;
 import com.aisupport.common.event.TicketRoutedEvent;
 import com.aisupport.routing.entity.RoutingRule;
@@ -29,9 +30,10 @@ public class RoutingService {
         RoutingRule rule = ruleEvaluationService.evaluate(event);
 
         String team = rule != null ? rule.getAssignToTeam() : "general-support";
-        String priority = rule != null && rule.getPriorityOverride() != null
+        
+        TicketPriority priority = rule != null && rule.getPriorityOverride() != null
                 ? rule.getPriorityOverride()
-                : "MEDIUM";
+                : TicketPriority.MEDIUM;
 
         Integer sla = rule != null && rule.getSlaHours() != null
                 ? rule.getSlaHours()
@@ -54,7 +56,6 @@ public class RoutingService {
                 routedEvent
         );
 
-        log.info("Routing completed ticketId={} team={} priority={}",
-                ticketId, team, priority);
+        log.info("Routing completed ticketId={} team={} priority={}", ticketId, team, priority);
     }
 }

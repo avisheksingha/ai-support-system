@@ -58,6 +58,12 @@ public class TicketResponse {
     @Schema(description = "SLA hours applied to the ticket", example = "24")
     private Integer slaHours;
     
+    @Schema(description = "AI suggested response for the ticket")
+    private String ragResponse;
+
+    @Schema(description = "When the RAG response was generated")
+    private LocalDateTime ragGeneratedAt;
+    
     @Schema(description = "Timestamp when the ticket was created")
     private LocalDateTime createdAt;
     
