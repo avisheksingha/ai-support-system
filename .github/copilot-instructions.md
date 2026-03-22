@@ -1,6 +1,6 @@
 # Copilot Instructions for AI Support System
 
-This repository is a Spring Boot 4.0.4 microservices platform for AI-powered ticket management, using Spring AI with Google Gemini and OpenAI integration, service discovery, and event-driven automation via Kafka.
+This repository is a Spring Boot 4.0.4 microservices platform for AI-powered ticket management, using Spring AI with Google Gemini integration, service discovery, and event-driven automation via Kafka.
 
 ## Build, Test, and Lint Commands
 
@@ -31,29 +31,46 @@ This repository is a Spring Boot 4.0.4 microservices platform for AI-powered tic
 
 ## High-Level Architecture
 
-- **discovery-service:** Eureka registry for all microservices.
-- **api-gateway:** Central entry point built on Spring Cloud Gateway **WebFlux**, handles CORS, and assigns `X-Correlation-Id` (Port: 8081).
+- **discovery-service:** Eureka registry for all microservices (Port: 8761).
+- **api-gateway:** Central entry point built on Spring Cloud Gateway, handles CORS, and assigns `X-Correlation-Id` (Port: 8080).
 - **ticket-service:** Core ticket management with strict state machine transitions (Port: 8082).
-- **ai-analysis-service:** AI analysis via Spring AI (Gemini & OpenAI) (Port: 8083).
-- **routing-service:** Orchestrates ticket routing (Port: 8084).
+- **ai-analysis-service:** AI analysis via Spring AI (Gemini) (Port: 8083).
+- **routing-service:** Rule-based team assignment and SLA (Port: 8084).
 - **rag-service:** Retrieval-Augmented Generation for context-aware suggestions (pgvector) (Port: 8085).
-- **common-library:** Shared DTOs, Kafka events (`TicketCreatedEvent`, etc.), exceptions, and constants (`KafkaTopics`, `TicketStatus`).
-- **aisupport-parent:** Shared Maven parent configuration.
+- **common-library:** Shared DTOs, enums, events, constants — not a runnable service.
 
 ### Service Startup Order
 1. `discovery-service` (Eureka)
 2. `api-gateway`
-3. Core services: `ticket-service`, `ai-analysis-service`, `routing-service` (any order)
+3. Core services (can run in parallel):
+   - `ticket-service`
+   - `ai-analysis-service`
+   - `routing-service`
+   - `rag-service`
 
 ### API Documentation
-Each core service exposes OpenAPI docs at `/swagger-ui.html` (e.g., http://localhost:8082/swagger-ui.html).
+Each core service exposes OpenAPI docs at `/swagger-ui/index.html` (e.g., http://localhost:8082/swagger-ui/index.html).
+
+## Technology Stack
+
+- **Language**: Java 21
+- **Framework**: Spring Boot 4.0.4 + Spring Framework 7.0
+- **Microservices**: Spring Cloud 2025.1.0
+- **AI Integration**: Spring AI 2.0.0-M1 (Vertex AI Gemini 2.0 Flash)
+- **Database**: PostgreSQL + PGVector extension (vector embeddings)
+- **Messaging**: Apache Kafka 4.1
+- **Service Discovery**: Netflix Eureka
+- **API Documentation**: SpringDoc OpenAPI 3.0 (Swagger UI at /swagger-ui/index.html)
+- **Object Mapping**: MapStruct 1.6.3
+- **Resilience**: Spring Cloud CircuitBreaker + Resilience4j
 
 ## Key Conventions
 
 - **Architecture:** Layered (Controller → Service → Repository).
-- **DI:** Constructor-based dependency injection.
-- **Shared Code:** Use `common-library` for DTOs, Enums, Kafka Topics/Groups, and Events.
-- **Testing:** JUnit 5 + Mockito.
+- **DI:** Constructor-based dependency injection only — never @Autowired field injection.
+- **Shared Code:** Use `common-library` for DTOs, Enums, Kafka Topics/Groups, Events, and Constants.
+- **JPA Entities:** Use @Getter/@Setter — never @Data (breaks JPA proxying). Always include @NoArgsConstructor.
+- **Testing:** JUnit 5 + Mockito for unit tests; @SpringBootTest + Testcontainers for integration tests.
 - **Communication:** Synchronous via Eureka/REST and Asynchronous via Kafka.
 - **Event Publishing:** Use the **Outbox Pattern** with a dedicated scheduler and retry semantics to guarantee Kafka event delivery.
 - **Observability:** Use `CorrelationIdFilter` to map `X-Correlation-Id` to `MDC` for Logback tracing in both REST controllers and Kafka consumers.
@@ -63,8 +80,29 @@ Each core service exposes OpenAPI docs at `/swagger-ui.html` (e.g., http://local
 
 ### AI Analysis Service
 - **Google Cloud:** `GCP_PROJECT_ID`, `GCP_LOCATION`, `GOOGLE_APPLICATION_CREDENTIALS`.
-- **OpenAI:** `SPRING_AI_OPENAI_API_KEY`.
 
----
+## Important Rules
 
-Summary: Updated .github/copilot-instructions.md with the latest tech stack (Java 21, Spring Boot 4.x), OpenAI/Gemini integration details, MDC Tracing, WebFlux Gateway, Outbox pattern rules, and rag-service integration.
+- Never bypass API Gateway to call services directly (use port 8080).
+- Never share DB schemas between services.
+- Never add @Transactional directly on Kafka consumer methods (use @Transactional on the service method called from the consumer).
+- Never use spring-boot-starter-webmvc in api-gateway (WebFlux only).
+- Never use spring-boot-starter-webflux in MVC services (servlet stack conflict).
+- Never put @Entity classes in common-library.
+- Never skip @NoArgsConstructor on JPA entities.
+- Never skip @EnableScheduling on services that use @Scheduled.
+- All Kafka events go through OutboxEvent entity — never direct KafkaTemplate.
+- Outbox events: status PENDING/SENT/FAILED/DEAD, MAX_RETRIES=3.
+
+## End-to-End Data Flow
+
+1. Client sends POST /api/v1/tickets through API Gateway
+2. API Gateway injects X-Correlation-Id header for distributed tracing
+3. ticket-service creates ticket, saves TicketCreatedEvent to outbox table
+4. OutboxEventPublisher polls every 2s, publishes to ticket-created topic
+5. ai-analysis-service consumes event, calls Gemini API, publishes TicketAnalyzedEvent
+6. routing-service and rag-service consume TicketAnalyzedEvent in parallel:
+   - routing-service: matches DB rules, assigns team + SLA, publishes TicketRoutedEvent
+   - rag-service: PGVector similarity search, Gemini RAG response, publishes TicketRagResponseEvent
+7. ticket-service consumes TicketRoutedEvent and TicketRagResponseEvent
+   — updates assignment, priority, SLA, and rag_response on the ticket
