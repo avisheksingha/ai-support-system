@@ -7,6 +7,9 @@
 # Ignore Visual Studio Code settings
 .vscode/
 
+# Ignore Claude Code settings
+.claude/
+
 # Ignore common temporary files
 *.log
 *.tmp
