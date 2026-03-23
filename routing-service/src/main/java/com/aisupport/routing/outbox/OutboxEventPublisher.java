@@ -1,6 +1,8 @@
 package com.aisupport.routing.outbox;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -34,10 +36,15 @@ public class OutboxEventPublisher {
     @Scheduled(fixedDelay = 2000)
     @Transactional
     public void publishPendingEvents() {
-
-        List<OutboxEvent> events = repository.findTop50ByStatusOrderByCreatedAtAsc(
-        	OutboxEvent.Status.PENDING
-        );
+        List<OutboxEvent> candidates = new ArrayList<>();
+        candidates.addAll(repository.findTop50ByStatusOrderByCreatedAtAsc(OutboxEvent.Status.PENDING));
+        candidates.addAll(repository.findByStatusAndRetryCountLessThan(
+                OutboxEvent.Status.FAILED, OutboxEvent.MAX_RETRIES
+        ));
+        List<OutboxEvent> events = candidates.stream()
+                .sorted(Comparator.comparing(OutboxEvent::getCreatedAt))
+                .limit(50)
+                .toList();
         
         if (events.isEmpty()) {
             return;
@@ -81,7 +88,7 @@ public class OutboxEventPublisher {
             event.setStatus(OutboxEvent.Status.SENT);
             event.setProcessedAt(LocalDateTime.now());
 
-            log.debug("Published outbox event id={} type={}", event.getId(), event.getEventType());
+            log.info("Published outbox event id={} type={}", event.getId(), event.getEventType());
 
         } catch (InterruptedException e) {
         	

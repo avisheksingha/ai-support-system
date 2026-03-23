@@ -1,5 +1,4 @@
 services:
-
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper
@@ -31,58 +30,11 @@ services:
   postgres:
     image: ankane/pgvector:latest
     container_name: postgres
+    command: ["postgres", "-p", "5433"]
     environment:
-      POSTGRES_PASSWORD: pass
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - "5432:5432"
-
-  discovery-service:
-    build:
-      context: ..
-      dockerfile: discovery-service/Dockerfile
-    ports:
-      - "8761:8761"
-    depends_on:
-      - postgres
-      - kafka
-
-  ticket-service:
-    build:
-      context: ..
-      dockerfile: ticket-service/Dockerfile
-    ports:
-      - "8082:8082"
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-    depends_on:
-      - discovery-service
-      - postgres
-      - kafka
-
-  ai-analysis-service:
-    build:
-      context: ..
-      dockerfile: ai-analysis-service/Dockerfile
-    ports:
-      - "8083:8083"
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-    depends_on:
-      - discovery-service
-      - postgres
-      - kafka
-
-  routing-service:
-    build:
-      context: ..
-      dockerfile: routing-service/Dockerfile
-    ports:
-      - "8084:8084"
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-    depends_on:
-      - discovery-service
-      - postgres
-      - kafka
+      - "5433:5433"
