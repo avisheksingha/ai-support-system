@@ -32,7 +32,7 @@ To avoid code duplication (especially around DTOs and Kafka Event schemas), a sh
 | **Java 21** | Core Language | Utilizes modern Java features like virtual threads (Project Loom) suitable for high API throughput. |
 | **Spring Boot 4.x** | App Framework | Rapid development, vast ecosystem, and native support for Spring Cloud patterns. |
 | **Spring Cloud** | Microservices Tooling | Native integrations for Gateway and Eureka Service Discovery. |
-| **Spring AI** | AI Orchestration | Provides a unified, provider-agnostic abstraction layer. Allows switching between OpenAI, Vertex AI, or local models without rewriting application logic. |
+| **Spring AI** | AI Orchestration | Provides a unified, provider-agnostic abstraction layer. Current active provider is Vertex AI (Gemini), with OpenAI retained as an optional/fallback-ready integration. |
 | **PostgreSQL** | Primary Database | Robust, ACID-compliant relational storage. Reliable for ticket states and metadata. |
 | **pgvector** | Vector Store | Extension for PostgreSQL allowing efficient similarity search for the `rag-service` embeddings without needing a standalone vector DB (like Milvus or Pinecone). |
 | **Apache Kafka** | Event Broker | Highly durable and scalable log-based messaging perfect for choreography-based sagas and asynchronous processing. |
@@ -49,7 +49,7 @@ The architecture is inherently stateless at the application layer. By leveraging
 *   **Vector Search:** `pgvector` queries scale reasonably well, but for massive datasets (millions of documents), specific indexes (like IVFFlat or HNSW) must be applied to the embedding vectors, or the vector store could be partitioned.
 
 ### Resilience and Circuit Breaking
-*   **External API Limits:** Integration with Google Vertex AI or OpenAI introduces the risk of rate-limiting (`429 Too Many Requests`). `Resilience4j` is configured to wrap these calls, failing fast when the circuit opens, returning a fallback response, and preventing threads from hanging in the `ai-analysis-service`.
+*   **External API Limits:** The active Vertex AI integration (with optional OpenAI support) can face rate-limiting (`429 Too Many Requests`). `Resilience4j` is configured to wrap these calls, failing fast when the circuit opens, returning a fallback response, and preventing threads from hanging in the `ai-analysis-service`.
 
 ### Asynchronous Throughput
 *   **Virtual Threads:** Spring Boot 3.2+ (and 4.x) running on Java 21 heavily uses virtual threads. This optimizes the API Gateway and WebMVC controllers by efficiently handling thousands of concurrent I/O-bound requests (e.g., waiting for a DB query or an external API) without exhausting the operating system thread pool.

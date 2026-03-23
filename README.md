@@ -26,7 +26,7 @@ The AI Support System is a leading-edge, microservices-based ticket management p
 - **[discovery-service](discovery-service/README.md)**: Eureka Service Discovery Server.
 - **[api-gateway](api-gateway/README.md)**: Centralized entry point and request routing.
 - **[ticket-service](ticket-service/README.md)**: Core ticket management and lifecycle operations.
-- **[ai-analysis-service](ai-analysis-service/README.md)**: AI-powered analysis for sentiment and urgency (Gemini & OpenAI).
+- **[ai-analysis-service](ai-analysis-service/README.md)**: AI-powered analysis for sentiment and urgency (Vertex AI Gemini active, OpenAI optional).
 - **[routing-service](routing-service/README.md)**: Orchestrator for intelligent ticket assignment based on analysis.
 - **[rag-service](rag-service/README.md)**: Vector embedding and RAG capabilities for automated contextual responses.
 - **[common-library](common-library/README.md)**: Shared models, DTOs, events, and utilities.
@@ -109,7 +109,7 @@ ai-support-system/
 ├── discovery-service/    # Eureka Server (Port: 8761)
 ├── api-gateway/          # Spring Cloud Gateway (Port: 8080)
 ├── ticket-service/       # Ticket Management (Port: 8082)
-├── ai-analysis-service/  # AI Analysis via Gemini/OpenAI (Port: 8083)
+├── ai-analysis-service/  # AI Analysis via Vertex AI Gemini (OpenAI optional) (Port: 8083)
 ├── routing-service/      # Intelligent Routing Orchestrator (Port: 8084)
 ├── rag-service/          # Contextual Knowledge Response (Port: 8085)
 ├── common-library/       # Shared DTOs and Logic

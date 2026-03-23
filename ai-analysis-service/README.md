@@ -1,6 +1,6 @@
 # AI Analysis Service
 
-Microservice that uses Spring AI to analyze support tickets for sentiment, urgency, and intent using multiple AI providers (Google Vertex AI / OpenAI).
+Microservice that uses Spring AI to analyze support tickets for sentiment, urgency, and intent. The active provider is Google Vertex AI (Gemini), with OpenAI available as an optional provider.
 
 ## Features
 
@@ -10,19 +10,20 @@ Microservice that uses Spring AI to analyze support tickets for sentiment, urgen
 - Identifies User Intent (TECHNICAL, BILLING, etc.)
 - Auto-tagging with keywords
 - Built on **Spring Boot 4.0.4** and **Spring AI**
-- Supports multiple AI providers: **Google Gemini** and **OpenAI**
+- Active AI provider: **Google Vertex AI (Gemini)**
+- Optional provider support: **OpenAI**
 
 ## Configuration
 
 | Property | Value | Description |
 | ---------- | ------- | ------------- |
 | Server Port | 8083 | Port where service runs |
-| AI Providers | Gemini 1.5 Flash, OpenAI (GPT-4o) | Supported AI models via Spring AI |
+| AI Providers | Vertex AI Gemini (active), OpenAI (optional) | Supported provider options via Spring AI |
 | Database | PostgreSQL | `analysis_db` |
 | Service Discovery | Enabled | Registers with Eureka |
 
 > [!IMPORTANT]
-> You must set your AI provider credentials (GCP or OpenAI) in the environment variables or application properties.
+> Set Vertex AI credentials for standard runs. OpenAI credentials are only needed if you switch provider.
 
 ### Environment Variables
 
@@ -31,7 +32,7 @@ Microservice that uses Spring AI to analyze support tickets for sentiment, urgen
 - `GCP_LOCATION`: Your Google Cloud Project location (e.g., `us-central1`).
 - `GOOGLE_APPLICATION_CREDENTIALS`: Path to your GCP service account JSON key file.
 
-#### OpenAI
+#### OpenAI (Optional)
 - `SPRING_AI_OPENAI_API_KEY`: Your OpenAI API key.
 
 ## Interfaces & Endpoints
@@ -49,7 +50,7 @@ Microservice that uses Spring AI to analyze support tickets for sentiment, urgen
 
 ## Running Locally
 
-1. Configure your AI provider credentials (see Environment Variables).
+1. Configure Vertex AI credentials (OpenAI is optional).
 2. Run the application:
 
 ```bash
