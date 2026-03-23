@@ -4,6 +4,8 @@
 
 The AI Support System is built using a microservices architecture pattern. This approach allows independent scaling, development, and deployment of distinct business capabilities. 
 
+![Architecture Diagram](docs/architecture-diagram.svg)
+
 ### Core Components
 
 1. **Client / API Gateway (`api-gateway`)**: Built iteratively on Spring Cloud Gateway WebFlux, serving as the single entry point. It handles request tracing by generating a unique `X-Correlation-Id` for every incoming request and routing them to the appropriate backend microservice.
@@ -26,7 +28,7 @@ The system employs both synchronous and asynchronous communication:
 
 ```mermaid
 graph TD
-    Client[Client Apps / Web] -->|HTTP/REST| API_GW[API Gateway<br>:8081]
+    Client[Client Apps / Web] -->|HTTP/REST| API_GW[API Gateway<br>:8080]
     
     API_GW -->|Route| TS[Ticket Service<br>:8082]
     API_GW -->|Route| AIS[AI Analysis Service<br>:8083]

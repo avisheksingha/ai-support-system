@@ -55,6 +55,21 @@ public class GlobalExceptionHandler {
         
         return ResponseEntity.badRequest().body(error);
     }
+
+    @ExceptionHandler({InvalidTicketInputException.class, IllegalStateException.class})
+    public ResponseEntity<ErrorResponse> handleBadRequest(
+            RuntimeException ex, WebRequest request) {
+        log.warn("Invalid ticket request: {}", ex.getMessage());
+
+        ErrorResponse error = ErrorResponse.of(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                ex.getMessage(),
+                request.getDescription(false)
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
     
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericError(

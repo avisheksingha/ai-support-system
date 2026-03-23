@@ -1,6 +1,7 @@
 package com.aisupport.ticket.service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,6 +16,7 @@ import com.aisupport.common.event.TicketRoutedEvent;
 import com.aisupport.ticket.dto.TicketRequest;
 import com.aisupport.ticket.dto.TicketResponse;
 import com.aisupport.ticket.entity.Ticket;
+import com.aisupport.ticket.exception.InvalidTicketInputException;
 import com.aisupport.ticket.exception.TicketNotFoundException;
 import com.aisupport.ticket.mapper.TicketMapper;
 import com.aisupport.ticket.outbox.OutboxEventService;
@@ -92,8 +94,7 @@ public class TicketService {
 
     @Transactional(readOnly = true)
     public List<TicketResponse> getTicketsByStatus(String status) {
-        TicketStatus ticketStatus =
-                TicketStatus.valueOf(status.toUpperCase());
+        TicketStatus ticketStatus = parseTicketStatus(status);
 
         return ticketRepository.findByStatus(ticketStatus)
                 .stream()
@@ -102,15 +103,19 @@ public class TicketService {
     }
 
     @Transactional
-    public TicketResponse updateTicketStatus(String ticketNumber, String newStatus) {
+    public TicketResponse updateTicketStatus(String ticketNumber,
+                                             String newStatus,
+                                             Integer slaHours) {
 
         Ticket ticket = ticketRepository.findByTicketNumber(ticketNumber)
                 .orElseThrow(() -> new TicketNotFoundException(
                         TICKET_NOT_FOUND_MSG + ticketNumber));
 
-        ticket.transitionTo(
-                TicketStatus.valueOf(newStatus.toUpperCase())
-        );
+        ticket.transitionTo(parseTicketStatus(newStatus));
+
+        if (slaHours != null) {
+            ticket.setSlaHours(slaHours);
+        }
 
         return ticketMapper.toResponse(ticket);
     }
@@ -143,9 +148,7 @@ public class TicketService {
                 .orElseThrow(() -> new TicketNotFoundException(
                         TICKET_NOT_FOUND_MSG + ticketNumber));
 
-        ticket.setPriority(
-                TicketPriority.valueOf(newPriority.toUpperCase())
-        );
+        ticket.setPriority(parseTicketPriority(newPriority));
 
         if (slaHours != null) {
             ticket.setSlaHours(slaHours);
@@ -160,9 +163,10 @@ public class TicketService {
         Ticket ticket = ticketRepository.findById(event.getTicketId())
                 .orElseThrow(() -> new TicketNotFoundException(TICKET_NOT_FOUND_MSG + event.getTicketId()));
         
-        // If already assigned, we assume a manual override and skip auto-assignment
-        if (ticket.getStatus() == TicketStatus.ASSIGNED) {
-            log.info("Ticket {} already assigned — skipping", ticket.getTicketNumber());
+        // For at-least-once delivery, duplicates/out-of-order events should be no-ops.
+        if (isStatusAtOrBeyondAssigned(ticket.getStatus())) {
+            log.info("Ticket {} already at status {}, skipping routing event",
+                    ticket.getTicketNumber(), ticket.getStatus());
             return;
         }
 
@@ -224,5 +228,34 @@ public class TicketService {
                 .toString()
                 .substring(0, 8)
                 .toUpperCase();
+    }
+
+    private TicketStatus parseTicketStatus(String status) {
+        try {
+            return TicketStatus.valueOf(status.toUpperCase());
+        } catch (Exception ex) {
+            throw new InvalidTicketInputException(
+                    "Invalid status '" + status + "'. Allowed: "
+                            + Arrays.toString(TicketStatus.values())
+            );
+        }
+    }
+
+    private TicketPriority parseTicketPriority(String priority) {
+        try {
+            return TicketPriority.valueOf(priority.toUpperCase());
+        } catch (Exception ex) {
+            throw new InvalidTicketInputException(
+                    "Invalid priority '" + priority + "'. Allowed: "
+                            + Arrays.toString(TicketPriority.values())
+            );
+        }
+    }
+
+    private boolean isStatusAtOrBeyondAssigned(TicketStatus status) {
+        return status == TicketStatus.ASSIGNED
+                || status == TicketStatus.IN_PROGRESS
+                || status == TicketStatus.RESOLVED
+                || status == TicketStatus.CLOSED;
     }
 }

@@ -124,8 +124,8 @@ private final TicketService ticketService;
 			) String status,
             @RequestParam(required = false) Integer slaHours) {
     	
-    	return ResponseEntity.ok(
-                ticketService.updateTicketStatus(ticketNumber, status)
+        return ResponseEntity.ok(
+                ticketService.updateTicketStatus(ticketNumber, status, slaHours)
         );
     }
     

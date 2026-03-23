@@ -30,3 +30,6 @@ Thumbs.db
 *.jar
 *.war
 *.ear
+.env
+.env.*
+!.env.example
