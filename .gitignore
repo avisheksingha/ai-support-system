@@ -23,6 +23,9 @@ Thumbs.db
 .DS_Store
 Thumbs.db
 
+# Gemini CLI specific ignores
+.gemini/
+
 # Docker artifacts
 *.jar
 *.war
