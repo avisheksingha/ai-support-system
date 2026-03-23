@@ -1,4 +1,5 @@
 # AI Support System Microservices Platform
+
 [![Java 21](https://img.shields.io/badge/Java-21-007396?logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/21/)
 [![Spring Boot 4](https://img.shields.io/badge/Spring_Boot-4.0.4-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![Spring Cloud](https://img.shields.io/badge/Spring_Cloud-2025.1.0-0ea5e9)](https://spring.io/projects/spring-cloud)
@@ -54,10 +55,13 @@ The AI Support System is a leading-edge, microservices-based ticket management p
 ### 0. Configure Environment Variables
 
 Create a local `.env` file from the example and set your real values:
+
 ```bash
 cp .env.example .env
 ```
+
 PowerShell alternative:
+
 ```powershell
 Copy-Item .env.example .env
 ```
@@ -65,6 +69,7 @@ Copy-Item .env.example .env
 ### 1. Start Infrastructure
 
 Start the underlying database and messaging infrastructure (infra-only compose):
+
 ```bash
 docker compose -f infra/docker-compose.yml up -d
 ```
@@ -78,12 +83,14 @@ mvn -f aisupport-parent/pom.xml clean install
 ### 3. Run Services (In Order)
 
 1. **Discovery Service**:
+
    ```bash
    cd discovery-service
    mvn spring-boot:run
    ```
 
 2. **API Gateway**:
+
    ```bash
    cd api-gateway
    mvn spring-boot:run
@@ -129,23 +136,27 @@ Each service provides its own OpenAPI documentation. Available locally at:
 Run this end-to-end flow to demonstrate the project quickly:
 
 1. Create a ticket through the gateway.
+
 ```bash
 curl -X POST "http://localhost:8080/api/v1/tickets" \
   -H "Content-Type: application/json" \
   -d "{\"title\":\"Payment failed\",\"description\":\"Card charged twice and order missing\",\"customerEmail\":\"demo@example.com\"}"
 ```
 
-2. Get all tickets (or inspect the created ID).
+1. Get all tickets (or inspect the created ID).
+
 ```bash
 curl "http://localhost:8080/api/v1/tickets"
 ```
 
-3. Check ticket details by ID.
+1. Check ticket details by ID.
+
 ```bash
 curl "http://localhost:8080/api/v1/tickets/{ticketId}"
 ```
 
 Expected behavior:
+
 - Ticket is created immediately by `ticket-service`.
 - AI analysis and routing happen asynchronously through Kafka.
 - Logs show a shared `X-Correlation-Id` across gateway and services.
