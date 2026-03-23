@@ -6,15 +6,16 @@ This guide provides the fastest way to run the most relevant tests for this proj
 
 - Java 21
 - Maven Wrapper (`mvnw.cmd`) is already included in each module
+- `MAVEN_USER_HOME` configured (example: `F:\packages\.m2`)
 
-## Important Local Note (Windows)
+## Windows Troubleshooting (Only If Maven Fails to Start)
 
-If your environment has an invalid `MAVEN_OPTS` value (for example just a path like `F:\packages\.m2`), Maven can fail to start.
+If `MAVEN_OPTS` is accidentally set to a raw path (for example `F:\packages\.m2`), Maven can fail to start.
 
 Use this before running commands in the same PowerShell session:
 
 ```powershell
-$env:MAVEN_OPTS=''
+Remove-Item Env:MAVEN_OPTS -ErrorAction SilentlyContinue
 ```
 
 ## 1. Install Parent and Shared Library
@@ -22,8 +23,8 @@ $env:MAVEN_OPTS=''
 From repo root:
 
 ```powershell
-$env:MAVEN_OPTS=''; .\aisupport-parent\mvnw.cmd -B -ntp -f aisupport-parent\pom.xml -N install
-$env:MAVEN_OPTS=''; .\common-library\mvnw.cmd -B -ntp -f common-library\pom.xml clean install -DskipTests
+.\aisupport-parent\mvnw.cmd -B -ntp -f aisupport-parent\pom.xml -N install
+.\common-library\mvnw.cmd -B -ntp -f common-library\pom.xml clean install -DskipTests
 ```
 
 ## 2. Run Core Controller/Service Test Pack
@@ -31,25 +32,25 @@ $env:MAVEN_OPTS=''; .\common-library\mvnw.cmd -B -ntp -f common-library\pom.xml 
 ### Ticket Service
 
 ```powershell
-$env:MAVEN_OPTS=''; .\ticket-service\mvnw.cmd -B -ntp -f ticket-service\pom.xml "-Dtest=TicketControllerTest,TicketServiceBehaviorTest,GlobalExceptionHandlerTest,OutboxEventPublisherTest" test
+.\ticket-service\mvnw.cmd -B -ntp -f ticket-service\pom.xml "-Dtest=TicketControllerTest,TicketServiceBehaviorTest,GlobalExceptionHandlerTest,OutboxEventPublisherTest" test
 ```
 
 ### AI Analysis Service
 
 ```powershell
-$env:MAVEN_OPTS=''; .\ai-analysis-service\mvnw.cmd -B -ntp -f ai-analysis-service\pom.xml "-Dtest=AnalysisControllerTest,AnalysisProcessingServiceTest,AnalysisQueryServiceTest" test
+.\ai-analysis-service\mvnw.cmd -B -ntp -f ai-analysis-service\pom.xml "-Dtest=AnalysisControllerTest,AnalysisProcessingServiceTest,AnalysisQueryServiceTest" test
 ```
 
 ### Routing Service
 
 ```powershell
-$env:MAVEN_OPTS=''; .\routing-service\mvnw.cmd -B -ntp -f routing-service\pom.xml "-Dtest=RoutingServiceTest,RuleEvaluationServiceTest" test
+.\routing-service\mvnw.cmd -B -ntp -f routing-service\pom.xml "-Dtest=RoutingServiceTest,RuleEvaluationServiceTest" test
 ```
 
 ### RAG Service
 
 ```powershell
-$env:MAVEN_OPTS=''; .\rag-service\mvnw.cmd -B -ntp -f rag-service\pom.xml "-Dtest=RagServiceTest" test
+.\rag-service\mvnw.cmd -B -ntp -f rag-service\pom.xml "-Dtest=RagServiceTest" test
 ```
 
 ## 3. Optional: Run All Tests for a Module
@@ -57,7 +58,7 @@ $env:MAVEN_OPTS=''; .\rag-service\mvnw.cmd -B -ntp -f rag-service\pom.xml "-Dtes
 Example:
 
 ```powershell
-$env:MAVEN_OPTS=''; .\ticket-service\mvnw.cmd -B -ntp -f ticket-service\pom.xml test
+.\ticket-service\mvnw.cmd -B -ntp -f ticket-service\pom.xml test
 ```
 
 ## What This Covers
