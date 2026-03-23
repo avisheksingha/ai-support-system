@@ -54,7 +54,7 @@
 
   <rect x="930" y="360" width="220" height="90" class="node data" />
   <text x="965" y="395" class="label">PostgreSQL + pgvector</text>
-  <text x="1001" y="416" class="small">Data Store :5432</text>
+  <text x="1001" y="416" class="small">Data Store :5433</text>
 
   <rect x="1210" y="220" width="150" height="90" class="node external" />
   <text x="1244" y="255" class="label">OpenAI /</text>
