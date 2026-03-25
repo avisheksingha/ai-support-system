@@ -161,17 +161,6 @@ Expected behavior:
 - AI analysis and routing happen asynchronously through Kafka.
 - Logs show a shared `X-Correlation-Id` across gateway and services.
 
-## Demo Video
-
-- Recommended length: 3-5 minutes.
-- Suggested flow:
-  1. 30s architecture overview (diagram + service roles)
-  2. 60s infrastructure start and service boot
-  3. 90s API flow demo (create ticket -> async processing in logs)
-  4. 30s Swagger and Eureka quick walkthrough
-  5. 30s close with key engineering highlights (outbox, retries, tracing)
-- Demo video link: add your real YouTube URL before sharing the portfolio externally.
-
 ## License
 
 MIT License
