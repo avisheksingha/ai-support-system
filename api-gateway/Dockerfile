@@ -2,10 +2,20 @@
 FROM maven:3.9.6-eclipse-temurin-21 AS builder
 WORKDIR /app
 
-# Copy only this service (no parent/common needed)
+# Copy parent and common library
+COPY aisupport-parent ./aisupport-parent
+COPY common-library ./common-library
+
+# Copy this service
 COPY api-gateway ./api-gateway
 
-# Build this service
+# 1) Install parent POM
+RUN mvn -f aisupport-parent/pom.xml clean install -DskipTests
+
+# 2) Install common-library for module dependency resolution
+RUN mvn -f common-library/pom.xml clean install -DskipTests
+
+# Build this service and copy jar to known location
 WORKDIR /app/api-gateway
 RUN mvn clean package -DskipTests \
     && JAR=$(ls target/*.jar | grep -v 'original' | grep -v 'sources' | head -n1) \
@@ -15,4 +25,9 @@ RUN mvn clean package -DskipTests \
 FROM eclipse-temurin:21-jdk-alpine
 WORKDIR /app
 COPY --from=builder /app/app.jar app.jar
+
+ENV SPRING_PROFILES_ACTIVE=docker
+
+EXPOSE 8080
+
 ENTRYPOINT ["java","-jar","app.jar"]

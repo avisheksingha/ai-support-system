@@ -2,17 +2,21 @@
 FROM maven:3.9.6-eclipse-temurin-21 AS builder
 WORKDIR /app
 
-# Copy parent POM
+# Copy parent and common library
 COPY aisupport-parent ./aisupport-parent
+COPY common-library ./common-library
 
 # Copy this service
-COPY discovery-service ./discovery-service
+COPY rag-service ./rag-service
 
-# Install parent POM for clean module build
+# 1) Install parent POM
 RUN mvn -f aisupport-parent/pom.xml clean install -DskipTests
 
-# Build the service and copy the repackaged jar to a known location
-WORKDIR /app/discovery-service
+# 2) Install common-library for module dependency resolution
+RUN mvn -f common-library/pom.xml clean install -DskipTests
+
+# Build service and copy jar to known location
+WORKDIR /app/rag-service
 RUN mvn clean package -DskipTests \
   && JAR=$(ls target/*.jar | grep -v 'original' | grep -v 'sources' | head -n1) \
   && echo "Using jar: $JAR" \
@@ -23,6 +27,8 @@ FROM eclipse-temurin:21-jdk-alpine
 WORKDIR /app
 COPY --from=builder /app/app.jar app.jar
 
-EXPOSE 8761
+ENV SPRING_PROFILES_ACTIVE=docker
+
+EXPOSE 8085
 
 ENTRYPOINT ["java","-jar","app.jar"]

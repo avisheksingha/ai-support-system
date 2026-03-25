@@ -11,7 +11,7 @@ The AI Support System is built using a microservices architecture pattern. This 
 1. **Client / API Gateway (`api-gateway`)**: Built iteratively on Spring Cloud Gateway WebFlux, serving as the single entry point. It handles request tracing by generating a unique `X-Correlation-Id` for every incoming request and routing them to the appropriate backend microservice.
 2. **Service Registry (`discovery-service`)**: Utilizes Netflix Eureka to allow microservices to register themselves and discover each other dynamically.
 3. **Ticket Management (`ticket-service`)**: Handles the core CRUD operations for support tickets, applying state machine validations for status transitions, and persists data to PostgreSQL.
-4. **AI Processing (`ai-analysis-service`)**: Integrates with Google Vertex AI or OpenAI to perform sentiment analysis, determine urgency, and extract user intent from ticket content.
+4. **AI Processing (`ai-analysis-service`)**: Uses Google Vertex AI (Gemini) as the active provider to perform sentiment analysis, determine urgency, and extract user intent. OpenAI support is available as an optional provider.
 5. **Intelligent Routing (`routing-service`)**: Applies business rules to the AI-generated tags to route tickets to specific agents or queues.
 6. **Knowledge Context (`rag-service`)**: A Retrieval-Augmented Generation service that queries a vector database (`pgvector`) to provide intelligent, context-aware responses and suggestions.
 
@@ -46,7 +46,7 @@ graph TD
 
     TS -->|Publishes TicketCreated| Kafka[Apache Kafka<br>Message Broker]
     Kafka -->|Consumes TicketCreated| AIS
-    AIS -->|Calls API| ExternalAI[Google Vertex AI / OpenAI]
+    AIS -->|Calls API| ExternalAI[Google Vertex AI (Active)<br/>OpenAI (Optional)]
     AIS -->|Publishes TicketAnalyzed| Kafka
     Kafka -->|Consumes TicketAnalyzed| RS
     Kafka -->|Consumes TicketAnalyzed| RAG
@@ -64,7 +64,7 @@ sequenceDiagram
     participant TicketSvc as Ticket Service
     participant Kafka as Apache Kafka
     participant AISvc as AI Analysis Service
-    participant ExternalAI as Vertex AI / OpenAI
+    participant ExternalAI as Vertex AI (Active) / OpenAI (Optional)
     participant RoutingSvc as Routing Service
     participant RAGSvc as RAG Service
 

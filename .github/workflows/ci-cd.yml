@@ -77,6 +77,7 @@ jobs:
           docker build -t ${DOCKER_USER}/ticket-service:latest -f ticket-service/Dockerfile .
           docker build -t ${DOCKER_USER}/ai-analysis-service:latest -f ai-analysis-service/Dockerfile .
           docker build -t ${DOCKER_USER}/routing-service:latest -f routing-service/Dockerfile .
+          docker build -t ${DOCKER_USER}/rag-service:latest -f rag-service/Dockerfile .
 
       - name: Push Docker images
         if: ${{ env.DOCKER_USERNAME != '' && env.DOCKER_PASSWORD != '' }}
@@ -88,3 +89,4 @@ jobs:
           docker push ${DOCKER_USER}/ticket-service:latest
           docker push ${DOCKER_USER}/ai-analysis-service:latest
           docker push ${DOCKER_USER}/routing-service:latest
+          docker push ${DOCKER_USER}/rag-service:latest

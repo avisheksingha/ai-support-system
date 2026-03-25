@@ -12,7 +12,7 @@ COPY routing-service ./routing-service
 # 1) Build and install parent if it produces an installable artifact (optional)
 #   If aisupport-parent is a pom packaging parent only, the next step (install common) will pick up relativePath.
 #   If aisupport-parent must be installed, run: mvn -f aisupport-parent/pom.xml clean install -DskipTests
-RUN mvn -f aisupport-parent/pom.xml clean install -DskipTests || true
+RUN mvn -f aisupport-parent/pom.xml clean install -DskipTests
 
 # 2) Build & install common-library into local repo so service can resolve it
 RUN mvn -f common-library/pom.xml clean install -DskipTests
