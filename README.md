@@ -7,7 +7,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-pgvector-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 [![Architecture](https://img.shields.io/badge/Architecture-Microservices-orange)](OVERVIEW.md)
-[![CI/CD Pipeline](https://github.com/avisheksingha/ai-support-system/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/avisheksingha/ai-support-system/actions/workflows/ci-cd.yml)
+[![CI/CD](https://github.com/avisheksingha/ai-support-system/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/avisheksingha/ai-support-system/actions/workflows/ci-cd.yml)
 
 ## Overview
 
@@ -170,7 +170,7 @@ Expected behavior:
   3. 90s API flow demo (create ticket -> async processing in logs)
   4. 30s Swagger and Eureka quick walkthrough
   5. 30s close with key engineering highlights (outbox, retries, tracing)
-- Add your video link here: `https://youtu.be/<your-demo-id>`
+- Demo video link: add your real YouTube URL before sharing the portfolio externally.
 
 ## License
 
