@@ -18,6 +18,7 @@ import com.aisupport.ticket.dto.TicketResponse;
 import com.aisupport.ticket.service.TicketService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,16 +34,11 @@ public class TicketController {
 private final TicketService ticketService;    
     
     @Operation(
-    		summary = "Create a new support ticket",
-            description = "Creates a new support ticket and automatically analyzes it using AI"
+ 		summary = "Create a new support ticket",
+        description = "Creates a new support ticket and automatically analyzes it using AI"
     )
     @PostMapping
-    public ResponseEntity<TicketResponse> createTicket(
-            @Valid @RequestBody
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            		description = "Ticket details",
-            		required = true
-            ) TicketRequest request) {
+    public ResponseEntity<TicketResponse> createTicket(@Valid @RequestBody TicketRequest request) {
         log.info("Received request to create ticket from: {}", request.getCustomerEmail());
         
         TicketResponse response = ticketService.createTicket(request);
@@ -50,16 +46,12 @@ private final TicketService ticketService;
     }
     
     @Operation(
-    		summary = "Get ticket by number",
-    		description = "Retrieves a support ticket by its unique ticket number"
+		summary = "Get ticket by number",
+		description = "Retrieves a support ticket by its unique ticket number"
     )
     @GetMapping("/{ticketNumber}")
     public ResponseEntity<TicketResponse> getTicket(
-            @PathVariable
-            @io.swagger.v3.oas.annotations.Parameter(
-            		description = "Unique ticket number",
-            		required = true
-            ) String ticketNumber) {
+    	@Parameter(description = "Unique ticket number") @PathVariable String ticketNumber) {
     	
     	return ResponseEntity.ok(
                 ticketService.getTicketByNumber(ticketNumber)
@@ -67,17 +59,12 @@ private final TicketService ticketService;
     }
 
     @Operation(
-    		summary = "Get ticket by ID",
-    		description = "Retrieves a support ticket by its database ID"
+		summary = "Get ticket by ID",
+		description = "Retrieves a support ticket by its database ID"
     )
     @GetMapping("/id/{id}")
     public ResponseEntity<TicketResponse> getTicketById(
-    		@PathVariable
-    		@io.swagger.v3.oas.annotations.Parameter(
-					description = "Database ID of the ticket",
-					required = true
-			)
-    		Long id) {
+    		@Parameter(description = "Database ID of the ticket") @PathVariable Long id) {
     	
     	return ResponseEntity.ok(
                 ticketService.getTicketById(id)
@@ -85,16 +72,13 @@ private final TicketService ticketService;
     }
     
     @Operation(
-			summary = "Get all tickets",
-			description = "Retrieves a list of all support tickets, with optional filtering by status"
+		summary = "Get all tickets",
+		description = "Retrieves a list of all support tickets, with optional filtering by status"
 	)
     @GetMapping
     public ResponseEntity<List<TicketResponse>> getAllTickets(
-            @RequestParam(required = false)
-            @io.swagger.v3.oas.annotations.Parameter(
-					description = "Filter tickets by status (e.g., NEW, ANALYZING, ANALYZED, ASSIGNED, RESOLVED, CLOSED)",
-					required = false
-			) String status) {
+		@Parameter(description = "Filter by status: NEW, ANALYZING, ANALYZED, ASSIGNED, RESOLVED, CLOSED")
+		@RequestParam(required = false) String status) {
     	if (status != null) {
             return ResponseEntity.ok(
                     ticketService.getTicketsByStatus(status)
@@ -107,22 +91,18 @@ private final TicketService ticketService;
     }
     
     @Operation(
-			summary = "Update ticket status",
-			description = "Updates the status of a support ticket (e.g., NEW, ANALYZING, ANALYZED, ASSIGNED, RESOLVED, CLOSED)"
+		summary = "Update ticket status",
+		description = "Updates the status of a support ticket (e.g., NEW, ANALYZING, ANALYZED, ASSIGNED, RESOLVED, CLOSED)"
 	)
     @PatchMapping("/{ticketNumber}/status")
     public ResponseEntity<TicketResponse> updateStatus(
-            @PathVariable
-            @io.swagger.v3.oas.annotations.Parameter(
-					description = "Unique ticket number",
-					required = true
-			) String ticketNumber,
-            @RequestParam
-            @io.swagger.v3.oas.annotations.Parameter(
-					description = "New status for the ticket",
-					required = true
-			) String status,
-            @RequestParam(required = false) Integer slaHours) {
+		@Parameter(description = "Unique ticket number") @PathVariable String ticketNumber,
+		@Parameter(description = "New status: NEW, ANALYZING, ANALYZED, ASSIGNED, RESOLVED, CLOSED")
+		@RequestParam String status,
+		@Parameter(description = "Optional SLA override in hours")
+		@RequestParam(required = false) Integer slaHours) {
+    	
+    	log.info("Update status request — ticket: {}, status: {}", ticketNumber, status);
     	
         return ResponseEntity.ok(
                 ticketService.updateTicketStatus(ticketNumber, status, slaHours)
@@ -130,14 +110,17 @@ private final TicketService ticketService;
     }
     
     @Operation(
-			summary = "Assign ticket to support agent",
-			description = "Assigns a support ticket to a specific agent and updates the ticket status to ASSIGNED"
+		summary = "Assign ticket to support agent",
+		description = "Assigns a support ticket to a specific agent and updates the ticket status to ASSIGNED"
 	)
     @PatchMapping("/{ticketNumber}/assign")
     public ResponseEntity<TicketResponse> assignTicket(
-            @PathVariable String ticketNumber,
-            @RequestParam String assignedTo,
-            @RequestParam(required = false) Integer slaHours) {
+		@Parameter(description = "Unique ticket number") @PathVariable String ticketNumber,
+        @Parameter(description = "Agent identifier or name") @RequestParam String assignedTo,
+        @Parameter(description = "Optional SLA override in hours")
+        @RequestParam(required = false) Integer slaHours) {
+    	
+    	log.info("Assign ticket request — ticket: {}, agent: {}", ticketNumber, assignedTo);
     	
     	return ResponseEntity.ok(
                 ticketService.assignTicket(ticketNumber, assignedTo, slaHours)
@@ -145,14 +128,18 @@ private final TicketService ticketService;
     }
 
     @Operation(
-			summary = "Update ticket priority",
-			description = "Updates the priority level of a support ticket"
+		summary = "Update ticket priority",
+		description = "Updates the priority level of a support ticket"
 	)
     @PatchMapping("/{ticketNumber}/priority")
     public ResponseEntity<TicketResponse> updatePriority(
-            @PathVariable String ticketNumber,
-            @RequestParam String priority,
-            @RequestParam(required = false) Integer slaHours) {
+		@Parameter(description = "Unique ticket number") @PathVariable String ticketNumber,
+        @Parameter(description = "New priority: LOW, MEDIUM, HIGH, CRITICAL")
+        @RequestParam String priority,
+        @Parameter(description = "Optional SLA override in hours")
+        @RequestParam(required = false) Integer slaHours) {
+    	
+    	log.info("Update priority request — ticket: {}, priority: {}", ticketNumber, priority);
     	
     	return ResponseEntity.ok(
                 ticketService.updateTicketPriority(ticketNumber, priority, slaHours)
