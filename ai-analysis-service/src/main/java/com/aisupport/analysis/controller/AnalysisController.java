@@ -16,6 +16,7 @@ import com.aisupport.analysis.service.AnalysisQueryService;
 import com.aisupport.common.dto.AnalysisResultDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,9 +31,15 @@ public class AnalysisController {
     private final AnalysisQueryService analysisService;
     
     @GetMapping("/ticket/{ticketId}")
-    @Operation(summary = "Get analysis result by ticket ID")
+    @Operation(
+        summary = "Get analysis by ticket ID",
+        description = "Retrieves the AI analysis result for a specific ticket ID"
+    )
     public ResponseEntity<AnalysisResultDTO> getAnalysisByTicketId(
-            @PathVariable Long ticketId) {
+        @Parameter(description = "Numeric ID of the support ticket")
+        @PathVariable Long ticketId) {
+    	
+    	log.info("Fetch analysis for ticketId: {}", ticketId);
 
         AnalysisResultDTO response =
                 analysisService.getAnalysisByTicketId(ticketId);
@@ -45,20 +52,30 @@ public class AnalysisController {
     }
     
     @GetMapping
-    @Operation(summary = "Get all analyses")
+    @Operation(
+        summary = "Get all analyses",
+        description = "Retrieves paginated analysis results with optional page and size parameters"
+    )
     public ResponseEntity<Page<AnalysisResultDTO>> getAllAnalyses(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+        @Parameter(description = "Page index (0-based)")
+        @RequestParam(defaultValue = "0") int page,
+        @Parameter(description = "Page size (capped at 100)")
+        @RequestParam(defaultValue = "10") int size
     ) {
-    	int safeSize = Math.min(size, 100);
-        Pageable pageable = PageRequest.of(page, safeSize);
+        Pageable pageable = PageRequest.of(page, Math.min(size, 100));
         return ResponseEntity.ok(analysisService.getAllAnalyses(pageable));
     }
 
     @GetMapping("/intent/{intent}")
-    @Operation(summary = "Get analyses by intent")
+    @Operation(
+        summary = "Get analyses by intent",
+        description = "Retrieves analysis results filtered by predicted intent"
+    )
     public ResponseEntity<List<AnalysisResultDTO>> getAnalysesByIntent(
-            @PathVariable String intent) {
+        @Parameter(description = "Intent value: BILLING, TECHNICAL, GENERAL")
+        @PathVariable String intent) {
+    	
+    	log.info("Fetch analyses by intent: {}", intent);
 
         return ResponseEntity.ok(
                 analysisService.getAnalysesByIntent(intent.toUpperCase())
@@ -66,9 +83,15 @@ public class AnalysisController {
     }
 
     @GetMapping("/urgency/{urgency}")
-    @Operation(summary = "Get analyses by urgency")
+    @Operation(
+        summary = "Get analyses by urgency",
+        description = "Retrieves analysis results filtered by urgency level"
+    )
     public ResponseEntity<List<AnalysisResultDTO>> getAnalysesByUrgency(
-            @PathVariable String urgency) {
+        @Parameter(description = "Urgency value: LOW, MEDIUM, HIGH, CRITICAL")
+        @PathVariable String urgency) {
+    	
+    	log.info("Fetch analyses by urgency: {}", urgency);
 
         return ResponseEntity.ok(
                 analysisService.getAnalysesByUrgency(urgency)
