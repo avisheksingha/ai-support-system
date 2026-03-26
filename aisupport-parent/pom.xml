@@ -32,14 +32,13 @@
 		<url/>
 	</scm>
 
-    <!--
 	<modules>
 	    <module>../discovery-service</module>
 	    <module>../ticket-service</module>
         <module>../ai-analysis-service</module>
         <module>../routing-service</module>
         <module>../common-library</module>
-	</modules> -->
+	</modules>
 	
 	<properties>
 		<java.version>21</java.version>
