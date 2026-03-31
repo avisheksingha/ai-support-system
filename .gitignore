@@ -7,8 +7,9 @@
 # Ignore Visual Studio Code settings
 .vscode/
 
-# Ignore Claude Code settings
+# Ignore Claude Code Settings
 .claude/
+ai-support-marketplace/
 
 # Ignore common temporary files
 *.log
