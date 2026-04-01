@@ -4,11 +4,13 @@ on:
   push:
     branches:
       - main
+      - dev
       - master
       - "feature/**"
   pull_request:
     branches:
       - main
+      - dev
       - master
   workflow_dispatch:
 
@@ -51,7 +53,7 @@ jobs:
     name: Build and Push Docker Images
     runs-on: ubuntu-latest
     needs: build-test
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/master')
     env:
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -95,7 +97,11 @@ jobs:
     name: Build, Push to Artifact Registry, Deploy to Cloud Run
     runs-on: ubuntu-latest
     needs: build-test
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    environment: production
+    concurrency:
+      group: gcp-production-deploy
+      cancel-in-progress: false
     permissions:
       contents: read
       id-token: write
@@ -106,8 +112,20 @@ jobs:
       GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
       GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
       GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
-      SERVICES: discovery-service api-gateway ticket-service ai-analysis-service routing-service rag-service
-      SERVICE_PORTS: discovery-service=8761 api-gateway=8080 ticket-service=8082 ai-analysis-service=8083 routing-service=8084 rag-service=8085
+      SERVICES: api-gateway ticket-service ai-analysis-service routing-service rag-service
+      SERVICE_PORTS: api-gateway=8080 ticket-service=8082 ai-analysis-service=8083 routing-service=8084 rag-service=8085
+      DB_USERNAME: ${{ vars.DB_USERNAME }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      KAFKA_BOOTSTRAP_SERVERS: ${{ vars.KAFKA_BOOTSTRAP_SERVERS }}
+      TICKET_DB_URL: ${{ vars.TICKET_DB_URL }}
+      ANALYSIS_DB_URL: ${{ vars.ANALYSIS_DB_URL }}
+      ROUTING_DB_URL: ${{ vars.ROUTING_DB_URL }}
+      RAG_DB_URL: ${{ vars.RAG_DB_URL }}
+      API_TICKET_SERVICE_URL: ${{ vars.API_TICKET_SERVICE_URL }}
+      API_AI_ANALYSIS_SERVICE_URL: ${{ vars.API_AI_ANALYSIS_SERVICE_URL }}
+      API_ROUTING_SERVICE_URL: ${{ vars.API_ROUTING_SERVICE_URL }}
+      API_RAG_SERVICE_URL: ${{ vars.API_RAG_SERVICE_URL }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
     steps:
       - name: Checkout repository
@@ -120,15 +138,13 @@ jobs:
           set -euo pipefail
 
           if [[ -z "${GCP_PROJECT_ID}" || -z "${GCP_REGION}" || -z "${GCP_ARTIFACT_REGISTRY_REPO}" ]]; then
-            echo "enabled=false" >> "${GITHUB_OUTPUT}"
-            echo "::notice::Skipping GCP deploy. Set repository variables: GCP_PROJECT_ID, GCP_REGION, GCP_ARTIFACT_REGISTRY_REPO."
-            exit 0
+            echo "::error::Missing required repository variables: GCP_PROJECT_ID, GCP_REGION, or GCP_ARTIFACT_REGISTRY_REPO."
+            exit 1
           fi
 
           if [[ -z "${GCP_WORKLOAD_IDENTITY_PROVIDER}" || -z "${GCP_SERVICE_ACCOUNT}" ]] && [[ -z "${GCP_SA_KEY}" ]]; then
-            echo "enabled=false" >> "${GITHUB_OUTPUT}"
-            echo "::notice::Skipping GCP deploy. Configure WIF (GCP_WORKLOAD_IDENTITY_PROVIDER + GCP_SERVICE_ACCOUNT) or GCP_SA_KEY secret."
-            exit 0
+            echo "::error::Missing GCP authentication. Configure WIF (GCP_WORKLOAD_IDENTITY_PROVIDER + GCP_SERVICE_ACCOUNT) or GCP_SA_KEY."
+            exit 1
           fi
 
           if [[ -n "${GCP_WORKLOAD_IDENTITY_PROVIDER}" && -n "${GCP_SERVICE_ACCOUNT}" ]]; then
@@ -195,9 +211,76 @@ jobs:
           REGISTRY="${{ steps.image-meta.outputs.registry }}"
           TAG="${{ steps.image-meta.outputs.tag }}"
 
+          require_var() {
+            local name="$1"
+            if [[ -z "${!name:-}" ]]; then
+              echo "::error::Missing required deploy variable or secret: ${name}"
+              exit 1
+            fi
+          }
+
           echo "${SERVICES}" | tr ' ' '\n' | while read SERVICE; do
             PORT=$(echo "${SERVICE_PORTS}" | tr ' ' '\n' | grep "^${SERVICE}=" | cut -d'=' -f2)
             echo "Deploying ${SERVICE} to Cloud Run on port ${PORT}..."
+
+            ENV_VARS="SPRING_PROFILES_ACTIVE=gcp,GOOGLE_CLOUD_PROJECT=${GCP_PROJECT_ID},GOOGLE_CLOUD_LOCATION=${GCP_REGION},GCP_PROJECT_ID=${GCP_PROJECT_ID},GCP_LOCATION=${GCP_REGION}"
+
+            case "${SERVICE}" in
+              api-gateway)
+                require_var API_TICKET_SERVICE_URL
+                require_var API_ROUTING_SERVICE_URL
+                require_var API_RAG_SERVICE_URL
+                ENV_VARS="${ENV_VARS},API_TICKET_SERVICE_URL=${API_TICKET_SERVICE_URL},API_ROUTING_SERVICE_URL=${API_ROUTING_SERVICE_URL},API_RAG_SERVICE_URL=${API_RAG_SERVICE_URL}"
+                ;;
+              ticket-service)
+                require_var TICKET_DB_URL
+                require_var DB_USERNAME
+                require_var DB_PASSWORD
+                require_var KAFKA_BOOTSTRAP_SERVERS
+                require_var API_AI_ANALYSIS_SERVICE_URL
+                require_var API_ROUTING_SERVICE_URL
+                require_var API_RAG_SERVICE_URL
+                ENV_VARS="${ENV_VARS},SPRING_DATASOURCE_URL=${TICKET_DB_URL},DB_USERNAME=${DB_USERNAME},DB_PASSWORD=${DB_PASSWORD},KAFKA_BOOTSTRAP_SERVERS=${KAFKA_BOOTSTRAP_SERVERS},API_AI_ANALYSIS_SERVICE_URL=${API_AI_ANALYSIS_SERVICE_URL},API_ROUTING_SERVICE_URL=${API_ROUTING_SERVICE_URL},API_RAG_SERVICE_URL=${API_RAG_SERVICE_URL}"
+                ;;
+              ai-analysis-service)
+                require_var ANALYSIS_DB_URL
+                require_var DB_USERNAME
+                require_var DB_PASSWORD
+                require_var KAFKA_BOOTSTRAP_SERVERS
+                require_var API_TICKET_SERVICE_URL
+                require_var API_ROUTING_SERVICE_URL
+                require_var API_RAG_SERVICE_URL
+                ENV_VARS="${ENV_VARS},SPRING_DATASOURCE_URL=${ANALYSIS_DB_URL},DB_USERNAME=${DB_USERNAME},DB_PASSWORD=${DB_PASSWORD},KAFKA_BOOTSTRAP_SERVERS=${KAFKA_BOOTSTRAP_SERVERS},API_TICKET_SERVICE_URL=${API_TICKET_SERVICE_URL},API_ROUTING_SERVICE_URL=${API_ROUTING_SERVICE_URL},API_RAG_SERVICE_URL=${API_RAG_SERVICE_URL}"
+                if [[ -n "${OPENAI_API_KEY}" ]]; then
+                  ENV_VARS="${ENV_VARS},OPENAI_API_KEY=${OPENAI_API_KEY}"
+                fi
+                ;;
+              routing-service)
+                require_var ROUTING_DB_URL
+                require_var DB_USERNAME
+                require_var DB_PASSWORD
+                require_var KAFKA_BOOTSTRAP_SERVERS
+                require_var API_TICKET_SERVICE_URL
+                require_var API_AI_ANALYSIS_SERVICE_URL
+                require_var API_RAG_SERVICE_URL
+                ENV_VARS="${ENV_VARS},SPRING_DATASOURCE_URL=${ROUTING_DB_URL},DB_USERNAME=${DB_USERNAME},DB_PASSWORD=${DB_PASSWORD},KAFKA_BOOTSTRAP_SERVERS=${KAFKA_BOOTSTRAP_SERVERS},API_TICKET_SERVICE_URL=${API_TICKET_SERVICE_URL},API_AI_ANALYSIS_SERVICE_URL=${API_AI_ANALYSIS_SERVICE_URL},API_RAG_SERVICE_URL=${API_RAG_SERVICE_URL}"
+                ;;
+              rag-service)
+                require_var RAG_DB_URL
+                require_var DB_USERNAME
+                require_var DB_PASSWORD
+                require_var KAFKA_BOOTSTRAP_SERVERS
+                require_var API_TICKET_SERVICE_URL
+                require_var API_AI_ANALYSIS_SERVICE_URL
+                require_var API_ROUTING_SERVICE_URL
+                ENV_VARS="${ENV_VARS},SPRING_DATASOURCE_URL=${RAG_DB_URL},DB_USERNAME=${DB_USERNAME},DB_PASSWORD=${DB_PASSWORD},KAFKA_BOOTSTRAP_SERVERS=${KAFKA_BOOTSTRAP_SERVERS},API_TICKET_SERVICE_URL=${API_TICKET_SERVICE_URL},API_AI_ANALYSIS_SERVICE_URL=${API_AI_ANALYSIS_SERVICE_URL},API_ROUTING_SERVICE_URL=${API_ROUTING_SERVICE_URL}"
+                ;;
+              *)
+                echo "::error::Unsupported service '${SERVICE}' in deploy list."
+                exit 1
+                ;;
+            esac
+
             gcloud run deploy "${SERVICE}" \
               --image "${REGISTRY}/${SERVICE}:${TAG}" \
               --region "${GCP_REGION}" \
@@ -205,6 +288,6 @@ jobs:
               --platform managed \
               --port "${PORT}" \
               --allow-unauthenticated \
-              --set-env-vars "SPRING_PROFILES_ACTIVE=gcp" \
+              --set-env-vars "${ENV_VARS}" \
               --quiet
           done
