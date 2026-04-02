@@ -20,6 +20,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 
 import com.aisupport.common.event.TicketCreatedEvent;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,7 +43,7 @@ class OutboxEventPublisherTest {
     }
 
     @Test
-    void publishEvents_shouldRetryFailedEventsBelowRetryLimit() throws Exception {
+    void publishEvents_shouldRetryFailedEventsBelowRetryLimit() throws JsonProcessingException {
         OutboxEvent failedEvent = OutboxEvent.builder()
                 .id("evt-1")
                 .aggregateType("TICKET")
