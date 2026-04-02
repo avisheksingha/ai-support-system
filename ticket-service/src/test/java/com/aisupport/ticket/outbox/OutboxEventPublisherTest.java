@@ -14,6 +14,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -77,7 +78,7 @@ class OutboxEventPublisherTest {
                 null);
         CompletableFuture<SendResult<String, Object>> result =
                 CompletableFuture.completedFuture(sendResult);
-        when(kafkaTemplate.send(org.mockito.ArgumentMatchers.<ProducerRecord<String, Object>>any()))
+        when(kafkaTemplate.send(ArgumentMatchers.<ProducerRecord<String, Object>>any()))
                 .thenReturn(result);
 
         publisher.publishEvents();
