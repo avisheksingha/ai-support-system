@@ -177,34 +177,11 @@ Expected behavior:
 
 ## Contributing
 
-We welcome contributions to the AI Support System! Whether you're fixing a bug, adding a new feature, or improving documentation, your help is appreciated.
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for contribution workflow, PR expectations, and contribution guidelines.
 
-### How to Contribute
+## Security
 
-1.  **Fork** the repository on GitHub.
-2.  **Clone** your fork to your local machine.
-3.  **Create a new branch** for your feature or bug fix: `git checkout -b feature/your-feature-name` or `git checkout -b fix/your-bug-fix`.
-4.  **Make your changes**, ensuring you follow the project's coding standards and patterns.
-5.  **Commit your changes** with a descriptive message: `git commit -m "Add [feature/fix] for [description]"`.
-6.  **Push your branch** to your fork: `git push origin feature/your-feature-name`.
-7.  **Open a Pull Request** against the `main` branch of the original repository.
-
-### Contribution Guidelines
-
-*   **Follow existing patterns**: Before adding new features, please review the existing codebase and architecture docs to understand established patterns (e.g., Outbox pattern, event-driven communication).
-*   **Feature Checklist**: If you're adding a new feature, ensure you:
-    *   Add endpoints to the appropriate controller.
-    *   Update/Add Kafka producers and consumers if necessary.
-    *   Define new database entities and migrations.
-    *   Include unit and integration tests.
-    *   Update OpenAPI documentation.
-    *   Update architecture and overview docs if core concepts or service details change.
-*   **Documentation**: Ensure any new features or significant changes are reflected in the documentation (READMEs, `ARCHITECTURE.md`, `OVERVIEW.md`).
-*   **Tests**: All new code should be accompanied by relevant tests. Run existing tests to ensure no regressions.
-
-### Reporting Issues
-
-If you find a bug or have a suggestion for improvement, please open an issue on the GitHub repository with a detailed description and steps to reproduce (for bugs).
+Please see [SECURITY.md](SECURITY.md) for vulnerability reporting and security response policy.
 
 ## License
 
