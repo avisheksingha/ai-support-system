@@ -1,7 +1,7 @@
 # AI Support System Microservices Platform
 
 [![Java 21](https://img.shields.io/badge/Java-21-007396?logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/21/)
-[![Spring Boot 4](https://img.shields.io/badge/Spring_Boot-4.0.4-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Spring Boot 4](https://img.shields.io/badge/Spring_Boot-4.0.5-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![Spring Cloud](https://img.shields.io/badge/Spring_Cloud-2025.1.0-0ea5e9)](https://spring.io/projects/spring-cloud)
 [![Kafka](https://img.shields.io/badge/Apache_Kafka-Event_Driven-231F20?logo=apachekafka&logoColor=white)](https://kafka.apache.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-pgvector-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
@@ -36,7 +36,7 @@ The AI Support System is a leading-edge, microservices-based ticket management p
 ## Technology Stack
 
 - **Java**: 21
-- **Spring Boot**: 4.0.4
+- **Spring Boot**: 4.0.5
 - **Spring Cloud**: 2025.1.0
 - **Spring AI**: 2.0.0-M1
 - **Messaging**: Apache Kafka
@@ -120,6 +120,10 @@ mvn -f aisupport-parent/pom.xml clean install
 
 ```plaintext
 ai-support-system/
+├── .github/
+│   ├── workflows/                # CI/CD workflow definitions
+│   ├── ISSUE_TEMPLATE/           # Bug/feature issue templates
+│   └── pull_request_template.md  # PR checklist template
 ├── discovery-service/    # Eureka Server (Port: 8761)
 ├── api-gateway/          # Spring Cloud Gateway (Port: 8080)
 ├── ticket-service/       # Ticket Management (Port: 8082)
@@ -129,8 +133,12 @@ ai-support-system/
 ├── common-library/       # Shared DTOs and Logic
 ├── aisupport-parent/     # Maven Parent POM
 ├── infra/                # Docker Config for DB/Kafka
+├── docs/                 # Architecture diagram and visuals
 ├── ARCHITECTURE.md       # Design decisions and scalability
+├── CONTRIBUTING.md        # Contribution workflow and PR expectations
 ├── OVERVIEW.md           # Architectural end-to-end details & diagrams
+├── SECURITY.md            # Vulnerability reporting policy
+├── TESTING.md             # Test execution and troubleshooting guide
 └── README.md             # This file
 ```
 
@@ -182,6 +190,13 @@ Please see [CONTRIBUTING.md](CONTRIBUTING.md) for contribution workflow, PR expe
 ## Security
 
 Please see [SECURITY.md](SECURITY.md) for vulnerability reporting and security response policy.
+
+## Community Health
+
+- Contribution guide: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Security policy: [SECURITY.md](SECURITY.md)
+- Issue templates: `.github/ISSUE_TEMPLATE/`
+- PR template: `.github/pull_request_template.md`
 
 ## License
 

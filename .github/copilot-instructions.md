@@ -1,6 +1,6 @@
 # Copilot Instructions for AI Support System
 
-This repository is a Spring Boot 4.0.4 microservices platform for AI-powered ticket management, using Spring AI with Google Gemini integration, service discovery, and event-driven automation via Kafka.
+This repository is a Spring Boot 4.0.5 microservices platform for AI-powered ticket management, using Spring AI with Google Gemini integration, service discovery, and event-driven automation via Kafka.
 
 ## Build, Test, and Lint Commands
 
@@ -54,7 +54,7 @@ Each core service exposes OpenAPI docs at `/swagger-ui/index.html` (e.g., http:/
 ## Technology Stack
 
 - **Language**: Java 21
-- **Framework**: Spring Boot 4.0.4 + Spring Framework 7.0
+- **Framework**: Spring Boot 4.0.5 + Spring Framework 7.0
 - **Microservices**: Spring Cloud 2025.1.0
 - **AI Integration**: Spring AI 2.0.0-M1 (Vertex AI Gemini 2.0 Flash)
 - **Database**: PostgreSQL + PGVector extension (vector embeddings)

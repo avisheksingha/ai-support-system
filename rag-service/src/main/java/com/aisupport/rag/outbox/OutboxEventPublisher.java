@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -20,6 +21,8 @@ import com.aisupport.common.constant.HttpHeaders;
 import com.aisupport.common.constant.KafkaTopics;
 import com.aisupport.common.event.TicketAnalyzedEvent;
 import com.aisupport.common.event.TicketRagResponseEvent;
+import com.aisupport.common.exception.OutboxEventException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -102,7 +105,7 @@ public class OutboxEventPublisher {
             log.error("Timeout publishing outbox event {}", event.getId(), e);
             markFailed(event);
 
-        } catch (Exception e) {        	
+        } catch (ExecutionException | RuntimeException e) {        	
             log.error("Failed to publish outbox event {}", event.getId(), e);
             markFailed(event);
             
@@ -126,13 +129,17 @@ public class OutboxEventPublisher {
         }
     }
     
-    private Object deserializePayload(String payload, String eventType) throws Exception {
+    private Object deserializePayload(String payload, String eventType) {
         Class<?> clazz = switch (eventType) {
         	case "TicketAnalyzedEvent"   -> TicketAnalyzedEvent.class;
         	case "TicketRagResponseEvent" -> TicketRagResponseEvent.class; // Newly added
-            default -> throw new IllegalArgumentException("Unknown event type: " + eventType);
+            default -> throw new OutboxEventException("Unknown event type: " + eventType);
         };
-        return objectMapper.readValue(payload, clazz);
+        try {
+            return objectMapper.readValue(payload, clazz);
+        } catch (JsonProcessingException e) {
+            throw new OutboxEventException("Failed to deserialize outbox payload for eventType: " + eventType, e);
+        }
     }
 
     private String mapTopic(String eventType) {
@@ -140,7 +147,7 @@ public class OutboxEventPublisher {
         return switch (eventType) {
             case "TicketAnalyzedEvent" -> KafkaTopics.TICKET_ANALYZED;
             case "TicketRagResponseEvent" -> KafkaTopics.TICKET_RAG_RESPONSE; // Newly added
-            default -> throw new IllegalArgumentException("Unknown event type: " + eventType);
+            default -> throw new OutboxEventException("Unknown event type: " + eventType);
         };
     }
 }

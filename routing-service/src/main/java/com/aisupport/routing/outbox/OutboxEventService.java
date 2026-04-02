@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.aisupport.common.constant.Correlation;
 import com.aisupport.common.exception.OutboxEventException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -37,7 +38,7 @@ public class OutboxEventService {
 
             repository.save(event);
 
-        } catch (Exception e) {
+        } catch (JsonProcessingException e) {
             throw new OutboxEventException("Failed to serialize outbox event", e);
         }
     }

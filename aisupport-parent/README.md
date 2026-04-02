@@ -13,7 +13,7 @@ This project serves as the parent Object Model (POM) for all microservices in th
 ## Key Technologies
 
 - **Java**: 21
-- **Spring Boot**: 4.0.4
+- **Spring Boot**: 4.0.5
 - **Spring Cloud**: 2025.1.0
 - **Spring AI**: 2.0.0-M1
 
