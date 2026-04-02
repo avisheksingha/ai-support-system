@@ -1,0 +1,80 @@
+name: Bug Report
+description: Report a reproducible bug in the AI Support System
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please provide enough detail so we can reproduce and fix it quickly.
+
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: Short description of the issue
+      placeholder: Ticket creation fails with 500 when Kafka is unavailable
+    validations:
+      required: true
+
+  - type: dropdown
+    id: service
+    attributes:
+      label: Affected Service
+      options:
+        - api-gateway
+        - discovery-service
+        - ticket-service
+        - ai-analysis-service
+        - routing-service
+        - rag-service
+        - common-library
+        - infra
+        - unknown
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Exact steps so we can reproduce the issue
+      placeholder: |
+        1. Start infra with docker compose
+        2. Run ticket-service with docker profile
+        3. POST /api/v1/tickets
+        4. Observe 500 response
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      placeholder: Ticket should be created and status should be NEW
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      placeholder: Request returns 500 with JDBCConnectionException
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Screenshots
+      description: Paste relevant logs, stack traces, or screenshots
+      render: shell
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Local, Docker, GCP (Cloud Run/GKE), etc.
+      placeholder: Docker Desktop + WSL2 + PostgreSQL 5433
+

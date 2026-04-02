@@ -1,0 +1,58 @@
+name: Feature Request
+description: Propose an improvement or new capability
+title: "[Feature] "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing a feature. Please keep it concrete so implementation can be planned effectively.
+
+  - type: input
+    id: summary
+    attributes:
+      label: Feature Summary
+      placeholder: Add dead-letter topic handling for failed routing events
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this solve?
+      placeholder: Failures are retried but not traceable in a dedicated DLQ stream.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution
+      description: Describe your preferred approach
+      placeholder: Add DLQ producer and consumer strategy with retry metadata.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      placeholder: Keep current retries only, use external queue, etc.
+
+  - type: dropdown
+    id: impact_area
+    attributes:
+      label: Impact Area
+      options:
+        - API
+        - Event flow / Kafka
+        - Database
+        - AI analysis
+        - RAG
+        - Infrastructure / Docker
+        - CI/CD
+        - Documentation
+        - Other
+
