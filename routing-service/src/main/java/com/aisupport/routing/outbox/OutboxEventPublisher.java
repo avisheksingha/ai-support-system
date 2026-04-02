@@ -104,7 +104,7 @@ public class OutboxEventPublisher {
             log.error("Timeout publishing outbox event {}", event.getId(), e);
             markFailed(event);
 
-        } catch (ExecutionException | OutboxEventException e) {
+        } catch (ExecutionException | RuntimeException e) {
 			
 			log.error("Failed publishing event id={} type={}", event.getId(), event.getEventType(), e);            
 			markFailed(event);
