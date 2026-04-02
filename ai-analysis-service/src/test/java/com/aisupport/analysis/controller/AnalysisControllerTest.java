@@ -50,7 +50,7 @@ class AnalysisControllerTest {
     }
 
     @Test
-    void getAllAnalyses_shouldCapRequestedSizeTo100() throws Exception {
+    void getAllAnalyses_shouldCapRequestedSizeTo100() {
         AnalysisResultDTO dto = AnalysisResultDTO.builder().ticketId(1L).intent("PAYMENT_ISSUE").build();
         when(analysisQueryService.getAllAnalyses(any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(dto)));

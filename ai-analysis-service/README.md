@@ -9,7 +9,7 @@ Microservice that uses Spring AI to analyze support tickets for sentiment, urgen
 - Determines Urgency (LOW, MEDIUM, HIGH, CRITICAL)
 - Identifies User Intent (TECHNICAL, BILLING, etc.)
 - Auto-tagging with keywords
-- Built on **Spring Boot 4.0.4** and **Spring AI**
+- Built on **Spring Boot 4.0.5** and **Spring AI**
 - Active AI provider: **Google Vertex AI (Gemini)**
 - Optional provider support: **OpenAI**
 
