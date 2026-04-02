@@ -26,6 +26,7 @@ Thumbs.db
 
 # Gemini CLI specific ignores
 .gemini/
+GEMINI.md
 
 # Codex specific ignores
 .codex

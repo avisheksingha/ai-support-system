@@ -50,6 +50,20 @@ The AI Support System is a leading-edge, microservices-based ticket management p
 - Maven 3.9+ (or use included wrapper)
 - Docker & Docker Compose (for spinning up Kafka, PostgreSQL, etc.)
 
+## Runtime Profiles
+
+Each service supports profile-driven startup:
+
+`spring.profiles.active=${SPRING_PROFILES_ACTIVE:local}`
+
+- `local`: IDE/local development
+- `docker`: Docker network runtime
+- `gcp`: cloud runtime using explicit service URLs
+
+Discovery strategy:
+- `local`/`docker`: Eureka-based service discovery
+- `gcp`: Eureka clients disabled, environment-based service URLs
+
 ## Getting Started
 
 ### 0. Configure Environment Variables
@@ -177,14 +191,14 @@ We welcome contributions to the AI Support System! Whether you're fixing a bug, 
 
 ### Contribution Guidelines
 
-*   **Follow existing patterns**: Before adding new features, please review the existing codebase and the **[GEMINI.md](GEMINI.md)** guide to understand the architecture and established patterns (e.g., Outbox pattern, event-driven communication).
+*   **Follow existing patterns**: Before adding new features, please review the existing codebase and architecture docs to understand established patterns (e.g., Outbox pattern, event-driven communication).
 *   **Feature Checklist**: If you're adding a new feature, ensure you:
     *   Add endpoints to the appropriate controller.
     *   Update/Add Kafka producers and consumers if necessary.
     *   Define new database entities and migrations.
     *   Include unit and integration tests.
     *   Update OpenAPI documentation.
-    *   Update the **[GEMINI.md](GEMINI.md)** file if core concepts or service details change.
+    *   Update architecture and overview docs if core concepts or service details change.
 *   **Documentation**: Ensure any new features or significant changes are reflected in the documentation (READMEs, `ARCHITECTURE.md`, `OVERVIEW.md`).
 *   **Tests**: All new code should be accompanied by relevant tests. Run existing tests to ensure no regressions.
 

@@ -66,3 +66,16 @@ Example:
 - Controller layer tests for existing controllers (`ticket-service`, `ai-analysis-service`)
 - Service layer tests for core business logic (`ticket`, `ai-analysis`, `routing`, `rag`)
 - Event/outbox behavior and fallback paths
+
+## Docker Troubleshooting Quick Checks
+
+If Docker-based runs behave inconsistently, use:
+
+```powershell
+docker context use desktop-linux
+docker version
+docker ps
+```
+
+If Docker API returns `500` on `dockerDesktopLinuxEngine`, restart Docker Desktop and retry.
+If app containers are up but Eureka is empty, verify DB/Kafka readiness and service startup logs first.
