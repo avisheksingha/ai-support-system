@@ -108,5 +108,20 @@
     "name": "spring.mvc.log-request-details",
     "type": "java.lang.String",
     "description": "A description for 'spring.mvc.log-request-details'"
+  },
+  {
+    "name": "spring.cloud.gateway.routes[3].id",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cloud.gateway.routes[3].id'"
+  },
+  {
+    "name": "spring.cloud.gateway.routes[3].uri",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cloud.gateway.routes[3].uri'"
+  },
+  {
+    "name": "spring.cloud.gateway.routes[3].predicates[0]",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cloud.gateway.routes[3].predicates[0]'"
   }
 ]}
