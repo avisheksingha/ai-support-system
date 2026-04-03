@@ -135,10 +135,10 @@ ai-support-system/
 ├── infra/                # Docker Config for DB/Kafka
 ├── docs/                 # Architecture diagram and visuals
 ├── ARCHITECTURE.md       # Design decisions and scalability
-├── CONTRIBUTING.md        # Contribution workflow and PR expectations
+├── CONTRIBUTING.md       # Contribution workflow and PR expectations
 ├── OVERVIEW.md           # Architectural end-to-end details & diagrams
-├── SECURITY.md            # Vulnerability reporting policy
-├── TESTING.md             # Test execution and troubleshooting guide
+├── SECURITY.md           # Vulnerability reporting policy
+├── TESTING.md            # Test execution and troubleshooting guide
 └── README.md             # This file
 ```
 
