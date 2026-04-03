@@ -2,11 +2,21 @@
 .github
 .idea
 .vscode
+.metadata
+.sonarlint
+.claude
+.gemini
+.codex
+ai-support-marketplace
+GEMINI.md
 
 **/.DS_Store
 **/Thumbs.db
 **/*.log
 **/*.tmp
+**/*.bak
+**/*.swp
+**/*.swo
 
 **/target
 **/build
