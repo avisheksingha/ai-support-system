@@ -131,7 +131,7 @@ When working on code in a specific service, prioritize these tailored rules and 
 - Integrate Spring AI ChatClient for Gemini calls; wrap in try-catch.
 - Publish TicketAnalyzedEvent after analysis (intent, sentiment, urgency).
 - Environment vars: GCP_PROJECT_ID, GCP_LOCATION, GOOGLE_APPLICATION_CREDENTIALS.
-- No DB writes; consume from Kafka.
+- Limited DB writes for analysis persistence and outbox pattern; consume from Kafka.
 
 ### routing-service (Rule-Based Routing)
 - Match DB rules for team assignment and SLA.
