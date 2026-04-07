@@ -106,3 +106,52 @@ Each core service exposes OpenAPI docs at `/swagger-ui/index.html` (e.g., http:/
    - rag-service: PGVector similarity search, Gemini RAG response, publishes TicketRagResponseEvent
 7. ticket-service consumes TicketRoutedEvent and TicketRagResponseEvent
    — updates assignment, priority, SLA, and rag_response on the ticket
+
+## Service-Specific Guidance
+
+When working on code in a specific service, prioritize these tailored rules and context. Copilot should reference this section for targeted suggestions.
+
+### discovery-service (Eureka Registry)
+- Focus on Eureka server configuration and service registration.
+- Avoid adding business logic; keep it lightweight.
+- Startup: First in order (port 8761).
+
+### api-gateway (Spring Cloud Gateway)
+- Use WebFlux only; no MVC starters.
+- Implement CorrelationIdFilter as a GlobalFilter for X-Correlation-Id injection.
+- Handle CORS and routing; no direct service calls.
+
+### ticket-service (Core Ticket Management)
+- Enforce strict state machine transitions (e.g., via enums in common-library).
+- Use outbox pattern for events; @EnableScheduling required.
+- Controllers: Use service-specific DTOs (not common-library).
+- Entities: @Getter/@Setter + @NoArgsConstructor; no @Data.
+
+### ai-analysis-service (AI Analysis)
+- Integrate Spring AI ChatClient for Gemini calls; wrap in try-catch.
+- Publish TicketAnalyzedEvent after analysis (intent, sentiment, urgency).
+- Environment vars: GCP_PROJECT_ID, GCP_LOCATION, GOOGLE_APPLICATION_CREDENTIALS.
+- Limited DB writes for analysis persistence and outbox pattern; consume from Kafka.
+
+### routing-service (Rule-Based Routing)
+- Match DB rules for team assignment and SLA.
+- Publish TicketRoutedEvent.
+- Use constructor injection; @Transactional on service methods.
+
+### rag-service (RAG Pipeline)
+- Use PGVector for embeddings; QuestionAnswerAdvisor for RAG.
+- DataLoaderRunner: Skip if already embedded.
+- Publish TicketRagResponseEvent.
+- AI model name via @Value.
+
+### common-library (Shared Code)
+- Only DTOs, enums, events, constants—no @Entity or beans.
+- Used by all services for Kafka payloads and shared types.
+- Not runnable; reference in other modules.
+
+## Testing Expectations
+
+- Unit tests: Mockito for service layer.
+- Integration tests: @SpringBootTest + Testcontainers for PostgreSQL + Kafka.
+- Always test happy path + at least one failure/edge case.
+- Test state machine transitions including invalid transition exceptions.
