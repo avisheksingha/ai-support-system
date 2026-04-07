@@ -7,6 +7,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-pgvector-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 [![Architecture](https://img.shields.io/badge/Architecture-Microservices-orange)](OVERVIEW.md)
+[![GitHub Copilot](https://img.shields.io/badge/GitHub%20Copilot-Ready-0F66D9?logo=github&logoColor=white)](.github/copilot-instructions.md)
 [![CI/CD](https://github.com/avisheksingha/ai-support-system/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/avisheksingha/ai-support-system/actions/workflows/ci-cd.yml)
 
 ## Overview
