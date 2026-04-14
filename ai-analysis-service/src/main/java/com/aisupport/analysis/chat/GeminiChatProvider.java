@@ -54,12 +54,6 @@ public class GeminiChatProvider implements ChatProvider {
                     .call()
                     .entity(outputConverter);
             
-            log.info("Gemini raw → sentiment={}, intent={}, urgency={}, confidence={}",
-            		parsed.getSentiment(),
-                    parsed.getIntent(),
-                    parsed.getUrgency(),
-                    parsed.getConfidenceScore());
-
             return parsed;
 
         } catch (Exception e) {

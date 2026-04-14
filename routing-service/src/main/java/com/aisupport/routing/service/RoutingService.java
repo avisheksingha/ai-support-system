@@ -15,11 +15,20 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+/**
+ * Evaluates routing rules for analyzed tickets and publishes routing outcomes.
+ */
 public class RoutingService {
 
     private final RuleEvaluationService ruleEvaluationService;
     private final OutboxEventService outboxService;
 
+    /**
+     * Resolves assignment, priority, and SLA for a ticket analysis result,
+     * then publishes a {@code TicketRoutedEvent} via outbox.
+     *
+     * @param event analyzed ticket event
+     */
     @Transactional
     public void route(TicketAnalyzedEvent event) {
 

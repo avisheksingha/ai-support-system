@@ -39,8 +39,6 @@ private final TicketService ticketService;
     )
     @PostMapping
     public ResponseEntity<TicketResponse> createTicket(@Valid @RequestBody TicketRequest request) {
-        log.info("Received request to create ticket from: {}", request.getCustomerEmail());
-        
         TicketResponse response = ticketService.createTicket(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

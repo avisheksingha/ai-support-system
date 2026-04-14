@@ -28,6 +28,9 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+/**
+ * Business service for ticket lifecycle operations.
+ */
 public class TicketService {
 
     private static final String TICKET_NOT_FOUND_MSG = "Ticket not found: ";
@@ -36,6 +39,13 @@ public class TicketService {
     private final TicketMapper ticketMapper;
     private final OutboxEventService outboxEventService;
 
+    /**
+     * Creates a new ticket and stores a corresponding {@code TicketCreatedEvent}
+     * in the outbox for asynchronous downstream processing.
+     *
+     * @param request ticket creation request payload
+     * @return persisted ticket response
+     */
     @Transactional
     public TicketResponse createTicket(TicketRequest request) {
 
@@ -68,6 +78,12 @@ public class TicketService {
         return ticketMapper.toResponse(ticket);
     }
 
+    /**
+     * Fetches a ticket by its public ticket number.
+     *
+     * @param ticketNumber unique ticket number
+     * @return ticket response
+     */
     @Transactional(readOnly = true)
     public TicketResponse getTicketByNumber(String ticketNumber) {
         Ticket ticket = ticketRepository.findByTicketNumber(ticketNumber)
@@ -76,6 +92,12 @@ public class TicketService {
         return ticketMapper.toResponse(ticket);
     }
 
+    /**
+     * Fetches a ticket by internal database identifier.
+     *
+     * @param id ticket database id
+     * @return ticket response
+     */
     @Transactional(readOnly = true)
     public TicketResponse getTicketById(Long id) {
         Ticket ticket = ticketRepository.findById(id)
@@ -84,6 +106,11 @@ public class TicketService {
         return ticketMapper.toResponse(ticket);
     }
 
+    /**
+     * Returns all tickets.
+     *
+     * @return list of ticket responses
+     */
     @Transactional(readOnly = true)
     public List<TicketResponse> getAllTickets() {
         return ticketRepository.findAll()
@@ -92,6 +119,12 @@ public class TicketService {
                 .toList();
     }
 
+    /**
+     * Returns all tickets filtered by status.
+     *
+     * @param status ticket status string
+     * @return list of matching ticket responses
+     */
     @Transactional(readOnly = true)
     public List<TicketResponse> getTicketsByStatus(String status) {
         TicketStatus ticketStatus = parseTicketStatus(status);
@@ -102,6 +135,14 @@ public class TicketService {
                 .toList();
     }
 
+    /**
+     * Updates ticket status and optional SLA.
+     *
+     * @param ticketNumber ticket number
+     * @param newStatus target status
+     * @param slaHours optional SLA override in hours
+     * @return updated ticket response
+     */
     @Transactional
     public TicketResponse updateTicketStatus(String ticketNumber,
                                              String newStatus,
@@ -120,6 +161,14 @@ public class TicketService {
         return ticketMapper.toResponse(ticket);
     }
 
+    /**
+     * Assigns a ticket to an agent/team and transitions it to {@code ASSIGNED}.
+     *
+     * @param ticketNumber ticket number
+     * @param assignedTo assignee identifier
+     * @param slaHours optional SLA override in hours
+     * @return updated ticket response
+     */
     @Transactional
     public TicketResponse assignTicket(String ticketNumber,
                                        String assignedTo,
@@ -139,6 +188,14 @@ public class TicketService {
         return ticketMapper.toResponse(ticket);
     }
     
+    /**
+     * Updates ticket priority and optional SLA.
+     *
+     * @param ticketNumber ticket number
+     * @param newPriority target priority
+     * @param slaHours optional SLA override in hours
+     * @return updated ticket response
+     */
     @Transactional
     public TicketResponse updateTicketPriority(String ticketNumber,
                                                String newPriority,
@@ -157,6 +214,12 @@ public class TicketService {
         return ticketMapper.toResponse(ticket);
     }
     
+    /**
+     * Applies routing decision results received from routing-service.
+     * Duplicate or out-of-order routing events are treated as no-ops.
+     *
+     * @param event routing event payload
+     */
     @Transactional
     public void applyRoutingResult(TicketRoutedEvent event) {
 
@@ -208,6 +271,11 @@ public class TicketService {
                 event.getSlaHours());
     }
     
+    /**
+     * Applies generated RAG response to the ticket.
+     *
+     * @param event RAG response event payload
+     */
     @Transactional
     public void applyRagResponse(TicketRagResponseEvent event) {
 

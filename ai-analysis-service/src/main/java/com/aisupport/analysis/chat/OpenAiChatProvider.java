@@ -55,12 +55,6 @@ public class OpenAiChatProvider implements ChatProvider {
                     .call()
                     .entity(outputConverter);
 
-            log.info("OpenAI raw → sentiment={}, intent={}, urgency={}, confidence={}",
-            		parsed.getSentiment(),
-                    parsed.getIntent(),
-                    parsed.getUrgency(),
-                    parsed.getConfidenceScore());
-
             return parsed;
 
         } catch (Exception e) {
