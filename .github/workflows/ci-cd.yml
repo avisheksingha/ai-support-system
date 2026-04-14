@@ -224,6 +224,7 @@ jobs:
             echo "Deploying ${SERVICE} to Cloud Run on port ${PORT}..."
 
             ENV_VARS="SPRING_PROFILES_ACTIVE=gcp,GOOGLE_CLOUD_PROJECT=${GCP_PROJECT_ID},GOOGLE_CLOUD_LOCATION=${GCP_REGION},GCP_PROJECT_ID=${GCP_PROJECT_ID},GCP_LOCATION=${GCP_REGION}"
+            AUTH_FLAG="--no-allow-unauthenticated"
 
             case "${SERVICE}" in
               api-gateway)
@@ -231,6 +232,7 @@ jobs:
                 require_var API_ROUTING_SERVICE_URL
                 require_var API_RAG_SERVICE_URL
                 ENV_VARS="${ENV_VARS},API_TICKET_SERVICE_URL=${API_TICKET_SERVICE_URL},API_ROUTING_SERVICE_URL=${API_ROUTING_SERVICE_URL},API_RAG_SERVICE_URL=${API_RAG_SERVICE_URL}"
+                AUTH_FLAG="--allow-unauthenticated"
                 ;;
               ticket-service)
                 require_var TICKET_DB_URL
@@ -287,7 +289,7 @@ jobs:
               --project "${GCP_PROJECT_ID}" \
               --platform managed \
               --port "${PORT}" \
-              --allow-unauthenticated \
+              "${AUTH_FLAG}" \
               --set-env-vars "${ENV_VARS}" \
               --quiet
           done

@@ -22,19 +22,19 @@ import com.aisupport.analysis.chat.OpenAiChatProvider;
 public class ChatConfig {
 
 	/**
-	 * ChatClient beans for each provider. These are created regardless of which provider is active,
-	 * but only the one marked with @Primary and matching the "chat.provider" property will be injected
-	 * into the ChatProvider implementations.
+	 * Creates Gemini ChatClient when Gemini is the active provider.
 	 */
-    @Bean    
+    @Bean
+    @ConditionalOnProperty(name = "chat.provider", havingValue = "gemini", matchIfMissing = true)
     ChatClient geminiChatClient(VertexAiGeminiChatModel geminiChatModel) {
         return ChatClient.create(geminiChatModel);
     }
 
     /**
-	 * OpenAI ChatClient bean. This will be created but only used if chat.provider=openai.
+	 * Creates OpenAI ChatClient only when OpenAI is the active provider.
 	 */
-    @Bean    
+    @Bean
+    @ConditionalOnProperty(name = "chat.provider", havingValue = "openai")
     ChatClient openAiChatClient(OpenAiChatModel openAiChatModel) {
         return ChatClient.create(openAiChatModel);
     }
