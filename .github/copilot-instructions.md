@@ -1,157 +1,199 @@
 # Copilot Instructions for AI Support System
 
-This repository is a Spring Boot 4.0.5 microservices platform for AI-powered ticket management, using Spring AI with Google Gemini integration, service discovery, and event-driven automation via Kafka.
+This repository is a Spring Boot 4.0.5 microservices platform for AI-powered ticket management, using Spring AI with Gemini/OpenAI providers, service discovery, and event-driven workflows via Kafka.
 
 ## Build, Test, and Lint Commands
 
-- **Build all services:**
+### Build
+
+- **Build all modules:**
   ```bash
-  mvn clean install
+  mvn -f aisupport-parent/pom.xml clean install
   ```
 
 - **Build a single module:**
   ```bash
-  mvn clean install -pl <module-name>
+  mvn -pl <module-name> clean install
   ```
+
+- **Build without tests:**
+  ```bash
+  mvn -f aisupport-parent/pom.xml clean install -DskipTests
+  ```
+
+### Run Tests
+
+- **Run all tests from repo root:**
+  ```bash
+  mvn test
+  ```
+
+- **Run tests for a single module:**
+  ```bash
+  mvn -pl <module-name> test
+  ```
+
+- **Run a specific test class:**
+  ```bash
+  mvn -pl <module-name> -Dtest=<TestClassName> test
+  ```
+
+- **Core test packs by service:**
+  - **Ticket Service:** `mvn -pl ticket-service -Dtest=TicketControllerTest,TicketServiceBehaviorTest,GlobalExceptionHandlerTest,OutboxEventPublisherTest test`
+  - **AI Analysis:** `mvn -pl ai-analysis-service -Dtest=AnalysisControllerTest,AnalysisProcessingServiceTest,AnalysisQueryServiceTest test`
+  - **Routing:** `mvn -pl routing-service -Dtest=RoutingServiceTest,RuleEvaluationServiceTest test`
+  - **RAG:** `mvn -pl rag-service -Dtest=RagServiceTest test`
+
+### Run Services
 
 - **Run a service:**
   ```bash
   cd <service-dir> && mvn spring-boot:run
   ```
 
-- **Run tests (all):**
+- **Run with profile:**
   ```bash
-  mvn test
+  cd <service-dir> && mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=<profile>"
   ```
+
+### Code Quality
 
 - **SonarQube analysis:**
   ```bash
   mvn clean verify sonar:sonar
   ```
 
+- **Generate Javadoc:**
+  ```bash
+  mvn javadoc:javadoc
+  ```
+
 ## High-Level Architecture
 
-- **discovery-service:** Eureka registry for all microservices (Port: 8761).
-- **api-gateway:** Central entry point built on Spring Cloud Gateway, handles CORS, and assigns `X-Correlation-Id` (Port: 8080).
-- **ticket-service:** Core ticket management with strict state machine transitions (Port: 8082).
-- **ai-analysis-service:** AI analysis via Spring AI (Gemini) (Port: 8083).
-- **routing-service:** Rule-based team assignment and SLA (Port: 8084).
-- **rag-service:** Retrieval-Augmented Generation for context-aware suggestions (pgvector) (Port: 8085).
-- **common-library:** Shared DTOs, enums, events, constants — not a runnable service.
+- **discovery-service:** Eureka registry (Port: 8761)
+- **api-gateway:** Spring Cloud Gateway entry point and correlation-id propagation (Port: 8080)
+- **ticket-service:** Ticket lifecycle, updates, and outbox publishing (Port: 8082)
+- **ai-analysis-service:** Consumes `ticket-created`, runs AI analysis, publishes `ticket-analyzed` (Port: 8083)
+- **routing-service:** Consumes `ticket-analyzed`, evaluates DB rules, publishes `ticket-routed` (Port: 8084)
+- **rag-service:** Consumes `ticket-analyzed`, runs RAG with PGVector, publishes `ticket-rag-response` (Port: 8085)
+- **common-library:** Shared DTOs, enums, events, constants
 
 ### Service Startup Order
-1. `discovery-service` (Eureka)
+1. `discovery-service`
 2. `api-gateway`
-3. Core services (can run in parallel):
-   - `ticket-service`
-   - `ai-analysis-service`
-   - `routing-service`
-   - `rag-service`
+3. Core services (parallel): `ticket-service`, `ai-analysis-service`, `routing-service`, `rag-service`
 
 ### API Documentation
-Each core service exposes OpenAPI docs at `/swagger-ui/index.html` (e.g., http://localhost:8082/swagger-ui/index.html).
+- Services with REST controllers expose Swagger UI at `/swagger-ui.html`.
+- Examples:
+  - http://localhost:8082/swagger-ui.html
+  - http://localhost:8083/swagger-ui.html
 
 ## Technology Stack
 
-- **Language**: Java 21
-- **Framework**: Spring Boot 4.0.5 + Spring Framework 7.0
-- **Microservices**: Spring Cloud 2025.1.0
-- **AI Integration**: Spring AI 2.0.0-M1 (Vertex AI Gemini 2.0 Flash)
-- **Database**: PostgreSQL + PGVector extension (vector embeddings)
-- **Messaging**: Apache Kafka 4.1
-- **Service Discovery**: Netflix Eureka
-- **API Documentation**: SpringDoc OpenAPI 3.0 (Swagger UI at /swagger-ui/index.html)
-- **Object Mapping**: MapStruct 1.6.3
-- **Resilience**: Spring Cloud CircuitBreaker + Resilience4j
+- **Language:** Java 21
+- **Framework:** Spring Boot 4.0.5 + Spring Framework 7
+- **Microservices:** Spring Cloud 2025.1.0
+- **AI Integration:** Spring AI 2.0.0-M1
+- **Database:** PostgreSQL + PGVector
+- **Messaging:** Apache Kafka
+- **Service Discovery:** Netflix Eureka
+- **API Documentation:** SpringDoc OpenAPI 3.0.x
+- **Object Mapping:** MapStruct 1.6.3
+- **Resilience:** Resilience4j
 
 ## Key Conventions
 
-- **Architecture:** Layered (Controller → Service → Repository).
-- **DI:** Constructor-based dependency injection only — never @Autowired field injection.
-- **Shared Code:** Use `common-library` for DTOs, Enums, Kafka Topics/Groups, Events, and Constants.
-- **JPA Entities:** Use @Getter/@Setter — never @Data (breaks JPA proxying). Always include @NoArgsConstructor.
-- **Testing:** JUnit 5 + Mockito for unit tests; @SpringBootTest + Testcontainers for integration tests.
-- **Communication:** Synchronous via Eureka/REST and Asynchronous via Kafka.
-- **Event Publishing:** Use the **Outbox Pattern** with a dedicated scheduler and retry semantics to guarantee Kafka event delivery.
-- **Observability:** Use `CorrelationIdFilter` to map `X-Correlation-Id` to `MDC` for Logback tracing in both REST controllers and Kafka consumers.
-- **Discovery:** Eureka (no hardcoded URLs).
+### Dependency Injection & Mapping
+- Use constructor injection (`@RequiredArgsConstructor`) over field injection.
+- Prefer explicit Lombok annotations on entities (`@Getter/@Setter`, `@NoArgsConstructor`) unless module already uses an established pattern.
+- Use MapStruct with `componentModel = "spring"` where mapper beans are required.
+
+### REST & Service Layer
+- Keep controller DTOs service-specific.
+- Use `@RestControllerAdvice` per service for domain-level error mapping.
+- Keep transactional boundaries in service layer.
+
+### Event-Driven Communication
+- Use outbox flow for cross-service event publication.
+- Keep scheduler-based outbox publishers enabled where present (`@Scheduled(fixedDelay = 2000)`).
+- Preserve `X-Correlation-Id` in Kafka headers and restore it into MDC in consumers.
+
+### API Gateway Rules
+- `api-gateway` is reactive (WebFlux). Do not introduce MVC stack there.
+- Other services should remain servlet-based.
+- External client entry point is gateway on port `8080`.
+
+### AI & RAG
+- AI analysis uses pluggable providers (`chat.provider=gemini|openai`) via `ChatProvider`.
+- RAG uses `QuestionAnswerAdvisor` + PGVector via Spring AI vector store.
+- Model names and provider values come from config properties, not hardcoded literals.
+
+### Correlation ID & Observability
+- Gateway injects/passes `X-Correlation-Id`.
+- Services populate MDC via `CorrelationIdFilter` (HTTP) and Kafka consumers (event path).
+- Use `%X{correlationId:-no-correlation-id}` in log patterns.
 
 ## Environment Variables
 
-### AI Analysis Service
-- **Google Cloud:** `GCP_PROJECT_ID`, `GCP_LOCATION`, `GOOGLE_APPLICATION_CREDENTIALS`.
+### Common
+- `SPRING_PROFILES_ACTIVE` (`local`, `docker`, `gcp`)
+- `DB_USERNAME`, `DB_PASSWORD`
+- `GOOGLE_APPLICATION_CREDENTIALS`
+- `GCP_PROJECT_ID`, `GCP_LOCATION`
+- `OPENAI_API_KEY` (if `chat.provider=openai`)
+
+### Kafka
+- Local profiles use `spring.kafka.bootstrap-servers=localhost:29092`.
+
+## Project Structure Quick Reference
+
+```text
+api-gateway/          # Spring Cloud Gateway
+/discovery-service/   # Eureka server
+/ticket-service/      # Ticket APIs + outbox + consumers
+/ai-analysis-service/ # Analysis consumer + query APIs + outbox
+routing-service/      # Rule evaluation + outbox (event-driven)
+rag-service/          # RAG generation + vector loading + outbox (event-driven)
+common-library/       # Shared events/constants/enums/dtos
+aisupport-parent/     # Maven parent pom
+infra/                # docker-compose and init scripts
+```
 
 ## Important Rules
 
-- Never bypass API Gateway to call services directly (use port 8080).
-- Never share DB schemas between services.
-- Never add @Transactional directly on Kafka consumer methods (use @Transactional on the service method called from the consumer).
-- Never use spring-boot-starter-webmvc in api-gateway (WebFlux only).
-- Never use spring-boot-starter-webflux in MVC services (servlet stack conflict).
-- Never put @Entity classes in common-library.
-- Never skip @NoArgsConstructor on JPA entities.
-- Never skip @EnableScheduling on services that use @Scheduled.
-- All Kafka events go through OutboxEvent entity — never direct KafkaTemplate.
-- Outbox events: status PENDING/SENT/FAILED/DEAD, MAX_RETRIES=3.
+- Do not bypass gateway for external traffic patterns.
+- Do not publish integration events directly from business services without outbox persistence.
+- Do not put entities in `common-library`.
+- Do not add WebFlux dependencies to servlet services.
+- Do not add MVC dependencies to `api-gateway`.
 
-## End-to-End Data Flow
+## End-to-End Event Flow
 
-1. Client sends POST /api/v1/tickets through API Gateway
-2. API Gateway injects X-Correlation-Id header for distributed tracing
-3. ticket-service creates ticket, saves TicketCreatedEvent to outbox table
-4. OutboxEventPublisher polls every 2s, publishes to ticket-created topic
-5. ai-analysis-service consumes event, calls Gemini API, publishes TicketAnalyzedEvent
-6. routing-service and rag-service consume TicketAnalyzedEvent in parallel:
-   - routing-service: matches DB rules, assigns team + SLA, publishes TicketRoutedEvent
-   - rag-service: PGVector similarity search, Gemini RAG response, publishes TicketRagResponseEvent
-7. ticket-service consumes TicketRoutedEvent and TicketRagResponseEvent
-   — updates assignment, priority, SLA, and rag_response on the ticket
+1. `ticket-service` creates ticket and writes `TicketCreatedEvent` to outbox.
+2. Outbox publisher emits to topic `ticket-created`.
+3. `ai-analysis-service` consumes, analyzes, and writes `TicketAnalyzedEvent` to outbox.
+4. `routing-service` and `rag-service` consume `ticket-analyzed` in parallel.
+5. `routing-service` emits `ticket-routed`; `rag-service` emits `ticket-rag-response`.
+6. `ticket-service` consumers update ticket assignment/priority/SLA and rag response.
 
-## Service-Specific Guidance
+## Common Tasks
 
-When working on code in a specific service, prioritize these tailored rules and context. Copilot should reference this section for targeted suggestions.
+### Setup
+```bash
+docker compose -f infra/docker-compose.yml up -d
+mvn -f aisupport-parent/pom.xml clean install
+```
 
-### discovery-service (Eureka Registry)
-- Focus on Eureka server configuration and service registration.
-- Avoid adding business logic; keep it lightweight.
-- Startup: First in order (port 8761).
+### Debug Kafka Flow
+```bash
+kafka-console-consumer --bootstrap-server localhost:29092 --topic ticket-created --from-beginning
+curl http://localhost:8761/eureka/apps
+```
 
-### api-gateway (Spring Cloud Gateway)
-- Use WebFlux only; no MVC starters.
-- Implement CorrelationIdFilter as a GlobalFilter for X-Correlation-Id injection.
-- Handle CORS and routing; no direct service calls.
+## References
 
-### ticket-service (Core Ticket Management)
-- Enforce strict state machine transitions (e.g., via enums in common-library).
-- Use outbox pattern for events; @EnableScheduling required.
-- Controllers: Use service-specific DTOs (not common-library).
-- Entities: @Getter/@Setter + @NoArgsConstructor; no @Data.
-
-### ai-analysis-service (AI Analysis)
-- Integrate Spring AI ChatClient for Gemini calls; wrap in try-catch.
-- Publish TicketAnalyzedEvent after analysis (intent, sentiment, urgency).
-- Environment vars: GCP_PROJECT_ID, GCP_LOCATION, GOOGLE_APPLICATION_CREDENTIALS.
-- Limited DB writes for analysis persistence and outbox pattern; consume from Kafka.
-
-### routing-service (Rule-Based Routing)
-- Match DB rules for team assignment and SLA.
-- Publish TicketRoutedEvent.
-- Use constructor injection; @Transactional on service methods.
-
-### rag-service (RAG Pipeline)
-- Use PGVector for embeddings; QuestionAnswerAdvisor for RAG.
-- DataLoaderRunner: Skip if already embedded.
-- Publish TicketRagResponseEvent.
-- AI model name via @Value.
-
-### common-library (Shared Code)
-- Only DTOs, enums, events, constants—no @Entity or beans.
-- Used by all services for Kafka payloads and shared types.
-- Not runnable; reference in other modules.
-
-## Testing Expectations
-
-- Unit tests: Mockito for service layer.
-- Integration tests: @SpringBootTest + Testcontainers for PostgreSQL + Kafka.
-- Always test happy path + at least one failure/edge case.
-- Test state machine transitions including invalid transition exceptions.
+- `README.md`
+- `ARCHITECTURE.md`
+- `TESTING.md`
+- `.github/agents/README.md`
