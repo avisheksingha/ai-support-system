@@ -65,6 +65,16 @@ Discovery strategy:
 - `local`/`docker`: Eureka-based service discovery
 - `gcp`: Eureka clients disabled, environment-based service URLs
 
+## AI-Assisted Development
+
+This repository uses AI coding assistants (including GitHub Copilot) as productivity tools for scaffolding, refactoring suggestions, and test drafting.
+
+Engineering policy:
+
+- AI-generated code is reviewed and validated before merge.
+- Build/test checks must pass before PR approval.
+- Security-sensitive decisions (credentials, logging, deployment config) are manually reviewed by the maintainer.
+
 ## Getting Started
 
 ### 0. Configure Environment Variables

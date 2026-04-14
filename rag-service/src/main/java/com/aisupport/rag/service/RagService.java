@@ -44,6 +44,7 @@ public class RagService {
 	/**
 	 * Generate a context-aware response for the given query using RAG.
 	 *
+	 * @param ticketId ticket identifier associated with the query
 	 * @param query the search query (typically built from ticket analysis fields)
 	 * @return the AI-generated response grounded in knowledge base context
 	 */

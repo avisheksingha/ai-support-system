@@ -53,11 +53,7 @@ public class TicketAnalyzedConsumer {
 	                String.join(" ", safeList(event.getKeywords()))
 	        );
 	        
-	        log.debug("Constructed RAG query: {}", query);
-	
-	        String response = ragService.generateResponse(event.getTicketId(), query);
-	
-	        log.info("Generated RAG response for ticketId={}: {}", event.getTicketId(), response);
+	        ragService.generateResponse(event.getTicketId(), query);
 
 	    } catch (Exception ex) {	    	
 	        log.error("Failed to process ticket-analyzed event key={}", consumerRecord.key(), ex);	        

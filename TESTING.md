@@ -6,11 +6,11 @@ This guide provides the fastest way to run the most relevant tests for this proj
 
 - Java 21
 - Maven Wrapper (`mvnw.cmd`) is already included in each module
-- `MAVEN_USER_HOME` configured (example: `F:\packages\.m2`)
+- `MAVEN_USER_HOME` configured (example: `<path-to-m2-repo>`)
 
 ## Windows Troubleshooting (Only If Maven Fails to Start)
 
-If `MAVEN_OPTS` is accidentally set to a raw path (for example `F:\packages\.m2`), Maven can fail to start.
+If `MAVEN_OPTS` is accidentally set to a raw path (for example `<path-to-m2-repo>`), Maven can fail to start.
 
 Use this before running commands in the same PowerShell session:
 
