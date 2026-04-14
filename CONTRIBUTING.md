@@ -25,6 +25,13 @@ Thanks for your interest in contributing.
   - `OVERVIEW.md`
   - Service-level README files where relevant
 
+## AI Assistance Policy
+
+- AI tools (for example GitHub Copilot) may be used for scaffolding, refactoring suggestions, and test drafting.
+- Contributors are responsible for reviewing, validating, and owning all generated code before submission.
+- Do not commit secrets or sensitive data suggested by tooling.
+- Security-sensitive changes (credentials, logging, deployment config) require extra manual review.
+
 ## Feature Checklist
 
 If you add a new feature, verify:
