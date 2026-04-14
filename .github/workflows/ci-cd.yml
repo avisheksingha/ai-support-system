@@ -224,8 +224,7 @@ jobs:
             echo "Deploying ${SERVICE} to Cloud Run on port ${PORT}..."
 
             ENV_VARS="SPRING_PROFILES_ACTIVE=gcp,GOOGLE_CLOUD_PROJECT=${GCP_PROJECT_ID},GOOGLE_CLOUD_LOCATION=${GCP_REGION},GCP_PROJECT_ID=${GCP_PROJECT_ID},GCP_LOCATION=${GCP_REGION}"
-            AUTH_FLAG="--no-allow-unauthenticated"
-
+            
             case "${SERVICE}" in
               api-gateway)
                 require_var API_TICKET_SERVICE_URL
