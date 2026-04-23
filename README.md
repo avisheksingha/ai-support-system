@@ -132,8 +132,17 @@ mvn -f aisupport-parent/pom.xml clean install
 ```plaintext
 ai-support-system/
 ├── .github/
+│   ├── agents/                   # GitHub Copilot custom agents
+│   │   ├── README.md
+│   │   ├── discovery-service-agent.md
+│   │   ├── api-gateway-agent.md
+│   │   ├── ticket-service-agent.md
+│   │   ├── ai-analysis-agent.md
+│   │   ├── routing-agent.md
+│   │   └── rag-agent.md
 │   ├── workflows/                # CI/CD workflow definitions
 │   ├── ISSUE_TEMPLATE/           # Bug/feature issue templates
+│   ├── copilot-instructions.md   # Repo-wide Copilot guidance
 │   └── pull_request_template.md  # PR checklist template
 ├── discovery-service/    # Eureka Server (Port: 8761)
 ├── api-gateway/          # Spring Cloud Gateway (Port: 8080)
