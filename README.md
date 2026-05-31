@@ -10,6 +10,36 @@
 [![GitHub Copilot](https://img.shields.io/badge/GitHub%20Copilot-Ready-0F66D9?logo=github&logoColor=white)](.github/copilot-instructions.md)
 [![CI/CD](https://github.com/avisheksingha/ai-support-system/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/avisheksingha/ai-support-system/actions/workflows/ci-cd.yml)
 
+## Business Problem
+
+Modern customer support teams often handle hundreds or thousands of tickets across multiple channels. As ticket volumes grow, manual triage becomes increasingly difficult and introduces several operational challenges:
+
+- Urgent customer issues may not be identified quickly enough.
+- Tickets can be assigned to the wrong team or support queue.
+- Support agents spend valuable time performing repetitive classification tasks.
+- Knowledge retrieval becomes slower as historical ticket data grows.
+- Inconsistent prioritization can negatively impact customer satisfaction and response times.
+
+Organizations need a scalable solution that can automatically analyze incoming requests, identify urgency, route tickets intelligently, and provide contextual assistance to support teams.
+
+## Solution
+
+The AI Support System is a microservices-based platform designed to automate support ticket processing using Artificial Intelligence and event-driven architecture.
+
+The platform combines AI-powered sentiment analysis, urgency detection, intelligent routing, and Retrieval-Augmented Generation (RAG) to streamline support operations and reduce manual intervention.
+
+Key capabilities include:
+
+- AI-driven sentiment and urgency analysis using Vertex AI.
+- Event-driven asynchronous processing using Apache Kafka.
+- Intelligent ticket routing based on business rules and AI insights.
+- Semantic search and contextual knowledge retrieval using PostgreSQL pgvector.
+- Distributed microservices architecture built with Spring Boot and Spring Cloud.
+- Correlation ID–based request tracing across services.
+- Scalable and cloud-ready deployment architecture.
+
+The result is a system that demonstrates how modern AI services, vector search, and event-driven microservices can work together to improve customer support workflows while maintaining scalability, observability, and maintainability.
+
 ## Overview
 
 The AI Support System is a leading-edge, microservices-based ticket management platform designed to automate and augment traditional support workflows. It leverages AI for analyzing ticket sentiment, urgency, and intent, employs event-driven communication via Apache Kafka, and utilizes rule-based orchestration to intelligently route tickets. Finally, it integrates a Retrieval-Augmented Generation (RAG) service to provide contextual AI responses.
