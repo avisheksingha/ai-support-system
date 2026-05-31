@@ -1,5 +1,20 @@
 # Architectural Design & Decisions
 
+## Architecture Decision Summary
+
+| Decision | Selected Option | Alternatives Considered | Reason |
+| ----------- | ---------------- | ------------------------- | -------- |
+| Application Architecture | Microservices | Modular Monolith | Independent scaling and service isolation |
+| Communication Pattern | Event-Driven | Synchronous REST-only | Reduced coupling and improved responsiveness |
+| Message Broker | Apache Kafka | RabbitMQ, ActiveMQ | High throughput, durability, event replay capabilities |
+| AI Provider | Vertex AI | OpenAI, Self-hosted Models | Managed infrastructure and enterprise integration |
+| Vector Storage | PostgreSQL + pgvector | Pinecone, Milvus, Weaviate | Reduced operational complexity and unified storage |
+| Service Discovery | Eureka | Static Configuration | Dynamic service registration and scaling |
+| API Entry Point | Spring Cloud Gateway | Direct Service Exposure | Centralized routing and security controls |
+| Reliability Pattern | Outbox Pattern | Direct Event Publishing | Prevents message loss during failures |
+| Resilience Strategy | Resilience4j | Custom Retry Logic | Standardized fault tolerance patterns |
+| Tracing Strategy | Correlation IDs | Service-specific logging | End-to-end request observability |
+
 ## Detailed Explanation of Design Decisions
 
 ### 1. Microservices Architecture
