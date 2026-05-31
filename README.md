@@ -75,6 +75,32 @@ The AI Support System is a leading-edge, microservices-based ticket management p
 - **Service Discovery**: Eureka
 - **API Documentation**: SpringDoc OpenAPI
 
+## Key Engineering Decisions
+
+### Why Microservices?
+
+The platform is intentionally designed as a microservices architecture to demonstrate service isolation, independent scalability, and clear separation of responsibilities across ticket management, AI analysis, routing, and knowledge retrieval domains.
+
+### Why Apache Kafka?
+
+Ticket processing involves multiple asynchronous operations such as AI analysis, routing decisions, and knowledge enrichment. Apache Kafka enables event-driven communication between services while reducing direct service-to-service coupling and improving scalability.
+
+### Why PostgreSQL with pgvector?
+
+Traditional relational data is stored in PostgreSQL while pgvector enables semantic similarity search for Retrieval-Augmented Generation (RAG) workflows. This combination allows structured transactional storage and AI-powered contextual retrieval within the same database platform.
+
+### Why Vertex AI?
+
+Vertex AI provides managed access to modern foundation models for sentiment analysis, urgency detection, and intent classification while reducing operational overhead associated with hosting and maintaining custom AI models.
+
+### Why Spring Boot and Spring Cloud?
+
+Spring Boot accelerates microservice development through convention-based configuration, while Spring Cloud provides service discovery, gateway routing, and cloud-native integration patterns commonly used in enterprise environments.
+
+### Why Event-Driven Processing?
+
+Support tickets do not require synchronous AI processing before being created. Event-driven processing allows tickets to be accepted immediately while downstream services perform analysis and routing asynchronously, improving responsiveness and user experience.
+
 ## Prerequisites
 
 - Java 21+
