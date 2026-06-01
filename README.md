@@ -12,7 +12,7 @@
 
 ## Business Problem
 
-Modern customer support teams often handle hundreds or thousands of tickets across multiple channels. As ticket volumes grow, manual triage becomes increasingly difficult and introduces several operational challenges:
+Modern customer support teams often handle hundreds or thousands of tickets across multiple channels. As ticket volumes grow, manual triage becomes increasingly difficult and introduces several operational challenges:  
 
 - Urgent customer issues may not be identified quickly enough.
 - Tickets can be assigned to the wrong team or support queue.
