@@ -14,6 +14,7 @@
 | Reliability Pattern | Outbox Pattern | Direct Event Publishing | Prevents message loss during failures |
 | Resilience Strategy | Resilience4j | Custom Retry Logic | Standardized fault tolerance patterns |
 | Tracing Strategy | Correlation IDs | Service-specific logging | End-to-end request observability |
+| Consistency Strategy | Eventual Consistency | Distributed Transactions | Improved scalability and service autonomy |
 
 ## Detailed Explanation of Design Decisions
 
