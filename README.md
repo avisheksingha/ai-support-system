@@ -118,6 +118,7 @@ Each service supports profile-driven startup:
 - `gcp`: cloud runtime using explicit service URLs
 
 Discovery strategy:
+
 - `local`/`docker`: Eureka-based service discovery
 - `gcp`: Eureka clients disabled, environment-based service URLs
 

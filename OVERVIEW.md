@@ -2,7 +2,7 @@
 
 ## High-Level System Architecture
 
-The AI Support System is built using a microservices architecture pattern. This approach allows independent scaling, development, and deployment of distinct business capabilities. 
+The AI Support System is built using a microservices architecture pattern. This approach allows independent scaling, development, and deployment of distinct business capabilities. Each microservice is designed to be loosely coupled, communicating primarily through RESTful APIs and asynchronous messaging via Apache Kafka. The system is structured around a central API Gateway that serves as the single entry point for all client interactions, ensuring consistent request handling and traceability across services.
 
 ![Architecture Diagram](docs/architecture-diagram.svg)
 
@@ -19,8 +19,8 @@ The AI Support System is built using a microservices architecture pattern. This 
 
 The system employs both synchronous and asynchronous communication:
 
-*   **Synchronous (REST)**: Handled primarily through the API Gateway for external requests, or directly via Eureka service discovery for direct service-to-service queries (e.g., fetching ticket details). All synchronized requests are logged with a traceable `X-Correlation-Id`.
-*   **Asynchronous (Event-Driven)**: Handled via Apache Kafka. When a significant domain event occurs (such as a ticket being created), an event is reliably published to a Kafka topic leveraging a robust **Outbox Pattern** with retry semantics. Services like `ai-analysis-service` and `routing-service` react to these events without tight coupling and extract the correlation ID directly from Kafka headers for consistent lifecycle tracing.
+* **Synchronous (REST)**: Handled primarily through the API Gateway for external requests, or directly via Eureka service discovery for direct service-to-service queries (e.g., fetching ticket details). All synchronized requests are logged with a traceable `X-Correlation-Id`.
+* **Asynchronous (Event-Driven)**: Handled via Apache Kafka. When a significant domain event occurs (such as a ticket being created), an event is reliably published to a Kafka topic leveraging a robust **Outbox Pattern** with retry semantics. Services like `ai-analysis-service` and `routing-service` react to these events without tight coupling and extract the correlation ID directly from Kafka headers for consistent lifecycle tracing.
 
 ## Diagrams
 
