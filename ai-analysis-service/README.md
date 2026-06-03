@@ -9,7 +9,7 @@ Microservice that uses Spring AI to analyze support tickets for sentiment, urgen
 - Determines Urgency (LOW, MEDIUM, HIGH, CRITICAL)
 - Identifies User Intent (TECHNICAL, BILLING, etc.)
 - Auto-tagging with keywords
-- Built on **Spring Boot 4.0.5** and **Spring AI**
+- Built on **Spring Boot 4.0.6** and **Spring AI**
 - Active AI provider: **Google Vertex AI (Gemini)**
 - Optional provider support: **OpenAI**
 
@@ -28,23 +28,28 @@ Microservice that uses Spring AI to analyze support tickets for sentiment, urgen
 ### Environment Variables
 
 #### Google Vertex AI (Gemini)
+
 - `GCP_PROJECT_ID`: Your Google Cloud Project ID.
 - `GCP_LOCATION`: Your Google Cloud Project location (e.g., `us-central1`).
 - `GOOGLE_APPLICATION_CREDENTIALS`: Path to your GCP service account JSON key file.
 
 #### OpenAI (Optional)
+
 - `SPRING_AI_OPENAI_API_KEY`: Your OpenAI API key.
 
 ## Interfaces & Endpoints
 
 ### Event-Driven (Kafka)
+
 - **Consumes**: `TicketCreatedEvent` (Triggers AI analysis workflow). Extracts `X-Correlation-Id` from Kafka headers for tracing.
 - **Produces**: `TicketAnalyzedEvent` (Publishes results for routing and RAG). Employs a **Resilient Outbox Pattern** with timeout/retry mechanisms to guarantee delivery.
 
 ### Observability
+
 - All REST and Kafka interactions are traced via a `CorrelationIdFilter` binding to Logback's `MDC`.
 
 ### REST API
+
 - `POST /api/v1/analysis/analyze`: Analyze a ticket manually
 - `GET /api/v1/analysis/{ticketId}`: Get existing analysis
 

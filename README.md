@@ -1,7 +1,7 @@
 # AI Support System Microservices Platform
 
 [![Java 21](https://img.shields.io/badge/Java-21-007396?logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/21/)
-[![Spring Boot 4](https://img.shields.io/badge/Spring_Boot-4.0.5-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Spring Boot 4](https://img.shields.io/badge/Spring_Boot-4.0.6-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![Spring Cloud](https://img.shields.io/badge/Spring_Cloud-2025.1.0-0ea5e9)](https://spring.io/projects/spring-cloud)
 [![Kafka](https://img.shields.io/badge/Apache_Kafka-Event_Driven-231F20?logo=apachekafka&logoColor=white)](https://kafka.apache.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-pgvector-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
@@ -67,7 +67,7 @@ The AI Support System is a leading-edge, microservices-based ticket management p
 ## Technology Stack
 
 - **Java**: 21
-- **Spring Boot**: 4.0.5
+- **Spring Boot**: 4.0.6
 - **Spring Cloud**: 2025.1.0
 - **Spring AI**: 2.0.0-M1
 - **Messaging**: Apache Kafka
@@ -118,6 +118,7 @@ Each service supports profile-driven startup:
 - `gcp`: cloud runtime using explicit service URLs
 
 Discovery strategy:
+
 - `local`/`docker`: Eureka-based service discovery
 - `gcp`: Eureka clients disabled, environment-based service URLs
 
