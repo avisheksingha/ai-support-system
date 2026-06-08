@@ -12,8 +12,8 @@ import static org.mockito.Mockito.when;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Answers;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.chat.client.ChatClient;
@@ -65,6 +65,7 @@ class RagServiceTest {
         verify(ragResponseRepository).save(responseCaptor.capture());
         assertThat(responseCaptor.getValue().getTicketId()).isEqualTo(7L);
         assertThat(responseCaptor.getValue().getModel()).isEqualTo("gemini-2.5-flash");
+        assertThat(responseCaptor.getValue().getKnowledgeFound()).isTrue();
 
         ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
         verify(outboxEventService).publishEvent(anyString(), anyString(), anyString(), eventCaptor.capture());
@@ -72,6 +73,26 @@ class RagServiceTest {
         assertThat(event.getTicketId()).isEqualTo(7L);
         assertThat(event.getModel()).isEqualTo("gemini-2.5-flash");
         assertThat(event.getResponse()).isEqualTo("Suggested response");
+    }
+
+    @Test
+    void generateResponse_whenNoKnowledgeFound_shouldPersistKnowledgeFoundFalse() {
+        when(chatClient.prompt()
+                .system(anyString())
+                .user(anyString())
+                .advisors(questionAnswerAdvisor)
+                .call()
+                .content())
+                .thenReturn("No relevant knowledge article found.\n");
+
+        String result = ragService.generateResponse(9L, "unknown issue");
+
+        assertThat(result).isEqualTo("No relevant knowledge article found.\n");
+
+        ArgumentCaptor<RagResponse> responseCaptor = ArgumentCaptor.forClass(RagResponse.class);
+        verify(ragResponseRepository).save(responseCaptor.capture());
+        assertThat(responseCaptor.getValue().getTicketId()).isEqualTo(9L);
+        assertThat(responseCaptor.getValue().getKnowledgeFound()).isFalse();
     }
 
     @Test

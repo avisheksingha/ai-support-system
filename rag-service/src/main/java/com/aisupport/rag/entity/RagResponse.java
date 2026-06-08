@@ -45,6 +45,10 @@ public class RagResponse {
 
     @Column(name = "model")
     private String model;
+    
+    @Builder.Default
+    @Column(name = "knowledge_found", nullable = false)
+    private Boolean knowledgeFound = Boolean.FALSE;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

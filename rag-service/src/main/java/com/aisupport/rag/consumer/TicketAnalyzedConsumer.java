@@ -45,13 +45,19 @@ public class TicketAnalyzedConsumer {
 	        TicketAnalyzedEvent event = objectMapper.readValue(payload, TicketAnalyzedEvent.class);
 	
 	        log.info("Consumed ticket-analyzed event: ticketId={}", event.getTicketId());
-	
-	        String query = String.join(" ",
-	                safe(event.getIntent()),
-	                safe(event.getSentiment()),
-	                safe(event.getUrgency()),
-	                String.join(" ", safeList(event.getKeywords()))
-	        );
+	        
+	        String query = """
+				Issue: %s
+				Keywords: %s
+				Intent: %s
+				"""
+				.formatted(
+				        safe(event.getTicketDescription()),
+				        String.join(", ", safeList(event.getKeywords())),
+				        safe(event.getIntent())
+				);
+				
+			log.info("Constructed RAG query for ticketId={}", event.getTicketId());
 	        
 	        ragService.generateResponse(event.getTicketId(), query);
 
