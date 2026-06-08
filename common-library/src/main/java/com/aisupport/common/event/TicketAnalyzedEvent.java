@@ -17,6 +17,7 @@ import lombok.Setter;
 public class TicketAnalyzedEvent {
 
     private Long ticketId;
+    private String ticketDescription;    
     private String intent;
     private String sentiment;
     private String urgency;

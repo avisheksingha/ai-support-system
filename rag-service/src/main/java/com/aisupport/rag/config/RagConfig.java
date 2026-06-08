@@ -21,7 +21,11 @@ public class RagConfig {
     @Bean
     QuestionAnswerAdvisor questionAnswerAdvisor(VectorStore vectorStore) {
         return QuestionAnswerAdvisor.builder(vectorStore)
-                .searchRequest(SearchRequest.builder().topK(3).build())
+                .searchRequest(
+                		SearchRequest.builder()
+                		.topK(5)
+                		.build()
+                )
                 .build();
     }
 }

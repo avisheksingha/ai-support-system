@@ -32,6 +32,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class RagService {
+	
+	private static final String NO_KNOWLEDGE_FOUND = "No relevant knowledge article found.";
 
 	private final ChatClient chatClient;
 	private final QuestionAnswerAdvisor questionAnswerAdvisor;
@@ -55,23 +57,31 @@ public class RagService {
 		
 		String response;
 		
+		String systemPrompt = """
+			You are a customer support assistant.
+			
+			Rules:
+			1. Use ONLY the retrieved knowledge base context.
+			2. Never invent policies, procedures, timelines, or facts.
+			3. Never answer from your own knowledge.
+			4. If the context does not contain the answer, respond exactly:
+			   "%s"
+			5. Keep the response practical and under 3 sentences.
+			"""
+			.formatted(NO_KNOWLEDGE_FOUND);
+		
 		// Gemini call — can fail due to network/quota/model issues
 		try {
 		
 			// RAG call — similarity search + Gemini generation
 	        response = chatClient.prompt()
-					.system("""
-						Support assistant. Use ONLY the provided context.
-						If not found: "No relevant knowledge article found."
-						Max 3 sentences. Direct and practical.
-						""")
-	                .user(query)
-	                .advisors(questionAnswerAdvisor)
-	                .call()
-	                .content();
+				.system(systemPrompt)
+	            .user(query)
+	            .advisors(questionAnswerAdvisor)
+	            .call()
+	            .content();
 		} catch (Exception e) {
-	        log.error("Gemini RAG generation failed for ticketId={} query={}",
-	                ticketId, query, e);
+			log.error("Gemini RAG generation failed for ticketId={}", ticketId, e);
 	        throw new RagGenerationException(
 	                "RAG generation failed for ticketId: " + ticketId, e);
 	    } 
@@ -82,6 +92,7 @@ public class RagService {
                 .query(query)
                 .response(response)
                 .model(chatModel)
+                .knowledgeFound(isKnowledgeFound(response))
                 .build();
 
         ragResponseRepository.save(ragResponse);
@@ -106,5 +117,14 @@ public class RagService {
         log.info("RAG response event published for ticketId={}", ticketId);
 
         return response;
+	}
+
+	/**
+	 * Helper method to determine if the response indicates that relevant knowledge was found.
+	 * This is based on whether the response matches the NO_KNOWLEDGE_FOUND message.
+	 */
+	private boolean isKnowledgeFound(String response) {
+		return response != null
+			&& !NO_KNOWLEDGE_FOUND.equalsIgnoreCase(response.trim());
 	}
 }

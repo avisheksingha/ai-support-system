@@ -72,6 +72,7 @@ public class AnalysisProcessingService {
         // NEW: Publish analyzed event via Outbox
         TicketAnalyzedEvent analyzedEvent = TicketAnalyzedEvent.builder()
                 .ticketId(ticketId)
+                .ticketDescription(event.getMessage())
                 .intent(normalizedIntent)
                 .sentiment(defaultIfNull(parsed.getSentiment(), "NEUTRAL").toUpperCase())
                 .urgency(defaultIfNull(parsed.getUrgency(), "LOW").toUpperCase())
