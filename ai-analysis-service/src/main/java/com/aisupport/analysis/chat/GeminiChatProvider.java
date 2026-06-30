@@ -46,15 +46,13 @@ public class GeminiChatProvider implements ChatProvider {
                     {format}
                     """;
 
-            ParsedAnalysis parsed = chatClient.prompt()
+            return chatClient.prompt()
                     .user(u -> u.text(promptTemplate)
                             .param("subject", subject)
                             .param("message", message)
                             .param("format", outputConverter.getFormat()))
                     .call()
                     .entity(outputConverter);
-            
-            return parsed;
 
         } catch (Exception e) {
             log.error("Unexpected error during Gemini analysis", e);
@@ -62,7 +60,8 @@ public class GeminiChatProvider implements ChatProvider {
         }
     }
 
-    protected ParsedAnalysis fallbackAnalysis(String ignoredSubject, String ignoredMessage, Throwable ex) {
+    @SuppressWarnings("java:S1172")
+    protected ParsedAnalysis fallbackAnalysis(String subject, String message, Throwable ex) {
 
         log.error("Gemini circuit open or failed - fallback used", ex);
 

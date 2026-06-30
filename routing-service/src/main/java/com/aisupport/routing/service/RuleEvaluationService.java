@@ -54,18 +54,17 @@ public class RuleEvaluationService {
     }
 
     /* ---------------- MATCH LOGIC ---------------- */
-
+    
     private boolean evaluateRule(RoutingRule rule, TicketAnalyzedEvent e) {
+        
+        boolean isKeywordMatch = rule.getKeywordPatterns() == null 
+                || rule.getKeywordPatterns().length == 0 
+                || matchKeywords(rule.getKeywordPatterns(), e.getKeywords());
 
-        if (!match(rule.getIntentPattern(), e.getIntent())) return false;
-        if (!match(rule.getSentimentPattern(), e.getSentiment())) return false;
-        if (!match(rule.getUrgencyPattern(), e.getUrgency())) return false;
-
-        if (rule.getKeywordPatterns() != null && rule.getKeywordPatterns().length > 0) {
-            if (!matchKeywords(rule.getKeywordPatterns(), e.getKeywords())) return false;
-        }
-
-        return true;
+        return match(rule.getIntentPattern(), e.getIntent()) 
+                && match(rule.getSentimentPattern(), e.getSentiment()) 
+                && match(rule.getUrgencyPattern(), e.getUrgency()) 
+                && isKeywordMatch;
     }
 
     private boolean match(String pattern, String value) {
