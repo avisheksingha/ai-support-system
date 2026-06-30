@@ -61,10 +61,10 @@ public class OpenAiChatProvider implements ChatProvider {
         }
     }
 
-    @SuppressWarnings("java:S1172")
     protected ParsedAnalysis fallbackAnalysis(String subject, String message, Throwable ex) {
 
-        log.error("OpenAI circuit open or failed - fallback used", ex);
+        log.error("OpenAI circuit open or failed - fallback used for ticket subject: '{}'", subject, ex);
+        log.trace("Original ticket message that caused failure: {}", message);
 
         return ParsedAnalysis.builder()
                 .intent("GENERAL")
