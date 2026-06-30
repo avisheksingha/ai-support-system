@@ -1,6 +1,6 @@
 package com.aisupport.common.event;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,5 +19,5 @@ public class TicketCreatedEvent {
     private String ticketNumber;
     private String subject;
     private String message;
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 }

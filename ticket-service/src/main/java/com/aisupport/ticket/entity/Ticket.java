@@ -1,6 +1,6 @@
 package com.aisupport.ticket.entity;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 
@@ -91,13 +91,13 @@ public class Ticket {
     private String ragResponse;
 
     @Column(name = "rag_generated_at")
-    private LocalDateTime ragGeneratedAt;
+    private Instant ragGeneratedAt;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
     
     // NEW: State machine transitions
     private static final Map<TicketStatus, Set<TicketStatus>> VALID_TRANSITIONS = Map.of(
@@ -112,8 +112,8 @@ public class Ticket {
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+        createdAt = Instant.now();
+        updatedAt = Instant.now();
 
         if (status == null) {
             status = TicketStatus.NEW;
@@ -126,7 +126,7 @@ public class Ticket {
 
     @PreUpdate
     protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+        updatedAt = Instant.now();
     }
 
     // NEW: Enforce state machine transitions

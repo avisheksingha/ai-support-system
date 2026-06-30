@@ -1,6 +1,6 @@
 package com.aisupport.ticket.service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -62,7 +62,7 @@ public class TicketService {
                 .ticketNumber(ticket.getTicketNumber())
                 .subject(ticket.getSubject())
                 .message(ticket.getMessage())
-                .createdAt(LocalDateTime.now())
+                .createdAt(Instant.now())
                 .build();
 
         outboxEventService.publishEvent(

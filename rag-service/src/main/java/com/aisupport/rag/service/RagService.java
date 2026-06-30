@@ -1,6 +1,6 @@
 package com.aisupport.rag.service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
@@ -40,7 +40,7 @@ public class RagService {
 	private final RagResponseRepository ragResponseRepository;
 	private final OutboxEventService outboxEventService;
 	
-	@Value("${spring.ai.vertex.ai.gemini.chat.options.model}")
+	@Value("${spring.ai.google.genai.chat.options.model}")
 	private String chatModel;
 
 	/**
@@ -104,7 +104,7 @@ public class RagService {
                 .query(query)
                 .response(response)
                 .model(chatModel)
-                .generatedAt(LocalDateTime.now())
+                .generatedAt(Instant.now())
                 .build();
 
         outboxEventService.publishEvent(

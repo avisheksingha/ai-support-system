@@ -1,6 +1,6 @@
 package com.aisupport.common.event;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,5 +19,5 @@ public class TicketRagResponseEvent {
     private String query;
     private String response;
     private String model;
-    private LocalDateTime generatedAt;
+    private Instant generatedAt;
 }

@@ -1,6 +1,6 @@
 package com.aisupport.analysis.repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,7 +27,7 @@ public interface AnalysisResultRepository
         WHERE ar.createdAt >= :startDate
         ORDER BY ar.createdAt DESC
     """)
-    List<AnalysisResult> findRecentAnalysis(LocalDateTime startDate);
+    List<AnalysisResult> findRecentAnalysis(Instant startDate);
 
     @Query("""
         SELECT COUNT(ar)

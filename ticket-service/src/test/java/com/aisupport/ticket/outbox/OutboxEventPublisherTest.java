@@ -6,7 +6,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -54,7 +55,7 @@ class OutboxEventPublisherTest {
                 .status(OutboxEvent.Status.FAILED)
                 .retryCount(1)
                 .build();
-        failedEvent.setCreatedAt(LocalDateTime.now().minusMinutes(1));
+        failedEvent.setCreatedAt(Instant.now().minus(1, ChronoUnit.MINUTES));
 
         when(repository.findTop50ByStatusOrderByCreatedAtAsc(OutboxEvent.Status.PENDING))
                 .thenReturn(List.of());
@@ -67,7 +68,7 @@ class OutboxEventPublisherTest {
                 .ticketNumber("TKT-42")
                 .subject("subject")
                 .message("message")
-                .createdAt(LocalDateTime.now())
+                .createdAt(Instant.now())
                 .build();
 
         when(objectMapper.readValue(anyString(), eq(TicketCreatedEvent.class)))

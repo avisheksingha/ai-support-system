@@ -70,7 +70,7 @@
 		<!-- Spring AI Vertex AI Gemini Chat Model (for ChatClient / RAG response generation) -->
 		<dependency>
             <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-starter-model-vertex-ai-gemini</artifactId>
+            <artifactId>spring-ai-starter-model-google-genai</artifactId>
         </dependency>
 		
 		<!-- Spring AI Vertex AI Embedding Model (for VectorStore auto-embedding) -->
@@ -88,7 +88,7 @@
 		<!-- Spring AI Advisors Vector Store for RAG (QuestionAnswerAdvisor) -->
 		<dependency>
 		   <groupId>org.springframework.ai</groupId>
-		   <artifactId>spring-ai-advisors-vector-store</artifactId>
+		   <artifactId>spring-ai-vector-store-advisor</artifactId>
 		</dependency>        
         
         <!-- Shared Common Library -->

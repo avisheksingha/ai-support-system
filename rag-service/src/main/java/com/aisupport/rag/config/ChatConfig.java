@@ -1,7 +1,7 @@
 package com.aisupport.rag.config;
 
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.vertexai.gemini.VertexAiGeminiChatModel;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
 public class ChatConfig {
 
     @Bean
-    ChatClient ragChatClient(VertexAiGeminiChatModel model) {
+    ChatClient ragChatClient(ChatModel model) {
         return ChatClient.create(model);
     }
 }

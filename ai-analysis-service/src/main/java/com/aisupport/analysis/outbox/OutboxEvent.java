@@ -1,6 +1,6 @@
 package com.aisupport.analysis.outbox;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -59,10 +59,10 @@ public class OutboxEvent {
     private int retryCount = 0; // NEW: tracks retry attempts
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @Column(name = "processed_at")
-    private LocalDateTime processedAt;
+    private Instant processedAt;
 
     public enum Status {
         PENDING, SENT, FAILED, DEAD
@@ -73,7 +73,7 @@ public class OutboxEvent {
     	if (id == null) {
             id = UUID.randomUUID().toString();
         }
-        createdAt = LocalDateTime.now();
+        createdAt = Instant.now();
         if (status == null) {
             status = Status.PENDING;
         }

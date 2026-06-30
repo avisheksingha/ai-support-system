@@ -1,6 +1,6 @@
 package com.aisupport.common.exception;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Map;
 
 import lombok.AllArgsConstructor;
@@ -13,8 +13,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class ErrorResponse {
-    
-    private LocalDateTime timestamp;
+	
+    private Instant timestamp;
     private int status;
     private String error;
     private String message;
@@ -26,7 +26,7 @@ public class ErrorResponse {
      */
     public static ErrorResponse of(int status, String error, String message, String path) {
         return ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
+                .timestamp(Instant.now())
                 .status(status)
                 .error(error)
                 .message(message)
@@ -40,7 +40,7 @@ public class ErrorResponse {
     public static ErrorResponse of(int status, String error, String message, 
                                    String path, Map<String, String> validationErrors) {
         return ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
+                .timestamp(Instant.now())
                 .status(status)
                 .error(error)
                 .message(message)

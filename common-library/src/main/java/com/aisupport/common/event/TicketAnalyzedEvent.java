@@ -1,6 +1,6 @@
 package com.aisupport.common.event;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -24,5 +24,5 @@ public class TicketAnalyzedEvent {
     private Double confidenceScore;
     private List<String> keywords;
     private String suggestedCategory;
-    private LocalDateTime analyzedAt;
+    private Instant analyzedAt;
 }

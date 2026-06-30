@@ -1,6 +1,6 @@
 package com.aisupport.routing.entity;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -39,10 +39,10 @@ public class RuleExecutionHistory {
     private Long executionTimeNs;
     
     @Column(name = "executed_at", nullable = false, updatable = false)
-    private LocalDateTime executedAt;
+    private Instant executedAt;
     
     @PrePersist
     protected void onCreate() {
-        executedAt = LocalDateTime.now();
+        executedAt = Instant.now();
     }
 }

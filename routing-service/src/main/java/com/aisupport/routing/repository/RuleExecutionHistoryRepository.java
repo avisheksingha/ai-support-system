@@ -1,6 +1,6 @@
 package com.aisupport.routing.repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,7 +18,7 @@ public interface RuleExecutionHistoryRepository extends JpaRepository<RuleExecut
     List<RuleExecutionHistory> findByTicketId(Long ticketId);
     
     @Query("SELECT h FROM RuleExecutionHistory h WHERE h.executedAt >= :startDate ORDER BY h.executedAt DESC")
-    List<RuleExecutionHistory> findRecentExecutions(@Param("startDate") LocalDateTime startDate);
+    List<RuleExecutionHistory> findRecentExecutions(@Param("startDate") Instant startDate);
     
     @Query("SELECT COUNT(h) FROM RuleExecutionHistory h WHERE h.ruleId = :ruleId AND h.matched = true")
     Long countMatchedExecutions(@Param("ruleId") Long ruleId);
