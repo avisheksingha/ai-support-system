@@ -1,8 +1,8 @@
 # AI Support System Microservices Platform
 
 [![Java 21](https://img.shields.io/badge/Java-21-007396?logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/21/)
-[![Spring Boot 4](https://img.shields.io/badge/Spring_Boot-4.0.7-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
-[![Spring Cloud](https://img.shields.io/badge/Spring_Cloud-2025.1.0-0ea5e9)](https://spring.io/projects/spring-cloud)
+[![Spring Boot 4](https://img.shields.io/badge/Spring_Boot-4.1.0-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Spring Cloud](https://img.shields.io/badge/Spring_Cloud-2025.1.2-0ea5e9)](https://spring.io/projects/spring-cloud)
 [![Kafka](https://img.shields.io/badge/Apache_Kafka-Event_Driven-231F20?logo=apachekafka&logoColor=white)](https://kafka.apache.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-pgvector-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
@@ -67,9 +67,9 @@ The AI Support System is a leading-edge, microservices-based ticket management p
 ## Technology Stack
 
 - **Java**: 21
-- **Spring Boot**: 4.0.7
-- **Spring Cloud**: 2025.1.0
-- **Spring AI**: 2.0.0-M1
+- **Spring Boot**: 4.1.0
+- **Spring Cloud**: 2025.1.2
+- **Spring AI**: 2.0.0
 - **Messaging**: Apache Kafka
 - **Database**: PostgreSQL (with `pgvector` extension)
 - **Service Discovery**: Eureka

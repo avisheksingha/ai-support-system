@@ -1,8 +1,8 @@
 package com.aisupport.analysis.config;
 
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.openai.OpenAiChatModel;
-import org.springframework.ai.vertexai.gemini.VertexAiGeminiChatModel;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -26,7 +26,7 @@ public class ChatConfig {
 	 */
     @Bean
     @ConditionalOnProperty(name = "chat.provider", havingValue = "gemini", matchIfMissing = true)
-    ChatClient geminiChatClient(VertexAiGeminiChatModel geminiChatModel) {
+    ChatClient geminiChatClient(ChatModel geminiChatModel) {
         return ChatClient.create(geminiChatModel);
     }
 
