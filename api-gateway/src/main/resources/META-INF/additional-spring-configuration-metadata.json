@@ -20,108 +20,13 @@
     "description": "A description for 'info.app.description'"
   },
   {
-    "name": "spring.cloud.gateway.routes[0].id",
-    "type": "java.lang.String",
-    "description": "A description for 'spring.cloud.gateway.routes[0].id'"
-  },
-  {
-    "name": "spring.cloud.gateway.routes[0].uri",
-    "type": "java.lang.String",
-    "description": "A description for 'spring.cloud.gateway.routes[0].uri'"
-  },
-  {
-    "name": "spring.cloud.gateway.routes[0].predicates[0]",
-    "type": "java.lang.String",
-    "description": "A description for 'spring.cloud.gateway.routes[0].predicates[0]'"
-  },
-  {
-    "name": "spring.cloud.gateway.routes[0].filters[0]",
-    "type": "java.lang.String",
-    "description": "A description for 'spring.cloud.gateway.routes[0].filters[0]'"
-  },
-  {
-    "name": "spring.cloud.gateway.routes[1].id",
-    "type": "java.lang.String",
-    "description": "A description for 'spring.cloud.gateway.routes[1].id'"
-  },
-  {
-    "name": "spring.cloud.gateway.routes[1].uri",
-    "type": "java.lang.String",
-    "description": "A description for 'spring.cloud.gateway.routes[1].uri'"
-  },
-  {
-    "name": "spring.cloud.gateway.routes[1].predicates[0]",
-    "type": "java.lang.String",
-    "description": "A description for 'spring.cloud.gateway.routes[1].predicates[0]'"
-  },
-  {
-    "name": "spring.cloud.gateway.routes[1].filters[0]",
-    "type": "java.lang.String",
-    "description": "A description for 'spring.cloud.gateway.routes[1].filters[0]'"
-  },
-  {
-    "name": "spring.cloud.gateway.routes[2].id",
-    "type": "java.lang.String",
-    "description": "A description for 'spring.cloud.gateway.routes[2].id'"
-  },
-  {
-    "name": "spring.cloud.gateway.routes[2].uri",
-    "type": "java.lang.String",
-    "description": "A description for 'spring.cloud.gateway.routes[2].uri'"
-  },
-  {
-    "name": "spring.cloud.gateway.routes[2].predicates[0]",
-    "type": "java.lang.String",
-    "description": "A description for 'spring.cloud.gateway.routes[2].predicates[0]'"
-  },
-  {
-    "name": "spring.cloud.gateway.routes[2].filters[0]",
-    "type": "java.lang.String",
-    "description": "A description for 'spring.cloud.gateway.routes[2].filters[0]'"
-  },
-  {
     "name": "spring.cloud.gateway.discovery.locator.enabled",
     "type": "java.lang.String",
     "description": "A description for 'spring.cloud.gateway.discovery.locator.enabled'"
   },
   {
-    "name": "spring.cloud.gateway.globalcors.add-to-simple-url-handler-mapping",
-    "type": "java.lang.String",
-    "description": "A description for 'spring.cloud.gateway.globalcors.add-to-simple-url-handler-mapping'"
-  },
-  {
-    "name": "spring.cloud.gateway.globalcors.cors-configurations.[/**].allowed-origins",
-    "type": "java.lang.String",
-    "description": "A description for 'spring.cloud.gateway.globalcors.cors-configurations.[/**].allowed-origins'"
-  },
-  {
-    "name": "spring.cloud.gateway.globalcors.cors-configurations.[/**].allowed-methods",
-    "type": "java.lang.String",
-    "description": "A description for 'spring.cloud.gateway.globalcors.cors-configurations.[/**].allowed-methods'"
-  },
-  {
-    "name": "spring.cloud.gateway.globalcors.cors-configurations.[/**].allowed-headers",
-    "type": "java.lang.String",
-    "description": "A description for 'spring.cloud.gateway.globalcors.cors-configurations.[/**].allowed-headers'"
-  },
-  {
     "name": "spring.mvc.log-request-details",
     "type": "java.lang.String",
     "description": "A description for 'spring.mvc.log-request-details'"
-  },
-  {
-    "name": "spring.cloud.gateway.routes[3].id",
-    "type": "java.lang.String",
-    "description": "A description for 'spring.cloud.gateway.routes[3].id'"
-  },
-  {
-    "name": "spring.cloud.gateway.routes[3].uri",
-    "type": "java.lang.String",
-    "description": "A description for 'spring.cloud.gateway.routes[3].uri'"
-  },
-  {
-    "name": "spring.cloud.gateway.routes[3].predicates[0]",
-    "type": "java.lang.String",
-    "description": "A description for 'spring.cloud.gateway.routes[3].predicates[0]'"
   }
 ]}
