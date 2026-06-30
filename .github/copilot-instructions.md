@@ -113,6 +113,8 @@ This repository is a Spring Boot 4.0.7 microservices platform for AI-powered tic
 - Keep controller DTOs service-specific.
 - Use `@RestControllerAdvice` per service for domain-level error mapping.
 - Keep transactional boundaries in service layer.
+- Use `java.time.Instant` for all temporal fields — never `LocalDateTime`.
+- Use `DateTimeUtil` from common-library for formatting/parsing timestamps.
 
 ### Event-Driven Communication
 - Use outbox flow for cross-service event publication.

@@ -7,7 +7,7 @@ Shared module containing reusable components, DTOs, and utilities for the AI Sup
 - **DTOs**: Shared Data Transfer Objects (e.g., `AnalysisResultDTO`, `TicketDTO`).
 - **Enums**: Centralized Enums (e.g., `TicketStatus`, `TicketPriority`).
 - **Exceptions**: Common exception classes (e.g., `ResourceNotFoundException`, `OutboxEventException`) and global error handling structures.
-- **Utilities / Constants**: Helper classes and strictly defined constants (e.g., `Correlation`, `HttpHeaders`, `KafkaTopics`, `KafkaGroups`).
+- **Utilities / Constants**: Helper classes and strictly defined constants (e.g., `Correlation`, `HttpHeaders`, `KafkaTopics`, `KafkaGroups`, `DateTimeUtil`). All temporal values use `java.time.Instant` — `DateTimeUtil` provides ISO/legacy formatting, parsing, and timezone-aware display helpers.
 - **Events**: Shared event models for Kafka-based communication (e.g., `TicketCreatedEvent`, `TicketAnalyzedEvent`, `TicketRoutedEvent`).
 
 ## Usage
