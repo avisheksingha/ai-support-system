@@ -1,7 +1,7 @@
 package com.aisupport.analysis.service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -79,7 +79,7 @@ public class AnalysisProcessingService {
                 .confidenceScore(parsed.getConfidenceScore())
                 .keywords(parsed.getKeywords())
                 .suggestedCategory(parsed.getSuggestedCategory())
-                .analyzedAt(LocalDateTime.now())
+                .analyzedAt(Instant.now())
                 .build();
 
         outboxService.publishEvent(

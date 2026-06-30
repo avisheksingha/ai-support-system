@@ -1,6 +1,6 @@
 package com.aisupport.ticket.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import com.aisupport.common.enums.TicketPriority;
 import com.aisupport.common.enums.TicketStatus;
@@ -62,12 +62,12 @@ public class TicketResponse {
     private String ragResponse;
 
     @Schema(description = "When the RAG response was generated")
-    private LocalDateTime ragGeneratedAt;
+    private Instant ragGeneratedAt;
     
     @Schema(description = "Timestamp when the ticket was created")
-    private LocalDateTime createdAt;
+    private Instant createdAt;
     
     @Schema(description = "Timestamp when the ticket was last updated")
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
 
 }

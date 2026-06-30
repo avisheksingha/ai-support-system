@@ -1,6 +1,6 @@
 package com.aisupport.rag.service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
@@ -104,7 +104,7 @@ public class RagService {
                 .query(query)
                 .response(response)
                 .model(chatModel)
-                .generatedAt(LocalDateTime.now())
+                .generatedAt(Instant.now())
                 .build();
 
         outboxEventService.publishEvent(

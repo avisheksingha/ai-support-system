@@ -3,7 +3,7 @@ package com.aisupport.routing.outbox;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -89,7 +89,7 @@ public class OutboxEventPublisher {
             	.get(5, TimeUnit.SECONDS); // synchronous to ensure delivery, timeout added */
 
             event.setStatus(OutboxEvent.Status.SENT);
-            event.setProcessedAt(LocalDateTime.now());
+            event.setProcessedAt(Instant.now());
 
             log.info("Published outbox event id={} type={}", event.getId(), event.getEventType());
 
@@ -116,7 +116,7 @@ public class OutboxEventPublisher {
     
     private void markFailed(OutboxEvent event) {
         event.setRetryCount(event.getRetryCount() + 1);
-        event.setProcessedAt(LocalDateTime.now());
+        event.setProcessedAt(Instant.now());
 
         if (event.getRetryCount() >= OutboxEvent.MAX_RETRIES) {
             event.setStatus(OutboxEvent.Status.DEAD);

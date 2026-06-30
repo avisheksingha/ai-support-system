@@ -2,7 +2,7 @@ package com.aisupport.common.dto;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -51,6 +51,6 @@ public class AnalysisResultDTO implements Serializable {
     private String analysisProvider; // always "Gemini AI"
 	
 	@Schema(description = "Analyzed at of the analysis result", example = "2022-01-01T00:00:00")
-    private LocalDateTime analyzedAt; // maps from createdAt
+    private Instant analyzedAt; // maps from createdAt
 
 }

@@ -3,7 +3,7 @@ package com.aisupport.rag.outbox;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -90,7 +90,7 @@ public class OutboxEventPublisher {
             	.get(5, TimeUnit.SECONDS); // IMPORTANT → ensures Kafka ack before marking SENT */
 
             event.setStatus(OutboxEvent.Status.SENT);
-            event.setProcessedAt(LocalDateTime.now());
+            event.setProcessedAt(Instant.now());
             
             log.info("Published outbox event {} to topic {}", event.getId(), topic);
 
@@ -116,7 +116,7 @@ public class OutboxEventPublisher {
     
     private void markFailed(OutboxEvent event) {
         event.setRetryCount(event.getRetryCount() + 1);
-        event.setProcessedAt(LocalDateTime.now());
+        event.setProcessedAt(Instant.now());
 
         if (event.getRetryCount() >= OutboxEvent.MAX_RETRIES) {
             event.setStatus(OutboxEvent.Status.DEAD);
