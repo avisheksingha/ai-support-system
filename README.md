@@ -61,6 +61,7 @@ The AI Support System is a leading-edge, microservices-based ticket management p
 - **[routing-service](routing-service/README.md)**: Orchestrator for intelligent ticket assignment based on analysis.
 - **[rag-service](rag-service/README.md)**: Vector embedding and RAG capabilities for automated contextual responses.
 - **[common-library](common-library/README.md)**: Shared models, DTOs, events, and utilities.
+- **[ai-support-marketplace](ai-support-marketplace/README.md)**: AI assistant plugins, agents, and tooling ecosystem.
 - **[aisupport-parent](aisupport-parent/README.md)**: Central Maven POM for uniform dependency management.
 - **[infra](infra/README.md)**: Docker Compose setup for infrastructure (PostgreSQL, Kafka, pgvector).
 
@@ -201,22 +202,23 @@ ai-support-system/
 │   ├── ISSUE_TEMPLATE/           # Bug/feature issue templates
 │   ├── copilot-instructions.md   # Repo-wide Copilot guidance
 │   └── pull_request_template.md  # PR checklist template
-├── discovery-service/    # Eureka Server (Port: 8761)
-├── api-gateway/          # Spring Cloud Gateway (Port: 8080)
-├── ticket-service/       # Ticket Management (Port: 8082)
-├── ai-analysis-service/  # AI Analysis via Vertex AI Gemini (OpenAI optional) (Port: 8083)
-├── routing-service/      # Intelligent Routing Orchestrator (Port: 8084)
-├── rag-service/          # Contextual Knowledge Response (Port: 8085)
-├── common-library/       # Shared DTOs and Logic
-├── aisupport-parent/     # Maven Parent POM
-├── infra/                # Docker Config for DB/Kafka
-├── docs/                 # Architecture diagram and visuals
-├── ARCHITECTURE.md       # Design decisions and scalability
-├── CONTRIBUTING.md       # Contribution workflow and PR expectations
-├── OVERVIEW.md           # Architectural end-to-end details & diagrams
-├── SECURITY.md           # Vulnerability reporting policy
-├── TESTING.md            # Test execution and troubleshooting guide
-└── README.md             # This file
+├── discovery-service/            # Eureka Server (Port: 8761)
+├── api-gateway/            # Spring Cloud Gateway (Port: 8080)
+├── ticket-service/         # Ticket Management (Port: 8082)
+├── ai-analysis-service/    # AI Analysis via Vertex AI Gemini (OpenAI optional) (Port: 8083)
+├── routing-service/        # Intelligent Routing Orchestrator (Port: 8084)
+├── rag-service/            # Contextual Knowledge Response (Port: 8085)
+├── common-library/         # Shared DTOs and Logic
+├── ai-support-marketplace/ # AI assistant plugins and tooling
+├── aisupport-parent/       # Maven Parent POM
+├── infra/                  # Docker Config for DB/Kafka
+├── docs/                   # Architecture diagram and visuals
+├── ARCHITECTURE.md         # Design decisions and scalability
+├── CONTRIBUTING.md         # Contribution workflow and PR expectations
+├── OVERVIEW.md             # Architectural end-to-end details & diagrams
+├── SECURITY.md             # Vulnerability reporting policy
+├── TESTING.md              # Test execution and troubleshooting guide
+└── README.md               # This file
 ```
 
 ## API Documentation
