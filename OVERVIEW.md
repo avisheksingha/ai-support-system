@@ -14,6 +14,7 @@ The AI Support System is built using a microservices architecture pattern. This 
 4. **AI Processing (`ai-analysis-service`)**: Uses Google Vertex AI (Gemini) as the active provider to perform sentiment analysis, determine urgency, and extract user intent. OpenAI support is available as an optional provider.
 5. **Intelligent Routing (`routing-service`)**: Applies business rules to the AI-generated tags to route tickets to specific agents or queues.
 6. **Knowledge Context (`rag-service`)**: A Retrieval-Augmented Generation service that queries a vector database (`pgvector`) to provide intelligent, context-aware responses and suggestions.
+7. **AI Support Marketplace (`ai-support-marketplace`)**: A plugin and tooling ecosystem that extends development capabilities with agents, hooks, and commands.
 
 ## Module Interactions and Dependencies
 
