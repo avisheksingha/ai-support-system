@@ -220,6 +220,7 @@ ai-support-system/
 │   │   ├── ai-analysis-agent.md
 │   │   ├── routing-agent.md
 │   │   └── rag-agent.md
+│   │   └── auth-service-agent.md
 │   ├── workflows/                # CI/CD workflow definitions
 │   ├── ISSUE_TEMPLATE/           # Bug/feature issue templates
 │   ├── copilot-instructions.md   # Repo-wide Copilot guidance
