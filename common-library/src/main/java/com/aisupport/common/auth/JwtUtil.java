@@ -1,8 +1,6 @@
 package com.aisupport.common.auth;
 
-
 import java.time.Instant;
-import java.util.Date;
 import java.util.function.Function;
 
 import javax.crypto.SecretKey;
@@ -34,8 +32,9 @@ public class JwtUtil {
         return extractClaim(token, claims -> claims.get("email", String.class));
     }
 
-    public Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
+    // CHANGED: Return Instant instead of Date
+    public Instant extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration).toInstant();
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -61,6 +60,7 @@ public class JwtUtil {
     }
 
     private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(Date.from(Instant.now()));
+        // CHANGED: Clean, modern Instant comparison. No more Date.from(...)
+        return extractExpiration(token).isBefore(Instant.now());
     }
 }

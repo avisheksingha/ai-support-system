@@ -10,30 +10,72 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.aisupport.common.security.HeaderAuthenticationFilter;
 
+import jakarta.servlet.http.HttpServletResponse;
+
+
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
+	
+	/**
+     * Public endpoints that do not require authentication.
+     * These endpoints are accessible without a valid token.
+     */
+    private static final String[] PUBLIC_ENDPOINTS = {
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/v3/api-docs/**",
+            "/actuator/health",
+            "/actuator/info",
+            "/api/v1/analysis/public-statuses"
+    };
+    
+    /**
+	 * Creates a bean for the custom header authentication filter.
+	 *
+	 * @return a new instance of HeaderAuthenticationFilter
+	 */
     @Bean
     HeaderAuthenticationFilter headerAuthenticationFilter() {
         return new HeaderAuthenticationFilter();
     }
 
+    /**
+	 * Configures the security filter chain for the application.
+	 *
+	 * @param http the HttpSecurity object to configure
+	 * @param headerAuthFilter the custom header authentication filter
+	 * @return the configured SecurityFilterChain
+	 * @throws Exception if an error occurs during configuration
+	 */
     @Bean
     SecurityFilterChain securityFilterChain(
-    		HttpSecurity http,
-    		HeaderAuthenticationFilter headerAuthFilter
+            HttpSecurity http,
+            HeaderAuthenticationFilter headerAuthFilter
     ) {
+
         http
-            .csrf(csrf -> csrf.disable()) // NOSONAR: CSRF protection is not needed for stateless APIs
+            .csrf(csrf -> csrf.disable()) // NOSONAR: Stateless REST API
             .sessionManagement(session ->
-            	session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/v1/analysis/**", "/internal/**").authenticated()
-                .anyRequest().authenticated()
+                    .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                    .requestMatchers("/api/v1/analysis/**", "/internal/**").authenticated()
+                    .anyRequest().denyAll()
             )
-            .addFilterBefore(headerAuthFilter, UsernamePasswordAuthenticationFilter.class);
-        
+
+            .exceptionHandling(exception -> exception
+                    .authenticationEntryPoint((request, response, ex) ->
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED))
+            )
+
+            .addFilterBefore(
+                    headerAuthFilter,
+                    UsernamePasswordAuthenticationFilter.class
+            );
+
         return http.build();
     }
 }
