@@ -1,13 +1,11 @@
 package com.aisupport.analysis.config;
 
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.google.genai.GoogleGenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatModel;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 
 import com.aisupport.analysis.chat.ChatProvider;
 import com.aisupport.analysis.chat.GeminiChatProvider;
@@ -26,7 +24,7 @@ public class ChatConfig {
 	 */
     @Bean
     @ConditionalOnProperty(name = "chat.provider", havingValue = "gemini", matchIfMissing = true)
-    ChatClient geminiChatClient(ChatModel geminiChatModel) {
+    ChatClient geminiChatClient(GoogleGenAiChatModel geminiChatModel) {
         return ChatClient.create(geminiChatModel);
     }
 
@@ -40,22 +38,21 @@ public class ChatConfig {
     }
 
     /**
-	 * Activates GeminiChatProvider as the primary ChatProvider when chat.provider=gemini or if the property is missing.
+	 * Creates the Gemini ChatProvider when chat.provider=gemini
+	 * (or when the property is not specified).
 	 */
     @Bean
-    @Primary
     @ConditionalOnProperty(name = "chat.provider", havingValue = "gemini", matchIfMissing = true)
-    ChatProvider geminiChatProvider(@Qualifier("geminiChatClient") ChatClient chatClient) {
-        return new GeminiChatProvider(chatClient);
+    ChatProvider geminiChatProvider(ChatClient geminiChatClient) {
+        return new GeminiChatProvider(geminiChatClient);
     }
 
     /**
-     * Activates OpenAiChatProvider as the primary ChatProvider when chat.provider=openai.
+     * Creates the OpenAI ChatProvider when chat.provider=openai.
      */
     @Bean
-    @Primary
     @ConditionalOnProperty(name = "chat.provider", havingValue = "openai")
-    ChatProvider openAiChatProvider(@Qualifier("openAiChatClient") ChatClient chatClient) {
-        return new OpenAiChatProvider(chatClient);
+    ChatProvider openAiChatProvider(ChatClient openAiChatClient) {
+        return new OpenAiChatProvider(openAiChatClient);
     }
 }
