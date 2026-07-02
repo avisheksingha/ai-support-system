@@ -77,8 +77,12 @@ public class AuthService {
     public AuthResponse refresh(RefreshRequest request) {
         return refreshTokenRepository.findByToken(request.getRefreshToken())
                 .map(jwtService::verifyRefreshTokenExpiration)
-                .map(RefreshToken::getUser)
-                .map(this::buildAuthResponse)
+                .map(oldToken -> {
+                    User user = oldToken.getUser();
+                    AuthResponse response = buildAuthResponse(user);
+                    refreshTokenRepository.delete(oldToken);
+                    return response;
+                })
                 .orElseThrow(() -> new AuthException("Refresh token is not in database!"));
     }
 

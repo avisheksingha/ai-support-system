@@ -236,6 +236,55 @@ Each service provides its own OpenAPI documentation. Available locally at:
 - Gateway (entrypoint): `http://localhost:8080`
 - Eureka Dashboard: `http://localhost:8761`
 
+## Authentication Flow
+
+Frontend Application
+    │
+    ▼
+Login
+    │
+    ├── Access Token (15 min)
+    └── Refresh Token (7 days)
+
+↓
+
+API Request
+
+↓
+
+Gateway validates JWT
+
+↓
+
+Remaining lifetime <= threshold?
+
+↓
+
+Yes
+
+↓
+
+Response Header
+
+X-Access-Token-Refresh: true
+
+↓
+
+Frontend silently calls
+
+POST /api/v1/auth/refresh
+
+↓
+
+Receives
+
+• New Access Token
+• New Refresh Token
+
+↓
+
+Retries future requests with new tokens
+
 ## Sample API Flow
 
 Run this end-to-end flow to demonstrate the project quickly:

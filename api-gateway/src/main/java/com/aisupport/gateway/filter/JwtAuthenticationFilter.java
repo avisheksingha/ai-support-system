@@ -24,9 +24,13 @@ import reactor.core.publisher.Mono;
 public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
     private final JwtUtil jwtUtil;
+    private final long refreshThresholdSeconds;
 
-    public JwtAuthenticationFilter(@Value("${app.jwt.secret}") String secret) {
+    public JwtAuthenticationFilter(
+            @Value("${app.jwt.secret}") String secret,
+            @Value("${jwt.refresh-threshold-seconds:120}") long refreshThresholdSeconds) {
         this.jwtUtil = new JwtUtil(secret);
+        this.refreshThresholdSeconds = refreshThresholdSeconds;
     }
 
     @Override
@@ -54,6 +58,13 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
                 if (!jwtUtil.isTokenValid(token)) {
                     return this.onError(exchange, "Invalid JWT token", HttpStatus.UNAUTHORIZED);
+                }
+
+                // Check remaining validity and inject refresh header if near expiration
+                java.util.Date expiration = jwtUtil.extractExpiration(token);
+                java.time.Duration remaining = java.time.Duration.between(java.time.Instant.now(), expiration.toInstant());
+                if (remaining.getSeconds() <= refreshThresholdSeconds) {
+                    exchange.getResponse().getHeaders().add(SecurityConstants.HEADER_ACCESS_TOKEN_REFRESH, "true");
                 }
 
                 // Populate headers for downstream services
