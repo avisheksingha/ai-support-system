@@ -15,6 +15,11 @@ import com.aisupport.common.security.HeaderAuthenticationFilter;
 public class SecurityConfig {
 
     @Bean
+    HeaderAuthenticationFilter headerAuthenticationFilter() {
+        return new HeaderAuthenticationFilter();
+    }
+
+    @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http, HeaderAuthenticationFilter headerAuthFilter) {
         http
             .csrf(csrf -> csrf.disable()) // NOSONAR: CSRF protection is not needed for stateless APIs
