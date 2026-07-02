@@ -1,6 +1,7 @@
 package com.aisupport.gateway.filter;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Instant;
@@ -60,7 +61,7 @@ class JwtAuthenticationFilterTest {
 
         filter.filter(exchange, filterChain).block();
 
-        assertTrue(exchange.getResponse().getHeaders().getFirst(SecurityConstants.HEADER_ACCESS_TOKEN_REFRESH) == null);
+        assertNull(exchange.getResponse().getHeaders().getFirst(SecurityConstants.HEADER_ACCESS_TOKEN_REFRESH));
     }
 
     @Test
@@ -76,7 +77,7 @@ class JwtAuthenticationFilterTest {
 
         filter.filter(exchange, filterChain).block();
 
-        assertTrue(exchange.getResponse().getHeaders().getFirst(SecurityConstants.HEADER_ACCESS_TOKEN_REFRESH) != null);
+        assertNotNull(exchange.getResponse().getHeaders().getFirst(SecurityConstants.HEADER_ACCESS_TOKEN_REFRESH));
         assertTrue(exchange.getResponse().getHeaders().getFirst(SecurityConstants.HEADER_ACCESS_TOKEN_REFRESH).contains("true"));
     }
 }

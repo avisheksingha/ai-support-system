@@ -1,7 +1,7 @@
 package com.aisupport.auth.service;
 
 import java.time.Instant;
-import java.util.Date;
+import java.util.Date; // NOSONAR (JJWT requires java.util.Date)
 import java.util.UUID;
 
 import javax.crypto.SecretKey;
