@@ -17,15 +17,4 @@ This directory contains the infrastructure-only Docker Compose setup for the AI 
 
 ## Setup Instructions
 
-1. Ensure Docker and Docker Compose are installed on your machine.
-2. From the repository root, run the following command to start all infrastructure components:
-
-```bash
-docker compose -f infra/docker-compose.yml up -d
-```
-
-3. To stop the infrastructure, run:
-
-```bash
-docker compose -f infra/docker-compose.yml down
-```
+Please refer to the **Local Development** section in the [root README](../README.md) for complete instructions on starting, stopping, and resetting the Docker infrastructure.

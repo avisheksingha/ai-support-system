@@ -134,58 +134,78 @@ Engineering policy:
 - Build/test checks must pass before PR approval.
 - Security-sensitive decisions (credentials, logging, deployment config) are manually reviewed by the maintainer.
 
-## Getting Started
+## Local Development
 
-### 0. Configure Environment Variables
+### 1. Configure Environment Variables
 
-Create a local `.env` file from the example and set your real values:
+Create a `.env` file in the project root by copying `.env.example` and updating the required values.
 
 ```bash
 cp .env.example .env
 ```
 
-PowerShell alternative:
+> **Note:** Windows users can manually copy `.env.example` to `.env`.
 
-```powershell
-Copy-Item .env.example .env
-```
+---
 
-### 1. Start Infrastructure
+### 2. Start Infrastructure
 
-Start the underlying database and messaging infrastructure (infra-only compose):
+Start the local infrastructure required by the microservices.
 
-```bash
-docker compose -f infra/docker-compose.yml up -d
-```
+This launches:
 
-### 2. Build All Services
+- PostgreSQL + PGVector
+- Apache Kafka
+- Apache ZooKeeper
 
 ```bash
-mvn -f aisupport-parent/pom.xml clean install
+docker compose --env-file .env -f infra/docker-compose.yml up -d
 ```
 
-### 3. Run Services (In Order)
+Verify the containers are running:
 
-1. **Discovery Service**:
+```bash
+docker ps
+```
 
-   ```bash
-   cd discovery-service
-   mvn spring-boot:run
-   ```
+---
 
-2. **API Gateway**:
+### 3. Stop Infrastructure
 
-   ```bash
-   cd api-gateway
-   mvn spring-boot:run
-   ```
+Stop all infrastructure containers while preserving database data.
 
-3. **Core Services** (Start in parallel or sequentially):
-   - Auth Service: `cd auth-service && mvn spring-boot:run`
-   - Ticket Service: `cd ticket-service && mvn spring-boot:run`
-   - AI Analysis Service: `cd ai-analysis-service && mvn spring-boot:run`
-   - Routing Service: `cd routing-service && mvn spring-boot:run`
-   - RAG Service: `cd rag-service && mvn spring-boot:run`
+```bash
+docker compose -f infra/docker-compose.yml down
+```
+
+---
+
+### 4. Reset Local Database (Optional)
+
+Stop the infrastructure and remove all Docker volumes.
+
+> **Warning**
+> This permanently deletes all local PostgreSQL data and recreates the database on the next startup.
+
+```bash
+docker compose -f infra/docker-compose.yml down -v
+```
+
+---
+
+### 5. Start the Microservices
+
+Once the infrastructure is running, start the Spring Boot microservices from your IDE (recommended for local development) or using Maven.
+
+Recommended startup order:
+
+1. discovery-service
+2. api-gateway
+3. auth-service
+4. ticket-service
+5. ai-analysis-service
+6. routing-service
+7. rag-service
 
 ## Project Structure
 

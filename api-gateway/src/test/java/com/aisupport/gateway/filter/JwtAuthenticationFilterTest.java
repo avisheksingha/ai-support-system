@@ -1,8 +1,7 @@
 package com.aisupport.gateway.filter;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Instant;
 import java.util.Date;
@@ -13,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.server.ServerWebExchange;
@@ -20,43 +20,44 @@ import org.springframework.web.server.ServerWebExchange;
 import com.aisupport.common.auth.SecurityConstants;
 
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.io.Encoders;
 import reactor.core.publisher.Mono;
 
 class JwtAuthenticationFilterTest {
 
     private JwtAuthenticationFilter filter;
-    private final String secret = "4b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b";
+    private SecretKey secretKey;
 
     @BeforeEach
     void setUp() {
+        secretKey = Jwts.SIG.HS256.key().build();
+        String secret = Encoders.BASE64.encode(secretKey.getEncoded());
         filter = new JwtAuthenticationFilter(secret, 120);
     }
 
     private String generateToken(int expireInSeconds) {
-        byte[] keyBytes = Decoders.BASE64.decode(secret);
-        SecretKey key = Keys.hmacShaKeyFor(keyBytes);
-
         return Jwts.builder()
                 .subject("100")
                 .claim("email", "test@test.com")
                 .claim("role", "ROLE_CUSTOMER")
                 .issuedAt(Date.from(Instant.now()))
                 .expiration(Date.from(Instant.now().plusSeconds(expireInSeconds)))
-                .signWith(key)
+                .signWith(secretKey)
                 .compact();
     }
 
-    @Test
-    void testNoRefreshHeaderIfRemainingIsAboveThreshold() {
-        String token = generateToken(300); // 5 minutes
-
+    private ServerWebExchange createExchange(String token) {
         MockServerHttpRequest request = MockServerHttpRequest.get("/api/v1/tickets")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .build();
-        ServerWebExchange exchange = MockServerWebExchange.from(request);
+        return MockServerWebExchange.from(request);
+    }
 
+    @Test
+    void shouldNotAddRefreshHeaderWhenTokenIsStillValid() {
+        String token = generateToken(300); // 5 minutes
+
+        ServerWebExchange exchange = createExchange(token);
         GatewayFilterChain filterChain = exchange1 -> Mono.empty();
 
         filter.filter(exchange, filterChain).block();
@@ -65,19 +66,54 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void testRefreshHeaderAddedIfRemainingIsBelowThreshold() {
+    void shouldAddRefreshHeaderWhenTokenIsNearExpiry() {
         String token = generateToken(90); // 90 seconds (below 120s threshold)
 
-        MockServerHttpRequest request = MockServerHttpRequest.get("/api/v1/tickets")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .build();
-        ServerWebExchange exchange = MockServerWebExchange.from(request);
-
+        ServerWebExchange exchange = createExchange(token);
         GatewayFilterChain filterChain = exchange1 -> Mono.empty();
 
         filter.filter(exchange, filterChain).block();
 
-        assertNotNull(exchange.getResponse().getHeaders().getFirst(SecurityConstants.HEADER_ACCESS_TOKEN_REFRESH));
-        assertTrue(exchange.getResponse().getHeaders().getFirst(SecurityConstants.HEADER_ACCESS_TOKEN_REFRESH).contains("true"));
+        String refreshHeader = exchange.getResponse().getHeaders().getFirst(SecurityConstants.HEADER_ACCESS_TOKEN_REFRESH);
+        assertEquals("true", refreshHeader);
+    }
+
+    @Test
+    void shouldAddRefreshHeaderWhenRemainingEqualsThreshold() {
+        String token = generateToken(120); // exactly 120 seconds
+
+        ServerWebExchange exchange = createExchange(token);
+        GatewayFilterChain filterChain = exchange1 -> Mono.empty();
+
+        filter.filter(exchange, filterChain).block();
+
+        String refreshHeader = exchange.getResponse().getHeaders().getFirst(SecurityConstants.HEADER_ACCESS_TOKEN_REFRESH);
+        assertEquals("true", refreshHeader);
+    }
+
+    @Test
+    void shouldRejectInvalidToken() {
+        String invalidToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.invalid.signature";
+
+        ServerWebExchange exchange = createExchange(invalidToken);
+        GatewayFilterChain filterChain = exchange1 -> Mono.empty();
+
+        filter.filter(exchange, filterChain).block();
+
+        assertEquals(HttpStatus.UNAUTHORIZED, exchange.getResponse().getStatusCode());
+        assertNull(exchange.getResponse().getHeaders().getFirst(SecurityConstants.HEADER_ACCESS_TOKEN_REFRESH));
+    }
+
+    @Test
+    void shouldNotAuthenticateExpiredToken() {
+        String token = generateToken(-5); // expired 5 seconds ago
+
+        ServerWebExchange exchange = createExchange(token);
+        GatewayFilterChain filterChain = exchange1 -> Mono.empty();
+
+        filter.filter(exchange, filterChain).block();
+
+        assertEquals(HttpStatus.UNAUTHORIZED, exchange.getResponse().getStatusCode());
+        assertNull(exchange.getResponse().getHeaders().getFirst(SecurityConstants.HEADER_ACCESS_TOKEN_REFRESH));
     }
 }
