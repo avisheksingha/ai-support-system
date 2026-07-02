@@ -33,13 +33,14 @@
 	</scm>
 
 	<modules>
-	    <module>../discovery-service</module>
-     <module>../api-gateway</module>
-	    <module>../ticket-service</module>
-     <module>../ai-analysis-service</module>
-     <module>../routing-service</module>
-     <module>../rag-service</module>
-     <module>../common-library</module>
+		<module>../common-library</module>
+	 	<module>../discovery-service</module>
+     	<module>../api-gateway</module>
+	 	<module>../auth-service</module>
+	 	<module>../ticket-service</module>
+     	<module>../ai-analysis-service</module>
+     	<module>../routing-service</module>
+     	<module>../rag-service</module>
 	</modules>
 	
 	<properties>

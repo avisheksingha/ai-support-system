@@ -2,21 +2,24 @@ package com.aisupport.routing.entity;
 
 import java.time.Instant;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "rule_execution_history")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -38,11 +41,7 @@ public class RuleExecutionHistory {
     @Column(name = "execution_time_ns", nullable = false)
     private Long executionTimeNs;
     
+    @CreationTimestamp
     @Column(name = "executed_at", nullable = false, updatable = false)
     private Instant executedAt;
-    
-    @PrePersist
-    protected void onCreate() {
-        executedAt = Instant.now();
-    }
 }

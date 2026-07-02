@@ -20,71 +20,87 @@
   <text x="40" y="48" class="title">AI Support System - High-Level Architecture</text>
   <text x="40" y="74" class="subtitle">Event-driven microservices with Eureka, Kafka, PostgreSQL, and AI orchestration</text>
 
+  <!-- External / Input -->
   <rect x="70" y="140" width="170" height="70" class="node" />
   <text x="100" y="170" class="label">Client Apps</text>
   <text x="98" y="190" class="small">Web / API Clients</text>
+  <line x1="240" y1="175" x2="300" y2="175" class="arrow" />
 
+  <!-- Infra Nodes -->
   <rect x="300" y="130" width="220" height="90" class="node infra" />
   <text x="348" y="165" class="label">API Gateway</text>
   <text x="362" y="186" class="small">Port 8080</text>
+  <line x1="410" y1="220" x2="410" y2="280" class="arrow dashed" />
 
   <rect x="300" y="280" width="220" height="90" class="node infra" />
   <text x="333" y="315" class="label">Discovery Service</text>
   <text x="362" y="336" class="small">Eureka :8761</text>
 
+  <!-- Application Microservices -->
   <rect x="610" y="100" width="220" height="90" class="node" />
-  <text x="650" y="135" class="label">Ticket Service</text>
-  <text x="662" y="156" class="small">Port 8082</text>
+  <text x="664" y="135" class="label">Auth Service</text>
+  <text x="662" y="156" class="small">Port 8081</text>
 
-  <rect x="610" y="230" width="220" height="90" class="node" />
-  <text x="629" y="265" class="label">AI Analysis Service</text>
-  <text x="662" y="286" class="small">Port 8083</text>
+  <rect x="610" y="210" width="220" height="90" class="node" />
+  <text x="655" y="245" class="label">Ticket Service</text>
+  <text x="662" y="266" class="small">Port 8082</text>
 
-  <rect x="610" y="360" width="220" height="90" class="node" />
-  <text x="642" y="395" class="label">Routing Service</text>
-  <text x="662" y="416" class="small">Port 8084</text>
+  <rect x="610" y="320" width="220" height="90" class="node" />
+  <text x="635" y="355" class="label">AI Analysis Service</text>
+  <text x="662" y="376" class="small">Port 8083</text>
 
-  <rect x="610" y="490" width="220" height="90" class="node" />
-  <text x="664" y="525" class="label">RAG Service</text>
-  <text x="662" y="546" class="small">Port 8085</text>
+  <rect x="610" y="430" width="220" height="90" class="node" />
+  <text x="647" y="465" class="label">Routing Service</text>
+  <text x="662" y="486" class="small">Port 8084</text>
 
+  <rect x="610" y="540" width="220" height="90" class="node" />
+  <text x="664" y="575" class="label">RAG Service</text>
+  <text x="662" y="596" class="small">Port 8085</text>
+
+  <!-- Data / Event Stores -->
   <rect x="930" y="220" width="220" height="90" class="node infra" />
   <text x="1002" y="255" class="label">Kafka</text>
   <text x="972" y="276" class="small">Event Backbone :9092</text>
+  <text x="965" y="200" class="small">Ticket events / analysis events</text>
 
   <rect x="930" y="360" width="220" height="90" class="node data" />
   <text x="965" y="395" class="label">PostgreSQL + pgvector</text>
   <text x="1001" y="416" class="small">Data Store :5433</text>
 
+  <!-- External AI -->
   <rect x="1210" y="220" width="150" height="90" class="node external" />
-  <text x="1244" y="255" class="label">OpenAI /</text>
-  <text x="1232" y="276" class="label">Vertex AI</text>
+  <text x="1242" y="270" class="label">Vertex AI</text>
 
-  <line x1="240" y1="175" x2="300" y2="175" class="arrow" />
-  <line x1="520" y1="160" x2="610" y2="145" class="arrow" />
-  <line x1="520" y1="175" x2="610" y2="275" class="arrow" />
-  <line x1="520" y1="190" x2="610" y2="405" class="arrow" />
-  <line x1="520" y1="205" x2="610" y2="535" class="arrow" />
+  <!-- Gateway to Services -->
+  <line x1="520" y1="155" x2="610" y2="145" class="arrow" />
+  <line x1="520" y1="165" x2="610" y2="255" class="arrow" />
+  <line x1="520" y1="175" x2="610" y2="365" class="arrow" />
+  <line x1="520" y1="185" x2="610" y2="475" class="arrow" />
+  <line x1="520" y1="195" x2="610" y2="585" class="arrow" />
 
-  <line x1="410" y1="220" x2="410" y2="280" class="arrow dashed" />
-  <line x1="520" y1="315" x2="610" y2="145" class="arrow dashed" />
-  <line x1="520" y1="325" x2="610" y2="275" class="arrow dashed" />
-  <line x1="520" y1="335" x2="610" y2="405" class="arrow dashed" />
-  <line x1="520" y1="345" x2="610" y2="535" class="arrow dashed" />
+  <!-- Discovery to Services -->
+  <line x1="520" y1="305" x2="610" y2="145" class="arrow dashed" />
+  <line x1="520" y1="315" x2="610" y2="255" class="arrow dashed" />
+  <line x1="520" y1="325" x2="610" y2="365" class="arrow dashed" />
+  <line x1="520" y1="335" x2="610" y2="475" class="arrow dashed" />
+  <line x1="520" y1="345" x2="610" y2="585" class="arrow dashed" />
 
-  <line x1="830" y1="145" x2="930" y2="255" class="arrow" />
-  <line x1="830" y1="275" x2="930" y2="265" class="arrow" />
-  <line x1="830" y1="405" x2="930" y2="275" class="arrow" />
-  <line x1="830" y1="535" x2="930" y2="275" class="arrow" />
+  <!-- Services to Kafka -->
+  <line x1="830" y1="255" x2="930" y2="255" class="arrow" />
+  <line x1="830" y1="365" x2="930" y2="265" class="arrow" />
+  <line x1="830" y1="475" x2="930" y2="275" class="arrow" />
+  <line x1="830" y1="585" x2="930" y2="285" class="arrow" />
 
-  <line x1="830" y1="145" x2="930" y2="395" class="arrow" />
-  <line x1="830" y1="275" x2="930" y2="395" class="arrow" />
-  <line x1="830" y1="405" x2="930" y2="405" class="arrow" />
-  <line x1="830" y1="535" x2="930" y2="415" class="arrow" />
+  <!-- Services to PostgreSQL -->
+  <line x1="830" y1="145" x2="930" y2="385" class="arrow" />
+  <line x1="830" y1="255" x2="930" y2="395" class="arrow" />
+  <line x1="830" y1="365" x2="930" y2="405" class="arrow" />
+  <line x1="830" y1="475" x2="930" y2="415" class="arrow" />
+  <line x1="830" y1="585" x2="930" y2="425" class="arrow" />
 
-  <line x1="830" y1="275" x2="1210" y2="255" class="arrow" />
-  <line x1="830" y1="535" x2="1210" y2="275" class="arrow" />
+  <!-- Services to External AI -->
+  <line x1="830" y1="365" x2="1210" y2="255" class="arrow" />
+  <line x1="830" y1="585" x2="1210" y2="275" class="arrow" />
 
-  <text x="965" y="200" class="small">Ticket events / analysis events</text>
   <text x="70" y="760" class="small">Solid lines: request/event flow  |  Dashed lines: service registration/discovery</text>
 </svg>

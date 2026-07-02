@@ -10,11 +10,12 @@ The AI Support System is built using a microservices architecture pattern. This 
 
 1. **Client / API Gateway (`api-gateway`)**: Built iteratively on Spring Cloud Gateway WebFlux, serving as the single entry point. It handles request tracing by generating a unique `X-Correlation-Id` for every incoming request and routing them to the appropriate backend microservice.
 2. **Service Registry (`discovery-service`)**: Utilizes Netflix Eureka to allow microservices to register themselves and discover each other dynamically.
-3. **Ticket Management (`ticket-service`)**: Handles the core CRUD operations for support tickets, applying state machine validations for status transitions, and persists data to PostgreSQL.
-4. **AI Processing (`ai-analysis-service`)**: Uses Google Vertex AI (Gemini) as the active provider to perform sentiment analysis, determine urgency, and extract user intent. OpenAI support is available as an optional provider.
-5. **Intelligent Routing (`routing-service`)**: Applies business rules to the AI-generated tags to route tickets to specific agents or queues.
-6. **Knowledge Context (`rag-service`)**: A Retrieval-Augmented Generation service that queries a vector database (`pgvector`) to provide intelligent, context-aware responses and suggestions.
-7. **AI Support Marketplace (`ai-support-marketplace`)**: A plugin and tooling ecosystem that extends development capabilities with agents, hooks, and commands.
+3. **Authentication (`auth-service`)**: Manages user authentication, authorization, and issues JWTs for secure access across the microservices.
+4. **Ticket Management (`ticket-service`)**: Handles the core CRUD operations for support tickets, applying state machine validations for status transitions, and persists data to PostgreSQL.
+5. **AI Processing (`ai-analysis-service`)**: Uses Google Vertex AI (Gemini) as the active provider to perform sentiment analysis, determine urgency, and extract user intent. OpenAI support is available as an optional provider.
+6. **Intelligent Routing (`routing-service`)**: Applies business rules to the AI-generated tags to route tickets to specific agents or queues.
+7. **Knowledge Context (`rag-service`)**: A Retrieval-Augmented Generation service that queries a vector database (`pgvector`) to provide intelligent, context-aware responses and suggestions.
+8. **AI Support Marketplace (`ai-support-marketplace`)**: A plugin and tooling ecosystem that extends development capabilities with agents, hooks, and commands.
 
 ## Module Interactions and Dependencies
 
@@ -31,12 +32,14 @@ The system employs both synchronous and asynchronous communication:
 graph TD
     Client[Client Apps / Web] -->|HTTP/REST| API_GW[API Gateway<br>:8080]
     
+    API_GW -->|Route| AUTH[Auth Service<br>:8081]
     API_GW -->|Route| TS[Ticket Service<br>:8082]
     API_GW -->|Route| AIS[AI Analysis Service<br>:8083]
     API_GW -->|Route| RS[Routing Service<br>:8084]
     API_GW -->|Route| RAG[RAG Service<br>:8085]
 
     DS[Discovery Service<br>:8761] -.->|Service Registry| API_GW
+    DS -.->|Registers| AUTH
     DS -.->|Registers| TS
     DS -.->|Registers| AIS
     DS -.->|Registers| RS

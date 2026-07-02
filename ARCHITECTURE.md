@@ -19,7 +19,7 @@
 ## Detailed Explanation of Design Decisions
 
 ### 1. Microservices Architecture
-We chose a microservices pattern over a monolithic design to decouple the AI processing, routing logic, and core ticket management. This ensures that the heavy computational load or API rate limits of external AI models (in `ai-analysis-service` and `rag-service`) do not impact the core ability to create or view tickets in the `ticket-service`.
+We chose a microservices pattern over a monolithic design to decouple the AI processing, routing logic, core ticket management, and authentication (`auth-service`). This ensures that the heavy computational load or API rate limits of external AI models (in `ai-analysis-service` and `rag-service`) do not impact the core ability to authenticate or view tickets.
 
 ### 2. Event-Driven Asynchronous Communication
 By introducing **Apache Kafka** as a message broker, we decoupled the execution flows. 

@@ -24,6 +24,21 @@
 			<artifactId>commons-lang3</artifactId>					
 		</dependency>
 
+		<!-- Provided dependencies for shared security filters -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webmvc</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Shared Spring Boot Dependencies -->
+
+
 	    <!-- Swagger annotations for shared DTO documentation -->
 	    <dependency>
 	        <groupId>io.swagger.core.v3</groupId>
@@ -34,6 +49,25 @@
 		<dependency>
 		    <groupId>jakarta.validation</groupId>
 		    <artifactId>jakarta.validation-api</artifactId>
+		</dependency>
+		
+		<!-- JSON Web Token (JWT) Support -->
+		<dependency>
+		    <groupId>io.jsonwebtoken</groupId>
+		    <artifactId>jjwt-api</artifactId>
+		    <version>0.13.0</version>
+		</dependency>
+		<dependency>
+		    <groupId>io.jsonwebtoken</groupId>
+		    <artifactId>jjwt-impl</artifactId>
+		    <version>0.13.0</version>
+		    <scope>runtime</scope>
+		</dependency>
+		<dependency>
+		    <groupId>io.jsonwebtoken</groupId>
+		    <artifactId>jjwt-jackson</artifactId>
+		    <version>0.13.0</version>
+		    <scope>runtime</scope>
 		</dependency>
 	</dependencies>
 	

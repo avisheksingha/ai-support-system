@@ -56,6 +56,7 @@ The AI Support System is a leading-edge, microservices-based ticket management p
 
 - **[discovery-service](discovery-service/README.md)**: Eureka Service Discovery Server.
 - **[api-gateway](api-gateway/README.md)**: Centralized entry point and request routing.
+- **[auth-service](auth-service/README.md)**: Authentication, authorization, and JWT management.
 - **[ticket-service](ticket-service/README.md)**: Core ticket management and lifecycle operations.
 - **[ai-analysis-service](ai-analysis-service/README.md)**: AI-powered analysis for sentiment and urgency (Vertex AI Gemini active, OpenAI optional).
 - **[routing-service](routing-service/README.md)**: Orchestrator for intelligent ticket assignment based on analysis.
@@ -180,6 +181,7 @@ mvn -f aisupport-parent/pom.xml clean install
    ```
 
 3. **Core Services** (Start in parallel or sequentially):
+   - Auth Service: `cd auth-service && mvn spring-boot:run`
    - Ticket Service: `cd ticket-service && mvn spring-boot:run`
    - AI Analysis Service: `cd ai-analysis-service && mvn spring-boot:run`
    - Routing Service: `cd routing-service && mvn spring-boot:run`
@@ -204,6 +206,7 @@ ai-support-system/
 │   └── pull_request_template.md  # PR checklist template
 ├── discovery-service/            # Eureka Server (Port: 8761)
 ├── api-gateway/            # Spring Cloud Gateway (Port: 8080)
+├── auth-service/           # Authentication & Authorization (Port: 8081)
 ├── ticket-service/         # Ticket Management (Port: 8082)
 ├── ai-analysis-service/    # AI Analysis via Vertex AI Gemini (OpenAI optional) (Port: 8083)
 ├── routing-service/        # Intelligent Routing Orchestrator (Port: 8084)
@@ -225,6 +228,7 @@ ai-support-system/
 
 Each service provides its own OpenAPI documentation. Available locally at:
 
+- Auth Service: `http://localhost:8081/swagger-ui/index.html`
 - Ticket Service: `http://localhost:8082/swagger-ui/index.html`
 - AI Analysis Service: `http://localhost:8083/swagger-ui/index.html`
 - Routing Service: `http://localhost:8084/swagger-ui/index.html`

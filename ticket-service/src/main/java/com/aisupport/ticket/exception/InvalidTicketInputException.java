@@ -1,6 +1,6 @@
 package com.aisupport.ticket.exception;
 
-public class InvalidTicketInputException extends RuntimeException {
+public class InvalidTicketInputException extends IllegalArgumentException {
 
     private static final long serialVersionUID = 5927028148665387389L;
 

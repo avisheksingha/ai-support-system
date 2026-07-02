@@ -7,6 +7,7 @@ This directory contains service-specific agent guides aligned with the current c
 | Service | Agent | Port | Focus |
 |---------|-------|------|-------|
 | `api-gateway` | [API Gateway Agent](api-gateway-agent.md) | 8080 | Gateway routing + correlation id propagation |
+| `auth-service` | [Auth Service Agent](auth-service-agent.md) | 8081 | Authentication, JWT issuance, and user management |
 | `discovery-service` | [Discovery Service Agent](discovery-service-agent.md) | 8761 | Eureka registry and service discovery |
 | `ticket-service` | [Ticket Service Agent](ticket-service-agent.md) | 8082 | Ticket REST APIs, lifecycle, outbox, event consumers |
 | `ai-analysis-service` | [AI Analysis Agent](ai-analysis-agent.md) | 8083 | Kafka consume/analyze/publish + query APIs |
@@ -34,12 +35,13 @@ This directory contains service-specific agent guides aligned with the current c
 
 ## Suggested Reading Order
 
-1. [Ticket Service Agent](ticket-service-agent.md)
-2. [AI Analysis Agent](ai-analysis-agent.md)
-3. [Routing Agent](routing-agent.md)
-4. [RAG Agent](rag-agent.md)
-5. [API Gateway Agent](api-gateway-agent.md)
-6. [Discovery Service Agent](discovery-service-agent.md)
+1. [Auth Service Agent](auth-service-agent.md)
+2. [Ticket Service Agent](ticket-service-agent.md)
+3. [AI Analysis Agent](ai-analysis-agent.md)
+4. [Routing Agent](routing-agent.md)
+5. [RAG Agent](rag-agent.md)
+6. [API Gateway Agent](api-gateway-agent.md)
+7. [Discovery Service Agent](discovery-service-agent.md)
 
 ## Related Docs
 

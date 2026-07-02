@@ -13,13 +13,13 @@ import com.aisupport.common.enums.TicketStatus;
 import com.aisupport.common.event.TicketCreatedEvent;
 import com.aisupport.common.event.TicketRagResponseEvent;
 import com.aisupport.common.event.TicketRoutedEvent;
+import com.aisupport.ticket.outbox.OutboxEventService;
 import com.aisupport.ticket.dto.TicketRequest;
 import com.aisupport.ticket.dto.TicketResponse;
 import com.aisupport.ticket.entity.Ticket;
 import com.aisupport.ticket.exception.InvalidTicketInputException;
 import com.aisupport.ticket.exception.TicketNotFoundException;
 import com.aisupport.ticket.mapper.TicketMapper;
-import com.aisupport.ticket.outbox.OutboxEventService;
 import com.aisupport.ticket.repository.TicketRepository;
 
 import lombok.RequiredArgsConstructor;

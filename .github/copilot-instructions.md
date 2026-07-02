@@ -72,6 +72,7 @@ This repository is a Spring Boot 4.1.0 microservices platform for AI-powered tic
 
 - **discovery-service:** Eureka registry (Port: 8761)
 - **api-gateway:** Spring Cloud Gateway entry point and correlation-id propagation (Port: 8080)
+- **auth-service:** Authentication, authorization, and JWT issuance (Port: 8081)
 - **ticket-service:** Ticket lifecycle, updates, and outbox publishing (Port: 8082)
 - **ai-analysis-service:** Consumes `ticket-created`, runs AI analysis, publishes `ticket-analyzed` (Port: 8083)
 - **routing-service:** Consumes `ticket-analyzed`, evaluates DB rules, publishes `ticket-routed` (Port: 8084)
@@ -81,7 +82,7 @@ This repository is a Spring Boot 4.1.0 microservices platform for AI-powered tic
 ### Service Startup Order
 1. `discovery-service`
 2. `api-gateway`
-3. Core services (parallel): `ticket-service`, `ai-analysis-service`, `routing-service`, `rag-service`
+3. Core services (parallel): `auth-service`, `ticket-service`, `ai-analysis-service`, `routing-service`, `rag-service`
 
 ### API Documentation
 - Services with REST controllers expose Swagger UI at `/swagger-ui.html`.
@@ -99,6 +100,7 @@ This repository is a Spring Boot 4.1.0 microservices platform for AI-powered tic
 - **Messaging:** Apache Kafka
 - **Service Discovery:** Netflix Eureka
 - **API Documentation:** SpringDoc OpenAPI 3.0.3
+- **Security:** Spring Security + JWT
 - **Object Mapping:** MapStruct 1.6.3
 - **Resilience:** Resilience4j
 
@@ -152,6 +154,7 @@ This repository is a Spring Boot 4.1.0 microservices platform for AI-powered tic
 
 ```text
 api-gateway/          # Spring Cloud Gateway
+/auth-service/        # Authentication & JWT management
 /discovery-service/   # Eureka server
 /ticket-service/      # Ticket APIs + outbox + consumers
 /ai-analysis-service/ # Analysis consumer + query APIs + outbox
@@ -172,8 +175,9 @@ infra/                # docker-compose and init scripts
 
 ## End-to-End Event Flow
 
-1. `ticket-service` creates ticket and writes `TicketCreatedEvent` to outbox.
-2. Outbox publisher emits to topic `ticket-created`.
+1. Client authenticates via `/api/v1/auth/login` and receives JWT.
+2. `ticket-service` receives authenticated POST and creates ticket, writing `TicketCreatedEvent` to outbox.
+3. Outbox publisher emits to topic `ticket-created`.
 3. `ai-analysis-service` consumes, analyzes, and writes `TicketAnalyzedEvent` to outbox.
 4. `routing-service` and `rag-service` consume `ticket-analyzed` in parallel.
 5. `routing-service` emits `ticket-routed`; `rag-service` emits `ticket-rag-response`.
