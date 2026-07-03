@@ -1,244 +1,269 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.1.0</version>
-		<relativePath/>
-	</parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-	<groupId>com.aisupport</groupId>
-	<artifactId>aisupport-parent</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<packaging>pom</packaging>
-	
-	<name>AI Support Parent</name>
-	<description>Parent POM for AI Support System microservices</description>
-	
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
+    <modelVersion>4.0.0</modelVersion>
 
-	<modules>
-		<module>../common-library</module>
-	 	<module>../discovery-service</module>
-     	<module>../api-gateway</module>
-	 	<module>../auth-service</module>
-	 	<module>../ticket-service</module>
-     	<module>../ai-analysis-service</module>
-     	<module>../routing-service</module>
-     	<module>../rag-service</module>
-	</modules>
-	
-	<properties>
-		<java.version>21</java.version>
-		
-		<!-- Dependency Versions -->
+    <!-- Spring Boot Parent -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>4.1.0</version>
+        <relativePath/>
+    </parent>
+
+	<!-- This Module's Identity -->
+    <groupId>com.aisupport</groupId>
+    <artifactId>aisupport-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>AI Support Parent</name>
+    <description>
+    	Parent POM for AI Support System microservices
+    </description>
+
+    <!-- ========================================================== -->
+    <!-- Modules                                                    -->
+    <!-- ========================================================== -->
+    <modules>
+        <module>../common-library</module>
+        <module>../discovery-service</module>
+        <module>../api-gateway</module>
+        <module>../auth-service</module>
+        <module>../ticket-service</module>
+        <module>../ai-analysis-service</module>
+        <module>../routing-service</module>
+        <module>../rag-service</module>
+    </modules>
+
+    <!-- ========================================================== -->
+    <!-- Project Properties                                         -->
+    <!-- ========================================================== -->
+    <properties>
+
+        <!-- Java -->
+        <java.version>21</java.version>
+
+        <!-- Spring -->
         <spring-cloud.version>2025.1.2</spring-cloud.version>
         <spring-ai.version>2.0.0</spring-ai.version>
+
+        <!-- Libraries -->
         <mapstruct.version>1.6.3</mapstruct.version>
         <lombok.version>1.18.46</lombok.version>
+        <jjwt.version>0.13.0</jjwt.version>
+
+        <!-- API Documentation -->
         <springdoc-openapi.version>3.0.3</springdoc-openapi.version>
         <swagger-annotations.version>2.2.49</swagger-annotations.version>
-        <sonar-maven-plugin.version>5.5.0.6970</sonar-maven-plugin.version>        
-		<jjwt.version>0.13.0</jjwt.version>
-	</properties>
-		
-	<!-- 
-        Only truly universal dependencies here.
-        Everything else belongs in each module's own pom.xml 
-    -->
-	<dependencies>        
-        <!-- Spring Boot Starters -->
-        <dependency>
-	      	<groupId>org.springframework.boot</groupId>
-	      	<artifactId>spring-boot-starter</artifactId>
-	    </dependency>
-	    
-	    <!-- Developer Tools for Hot Reloading during development, optional and runtime only -->
-	    <dependency>
-	      	<groupId>org.springframework.boot</groupId>
-	      	<artifactId>spring-boot-devtools</artifactId>
-	      	<scope>runtime</scope>
-	      	<optional>true</optional>
-	    </dependency>	    
-	    
-	    <!-- Configuration Processor for annotation processing of @ConfigurationProperties, optional and compile-only -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-configuration-processor</artifactId>
-			<optional>true</optional>
-		</dependency>
-		
-		<!-- Spring Boot Actuator for monitoring and management, optional but commonly used in all modules -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-        
-        <!-- Lombok for Boilerplate Code Reduction -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        
-        <!-- MapStruct for Object Mapping -->
-        <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct</artifactId>
-            <version>${mapstruct.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct-processor</artifactId>
-            <version>${mapstruct.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        
-        <!-- Jackson Core for JSON processing -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-    		<artifactId>jackson-core</artifactId>    					
-        </dependency>
-        
-        <!-- Jackson Databind for JSON processing -->
-        <dependency>
-		    <groupId>com.fasterxml.jackson.core</groupId>
-		    <artifactId>jackson-databind</artifactId>
-		</dependency>
 
-		<!-- Jackson Datatype for Java 8 Date/Time API -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-		</dependency>		
-        
-        <!-- Test Dependencies — this single starter covers JUnit 5, Mockito, AssertJ, MockMvc -->
-        <dependency>
-	      	<groupId>org.springframework.boot</groupId>
-	      	<artifactId>spring-boot-starter-test</artifactId>
-	      	<scope>test</scope>
-	    </dependency>
-	</dependencies>
-	
-	<!-- Version management only — no forced inclusion -->
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>io.jsonwebtoken</groupId>
-				<artifactId>jjwt-api</artifactId>
-				<version>${jjwt.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.jsonwebtoken</groupId>
-				<artifactId>jjwt-impl</artifactId>
-				<version>${jjwt.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.jsonwebtoken</groupId>
-				<artifactId>jjwt-jackson</artifactId>
-				<version>${jjwt.version}</version>
-			</dependency>
-			<!-- Spring Cloud BOM for managing versions of Spring Cloud dependencies, declare in each module that uses Spring Cloud -->
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>${spring-cloud.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<!-- Spring AI BOM for managing versions of Spring AI dependencies, declare in each module that uses Spring AI -->
-			<dependency>
-				<groupId>org.springframework.ai</groupId>
-				<artifactId>spring-ai-bom</artifactId>
-				<version>${spring-ai.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<!-- Manage springdoc version centrally, declare in each module -->
+        <!-- Utilities -->
+        <commons-lang3.version>3.14.0</commons-lang3.version>
+        <jakarta.validation-api.version>3.0.2</jakarta.validation-api.version>
+
+        <!-- Build -->
+        <sonar-maven-plugin.version>5.5.0.6970</sonar-maven-plugin.version>
+
+    </properties>
+
+    <!-- ========================================================== -->
+    <!-- Dependency Management                                      -->
+    <!-- ========================================================== -->
+    <dependencyManagement>
+
+        <dependencies>
+
+            <!-- ================================================== -->
+            <!-- Internal Modules                                   -->
+            <!-- ================================================== -->
+            <dependency>
+                <groupId>com.aisupport</groupId>
+                <artifactId>common-library</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- ================================================== -->
+            <!-- Spring Cloud                                       -->
+            <!-- ================================================== -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- ================================================== -->
+            <!-- Spring AI                                          -->
+            <!-- ================================================== -->
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring-ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- ================================================== -->
+            <!-- SpringDoc                                          -->
+            <!-- ================================================== -->
             <dependency>
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
                 <version>${springdoc-openapi.version}</version>
             </dependency>
-			<dependency>
-			    <groupId>org.springdoc</groupId>
-			    <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
-			    <version>${springdoc-openapi.version}</version>
-			</dependency>
-			<!-- Swagger annotations — used by common-library for @Schema on shared DTOs -->
-	        <dependency>
-	            <groupId>io.swagger.core.v3</groupId>
-	            <artifactId>swagger-annotations-jakarta</artifactId>
-	            <version>${swagger-annotations.version}</version>
-        	</dependency>
-		</dependencies>
-	</dependencyManagement>
 
-	<build>
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+                <version>${springdoc-openapi.version}</version>
+            </dependency>
+
+            <!-- ================================================== -->
+            <!-- Swagger                                            -->
+            <!-- ================================================== -->
+            <dependency>
+                <groupId>io.swagger.core.v3</groupId>
+                <artifactId>swagger-annotations-jakarta</artifactId>
+                <version>${swagger-annotations.version}</version>
+            </dependency>
+
+            <!-- ================================================== -->
+            <!-- MapStruct                                          -->
+            <!-- ================================================== -->
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct</artifactId>
+                <version>${mapstruct.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct-processor</artifactId>
+                <version>${mapstruct.version}</version>
+            </dependency>
+
+            <!-- ================================================== -->
+            <!-- Lombok                                             -->
+            <!-- ================================================== -->
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
+
+            <!-- ================================================== -->
+            <!-- Utilities                                          -->
+            <!-- ================================================== -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.validation</groupId>
+                <artifactId>jakarta.validation-api</artifactId>
+                <version>${jakarta.validation-api.version}</version>
+            </dependency>
+
+            <!-- ================================================== -->
+            <!-- JWT                                                -->
+            <!-- ================================================== -->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-api</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+
+        </dependencies>
+
+    </dependencyManagement>
+
+    <!-- ========================================================== -->
+    <!-- Build Configuration                                        -->
+    <!-- ========================================================== -->
+
+    <build>
         <pluginManagement>
             <plugins>
+
+                <!-- Spring Boot -->
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
-				    <configuration>
-				        <jvmArguments>-Duser.timezone=UTC</jvmArguments>
-				    </configuration>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
-                        <argLine>-Duser.timezone=UTC</argLine>
+                        <jvmArguments>-Duser.timezone=UTC</jvmArguments>
                     </configuration>
                 </plugin>
-			
+
+                <!-- Compiler -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
+
                     <configuration>
+
                         <source>${java.version}</source>
                         <target>${java.version}</target>
+
                         <annotationProcessorPaths>
+
                             <path>
-                                <groupId>org.projectlombok</groupId> <!-- IMPORTANT - LOMBOK BEFORE MAPSTRUCT -->
+                                <groupId>org.projectlombok</groupId>
                                 <artifactId>lombok</artifactId>
                                 <version>${lombok.version}</version>
                             </path>
+
                             <path>
                                 <groupId>org.mapstruct</groupId>
                                 <artifactId>mapstruct-processor</artifactId>
                                 <version>${mapstruct.version}</version>
                             </path>
+
                         </annotationProcessorPaths>
+
                         <compilerArgs>
                             <arg>-parameters</arg>
                         </compilerArgs>
+
                     </configuration>
+
                 </plugin>
 
+                <!-- Unit Tests -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+
+                    <configuration>
+                        <argLine>-Duser.timezone=UTC</argLine>
+                    </configuration>
+
+                </plugin>
+
+                <!-- Sonar -->
                 <plugin>
                     <groupId>org.sonarsource.scanner.maven</groupId>
                     <artifactId>sonar-maven-plugin</artifactId>
                     <version>${sonar-maven-plugin.version}</version>
-                </plugin>			
-		    </plugins>
-        </pluginManagement>		
-	</build>
+                </plugin>
 
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>
