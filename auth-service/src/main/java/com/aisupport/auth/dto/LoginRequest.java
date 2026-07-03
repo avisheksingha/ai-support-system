@@ -12,7 +12,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Request payload for user login", requiredProperties = {"email", "password"})
+@Schema(
+    description = "Request payload for user login", 
+    requiredProperties = {"email", "password"},
+    example = "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"SecureP@ssw0rd\"\n}"
+)
 public class LoginRequest {
 
     @Schema(description = "User's registered email address", example = "john.doe@example.com")

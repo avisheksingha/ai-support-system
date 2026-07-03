@@ -11,7 +11,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Request payload for refreshing an access token", requiredProperties = {"refreshToken"})
+@Schema(
+    description = "Request payload for refreshing an access token", 
+    requiredProperties = {"refreshToken"},
+    example = "{\n  \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n}"
+)
 public class RefreshRequest {
 
     @Schema(description = "The valid refresh token obtained during login", example = "eyJhbGciOiJIUzUxMiJ9...")

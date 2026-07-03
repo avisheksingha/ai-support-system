@@ -13,7 +13,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Request payload for user registration", requiredProperties = {"email", "password", "fullName"})
+@Schema(
+    description = "Request payload for user registration", 
+    requiredProperties = {"email", "password", "fullName"},
+    example = "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"SecureP@ssw0rd\",\n  \"fullName\": \"John Doe\"\n}"
+)
 public class RegisterRequest {
     
     @Schema(description = "User's email address which will be used for login", example = "john.doe@example.com")

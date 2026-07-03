@@ -13,7 +13,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Request payload for updating a user's role", requiredProperties = {"role"})
+@Schema(
+    description = "Request payload for updating a user's role", 
+    requiredProperties = {"role"},
+    example = "{\n  \"role\": \"AGENT\"\n}"
+)
 public class UpdateUserRoleRequest {
     
     @Schema(description = "The new role to assign to the user", example = "AGENT")
