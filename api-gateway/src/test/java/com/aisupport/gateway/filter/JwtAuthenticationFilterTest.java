@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.time.Instant;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.crypto.SecretKey;
 
@@ -115,5 +116,30 @@ class JwtAuthenticationFilterTest {
 
         assertEquals(HttpStatus.UNAUTHORIZED, exchange.getResponse().getStatusCode());
         assertNull(exchange.getResponse().getHeaders().getFirst(SecurityConstants.HEADER_ACCESS_TOKEN_REFRESH));
+    }
+
+    @Test
+    void shouldReplaceSpoofedIdentityHeadersWithTokenClaims() {
+        String token = generateToken(300);
+        MockServerHttpRequest request = MockServerHttpRequest.get("/api/v1/tickets")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .header(SecurityConstants.HEADER_USER_ID, "attacker")
+                .header(SecurityConstants.HEADER_USER_ROLE, "ROLE_ADMIN")
+                .header(SecurityConstants.HEADER_USER_EMAIL, "attacker@example.com")
+                .build();
+        ServerWebExchange exchange = MockServerWebExchange.from(request);
+        AtomicReference<ServerWebExchange> forwarded = new AtomicReference<>();
+
+        filter.filter(exchange, forwardedExchange -> {
+            forwarded.set(forwardedExchange);
+            return Mono.empty();
+        }).block();
+
+        assertEquals("100", forwarded.get().getRequest().getHeaders()
+                .getFirst(SecurityConstants.HEADER_USER_ID));
+        assertEquals("ROLE_CUSTOMER", forwarded.get().getRequest().getHeaders()
+                .getFirst(SecurityConstants.HEADER_USER_ROLE));
+        assertEquals("test@test.com", forwarded.get().getRequest().getHeaders()
+                .getFirst(SecurityConstants.HEADER_USER_EMAIL));
     }
 }

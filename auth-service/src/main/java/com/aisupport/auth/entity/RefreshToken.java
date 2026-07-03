@@ -13,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -38,6 +39,9 @@ public class RefreshToken {
 
     @Column(nullable = false, unique = true, length = 512)
     private String token;
+
+    @Transient
+    private String rawToken;
 
     @Column(name = "expires_at", nullable = false)
     private Instant expiresAt;

@@ -259,6 +259,10 @@ Each service provides its own OpenAPI documentation. Available locally at:
 
 ## Authentication Flow
 
+Authentication uses short-lived signed JWT access tokens and rotating server-side refresh tokens. Clients authenticate through the API Gateway. The gateway validates access-token signature and expiry, removes client-supplied identity headers, and forwards verified user identity to backend services. Only registration, login, and refresh are public. Logout and `/me` require authentication, while user-management endpoints require the `ADMIN` role.
+
+Backend service ports are internal interfaces and must not be exposed directly to untrusted clients.
+
 Frontend Application
     │
     ▼

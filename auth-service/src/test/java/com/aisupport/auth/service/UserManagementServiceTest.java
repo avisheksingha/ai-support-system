@@ -17,6 +17,7 @@ import com.aisupport.auth.entity.User;
 import com.aisupport.common.enums.UserRole;
 import com.aisupport.auth.mapper.UserMapper;
 import com.aisupport.auth.repository.UserRepository;
+import com.aisupport.auth.repository.RefreshTokenRepository;
 
 @ExtendWith(MockitoExtension.class)
 class UserManagementServiceTest {
@@ -26,6 +27,9 @@ class UserManagementServiceTest {
 
     @Mock
     private UserMapper userMapper;
+
+    @Mock
+    private RefreshTokenRepository refreshTokenRepository;
 
     @InjectMocks
     private UserManagementService userManagementService;

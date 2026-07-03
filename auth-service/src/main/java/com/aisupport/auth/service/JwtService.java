@@ -3,6 +3,10 @@ package com.aisupport.auth.service;
 import java.time.Instant;
 import java.util.Date; // NOSONAR (JJWT requires java.util.Date)
 import java.util.UUID;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 
 import javax.crypto.SecretKey;
 
@@ -43,21 +47,33 @@ public class JwtService {
     }
 
     public RefreshToken generateRefreshToken(User user) {
+        String rawToken = UUID.randomUUID().toString();
         RefreshToken refreshToken = RefreshToken.builder()
                 .user(user)
-                .token(UUID.randomUUID().toString())
+                .token(hashRefreshToken(rawToken))
+                .rawToken(rawToken)
                 .expiresAt(Instant.now().plusMillis(jwtConfig.getRefreshTokenExpirationMs()))
                 .build();
         return refreshTokenRepository.save(refreshToken);
     }
 
+    public String hashRefreshToken(String token) {
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256")
+                    .digest(token.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(digest);
+        } catch (NoSuchAlgorithmException ex) {
+            throw new IllegalStateException("SHA-256 is not available", ex);
+        }
+    }
+
     public RefreshToken verifyRefreshTokenExpiration(RefreshToken token) {
         if (token.getExpiresAt().isBefore(Instant.now())) {
             refreshTokenRepository.delete(token);
-            throw new TokenExpiredException(token.getToken() + " Refresh token was expired. Please make a new signin request");
+            throw new TokenExpiredException("Refresh token has expired. Please sign in again");
         }
         if (token.isRevoked()) {
-            throw new TokenExpiredException(token.getToken() + " Refresh token was revoked");
+            throw new TokenExpiredException("Refresh token has been revoked");
         }
         return token;
     }

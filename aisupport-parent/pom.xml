@@ -54,6 +54,7 @@
         <springdoc-openapi.version>3.0.3</springdoc-openapi.version>
         <swagger-annotations.version>2.2.49</swagger-annotations.version>
         <sonar-maven-plugin.version>5.5.0.6970</sonar-maven-plugin.version>        
+		<jjwt.version>0.13.0</jjwt.version>
 	</properties>
 		
 	<!-- 
@@ -137,6 +138,21 @@
 	<!-- Version management only — no forced inclusion -->
 	<dependencyManagement>
 		<dependencies>
+			<dependency>
+				<groupId>io.jsonwebtoken</groupId>
+				<artifactId>jjwt-api</artifactId>
+				<version>${jjwt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.jsonwebtoken</groupId>
+				<artifactId>jjwt-impl</artifactId>
+				<version>${jjwt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.jsonwebtoken</groupId>
+				<artifactId>jjwt-jackson</artifactId>
+				<version>${jjwt.version}</version>
+			</dependency>
 			<!-- Spring Cloud BOM for managing versions of Spring Cloud dependencies, declare in each module that uses Spring Cloud -->
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>

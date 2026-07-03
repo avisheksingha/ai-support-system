@@ -17,6 +17,8 @@ import com.aisupport.auth.exception.AuthException;
 import com.aisupport.auth.repository.LoginAuditRepository;
 import com.aisupport.auth.repository.RefreshTokenRepository;
 import com.aisupport.auth.repository.UserRepository;
+import com.aisupport.auth.config.JwtConfig;
+import com.aisupport.auth.mapper.UserMapper;
 
 class AuthServiceTest {
 
@@ -26,6 +28,8 @@ class AuthServiceTest {
     private RefreshTokenRepository refreshTokenRepository;
     private LoginAuditRepository loginAuditRepository;
     private AuthService authService;
+    private JwtConfig jwtConfig;
+    private UserMapper userMapper;
 
     @BeforeEach
     void setUp() {
@@ -34,13 +38,17 @@ class AuthServiceTest {
         jwtService = mock(JwtService.class);
         refreshTokenRepository = mock(RefreshTokenRepository.class);
         loginAuditRepository = mock(LoginAuditRepository.class);
+        jwtConfig = mock(JwtConfig.class);
+        userMapper = mock(UserMapper.class);
         
         authService = new AuthService(
                 userRepository, 
                 passwordEncoder, 
                 jwtService, 
                 refreshTokenRepository, 
-                loginAuditRepository
+                loginAuditRepository,
+                jwtConfig,
+                userMapper
         );
     }
 

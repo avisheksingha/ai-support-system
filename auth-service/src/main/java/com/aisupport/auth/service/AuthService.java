@@ -17,6 +17,9 @@ import com.aisupport.auth.exception.AuthException;
 import com.aisupport.auth.repository.LoginAuditRepository;
 import com.aisupport.auth.repository.RefreshTokenRepository;
 import com.aisupport.auth.repository.UserRepository;
+import com.aisupport.auth.config.JwtConfig;
+import com.aisupport.auth.mapper.UserMapper;
+import org.springframework.http.HttpStatus;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,11 +35,13 @@ public class AuthService {
     private final JwtService jwtService;
     private final RefreshTokenRepository refreshTokenRepository;
     private final LoginAuditRepository loginAuditRepository;
+    private final JwtConfig jwtConfig;
+    private final UserMapper userMapper;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new AuthException("Email is already in use");
+            throw new AuthException(HttpStatus.CONFLICT, "Email is already in use");
         }
 
         User user = User.builder()
@@ -56,17 +61,17 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> {
                     auditLogin(null, ipAddress, STATUS_FAILED);
-                    return new AuthException("Invalid email or password");
+                    return new AuthException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
                 });
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             auditLogin(user, ipAddress, STATUS_FAILED);
-            throw new AuthException("Invalid email or password");
+            throw new AuthException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
         }
 
         if (!user.isEnabled() || user.isLocked()) {
             auditLogin(user, ipAddress, STATUS_FAILED);
-            throw new AuthException("Account is locked or disabled");
+            throw new AuthException(HttpStatus.UNAUTHORIZED, "Account is locked or disabled");
         }
 
         auditLogin(user, ipAddress, STATUS_SUCCESS);
@@ -75,15 +80,21 @@ public class AuthService {
 
     @Transactional
     public AuthResponse refresh(RefreshRequest request) {
-        return refreshTokenRepository.findByToken(request.getRefreshToken())
+        String tokenHash = jwtService.hashRefreshToken(request.getRefreshToken());
+        return refreshTokenRepository.findByTokenForUpdate(tokenHash)
                 .map(jwtService::verifyRefreshTokenExpiration)
                 .map(oldToken -> {
                     User user = oldToken.getUser();
-                    AuthResponse response = buildAuthResponse(user);
+                    if (!user.isEnabled() || user.isLocked()) {
+                        refreshTokenRepository.deleteAllByUserId(user.getId());
+                        throw new AuthException(HttpStatus.UNAUTHORIZED, "Account is locked or disabled");
+                    }
                     refreshTokenRepository.delete(oldToken);
+                    refreshTokenRepository.flush();
+                    AuthResponse response = buildAuthResponse(user);
                     return response;
                 })
-                .orElseThrow(() -> new AuthException("Refresh token is not in database!"));
+                .orElseThrow(() -> new AuthException(HttpStatus.UNAUTHORIZED, "Invalid refresh token"));
     }
 
     @Transactional
@@ -93,14 +104,8 @@ public class AuthService {
 
     public UserResponse getCurrentUser(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AuthException("User not found"));
-        return UserResponse.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .fullName(user.getFullName())
-                .role(user.getRole())
-                .createdAt(user.getCreatedAt())
-                .build();
+                .orElseThrow(() -> new AuthException(HttpStatus.NOT_FOUND, "User not found"));
+        return userMapper.toResponse(user);
     }
 
     private AuthResponse buildAuthResponse(User user) {
@@ -109,9 +114,9 @@ public class AuthService {
 
         return AuthResponse.builder()
                 .accessToken(accessToken)
-                .refreshToken(refreshToken.getToken())
+                .refreshToken(refreshToken.getRawToken())
                 .tokenType("Bearer")
-                .expiresIn(900L) // 15 mins
+                .expiresIn(jwtConfig.getAccessTokenExpirationMs() / 1000)
                 .build();
     }
 

@@ -2,6 +2,7 @@ package com.aisupport.auth.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -16,6 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 	
 	/**
@@ -60,8 +62,13 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                    .requestMatchers("/api/v1/auth/**").permitAll()
-                    .anyRequest().denyAll()
+                    .requestMatchers(
+                            "/api/v1/auth/register",
+                            "/api/v1/auth/login",
+                            "/api/v1/auth/refresh"
+                    ).permitAll()
+                    .requestMatchers("/api/v1/auth/admin/**").hasRole("ADMIN")
+                    .anyRequest().authenticated()
             )
 
             .exceptionHandling(exception -> exception

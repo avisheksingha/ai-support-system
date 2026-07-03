@@ -11,6 +11,8 @@ import com.aisupport.common.enums.UserRole;
 import com.aisupport.auth.exception.AuthException;
 import com.aisupport.auth.mapper.UserMapper;
 import com.aisupport.auth.repository.UserRepository;
+import com.aisupport.auth.repository.RefreshTokenRepository;
+import org.springframework.http.HttpStatus;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +24,7 @@ public class UserManagementService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Transactional(readOnly = true)
     public Page<UserResponse> getAllUsers(Pageable pageable) {
@@ -33,6 +36,7 @@ public class UserManagementService {
     public UserResponse updateUserRole(Long userId, UserRole newRole) {
         User user = getUser(userId);
         user.setRole(newRole);
+        refreshTokenRepository.deleteAllByUserId(userId);
         log.info("User {} role updated to {}", userId, newRole);
         return userMapper.toResponse(user);
     }
@@ -41,6 +45,7 @@ public class UserManagementService {
     public UserResponse lockUser(Long userId) {
         User user = getUser(userId);
         user.setLocked(true);
+        refreshTokenRepository.deleteAllByUserId(userId);
         log.info("User {} locked", userId);
         return userMapper.toResponse(user);
     }
@@ -55,6 +60,6 @@ public class UserManagementService {
 
     private User getUser(Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new AuthException("User not found with id: " + userId));
+                .orElseThrow(() -> new AuthException(HttpStatus.NOT_FOUND, "User not found with id: " + userId));
     }
 }

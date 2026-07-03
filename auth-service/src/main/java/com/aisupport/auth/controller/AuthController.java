@@ -19,6 +19,7 @@ import com.aisupport.common.auth.SecurityConstants;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -46,12 +47,14 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Void> logout(@RequestHeader(value = SecurityConstants.HEADER_USER_ID, required = true) Long userId) {
         authService.logout(userId);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/me")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<UserResponse> getCurrentUser(@RequestHeader(value = SecurityConstants.HEADER_USER_ID, required = true) Long userId) {
         return ResponseEntity.ok(authService.getCurrentUser(userId));
     }

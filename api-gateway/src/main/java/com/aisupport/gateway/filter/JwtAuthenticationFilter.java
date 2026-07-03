@@ -114,9 +114,14 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
         exchange = exchange.mutate()
                 .request(builder -> builder
-                        .header(SecurityConstants.HEADER_USER_ID, jwtUtil.extractUserId(token))
-                        .header(SecurityConstants.HEADER_USER_ROLE, jwtUtil.extractRole(token))
-                        .header(SecurityConstants.HEADER_USER_EMAIL, jwtUtil.extractEmail(token)))
+                        .headers(headers -> {
+                            headers.remove(SecurityConstants.HEADER_USER_ID);
+                            headers.remove(SecurityConstants.HEADER_USER_ROLE);
+                            headers.remove(SecurityConstants.HEADER_USER_EMAIL);
+                            headers.set(SecurityConstants.HEADER_USER_ID, jwtUtil.extractUserId(token));
+                            headers.set(SecurityConstants.HEADER_USER_ROLE, jwtUtil.extractRole(token));
+                            headers.set(SecurityConstants.HEADER_USER_EMAIL, jwtUtil.extractEmail(token));
+                        }))
                 .build();
 
         return chain.filter(exchange);
