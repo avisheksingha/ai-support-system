@@ -17,8 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 public class SecurityConfig {
 	
 	/**
-     * Public endpoints that do not require authentication.
-     * These endpoints are accessible without a valid token.
+     * Endpoints that are publicly accessible without JWT authentication.
      */
     private static final String[] PUBLIC_ENDPOINTS = {
             "/swagger-ui/**",

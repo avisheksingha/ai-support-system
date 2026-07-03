@@ -24,6 +24,8 @@ import reactor.core.publisher.Mono;
 @Component
 @Slf4j
 public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
+	
+	private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 
     private final JwtUtil jwtUtil;
     private final long refreshThresholdSeconds;
@@ -37,7 +39,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             "/api/v1/auth/register",
             "/api/v1/auth/login",
             "/api/v1/auth/refresh",
-            "eureka" // Remove this after Eureka is secured
+            "/eureka/**" // TODO: Remove this after Eureka is secured
     );
 
     /**
@@ -50,13 +52,12 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             "/actuator/health",
             "/actuator/info"
     );
-
-    private final AntPathMatcher pathMatcher = new AntPathMatcher();
     
     // Constructor for JwtAuthenticationFilter that initializes the JwtUtil and refresh threshold.
     public JwtAuthenticationFilter(
             @Value("${app.jwt.secret}") String secret,
             @Value("${jwt.refresh-threshold-seconds:120}") long refreshThresholdSeconds) {
+    	
         this.jwtUtil = new JwtUtil(secret);
         this.refreshThresholdSeconds = refreshThresholdSeconds;
     }
@@ -74,13 +75,12 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getURI().getPath();
 
-        boolean isAuthEndpoint = PUBLIC_AUTH_ENDPOINTS.stream()
-                .anyMatch(path::equals);
-                
-        boolean isPublicEndpoint = PUBLIC_ENDPOINTS.stream()
-                .anyMatch(pattern -> pathMatcher.match(pattern, path));
+        boolean isPublic = PUBLIC_AUTH_ENDPOINTS.stream()
+                .anyMatch(pattern -> PATH_MATCHER.match(pattern, path))
+                || PUBLIC_ENDPOINTS.stream()
+                .anyMatch(pattern -> PATH_MATCHER.match(pattern, path));
 
-        if (isAuthEndpoint || isPublicEndpoint) {
+        if (isPublic) {
             return chain.filter(exchange);
         }
 
@@ -88,13 +88,19 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                 .getFirst(SecurityConstants.AUTHORIZATION_HEADER);
 
         if (authHeader == null || !authHeader.startsWith(SecurityConstants.BEARER_PREFIX)) {
-            return onError(exchange, "Missing or invalid Authorization header", HttpStatus.UNAUTHORIZED);
+            
+        	return onError(exchange,
+            		"Missing or invalid Authorization header",
+            		HttpStatus.UNAUTHORIZED);
         }
 
         String token = authHeader.substring(SecurityConstants.BEARER_PREFIX.length());
 
         if (!jwtUtil.isTokenValid(token)) {
-            return onError(exchange, "Invalid JWT token", HttpStatus.UNAUTHORIZED);
+        	
+            return onError(exchange,
+            		"Invalid JWT token",
+            		HttpStatus.UNAUTHORIZED);
         }
 
         Instant expiration = jwtUtil.extractExpiration(token);
@@ -141,6 +147,6 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 	 */
     @Override
     public int getOrder() {
-        return -1; // Execute before routing
+    	return Ordered.HIGHEST_PRECEDENCE; // Execute before routing
     }
 }
