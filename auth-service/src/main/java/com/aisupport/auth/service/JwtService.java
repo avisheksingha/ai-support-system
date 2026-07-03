@@ -1,12 +1,12 @@
 package com.aisupport.auth.service;
 
-import java.time.Instant;
-import java.util.Date; // NOSONAR (JJWT requires java.util.Date)
-import java.util.UUID;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
+import java.util.Date;
 import java.util.HexFormat;
+import java.util.UUID;
 
 import javax.crypto.SecretKey;
 
@@ -20,6 +20,7 @@ import com.aisupport.auth.repository.RefreshTokenRepository;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.io.DecodingException;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 
@@ -30,11 +31,32 @@ public class JwtService {
     private final JwtConfig jwtConfig;
     private final RefreshTokenRepository refreshTokenRepository;
 
+    /**
+     * Gets the sign-in key for the JWT.
+     * 
+     * @return The sign-in key.
+     */
     private SecretKey getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtConfig.getSecret());
+        byte[] keyBytes;
+        try {
+            keyBytes = Decoders.BASE64.decode(jwtConfig.getSecret());
+        } catch (DecodingException e) {
+            try {
+                keyBytes = MessageDigest.getInstance("SHA-256")
+                        .digest(jwtConfig.getSecret().getBytes(StandardCharsets.UTF_8));
+            } catch (NoSuchAlgorithmException ex) {
+                keyBytes = jwtConfig.getSecret().getBytes(StandardCharsets.UTF_8);
+            }
+        }
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
+    /**
+     * Generates a new access token for the given user.
+     * 
+     * @param user The user for whom to generate an access token.
+     * @return The generated access token.
+     */
     public String generateAccessToken(User user) {
         return Jwts.builder()
                 .subject(user.getId().toString())
@@ -46,6 +68,12 @@ public class JwtService {
                 .compact();
     }
 
+    /**
+     * Generates a new refresh token for the given user.
+     * 
+     * @param user The user for whom to generate a refresh token.
+     * @return The generated refresh token.
+     */
     public RefreshToken generateRefreshToken(User user) {
         String rawToken = UUID.randomUUID().toString();
         RefreshToken refreshToken = RefreshToken.builder()
@@ -56,7 +84,13 @@ public class JwtService {
                 .build();
         return refreshTokenRepository.save(refreshToken);
     }
-
+    
+    /**
+	 * Hashes the provided refresh token using SHA-256.
+	 *
+	 * @param token The refresh token to hash.
+	 * @return The hashed representation of the refresh token.
+	 */
     public String hashRefreshToken(String token) {
         try {
             byte[] digest = MessageDigest.getInstance("SHA-256")
@@ -67,6 +101,15 @@ public class JwtService {
         }
     }
 
+    /**
+	 * Verifies the expiration of a refresh token.
+	 * If the token has expired, it will be deleted from the repository and a TokenExpiredException will be thrown.
+	 * If the token has been revoked, a TokenExpiredException will be thrown.
+	 *
+	 * @param token The refresh token to verify.
+	 * @return The valid refresh token if it has not expired or been revoked.
+	 * @throws TokenExpiredException if the token has expired or been revoked.
+	 */
     public RefreshToken verifyRefreshTokenExpiration(RefreshToken token) {
         if (token.getExpiresAt().isBefore(Instant.now())) {
             refreshTokenRepository.delete(token);

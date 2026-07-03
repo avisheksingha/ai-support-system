@@ -6,12 +6,13 @@ import java.util.Map;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 import com.aisupport.rag.entity.KnowledgeArticle;
 import com.aisupport.rag.repository.KnowledgeArticleRepository;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -28,12 +29,16 @@ import lombok.extern.slf4j.Slf4j;
  * when answering user queries via RAG.
  */
 @Slf4j
-@Configuration
-public class DataLoaderRunner {
+@Component
+@Profile("local")
+@RequiredArgsConstructor
+public class KnowledgeDataInitializer implements CommandLineRunner {
 
-    @Bean
-    CommandLineRunner loadKnowledgeBase(KnowledgeArticleRepository repo, VectorStore vectorStore) {
-        return args -> {
+    private final KnowledgeArticleRepository repo;
+    private final VectorStore vectorStore;
+
+    @Override
+    public void run(String... args) throws Exception {
 
             // Skip if already populated
             long count = repo.countEmbeddedArticles();
@@ -57,8 +62,7 @@ public class DataLoaderRunner {
             articles.forEach(a -> a.setEmbedded(true));     // mark as embedded
             repo.saveAll(articles);                         // persist the flag
 
-            log.info("Successfully loaded {} articles into vector store.", docs.size());
-        };
+        log.info("Successfully loaded {} articles into vector store.", docs.size());
     }
 }
 
