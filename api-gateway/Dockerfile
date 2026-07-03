@@ -10,7 +10,7 @@ COPY common-library ./common-library
 COPY api-gateway ./api-gateway
 
 # 1) Install parent POM
-RUN mvn -f aisupport-parent/pom.xml clean install -DskipTests
+RUN mvn -N -f aisupport-parent/pom.xml clean install -DskipTests
 
 # 2) Install common-library for module dependency resolution
 RUN mvn -f common-library/pom.xml clean install -DskipTests

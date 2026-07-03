@@ -9,7 +9,7 @@ COPY aisupport-parent ./aisupport-parent
 COPY discovery-service ./discovery-service
 
 # Install parent POM for clean module build
-RUN mvn -f aisupport-parent/pom.xml clean install -DskipTests
+RUN mvn -N -f aisupport-parent/pom.xml clean install -DskipTests
 
 # Build the service and copy the repackaged jar to a known location
 WORKDIR /app/discovery-service
