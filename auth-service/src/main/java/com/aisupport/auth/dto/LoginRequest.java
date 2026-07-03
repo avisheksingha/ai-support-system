@@ -1,5 +1,6 @@
 package com.aisupport.auth.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -11,12 +12,15 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "Request payload for user login", requiredProperties = {"email", "password"})
 public class LoginRequest {
 
+    @Schema(description = "User's registered email address", example = "john.doe@example.com")
     @NotBlank(message = "Email is required")
     @Email(message = "Email format is not valid")
     private String email;
 
+    @Schema(description = "User's password", example = "SecureP@ssw0rd")
     @NotBlank(message = "Password is required")
     private String password;
 }

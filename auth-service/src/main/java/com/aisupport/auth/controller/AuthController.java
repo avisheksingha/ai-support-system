@@ -16,23 +16,36 @@ import com.aisupport.auth.dto.UserResponse;
 import com.aisupport.auth.service.AuthService;
 import com.aisupport.common.auth.SecurityConstants;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+@Tag(name = "Authentication", description = "Endpoints for user registration, login, token refresh, and logout")
 public class AuthController {
 
     private final AuthService authService;
 
+    @Operation(
+        summary = "Register a new user",
+        description = "Registers a new user account with basic details and assigns a default role"
+    )
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthResponse> register(
+            @Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.ok(authService.register(request));
     }
 
+    @Operation(
+        summary = "Login user",
+        description = "Authenticates a user with email and password, returning JWT access and refresh tokens"
+    )
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(
             @Valid @RequestBody LoginRequest request, 
@@ -41,21 +54,36 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request, ipAddress));
     }
 
+    @Operation(
+        summary = "Refresh access token",
+        description = "Generates a new JWT access token using a valid refresh token"
+    )
     @PostMapping("/refresh")
-    public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody RefreshRequest request) {
+    public ResponseEntity<AuthResponse> refresh(
+            @Valid @RequestBody RefreshRequest request) {
         return ResponseEntity.ok(authService.refresh(request));
     }
 
-    @PostMapping("/logout")
+    @Operation(
+        summary = "Logout user",
+        description = "Invalidates the user's current session and access tokens"
+    )
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<Void> logout(@RequestHeader(value = SecurityConstants.HEADER_USER_ID, required = true) Long userId) {
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(
+            @Parameter(description = "Internal user ID header provided by gateway") @RequestHeader(value = SecurityConstants.HEADER_USER_ID, required = true) Long userId) {
         authService.logout(userId);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/me")
+    @Operation(
+        summary = "Get current user profile",
+        description = "Retrieves the profile information of the currently authenticated user"
+    )
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<UserResponse> getCurrentUser(@RequestHeader(value = SecurityConstants.HEADER_USER_ID, required = true) Long userId) {
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> getCurrentUser(
+            @Parameter(description = "Internal user ID header provided by gateway") @RequestHeader(value = SecurityConstants.HEADER_USER_ID, required = true) Long userId) {
         return ResponseEntity.ok(authService.getCurrentUser(userId));
     }
 }
