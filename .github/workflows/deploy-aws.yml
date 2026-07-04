@@ -18,10 +18,14 @@ jobs:
 
       - name: Deploy to AWS EC2
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
         with:
           host: ${{ secrets.AWS_EC2_HOST }}
           username: ${{ secrets.AWS_EC2_USERNAME }}
           key: ${{ secrets.AWS_EC2_PRIVATE_KEY }}
+          envs: DB_PASSWORD,JWT_SECRET
           script: |
             set -euo pipefail
 
@@ -51,7 +55,6 @@ jobs:
               COMPOSE_CMD="docker-compose"
             else
               echo "No compose found. Installing docker-compose binary..."
-              # try install compose plugin first (apt), then fall back to static binary
               sudo apt-get update
               sudo apt-get install -y docker-compose-plugin || true
               if docker compose version >/dev/null 2>&1; then
@@ -65,15 +68,11 @@ jobs:
 
             echo "Using compose command: $COMPOSE_CMD"
             
-            # Create the .env file securely from GitHub Secrets
+            # Create the .env file securely using the injected env variables
             cat <<EOF > .env
-            DB_USERNAME=\${{ secrets.DB_USERNAME }}
-            DB_PASSWORD=\${{ secrets.DB_PASSWORD }}
-            GOOGLE_CLOUD_PROJECT=\${{ secrets.GOOGLE_CLOUD_PROJECT }}
-            GOOGLE_CLOUD_LOCATION=\${{ secrets.GOOGLE_CLOUD_LOCATION }}
-            GCP_PROJECT_ID=\${{ secrets.GCP_PROJECT_ID }}
-            GCP_LOCATION=\${{ secrets.GCP_LOCATION }}
-            JWT_SECRET=\${{ secrets.JWT_SECRET }}
+            DB_USERNAME=postgres
+            DB_PASSWORD=$DB_PASSWORD
+            JWT_SECRET=$JWT_SECRET
             EOF
             
             sudo $COMPOSE_CMD -f infra/docker-compose.yml up -d --build
