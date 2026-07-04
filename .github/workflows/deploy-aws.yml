@@ -1,0 +1,40 @@
+name: Deploy to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  workflow_dispatch: # Allows you to manually trigger it from the Actions tab
+
+jobs:
+  deploy:
+    name: Deploy via SSH
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to AWS EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AWS_EC2_HOST }}
+          username: ${{ secrets.AWS_EC2_USERNAME }}
+          key: ${{ secrets.AWS_EC2_PRIVATE_KEY }}
+          script: |
+            # 1. Ensure project directory exists
+            mkdir -p ~/ai-support-system
+            cd ~/ai-support-system
+            
+            # 2. Check if git is initialized, if not clone it
+            if [ ! -d ".git" ]; then
+              git clone https://github.com/${{ github.repository }}.git .
+            fi
+            
+            # 3. Pull the latest code from the branch that triggered this workflow
+            git fetch --all
+            git reset --hard origin/${{ github.ref_name }}
+            
+            # 4. Spin up the containers using docker-compose
+            docker-compose -f infra/docker-compose.yml up -d --build
