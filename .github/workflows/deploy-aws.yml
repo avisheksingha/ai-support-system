@@ -69,10 +69,8 @@ jobs:
             echo "Using compose command: $COMPOSE_CMD"
             
             # Create the .env file securely using the injected env variables
-            cat <<EOF > .env
-            DB_USERNAME=postgres
-            DB_PASSWORD=$DB_PASSWORD
-            JWT_SECRET=$JWT_SECRET
-            EOF
+            echo "DB_USERNAME=postgres" > .env
+            echo "DB_PASSWORD=$DB_PASSWORD" >> .env
+            echo "JWT_SECRET=$JWT_SECRET" >> .env
             
             sudo $COMPOSE_CMD -f infra/docker-compose.yml up -d --build
