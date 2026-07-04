@@ -74,6 +74,11 @@ jobs:
             echo "DB_PASSWORD=$DB_PASSWORD" >> .env
             echo "JWT_SECRET=$JWT_SECRET" >> .env
             echo "GOOGLE_API_KEY=$GOOGLE_API_KEY" >> .env
+            echo "GEMINI_API_KEY=$GOOGLE_API_KEY" >> .env
+            
+            # Force Spring AI to use API Key instead of Vertex AI (ADC) by clearing project/location
+            echo "SPRING_AI_GOOGLE_GENAI_PROJECT_ID=" >> .env
+            echo "SPRING_AI_GOOGLE_GENAI_LOCATION=" >> .env
             
             # Copy to infra folder so docker-compose parser finds it for Postgres
             cp .env infra/.env
