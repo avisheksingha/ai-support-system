@@ -18,27 +18,29 @@ public class OpenAPIConfig {
 
 	@Bean
 	OpenAPI customOpenAPI() {
+		
 		final String securitySchemeName = "bearerAuth";
+		
 		return new OpenAPI()
-				.info(new Info()
-						.title("Auth Service API")
-						.version("1.0.0")
-						.description("API for managing user authentication and authorization in the AI Support System")
-						.contact(new Contact()
-								.name("AI Support Team")
-								.email("support@aisupport.com"))
-						.license(new License()
-								.name("Apache 2.0")
-								.url("https://www.apache.org/licenses/LICENSE-2.0")))
-				.servers(List.of(
-						new Server().url("http://localhost:8081").description("Development"),
-						new Server().url("http://localhost:8080").description("API Gateway")
-				))
-				.components(new Components()
-						.addSecuritySchemes(securitySchemeName, new SecurityScheme()
-								.name(securitySchemeName)
-								.type(SecurityScheme.Type.HTTP)
-								.scheme("bearer")
-								.bearerFormat("JWT")));
+			.info(new Info()
+				.title("Auth Service API")
+				.version("1.0.0")
+				.description("API for managing user authentication and authorization in the AI Support System")
+				.contact(new Contact()
+					.name("AI Support Team")
+					.email("support@aisupport.com"))
+				.license(new License()
+					.name("Apache 2.0")
+					.url("https://www.apache.org/licenses/LICENSE-2.0")))
+			.servers(List.of(
+				new Server().url("http://localhost:8081").description("Development"),
+				new Server().url("http://localhost:8080").description("API Gateway")
+			))
+			.components(new Components()
+				.addSecuritySchemes(securitySchemeName, new SecurityScheme()
+					.name(securitySchemeName)
+					.type(SecurityScheme.Type.HTTP)
+					.scheme("bearer")
+					.bearerFormat("JWT")));
 	}
 }

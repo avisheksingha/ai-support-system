@@ -38,5 +38,35 @@
     "name": "jwt.refresh-threshold-seconds",
     "type": "java.lang.String",
     "description": "A description for 'jwt.refresh-threshold-seconds'"
+  },
+  {
+    "name": "spring.cloud.gateway.discovery.locator.lower-case-service-id",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.cloud.gateway.discovery.locator.lower-case-service-id'"
+  },
+  {
+    "name": "api.services.auth.url",
+    "type": "java.lang.String",
+    "description": "A description for 'api.services.auth.url'"
+  },
+  {
+    "name": "api.services.ticket.url",
+    "type": "java.lang.String",
+    "description": "A description for 'api.services.ticket.url'"
+  },
+  {
+    "name": "api.services.ai-analysis.url",
+    "type": "java.lang.String",
+    "description": "A description for 'api.services.ai-analysis.url'"
+  },
+  {
+    "name": "api.services.routing.url",
+    "type": "java.lang.String",
+    "description": "A description for 'api.services.routing.url'"
+  },
+  {
+    "name": "api.services.rag.url",
+    "type": "java.lang.String",
+    "description": "A description for 'api.services.rag.url'"
   }
 ]}

@@ -25,7 +25,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 	
-	private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
+    private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 
     private final JwtUtil jwtUtil;
     private final long refreshThresholdSeconds;
@@ -49,6 +49,11 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             "/swagger-ui/**",
             "/swagger-ui.html",
             "/v3/api-docs/**",
+            "/auth-docs/**",
+            "/ticket-docs/**",
+            "/analysis-docs/**",
+            "/routing-docs/**",
+            "/rag-docs/**",
             "/actuator/health",
             "/actuator/info"
     );

@@ -13,5 +13,25 @@
     "name": "app.jwt.refresh-token-expiration-ms",
     "type": "java.lang.String",
     "description": "A description for 'app.jwt.refresh-token-expiration-ms'"
+  },
+  {
+    "name": "api.services.ticket.url",
+    "type": "java.lang.String",
+    "description": "A description for 'api.services.ticket.url'"
+  },
+  {
+    "name": "api.services.ai-analysis.url",
+    "type": "java.lang.String",
+    "description": "A description for 'api.services.ai-analysis.url'"
+  },
+  {
+    "name": "api.services.routing.url",
+    "type": "java.lang.String",
+    "description": "A description for 'api.services.routing.url'"
+  },
+  {
+    "name": "api.services.rag.url",
+    "type": "java.lang.String",
+    "description": "A description for 'api.services.rag.url'"
   }
 ]}

@@ -18,5 +18,10 @@
     "name": "api.services.rag.url",
     "type": "java.lang.String",
     "description": "A description for 'api.services.rag.url'"
+  },
+  {
+    "name": "api.services.auth.url",
+    "type": "java.lang.String",
+    "description": "A description for 'api.services.auth.url'"
   }
 ]}

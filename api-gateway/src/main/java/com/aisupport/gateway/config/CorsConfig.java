@@ -1,6 +1,5 @@
 package com.aisupport.gateway.config;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.context.annotation.Bean;
@@ -15,11 +14,23 @@ public class CorsConfig {
     @Bean
     CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfig = new CorsConfiguration();
-        corsConfig.setAllowedOrigins(List.of("*")); // NOSONAR: Wildcard CORS is intended for this development stage
+        
+        // Use allowedOriginPatterns instead of allowedOrigins when allowCredentials is true
+        corsConfig.setAllowedOriginPatterns(List.of("*")); // NOSONAR: Wildcard cors is intended for this development stage.
+        
+        // Allow standard HTTP methods
+        corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        
+        // Allow all headers (including Authorization and Content-Type)
+        corsConfig.setAllowedHeaders(List.of("*"));
+        
+        // Crucial: If you are passing Authorization headers for JWTs, this must be true
+        corsConfig.setAllowCredentials(true); 
+        
+        // Cache the preflight response for 1 hour
         corsConfig.setMaxAge(3600L);
-        corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        corsConfig.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
 
+        // Apply this CORS configuration to all Gateway routes
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfig);
 
