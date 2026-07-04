@@ -21,11 +21,12 @@ jobs:
         env:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         with:
           host: ${{ secrets.AWS_EC2_HOST }}
           username: ${{ secrets.AWS_EC2_USERNAME }}
           key: ${{ secrets.AWS_EC2_PRIVATE_KEY }}
-          envs: DB_PASSWORD,JWT_SECRET
+          envs: DB_PASSWORD,JWT_SECRET,GOOGLE_API_KEY
           script: |
             set -euo pipefail
 
@@ -72,6 +73,7 @@ jobs:
             echo "DB_USERNAME=postgres" > .env
             echo "DB_PASSWORD=$DB_PASSWORD" >> .env
             echo "JWT_SECRET=$JWT_SECRET" >> .env
+            echo "GOOGLE_API_KEY=$GOOGLE_API_KEY" >> .env
             
             # Copy to infra folder so docker-compose parser finds it for Postgres
             cp .env infra/.env
