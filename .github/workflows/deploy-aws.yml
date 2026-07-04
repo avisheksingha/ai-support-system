@@ -23,18 +23,45 @@ jobs:
           username: ${{ secrets.AWS_EC2_USERNAME }}
           key: ${{ secrets.AWS_EC2_PRIVATE_KEY }}
           script: |
-            # 1. Ensure project directory exists
+            set -euo pipefail
+
             mkdir -p ~/ai-support-system
             cd ~/ai-support-system
-            
-            # 2. Check if git is initialized, if not clone it
+
             if [ ! -d ".git" ]; then
               git clone https://github.com/${{ github.repository }}.git .
             fi
-            
-            # 3. Pull the latest code from the branch that triggered this workflow
+
             git fetch --all
             git reset --hard origin/${{ github.ref_name }}
-            
-            # 4. Spin up the containers using docker-compose
-            docker-compose -f infra/docker-compose.yml up -d --build
+
+            # Ensure docker is available
+            if ! command -v docker >/dev/null 2>&1; then
+              echo "Docker not found. Installing docker (Ubuntu/Debian apt-get)..."
+              sudo apt-get update
+              sudo apt-get install -y docker.io
+              sudo systemctl enable --now docker
+            fi
+
+            # Pick compose command: prefer 'docker compose' (v2), fallback to 'docker-compose'
+            COMPOSE_CMD=""
+            if docker compose version >/dev/null 2>&1; then
+              COMPOSE_CMD="docker compose"
+            elif command -v docker-compose >/dev/null 2>&1; then
+              COMPOSE_CMD="docker-compose"
+            else
+              echo "No compose found. Installing docker-compose binary..."
+              # try install compose plugin first (apt), then fall back to static binary
+              sudo apt-get update
+              sudo apt-get install -y docker-compose-plugin || true
+              if docker compose version >/dev/null 2>&1; then
+                COMPOSE_CMD="docker compose"
+              else
+                sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+                sudo chmod +x /usr/local/bin/docker-compose
+                COMPOSE_CMD="docker-compose"
+              fi
+            fi
+
+            echo "Using compose command: $COMPOSE_CMD"
+            sudo $COMPOSE_CMD -f infra/docker-compose.yml up -d --build
