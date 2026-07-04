@@ -64,4 +64,11 @@ jobs:
             fi
 
             echo "Using compose command: $COMPOSE_CMD"
+            
+            # Create the .env file securely from GitHub Secrets
+            echo "DB_USERNAME=\${{ secrets.DB_USERNAME }}" > .env
+            echo "DB_PASSWORD=\${{ secrets.DB_PASSWORD }}" >> .env
+            echo "JWT_SECRET=\${{ secrets.JWT_SECRET }}" >> .env
+            echo "GEMINI_API_KEY=\${{ secrets.GEMINI_API_KEY }}" >> .env
+            
             sudo $COMPOSE_CMD -f infra/docker-compose.yml up -d --build
