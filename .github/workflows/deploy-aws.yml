@@ -73,4 +73,7 @@ jobs:
             echo "DB_PASSWORD=$DB_PASSWORD" >> .env
             echo "JWT_SECRET=$JWT_SECRET" >> .env
             
+            # Copy to infra folder so docker-compose parser finds it for Postgres
+            cp .env infra/.env
+            
             sudo $COMPOSE_CMD -f infra/docker-compose.yml up -d --build
