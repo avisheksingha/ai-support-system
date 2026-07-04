@@ -66,9 +66,14 @@ jobs:
             echo "Using compose command: $COMPOSE_CMD"
             
             # Create the .env file securely from GitHub Secrets
-            echo "DB_USERNAME=\${{ secrets.DB_USERNAME }}" > .env
-            echo "DB_PASSWORD=\${{ secrets.DB_PASSWORD }}" >> .env
-            echo "JWT_SECRET=\${{ secrets.JWT_SECRET }}" >> .env
-            echo "GEMINI_API_KEY=\${{ secrets.GEMINI_API_KEY }}" >> .env
+            cat <<EOF > .env
+            DB_USERNAME=\${{ secrets.DB_USERNAME }}
+            DB_PASSWORD=\${{ secrets.DB_PASSWORD }}
+            GOOGLE_CLOUD_PROJECT=\${{ secrets.GOOGLE_CLOUD_PROJECT }}
+            GOOGLE_CLOUD_LOCATION=\${{ secrets.GOOGLE_CLOUD_LOCATION }}
+            GCP_PROJECT_ID=\${{ secrets.GCP_PROJECT_ID }}
+            GCP_LOCATION=\${{ secrets.GCP_LOCATION }}
+            JWT_SECRET=\${{ secrets.JWT_SECRET }}
+            EOF
             
             sudo $COMPOSE_CMD -f infra/docker-compose.yml up -d --build
