@@ -19,7 +19,7 @@ RUN mvn clean package -DskipTests \
   && cp "$JAR" /app/app.jar
 
 # Stage 2: Runtime
-FROM eclipse-temurin:21-jdk-alpine
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=builder /app/app.jar app.jar
 
