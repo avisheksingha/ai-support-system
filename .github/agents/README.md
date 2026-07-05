@@ -6,12 +6,12 @@ This directory contains service-specific agent guides aligned with the current c
 
 | Service | Agent | Port | Focus |
 |---------|-------|------|-------|
-| `api-gateway` | [API Gateway Agent](api-gateway-agent.md) | 8080 | Gateway routing + correlation id propagation |
-| `auth-service` | [Auth Service Agent](auth-service-agent.md) | 8081 | Authentication, JWT issuance, and user management |
-| `discovery-service` | [Discovery Service Agent](discovery-service-agent.md) | 8761 | Eureka registry and service discovery |
-| `ticket-service` | [Ticket Service Agent](ticket-service-agent.md) | 8082 | Ticket REST APIs, lifecycle, outbox, event consumers |
-| `ai-analysis-service` | [AI Analysis Agent](ai-analysis-agent.md) | 8083 | Kafka consume/analyze/publish + query APIs |
-| `routing-service` | [Routing Agent](routing-agent.md) | 8084 | Kafka consume, rule evaluation, outbox publish |
+| `api-gateway` | [API Gateway Agent](gateway-agent.md) | 8080 | Gateway routing + correlation id propagation |
+| `auth-service` | [Auth Service Agent](auth-agent.md) | 8081 | Authentication, JWT issuance, and user management |
+| `discovery-service` | [Discovery Service Agent](discovery-agent.md) | 8761 | Eureka registry and service discovery |
+| `ticket-service` | [Ticket Service Agent](ticket-agent.md) | 8082 | Ticket REST APIs, lifecycle, outbox, event consumers |
+| `ai-analysis-service` | [AI Analysis Agent](analysis-agent.md) | 8083 | Kafka consume/analyze/publish + query APIs |
+| `routing-service` | [Routing Agent](router-agent.md) | 8084 | Kafka consume, rule evaluation, outbox publish |
 | `rag-service` | [RAG Agent](rag-agent.md) | 8085 | Kafka consume, RAG generation, vector store, outbox publish |
 
 ## How to Use
@@ -25,7 +25,7 @@ This directory contains service-specific agent guides aligned with the current c
 
 - External traffic enters via `api-gateway`.
 - Service discovery is handled by `discovery-service` (Eureka).
-- `ticket-service` and `ai-analysis-service` expose REST controllers.
+- `auth-service`, `ticket-service`, and `ai-analysis-service` expose REST controllers.
 - `routing-service` and `rag-service` are currently event-driven (no public REST controllers).
 - Integration flow is outbox + Kafka topics:
   - `ticket-created`
@@ -35,13 +35,13 @@ This directory contains service-specific agent guides aligned with the current c
 
 ## Suggested Reading Order
 
-1. [Auth Service Agent](auth-service-agent.md)
-2. [Ticket Service Agent](ticket-service-agent.md)
-3. [AI Analysis Agent](ai-analysis-agent.md)
-4. [Routing Agent](routing-agent.md)
+1. [Auth Service Agent](auth-agent.md)
+2. [Ticket Service Agent](ticket-agent.md)
+3. [AI Analysis Agent](analysis-agent.md)
+4. [Routing Agent](router-agent.md)
 5. [RAG Agent](rag-agent.md)
-6. [API Gateway Agent](api-gateway-agent.md)
-7. [Discovery Service Agent](discovery-service-agent.md)
+6. [API Gateway Agent](gateway-agent.md)
+7. [Discovery Service Agent](discovery-agent.md)
 
 ## Related Docs
 
@@ -52,5 +52,5 @@ This directory contains service-specific agent guides aligned with the current c
 
 ---
 
-**Last Updated:** 2026-04-12
-**Status:** Aligned with current module structure and runtime behavior.
+**Last Updated:** 2026-07-05
+**Status:** Aligned with current module structure and symmetric 10-header schema.

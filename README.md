@@ -214,13 +214,13 @@ ai-support-system/
 ├── .github/
 │   ├── agents/                   # GitHub Copilot custom agents
 │   │   ├── README.md
-│   │   ├── discovery-service-agent.md
-│   │   ├── api-gateway-agent.md
-│   │   ├── ticket-service-agent.md
-│   │   ├── ai-analysis-agent.md
-│   │   ├── routing-agent.md
+│   │   ├── discovery-agent.md
+│   │   ├── gateway-agent.md
+│   │   ├── ticket-agent.md
+│   │   ├── analysis-agent.md
+│   │   ├── router-agent.md
 │   │   └── rag-agent.md
-│   │   └── auth-service-agent.md
+│   │   └── auth-agent.md
 │   ├── workflows/                # CI/CD workflow definitions
 │   ├── ISSUE_TEMPLATE/           # Bug/feature issue templates
 │   ├── copilot-instructions.md   # Repo-wide Copilot guidance

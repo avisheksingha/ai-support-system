@@ -34,7 +34,7 @@ mvn -pl rag-service -Dtest=RagServiceTest test
 - **Outbox:** `src/main/java/com/aisupport/rag/outbox/OutboxEventService.java`, `OutboxEventPublisher.java`
 - **RAG Config:** `src/main/java/com/aisupport/rag/config/RagConfig.java`, `ChatConfig.java`
 
-## Runtime Flow
+## Key Responsibilities & Flow
 
 1. Consume `ticket-analyzed` event.
 2. Build query text from intent/sentiment/urgency/keywords.
@@ -43,13 +43,25 @@ mvn -pl rag-service -Dtest=RagServiceTest test
 5. Persist generated response in `rag_responses`.
 6. Publish `TicketRagResponseEvent` via outbox.
 
-## Data Loading Notes
+## Current API Endpoints
 
-`DataLoaderRunner` behavior on startup:
-- Checks `KnowledgeArticleRepository.countEmbeddedArticles()`.
-- Skips load when already embedded.
-- Converts DB rows to `Document` and writes to vector store.
-- Marks `embedded=true` and persists.
+N/A
+
+## Database Snapshot
+
+### knowledge_articles
+- `id` (Long, PK)
+- `title`
+- `content` (TEXT)
+- `embedded` (boolean)
+
+### rag_responses
+- `id` (Long, PK)
+- `ticket_id`
+- `query` (TEXT)
+- `response` (TEXT)
+- `model`
+- `created_at`
 
 ## Common Tasks
 
@@ -76,22 +88,6 @@ WHERE event_type = 'TicketRagResponseEvent'
 ORDER BY created_at DESC;
 ```
 
-## Schema Snapshot (from entities)
-
-### knowledge_articles
-- `id` (Long, PK)
-- `title`
-- `content` (TEXT)
-- `embedded` (boolean)
-
-### rag_responses
-- `id` (Long, PK)
-- `ticket_id`
-- `query` (TEXT)
-- `response` (TEXT)
-- `model`
-- `created_at`
-
 ## Important Rules
 
 - Keep response generation RAG-grounded using advisor context.
@@ -99,7 +95,7 @@ ORDER BY created_at DESC;
 - Preserve correlation-id from consumer through logs/outbox.
 - Keep startup loader idempotent (skip if already embedded).
 
-## Environment Variables / Config Inputs
+## Environment Variables
 
 - `SPRING_PROFILES_ACTIVE`
 - `GCP_PROJECT_ID`, `GCP_LOCATION`, `GOOGLE_APPLICATION_CREDENTIALS`

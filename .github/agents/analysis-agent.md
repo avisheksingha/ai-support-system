@@ -40,6 +40,12 @@ http://localhost:8083/swagger-ui.html
 - **Entity:** `src/main/java/com/aisupport/analysis/entity/AnalysisResult.java`
 - **Outbox:** `src/main/java/com/aisupport/analysis/outbox/OutboxEventService.java`, `OutboxEventPublisher.java`
 
+## Key Responsibilities & Flow
+
+- Active provider selected by `chat.provider` (`gemini` default).
+- Gemini calls are guarded by `geminiRateLimiter` + `geminiCircuitBreaker`.
+- OpenAI provider is available through `OpenAiChatProvider` when enabled.
+
 ## Current API Endpoints
 
 - `GET /api/v1/analysis/ticket/{ticketId}`
@@ -49,11 +55,18 @@ http://localhost:8083/swagger-ui.html
 
 Note: analysis creation is event-driven via Kafka consumer, not a public `POST /api/v1/analysis` API.
 
-## AI Provider Notes
+## Database Snapshot
 
-- Active provider selected by `chat.provider` (`gemini` default).
-- Gemini calls are guarded by `geminiRateLimiter` + `geminiCircuitBreaker`.
-- OpenAI provider is available through `OpenAiChatProvider` when enabled.
+### analysis_results
+- `id` (Long, PK)
+- `version` (optimistic lock)
+- `ticket_id` (Long, unique)
+- `intent`, `sentiment`, `urgency`
+- `confidence_score` (BigDecimal)
+- `keywords` (TEXT[])
+- `suggested_category`
+- `raw_response`
+- `created_at`
 
 ## Common Tasks
 
@@ -72,19 +85,6 @@ curl "http://localhost:8083/api/v1/analysis?page=0&size=20"
 curl "http://localhost:8083/api/v1/analysis/intent/GENERAL"
 ```
 
-## Database Snapshot (from entity)
-
-### analysis_results
-- `id` (Long, PK)
-- `version` (optimistic lock)
-- `ticket_id` (Long, unique)
-- `intent`, `sentiment`, `urgency`
-- `confidence_score` (BigDecimal)
-- `keywords` (TEXT[])
-- `suggested_category`
-- `raw_response`
-- `created_at`
-
 ## Important Rules
 
 - Keep ingestion event-driven from `ticket-created`.
@@ -92,7 +92,7 @@ curl "http://localhost:8083/api/v1/analysis/intent/GENERAL"
 - Keep provider/model selection configurable through properties.
 - Preserve correlation-id headers into MDC in consumer flow.
 
-## Environment Variables / Config Inputs
+## Environment Variables
 
 - `SPRING_PROFILES_ACTIVE`
 - `GCP_PROJECT_ID`, `GCP_LOCATION`, `GOOGLE_APPLICATION_CREDENTIALS`

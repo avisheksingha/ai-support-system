@@ -36,13 +36,17 @@ http://localhost:8081/swagger-ui/index.html
 - **Repository:** `src/main/java/com/aisupport/auth/repository/UserRepository.java`
 - **Security Config:** `src/main/java/com/aisupport/auth/config/SecurityConfig.java`
 
+## Key Responsibilities & Flow
+
+None specified.
+
 ## Current API Endpoints
 
 - `POST /api/v1/auth/login`
 - `POST /api/v1/auth/register`
 - `POST /api/v1/auth/refresh`
 
-## Database Snapshot (from entity)
+## Database Snapshot
 
 ### users
 - `id` (Long, PK)
@@ -52,12 +56,20 @@ http://localhost:8081/swagger-ui/index.html
 - `roles` (Enum / String collection)
 - `created_at`, `updated_at`
 
+## Common Tasks
+
+None specified.
+
 ## Important Rules
 
 - Passwords MUST be hashed using `PasswordEncoder` before saving to the database.
 - Always use the shared `JwtUtil` (from `common-library`) for token generation to maintain consistency across services.
 - Protect endpoints with `SecurityConfig`.
 - Do NOT expose sensitive user details in API responses.
+
+## Environment Variables
+
+None specified.
 
 ## Related Services
 

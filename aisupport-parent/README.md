@@ -31,6 +31,7 @@ The parent POM manages the following modules:
 
 - `discovery-service`
 - `api-gateway` (orchestrated via root)
+- `auth-service`
 - `ticket-service`
 - `ai-analysis-service`
 - `routing-service`

@@ -40,6 +40,13 @@ http://localhost:8082/swagger-ui.html
 - **Outbox Publisher:** `src/main/java/com/aisupport/ticket/outbox/OutboxEventPublisher.java`
 - **Consumers:** `src/main/java/com/aisupport/ticket/consumer/TicketRoutedConsumer.java`, `TicketRagResponseConsumer.java`
 
+## Key Responsibilities & Flow
+
+Core statuses include:
+- `NEW`, `ANALYZING`, `ANALYZED`, `ASSIGNED`, `IN_PROGRESS`, `RESOLVED`, `CLOSED`
+
+Transition checks are enforced in `Ticket.transitionTo(...)`.
+
 ## Current API Endpoints
 
 - `POST /api/v1/tickets`
@@ -50,12 +57,24 @@ http://localhost:8082/swagger-ui.html
 - `PATCH /api/v1/tickets/{ticketNumber}/assign?assignedTo=<name>&slaHours=<optional>`
 - `PATCH /api/v1/tickets/{ticketNumber}/priority?priority=<PRIORITY>&slaHours=<optional>`
 
-## State Machine Notes
+## Database Snapshot
 
-Core statuses include:
-- `NEW`, `ANALYZING`, `ANALYZED`, `ASSIGNED`, `IN_PROGRESS`, `RESOLVED`, `CLOSED`
+### tickets
+- `id` (Long, PK)
+- `version` (optimistic lock)
+- `ticket_number`, `customer_email`, `customer_name`
+- `subject`, `message`
+- `status`, `priority`, `assigned_to`
+- `intent`, `sentiment`, `urgency`, `sla_hours`
+- `rag_response`, `rag_generated_at`
+- `created_at`, `updated_at`
 
-Transition checks are enforced in `Ticket.transitionTo(...)`.
+### outbox_events
+- `id` (String UUID)
+- `aggregate_type`, `aggregate_id`, `event_type`, `payload`
+- `correlation_id`
+- `status` (`PENDING`, `SENT`, `FAILED`, `DEAD`)
+- `retry_count`, `created_at`, `processed_at`
 
 ## Common Tasks
 
@@ -85,31 +104,16 @@ curl -X PATCH "http://localhost:8082/api/v1/tickets/TICK-001/assign?assignedTo=a
 curl -X PATCH "http://localhost:8082/api/v1/tickets/TICK-001/priority?priority=HIGH"
 ```
 
-## Database Snapshot (from entity)
-
-### tickets
-- `id` (Long, PK)
-- `version` (optimistic lock)
-- `ticket_number`, `customer_email`, `customer_name`
-- `subject`, `message`
-- `status`, `priority`, `assigned_to`
-- `intent`, `sentiment`, `urgency`, `sla_hours`
-- `rag_response`, `rag_generated_at`
-- `created_at`, `updated_at`
-
-### outbox_events
-- `id` (String UUID)
-- `aggregate_type`, `aggregate_id`, `event_type`, `payload`
-- `correlation_id`
-- `status` (`PENDING`, `SENT`, `FAILED`, `DEAD`)
-- `retry_count`, `created_at`, `processed_at`
-
 ## Important Rules
 
 - Use outbox for event publication.
 - Keep state transitions valid through domain transition checks.
 - Keep consumers focused on event handling + service delegation.
 - Preserve correlation id in Kafka and MDC flows.
+
+## Environment Variables
+
+None specified.
 
 ## Related Services
 

@@ -27,23 +27,22 @@ http://localhost:8761
 
 - **Main App:** `src/main/java/com/aisupport/eureka/EurekaDiscoveryServiceApplication.java`
 - **Main Config:** `src/main/resources/application.properties`
-- **GCP Profile:** `src/main/resources/application-gcp.properties`
+- **K8s Profile:** `src/main/resources/application-k8s.properties`
 
-## Key Responsibilities
+## Key Responsibilities & Flow
 
 1. Accept service registrations from gateway and core services.
 2. Serve registry lookups for `lb://SERVICE-NAME` routing.
 3. Track availability through Eureka heartbeat/eviction behavior.
 4. Provide a simple dashboard for local diagnostics.
 
-## Current Config Notes
+## Current API Endpoints
 
-From `application.properties`:
+None specified.
 
-- `eureka.client.register-with-eureka=false`
-- `eureka.client.fetch-registry=false`
-- `eureka.server.enable-self-preservation=true`
-- `eureka.server.eviction-interval-timer-in-ms=5000`
+## Database Snapshot
+
+N/A
 
 ## Common Tasks
 
@@ -66,6 +65,15 @@ curl "http://localhost:8761/eureka/apps/TICKET-SERVICE"
 - Keep discovery service lightweight and infra-focused.
 - Do not add business/domain logic here.
 - Keep service names consistent with gateway route URIs.
+
+## Environment Variables
+
+From `application.properties`:
+
+- `eureka.client.register-with-eureka=false`
+- `eureka.client.fetch-registry=false`
+- `eureka.server.enable-self-preservation=true`
+- `eureka.server.eviction-interval-timer-in-ms=5000`
 
 ## Related Services
 

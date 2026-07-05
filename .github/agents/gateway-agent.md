@@ -29,9 +29,9 @@ mvn -pl api-gateway test
 - **Correlation Filter:** `src/main/java/com/aisupport/gateway/filter/CorrelationIdFilter.java`
 - **Logging Filter:** `src/main/java/com/aisupport/gateway/filter/LoggingFilter.java`
 - **Gateway Properties:** `src/main/resources/application.properties`
-- **Profile Properties:** `src/main/resources/application-local.properties`, `application-docker.properties`, `application-gcp.properties`
+- **Profile Properties:** `src/main/resources/application-local.properties`, `application-docker.properties`, `application-k8s.properties`
 
-## Current Route Configuration
+## Key Responsibilities & Flow
 
 Configured in `application.properties`:
 
@@ -40,12 +40,18 @@ Configured in `application.properties`:
 - `/api/v1/routing/**` -> `lb://ROUTING-SERVICE`
 - `/api/v1/rag/**` -> `lb://RAG-SERVICE`
 
-## Key Responsibilities
-
 1. Route requests to downstream services using Eureka + `lb://` URIs.
 2. Ensure `X-Correlation-Id` is propagated for tracing.
 3. Keep gateway focused on routing/filters only (no business logic).
 4. Provide a stable external entry point for clients.
+
+## Current API Endpoints
+
+None specified.
+
+## Database Snapshot
+
+N/A
 
 ## Common Tasks
 

@@ -8,7 +8,7 @@ This directory contains the infrastructure-only Docker Compose setup for the AI 
 - **Kafka / Zookeeper**: Event streaming backbone for asynchronous service communication.
 
 > [!NOTE]
-> This compose file is intentionally **infra-only**. Application services (`discovery-service`, `api-gateway`, `ticket-service`, `ai-analysis-service`, `routing-service`, `rag-service`) are started separately via Eclipse or Maven.
+> This compose file is intentionally **infra-only**. Application services (`discovery-service`, `api-gateway`, `auth-service`, `ticket-service`, `ai-analysis-service`, `routing-service`, `rag-service`) are started separately via Eclipse or Maven.
 
 ## Files
 

@@ -35,7 +35,7 @@ mvn -pl routing-service -Dtest=RoutingServiceTest,RuleEvaluationServiceTest test
 - **History Repo:** `src/main/java/com/aisupport/routing/repository/RuleExecutionHistoryRepository.java`
 - **Outbox:** `src/main/java/com/aisupport/routing/outbox/OutboxEventService.java`, `OutboxEventPublisher.java`
 
-## Runtime Flow
+## Key Responsibilities & Flow
 
 1. Consume `ticket-analyzed` event.
 2. Load active rules ordered by priority.
@@ -44,12 +44,23 @@ mvn -pl routing-service -Dtest=RoutingServiceTest,RuleEvaluationServiceTest test
 5. Build routed result (team, priority, SLA fallback values when no match).
 6. Publish `TicketRoutedEvent` via outbox.
 
-## Current Defaults in Code
+## Current API Endpoints
 
-If no matching rule:
-- `team = general-support`
-- `priority = MEDIUM`
-- `slaHours = 24`
+N/A
+
+## Database Snapshot
+
+### routing_rules
+- `id` (Long, PK)
+- `rule_name`, `description`
+- `priority`, `active`
+- `intent_pattern`, `sentiment_pattern`, `urgency_pattern`, `keyword_patterns` (TEXT[])
+- `assign_to_team`, `priority_override`, `sla_hours`
+- `created_at`, `updated_at`, `created_by`, `updated_by`
+
+### rule_execution_history
+- `id` (Long, PK)
+- `rule_id`, `ticket_id`, `matched`, `execution_time_ns`, `executed_at`
 
 ## Common Tasks
 
@@ -76,26 +87,16 @@ WHERE event_type = 'TicketRoutedEvent'
 ORDER BY created_at DESC;
 ```
 
-## Schema Snapshot (from entities)
-
-### routing_rules
-- `id` (Long, PK)
-- `rule_name`, `description`
-- `priority`, `active`
-- `intent_pattern`, `sentiment_pattern`, `urgency_pattern`, `keyword_patterns` (TEXT[])
-- `assign_to_team`, `priority_override`, `sla_hours`
-- `created_at`, `updated_at`, `created_by`, `updated_by`
-
-### rule_execution_history
-- `id` (Long, PK)
-- `rule_id`, `ticket_id`, `matched`, `execution_time_ns`, `executed_at`
-
 ## Important Rules
 
 - Keep routing logic data-driven via DB rules.
 - Preserve priority ordering for deterministic evaluation.
 - Keep outbox publication for integration events.
 - Preserve correlation-id header/MDC propagation in consumer flow.
+
+## Environment Variables
+
+None specified.
 
 ## Related Services
 

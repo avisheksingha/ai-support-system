@@ -9,6 +9,7 @@ This service acts as the central registry where all microservices in the platfor
 ### Registered Services
 
 - `api-gateway`
+- `auth-service`
 - `ticket-service`
 - `ai-analysis-service`
 - `routing-service`
