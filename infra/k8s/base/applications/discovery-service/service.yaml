@@ -1,0 +1,19 @@
+﻿# Docker Compose -> Kubernetes mapping:
+# Maps to: ports: - "8761:8761"
+# Exposes Eureka to other Pods within the cluster.
+#
+# EDUCATIONAL NOTE: In Phase 1, we are not using an Ingress because 
+# API Gateway will eventually handle external routing. For now, this is
+# internal only.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: discovery-service
+spec:
+  ports:
+    - port: 8761
+      targetPort: 8761
+      name: http
+  selector:
+    app: discovery-service

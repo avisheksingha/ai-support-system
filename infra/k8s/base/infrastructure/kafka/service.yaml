@@ -1,0 +1,23 @@
+﻿# Docker Compose -> Kubernetes mapping:
+# Maps to ports: - "9092:9092".
+#
+# EDUCATIONAL NOTE: Why does Kafka use a "Headless Service" (clusterIP: None)?
+# In Kubernetes, a standard Service provides load balancing across multiple Pods.
+# However, Kafka brokers (and ZooKeeper nodes) are stateful and need stable network identities.
+# Clients must connect to a *specific* broker, not a random one behind a load balancer.
+# A Headless Service skips the load balancer and instead creates DNS records that point directly 
+# to the individual Pod IPs (e.g., kafka-0.kafka.ai-support.svc.cluster.local), allowing
+# Kafka to maintain its distributed clustering architecture correctly.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka
+spec:
+  ports:
+    - port: 9092
+      name: internal
+      targetPort: 9092
+  selector:
+    app: kafka
+  clusterIP: None

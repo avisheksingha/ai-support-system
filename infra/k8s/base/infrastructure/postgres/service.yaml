@@ -1,0 +1,15 @@
+﻿# Docker Compose -> Kubernetes mapping:
+# Maps to: ports: - "5433:5433" (but we use the standard 5432 internally in K8s)
+# Exposes PostgreSQL to other Pods within the cluster.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+  selector:
+    app: postgres
+  clusterIP: None # Headless service for StatefulSet

@@ -1,0 +1,15 @@
+﻿# Docker Compose -> Kubernetes mapping:
+# Maps to ports: - "2181:2181".
+# Exposes Zookeeper internally to Kafka Pods.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper
+spec:
+  ports:
+    - port: 2181
+      targetPort: 2181
+  selector:
+    app: zookeeper
+  clusterIP: None # Headless service for StatefulSet stable network identity
