@@ -23,7 +23,7 @@ The Routing Service currently operates entirely asynchronously via Kafka events.
 ## Configuration
 
 | Property | Value | Description |
-|----------|-------|-------------|
+| ---------- | ------- | ------------- |
 | Server Port | 8084 | Port where service runs |
 | Service Discovery | Enabled | Registers with Eureka |
 

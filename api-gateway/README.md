@@ -13,7 +13,7 @@ The API Gateway is the central entry point for all external client requests to t
 ## Configuration
 
 | Property | Value | Description |
-|----------|-------|-------------|
+| ---------- | ------- | ------------- |
 | Server Port | 8080 | Port where gateway runs |
 | Service Discovery | Enabled | Registers with and polls Eureka |
 
