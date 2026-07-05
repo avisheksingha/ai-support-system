@@ -117,12 +117,12 @@ Each service supports profile-driven startup:
 
 - `local`: IDE/local development
 - `docker`: Docker network runtime
-- `gcp`: cloud runtime using explicit service URLs
+- `k8s`: Kubernetes runtime using explicit service URLs
 
 Discovery strategy:
 
 - `local`/`docker`: Eureka-based service discovery
-- `gcp`: Eureka clients disabled, environment-based service URLs
+- `k8s`: Eureka clients disabled, environment-based service URLs
 
 ## AI-Assisted Development
 
