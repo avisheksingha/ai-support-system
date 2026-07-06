@@ -1,0 +1,62 @@
+# Docker Compose -> Kubernetes mapping:
+# Maps to:
+#   services: postgres: image: ankane/pgvector:latest
+#   environment: POSTGRES_USER, POSTGRES_PASSWORD
+#   restart: always
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      # Note: We are intentionally using the default ServiceAccount for Phase 1.
+      # Dedicated ServiceAccounts and RBAC will be introduced later.
+      containers:
+        - name: postgres
+          image: ankane/pgvector:latest
+          ports:
+            - containerPort: 5432
+              name: postgres
+          env:
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ai-support-secrets
+                  key: DB_PASSWORD
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+            - name: init-script
+              mountPath: /docker-entrypoint-initdb.d/init.sql
+              subPath: init.sql
+      volumes:
+        - name: init-script
+          configMap:
+            name: postgres-init-config
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 2Gi

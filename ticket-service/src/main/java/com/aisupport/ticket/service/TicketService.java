@@ -13,13 +13,13 @@ import com.aisupport.common.enums.TicketStatus;
 import com.aisupport.common.event.TicketCreatedEvent;
 import com.aisupport.common.event.TicketRagResponseEvent;
 import com.aisupport.common.event.TicketRoutedEvent;
+import com.aisupport.ticket.outbox.OutboxEventService;
 import com.aisupport.ticket.dto.TicketRequest;
 import com.aisupport.ticket.dto.TicketResponse;
 import com.aisupport.ticket.entity.Ticket;
 import com.aisupport.ticket.exception.InvalidTicketInputException;
 import com.aisupport.ticket.exception.TicketNotFoundException;
 import com.aisupport.ticket.mapper.TicketMapper;
-import com.aisupport.ticket.outbox.OutboxEventService;
 import com.aisupport.ticket.repository.TicketRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -43,16 +43,25 @@ public class TicketService {
      * Creates a new ticket and stores a corresponding {@code TicketCreatedEvent}
      * in the outbox for asynchronous downstream processing.
      *
+     * @param userId optional user ID of the creator
      * @param request ticket creation request payload
      * @return persisted ticket response
      */
     @Transactional
-    public TicketResponse createTicket(TicketRequest request) {
+    public TicketResponse createTicket(String userId, TicketRequest request) {
 
         Ticket ticket = ticketMapper.toEntity(request);
         ticket.setTicketNumber(generateTicketNumber());
         ticket.setStatus(TicketStatus.NEW);
         ticket.setPriority(TicketPriority.MEDIUM);
+        
+        if (userId != null && !userId.isBlank()) {
+            try {
+                ticket.setCustomerId(Long.valueOf(userId));
+            } catch (NumberFormatException e) {
+                log.warn("Invalid user ID format: {}", userId);
+            }
+        }
 
         ticket = ticketRepository.save(ticket);
 

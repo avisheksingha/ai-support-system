@@ -24,7 +24,7 @@ Microservice responsible for managing support tickets throughout their lifecycle
 ## Configuration
 
 | Property | Value | Description |
-|----------|-------|-------------|
+| ---------- | ------- | ------------- |
 | Server Port | 8082 | Port where service runs |
 | Database | PostgreSQL | `ticket_db` |
 | Service Discovery | Enabled | Registers with Eureka |

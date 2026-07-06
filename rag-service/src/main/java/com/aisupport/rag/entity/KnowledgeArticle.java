@@ -29,8 +29,8 @@ public class KnowledgeArticle {
 
     @Column(columnDefinition = "TEXT")
     private String content;
-    
-    @Column(nullable = false)
+
     @Builder.Default
+    @Column(nullable = false)
     private boolean embedded = false;
 }

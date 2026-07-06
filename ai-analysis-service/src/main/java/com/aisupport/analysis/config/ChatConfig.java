@@ -1,33 +1,31 @@
 package com.aisupport.analysis.config;
 
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.google.genai.GoogleGenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatModel;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 
 import com.aisupport.analysis.chat.ChatProvider;
-import com.aisupport.analysis.chat.GeminiChatProvider;
+import com.aisupport.analysis.chat.GoogleGenAiChatProvider;
 import com.aisupport.analysis.chat.OpenAiChatProvider;
 
 /**
  * ChatConfig centralizes the configuration of AI providers and their ChatClient beans.
- * It uses Spring's @ConditionalOnProperty to switch between Gemini and OpenAI implementations
+ * It uses Spring's @ConditionalOnProperty to switch between Google GenAI and OpenAI implementations
  * based on the "chat.provider" property, allowing for flexible provider selection without code changes.
  */
 @Configuration
 public class ChatConfig {
 
 	/**
-	 * Creates Gemini ChatClient when Gemini is the active provider.
+	 * Creates Google GenAI ChatClient when Google GenAI is the active provider.
 	 */
     @Bean
-    @ConditionalOnProperty(name = "chat.provider", havingValue = "gemini", matchIfMissing = true)
-    ChatClient geminiChatClient(ChatModel geminiChatModel) {
-        return ChatClient.create(geminiChatModel);
+    @ConditionalOnProperty(name = "chat.provider", havingValue = "google-genai", matchIfMissing = true)
+    ChatClient googleGenAiChatClient(GoogleGenAiChatModel googleGenAiChatModel) {
+        return ChatClient.create(googleGenAiChatModel);
     }
 
     /**
@@ -40,22 +38,21 @@ public class ChatConfig {
     }
 
     /**
-	 * Activates GeminiChatProvider as the primary ChatProvider when chat.provider=gemini or if the property is missing.
+	 * Creates the Google GenAI ChatProvider when chat.provider=google-genai
+	 * (or when the property is not specified).
 	 */
     @Bean
-    @Primary
-    @ConditionalOnProperty(name = "chat.provider", havingValue = "gemini", matchIfMissing = true)
-    ChatProvider geminiChatProvider(@Qualifier("geminiChatClient") ChatClient chatClient) {
-        return new GeminiChatProvider(chatClient);
+    @ConditionalOnProperty(name = "chat.provider", havingValue = "google-genai", matchIfMissing = true)
+    ChatProvider googleGenAiChatProvider(ChatClient googleGenAiChatClient) {
+        return new GoogleGenAiChatProvider(googleGenAiChatClient);
     }
 
     /**
-     * Activates OpenAiChatProvider as the primary ChatProvider when chat.provider=openai.
+     * Creates the OpenAI ChatProvider when chat.provider=openai.
      */
     @Bean
-    @Primary
     @ConditionalOnProperty(name = "chat.provider", havingValue = "openai")
-    ChatProvider openAiChatProvider(@Qualifier("openAiChatClient") ChatClient chatClient) {
-        return new OpenAiChatProvider(chatClient);
+    ChatProvider openAiChatProvider(ChatClient openAiChatClient) {
+        return new OpenAiChatProvider(openAiChatClient);
     }
 }

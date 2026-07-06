@@ -13,5 +13,10 @@
     "name": "api.services.routing.url",
     "type": "java.lang.String",
     "description": "A description for 'api.services.routing.url'"
+  },
+  {
+    "name": "api.services.auth.url",
+    "type": "java.lang.String",
+    "description": "A description for 'api.services.auth.url'"
   }
 ]}

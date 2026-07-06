@@ -29,6 +29,12 @@ From repo root:
 
 ## 2. Run Core Controller/Service Test Pack
 
+### Auth Service
+
+```powershell
+.\auth-service\mvnw.cmd -B -ntp -f auth-service\pom.xml "-Dtest=AuthControllerTest,AdminControllerTest,AuthServiceTest,UserManagementServiceTest" test
+```
+
 ### Ticket Service
 
 ```powershell

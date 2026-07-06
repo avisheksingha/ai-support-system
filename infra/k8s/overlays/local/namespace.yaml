@@ -1,0 +1,8 @@
+﻿# Docker Compose -> Kubernetes mapping:
+# No direct equivalent. Namespaces provide isolation within a Kubernetes cluster,
+# somewhat analogous to a Docker Compose project name but with stronger isolation.
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ai-support

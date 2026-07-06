@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-	<!-- Parent POM Reference -->
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- ========================================================== -->
+    <!-- Parent -->
+    <!-- ========================================================== -->
     <parent>
         <groupId>com.aisupport</groupId>
         <artifactId>aisupport-parent</artifactId>
@@ -11,47 +15,91 @@
         <relativePath>../aisupport-parent</relativePath>
     </parent>
 
-	<!-- This Module's Identity -->
-	<artifactId>api-gateway</artifactId>
-	<name>API Gateway</name>
-	<description>A microservice for entry point for external clients to access support system APIs</description>
-	
-	<!-- Dependencies specific to this module -->
-	<dependencies>
-		<!-- Spring Cloud Gateway for API routing (Reactive WebFlux version) -->
-		<dependency>
-	      	<groupId>org.springframework.cloud</groupId>
-	      	<artifactId>spring-cloud-starter-gateway-server-webflux</artifactId>
-    	</dependency>
+    <!-- ========================================================== -->
+    <!-- Module -->
+    <!-- ========================================================== -->
+    <artifactId>api-gateway</artifactId>
+    <name>API Gateway</name>
+    <description>
+        Reactive API Gateway for AI Support System
+    </description>
 
-	    <!-- Eureka Client for Service Discovery -->
-	    <dependency>
-	        <groupId>org.springframework.cloud</groupId>
-	        <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
-	    </dependency>
-	
-	    <!-- LoadBalancer for routing to downstream services -->
-	    <dependency>
-	        <groupId>org.springframework.cloud</groupId>
-	        <artifactId>spring-cloud-starter-loadbalancer</artifactId>
-	    </dependency>
-	
+    <!-- ========================================================== -->
+    <!-- Dependencies -->
+    <!-- ========================================================== -->
+    <dependencies>
+
+        <!-- Spring Cloud Gateway (WebFlux) -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-gateway-server-webflux</artifactId>
+        </dependency>
+
+        <!-- Eureka Client -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+
+        <!-- Client-side Load Balancer -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+        </dependency>
+
+        <!-- Monitoring -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- OpenAPI (WebFlux) -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+        </dependency>
+
 	    <!-- Shared Common Library -->
 	    <dependency>
 	        <groupId>com.aisupport</groupId>
 	        <artifactId>common-library</artifactId>
-	        <version>0.0.1-SNAPSHOT</version>
 	    </dependency>
-    			
-	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
+	    <!-- Lombok -->
+	    <dependency>
+	        <groupId>org.projectlombok</groupId>
+	        <artifactId>lombok</artifactId>
+	        <scope>provided</scope>
+	    </dependency>
 
+        <!-- Development -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- ================= Tests ================= -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <!-- ========================================================== -->
+    <!-- Build -->
+    <!-- ========================================================== -->
+    <build>
+        <plugins>
+
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+        </plugins>
+    </build>
 </project>

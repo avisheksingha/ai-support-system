@@ -13,7 +13,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Schema(description = "Request payload for creating a support ticket", requiredProperties = {"customerEmail", "subject", "message"})
+@Schema(
+    description = "Request payload for creating a support ticket", 
+    requiredProperties = {"customerEmail", "subject", "message"},
+    example = "{\n  \"customerEmail\": \"user@example.com\",\n  \"customerName\": \"Jane Doe\",\n  \"subject\": \"Cannot access my account\",\n  \"message\": \"I am unable to log in with my credentials.\"\n}"
+)
 public class TicketRequest {
     
     @Schema(description = "Customer's email address", example = "user@example.com")

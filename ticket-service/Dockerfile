@@ -10,7 +10,7 @@ COPY common-library ./common-library
 COPY ticket-service ./ticket-service
 
 # 1) Build and install parent
-RUN mvn -f aisupport-parent/pom.xml clean install -DskipTests
+RUN mvn -N -f aisupport-parent/pom.xml clean install -DskipTests
 
 # 2) Build & install common-library into local repo so service can resolve it
 RUN mvn -f common-library/pom.xml clean install -DskipTests
@@ -23,7 +23,7 @@ RUN mvn clean package -DskipTests \
   && cp "$JAR" /app/app.jar
 
 # Stage 2: Runtime
-FROM eclipse-temurin:21-jdk-alpine
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 # Copy the jar from the builder stage

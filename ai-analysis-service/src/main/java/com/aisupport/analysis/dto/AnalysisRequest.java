@@ -12,7 +12,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Schema(description = "Request payload for AI analysis", requiredProperties = {"ticketId", "subject", "message"})
+@Schema(
+    description = "Request payload for AI analysis", 
+    requiredProperties = {"ticketId", "subject", "message"},
+    example = "{\n  \"ticketId\": 1,\n  \"subject\": \"Cannot access my account\",\n  \"message\": \"I am unable to log in with my credentials.\"\n}"
+)
 public class AnalysisRequest {
     
     @NotNull(message = "Ticket ID is required")

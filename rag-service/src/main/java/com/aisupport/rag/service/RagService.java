@@ -23,9 +23,9 @@ import lombok.extern.slf4j.Slf4j;
  * This service uses Spring AI's ChatClient with a QuestionAnswerAdvisor to:
  * 1. Accept a natural-language query (built from ticket analysis fields)
  * 2. Retrieve relevant knowledge articles from PGVector via similarity search
- * 3. Augment the prompt with the retrieved context
- * 4. Generate a grounded response using Gemini
- * 5. Persist the response to rag_responses table
+ * 3. Retrieve relevant documents using VectorStore (PGVector)
+ * 4. Generate a grounded response using Google GenAI
+ * 5. Publish a Kafka event with the response to rag_responses table
  * 6. Publish TicketRagResponseEvent via outbox
  */
 @Service
@@ -40,7 +40,7 @@ public class RagService {
 	private final RagResponseRepository ragResponseRepository;
 	private final OutboxEventService outboxEventService;
 	
-	@Value("${spring.ai.google.genai.chat.options.model}")
+	@Value("${spring.ai.google.genai.chat.model}")
 	private String chatModel;
 
 	/**
@@ -70,10 +70,10 @@ public class RagService {
 			"""
 			.formatted(NO_KNOWLEDGE_FOUND);
 		
-		// Gemini call — can fail due to network/quota/model issues
+		// Google GenAI call — can fail due to network/quota/model issues
 		try {
 		
-			// RAG call — similarity search + Gemini generation
+			// RAG call — similarity search + Google GenAI generation
 	        response = chatClient.prompt()
 				.system(systemPrompt)
 	            .user(query)
@@ -81,7 +81,7 @@ public class RagService {
 	            .call()
 	            .content();
 		} catch (Exception e) {
-			log.error("Gemini RAG generation failed for ticketId={}", ticketId, e);
+			log.error("Google GenAI RAG generation failed for ticketId={}", ticketId, e);
 	        throw new RagGenerationException(
 	                "RAG generation failed for ticketId: " + ticketId, e);
 	    } 

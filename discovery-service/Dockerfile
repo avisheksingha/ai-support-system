@@ -9,7 +9,7 @@ COPY aisupport-parent ./aisupport-parent
 COPY discovery-service ./discovery-service
 
 # Install parent POM for clean module build
-RUN mvn -f aisupport-parent/pom.xml clean install -DskipTests
+RUN mvn -N -f aisupport-parent/pom.xml clean install -DskipTests
 
 # Build the service and copy the repackaged jar to a known location
 WORKDIR /app/discovery-service
@@ -19,7 +19,7 @@ RUN mvn clean package -DskipTests \
   && cp "$JAR" /app/app.jar
 
 # Stage 2: Runtime
-FROM eclipse-temurin:21-jdk-alpine
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=builder /app/app.jar app.jar
 

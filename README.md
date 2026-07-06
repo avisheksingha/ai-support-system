@@ -9,6 +9,7 @@
 [![Architecture](https://img.shields.io/badge/Architecture-Microservices-orange)](OVERVIEW.md)
 [![GitHub Copilot](https://img.shields.io/badge/GitHub%20Copilot-Ready-0F66D9?logo=github&logoColor=white)](.github/copilot-instructions.md)
 [![CI/CD](https://github.com/avisheksingha/ai-support-system/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/avisheksingha/ai-support-system/actions/workflows/ci-cd.yml)
+[![CodeQL](https://github.com/avisheksingha/ai-support-system/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/avisheksingha/ai-support-system/actions/workflows/github-code-scanning/codeql)
 
 ## Business Problem
 
@@ -30,7 +31,7 @@ The platform combines AI-powered sentiment analysis, urgency detection, intellig
 
 Key capabilities include:
 
-- AI-driven sentiment and urgency analysis using Vertex AI.
+- AI-driven sentiment and urgency analysis using Google GenAI (Gemini/Vertex AI).
 - Event-driven asynchronous processing using Apache Kafka.
 - Intelligent ticket routing based on business rules and AI insights.
 - Semantic search and contextual knowledge retrieval using PostgreSQL pgvector.
@@ -56,8 +57,9 @@ The AI Support System is a leading-edge, microservices-based ticket management p
 
 - **[discovery-service](discovery-service/README.md)**: Eureka Service Discovery Server.
 - **[api-gateway](api-gateway/README.md)**: Centralized entry point and request routing.
+- **[auth-service](auth-service/README.md)**: Authentication, authorization, and JWT management.
 - **[ticket-service](ticket-service/README.md)**: Core ticket management and lifecycle operations.
-- **[ai-analysis-service](ai-analysis-service/README.md)**: AI-powered analysis for sentiment and urgency (Vertex AI Gemini active, OpenAI optional).
+- **[ai-analysis-service](ai-analysis-service/README.md)**: AI-powered analysis for sentiment and urgency (Google GenAI active, OpenAI optional).
 - **[routing-service](routing-service/README.md)**: Orchestrator for intelligent ticket assignment based on analysis.
 - **[rag-service](rag-service/README.md)**: Vector embedding and RAG capabilities for automated contextual responses.
 - **[common-library](common-library/README.md)**: Shared models, DTOs, events, and utilities.
@@ -90,9 +92,9 @@ Ticket processing involves multiple asynchronous operations such as AI analysis,
 
 Traditional relational data is stored in PostgreSQL while pgvector enables semantic similarity search for Retrieval-Augmented Generation (RAG) workflows. This combination allows structured transactional storage and AI-powered contextual retrieval within the same database platform.
 
-### Why Vertex AI?
+### Why Google GenAI (Gemini / Vertex AI)?
 
-Vertex AI provides managed access to modern foundation models for sentiment analysis, urgency detection, and intent classification while reducing operational overhead associated with hosting and maintaining custom AI models.
+Google GenAI (via Vertex AI or Gemini API) provides managed access to modern foundation models for sentiment analysis, urgency detection, and intent classification while reducing operational overhead associated with hosting and maintaining custom AI models.
 
 ### Why Spring Boot and Spring Cloud?
 
@@ -116,12 +118,12 @@ Each service supports profile-driven startup:
 
 - `local`: IDE/local development
 - `docker`: Docker network runtime
-- `gcp`: cloud runtime using explicit service URLs
+- `k8s`: Kubernetes runtime using explicit service URLs
 
 Discovery strategy:
 
 - `local`/`docker`: Eureka-based service discovery
-- `gcp`: Eureka clients disabled, environment-based service URLs
+- `k8s`: Eureka clients disabled, environment-based service URLs
 
 ## AI-Assisted Development
 
@@ -133,57 +135,78 @@ Engineering policy:
 - Build/test checks must pass before PR approval.
 - Security-sensitive decisions (credentials, logging, deployment config) are manually reviewed by the maintainer.
 
-## Getting Started
+## Local Development
 
-### 0. Configure Environment Variables
+### 1. Configure Environment Variables
 
-Create a local `.env` file from the example and set your real values:
+Create a `.env` file in the project root by copying `.env.example` and updating the required values.
 
 ```bash
 cp .env.example .env
 ```
 
-PowerShell alternative:
+> **Note:** Windows users can manually copy `.env.example` to `.env`.
 
-```powershell
-Copy-Item .env.example .env
-```
+---
 
-### 1. Start Infrastructure
+### 2. Start Infrastructure
 
-Start the underlying database and messaging infrastructure (infra-only compose):
+Start the local infrastructure required by the microservices.
 
-```bash
-docker compose -f infra/docker-compose.yml up -d
-```
+This launches:
 
-### 2. Build All Services
+- PostgreSQL + PGVector
+- Apache Kafka
+- Apache ZooKeeper
 
 ```bash
-mvn -f aisupport-parent/pom.xml clean install
+docker compose --env-file .env -f infra/docker-compose.yml up -d
 ```
 
-### 3. Run Services (In Order)
+Verify the containers are running:
 
-1. **Discovery Service**:
+```bash
+docker ps
+```
 
-   ```bash
-   cd discovery-service
-   mvn spring-boot:run
-   ```
+---
 
-2. **API Gateway**:
+### 3. Stop Infrastructure
 
-   ```bash
-   cd api-gateway
-   mvn spring-boot:run
-   ```
+Stop all infrastructure containers while preserving database data.
 
-3. **Core Services** (Start in parallel or sequentially):
-   - Ticket Service: `cd ticket-service && mvn spring-boot:run`
-   - AI Analysis Service: `cd ai-analysis-service && mvn spring-boot:run`
-   - Routing Service: `cd routing-service && mvn spring-boot:run`
-   - RAG Service: `cd rag-service && mvn spring-boot:run`
+```bash
+docker compose -f infra/docker-compose.yml down
+```
+
+---
+
+### 4. Reset Local Database (Optional)
+
+Stop the infrastructure and remove all Docker volumes.
+
+> **Warning**
+> This permanently deletes all local PostgreSQL data and recreates the database on the next startup.
+
+```bash
+docker compose -f infra/docker-compose.yml down -v
+```
+
+---
+
+### 5. Start the Microservices
+
+Once the infrastructure is running, start the Spring Boot microservices from your IDE (recommended for local development) or using Maven.
+
+Recommended startup order:
+
+1. discovery-service
+2. api-gateway
+3. auth-service
+4. ticket-service
+5. ai-analysis-service
+6. routing-service
+7. rag-service
 
 ## Project Structure
 
@@ -192,20 +215,22 @@ ai-support-system/
 ├── .github/
 │   ├── agents/                   # GitHub Copilot custom agents
 │   │   ├── README.md
-│   │   ├── discovery-service-agent.md
-│   │   ├── api-gateway-agent.md
-│   │   ├── ticket-service-agent.md
-│   │   ├── ai-analysis-agent.md
-│   │   ├── routing-agent.md
+│   │   ├── discovery-agent.md
+│   │   ├── gateway-agent.md
+│   │   ├── ticket-agent.md
+│   │   ├── analysis-agent.md
+│   │   ├── router-agent.md
 │   │   └── rag-agent.md
+│   │   └── auth-agent.md
 │   ├── workflows/                # CI/CD workflow definitions
 │   ├── ISSUE_TEMPLATE/           # Bug/feature issue templates
 │   ├── copilot-instructions.md   # Repo-wide Copilot guidance
 │   └── pull_request_template.md  # PR checklist template
 ├── discovery-service/            # Eureka Server (Port: 8761)
 ├── api-gateway/            # Spring Cloud Gateway (Port: 8080)
+├── auth-service/           # Authentication & Authorization (Port: 8081)
 ├── ticket-service/         # Ticket Management (Port: 8082)
-├── ai-analysis-service/    # AI Analysis via Vertex AI Gemini (OpenAI optional) (Port: 8083)
+├── ai-analysis-service/    # AI Analysis via Google GenAI (OpenAI optional) (Port: 8083)
 ├── routing-service/        # Intelligent Routing Orchestrator (Port: 8084)
 ├── rag-service/            # Contextual Knowledge Response (Port: 8085)
 ├── common-library/         # Shared DTOs and Logic
@@ -225,12 +250,66 @@ ai-support-system/
 
 Each service provides its own OpenAPI documentation. Available locally at:
 
+- Auth Service: `http://localhost:8081/swagger-ui/index.html`
 - Ticket Service: `http://localhost:8082/swagger-ui/index.html`
 - AI Analysis Service: `http://localhost:8083/swagger-ui/index.html`
 - Routing Service: `http://localhost:8084/swagger-ui/index.html`
 - RAG Service: `http://localhost:8085/swagger-ui/index.html`
 - Gateway (entrypoint): `http://localhost:8080`
 - Eureka Dashboard: `http://localhost:8761`
+
+## Authentication Flow
+
+Authentication uses short-lived signed JWT access tokens and rotating server-side refresh tokens. Clients authenticate through the API Gateway. The gateway validates access-token signature and expiry, removes client-supplied identity headers, and forwards verified user identity to backend services. Only registration, login, and refresh are public. Logout and `/me` require authentication, while user-management endpoints require the `ADMIN` role.
+
+Backend service ports are internal interfaces and must not be exposed directly to untrusted clients.
+
+Frontend Application
+    │
+    ▼
+Login
+    │
+    ├── Access Token (15 min)
+    └── Refresh Token (7 days)
+
+↓
+
+API Request
+
+↓
+
+Gateway validates JWT
+
+↓
+
+Remaining lifetime <= threshold?
+
+↓
+
+Yes
+
+↓
+
+Response Header
+
+X-Access-Token-Refresh: true
+
+↓
+
+Frontend silently calls
+
+POST /api/v1/auth/refresh
+
+↓
+
+Receives
+
+• New Access Token
+• New Refresh Token
+
+↓
+
+Retries future requests with new tokens
 
 ## Sample API Flow
 

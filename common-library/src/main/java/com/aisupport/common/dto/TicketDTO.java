@@ -25,6 +25,9 @@ public class TicketDTO implements Serializable {
 	@Schema(description = "ID of the ticket", example = "1")
 	private Long id;
     
+    @Schema(description = "Customer ID", example = "1")
+    private Long customerId;
+    
     @NotBlank(message = "Ticket number is required")
     @Schema(description = "Ticket number", example = "TICKET-123")
     private String ticketNumber;

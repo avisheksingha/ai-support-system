@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: routing-service
+spec:
+  selector:
+    app: routing-service
+  ports:
+    - protocol: TCP
+      port: 8084
+      targetPort: 8084

@@ -1,4 +1,4 @@
-## Summary
+# Summary
 
 Briefly describe what this PR changes and why.
 
@@ -46,4 +46,3 @@ If any checked above, include details:
 - [ ] Branch is up to date with target branch
 - [ ] No secrets/keys committed
 - [ ] PR is focused and reviewable
-

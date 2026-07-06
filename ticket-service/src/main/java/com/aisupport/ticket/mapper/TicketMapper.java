@@ -14,12 +14,10 @@ import com.aisupport.ticket.entity.Ticket;
 )
 public interface TicketMapper {
 	
-	
-	@Mapping(target = "ragGeneratedAt", ignore = true)
-	@Mapping(target = "ragResponse", ignore = true)
 	@Mapping(target = "id", ignore = true)
 	@Mapping(target = "version", ignore = true)
 	@Mapping(target = "ticketNumber", ignore = true)
+	@Mapping(target = "customerId", ignore = true)
 	@Mapping(target = "status", ignore = true)
 	@Mapping(target = "priority", ignore = true)
 	@Mapping(target = "assignedTo", ignore = true)
@@ -27,11 +25,10 @@ public interface TicketMapper {
 	@Mapping(target = "sentiment", ignore = true)
 	@Mapping(target = "urgency", ignore = true)
 	@Mapping(target = "slaHours", ignore = true)
-	@Mapping(target = "createdAt", ignore = true)
-	@Mapping(target = "updatedAt", ignore = true)
+	@Mapping(target = "ragResponse", ignore = true)
+	@Mapping(target = "ragGeneratedAt", ignore = true)
 	Ticket toEntity(TicketRequest request);
     
-    @Mapping(source = "status", target = "status")
-    @Mapping(source = "priority", target = "priority")
+    
     TicketResponse toResponse(Ticket ticket);
 }

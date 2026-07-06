@@ -5,7 +5,9 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/api/v1/analysis")
+@RequestMapping(value = "/api/v1/analysis", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Analysis", description = "AI ticket analysis query endpoints")
@@ -35,6 +37,7 @@ public class AnalysisController {
         summary = "Get analysis by ticket ID",
         description = "Retrieves the AI analysis result for a specific ticket ID"
     )
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AnalysisResultDTO> getAnalysisByTicketId(
         @Parameter(description = "Numeric ID of the support ticket")
         @PathVariable Long ticketId) {
@@ -56,6 +59,7 @@ public class AnalysisController {
         summary = "Get all analyses",
         description = "Retrieves paginated analysis results with optional page and size parameters"
     )
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<AnalysisResultDTO>> getAllAnalyses(
         @Parameter(description = "Page index (0-based)")
         @RequestParam(defaultValue = "0") int page,
@@ -71,6 +75,7 @@ public class AnalysisController {
         summary = "Get analyses by intent",
         description = "Retrieves analysis results filtered by predicted intent"
     )
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<AnalysisResultDTO>> getAnalysesByIntent(
         @Parameter(description = "Intent value: BILLING, TECHNICAL, GENERAL")
         @PathVariable String intent) {
@@ -87,6 +92,7 @@ public class AnalysisController {
         summary = "Get analyses by urgency",
         description = "Retrieves analysis results filtered by urgency level"
     )
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<AnalysisResultDTO>> getAnalysesByUrgency(
         @Parameter(description = "Urgency value: LOW, MEDIUM, HIGH, CRITICAL")
         @PathVariable String urgency) {

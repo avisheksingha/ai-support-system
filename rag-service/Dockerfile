@@ -10,7 +10,7 @@ COPY common-library ./common-library
 COPY rag-service ./rag-service
 
 # 1) Install parent POM
-RUN mvn -f aisupport-parent/pom.xml clean install -DskipTests
+RUN mvn -N -f aisupport-parent/pom.xml clean install -DskipTests
 
 # 2) Install common-library for module dependency resolution
 RUN mvn -f common-library/pom.xml clean install -DskipTests
@@ -23,7 +23,7 @@ RUN mvn clean package -DskipTests \
   && cp "$JAR" /app/app.jar
 
 # Stage 2: Runtime
-FROM eclipse-temurin:21-jdk-alpine
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=builder /app/app.jar app.jar
 

@@ -1,0 +1,9 @@
+# Docker Compose -> Kubernetes mapping:
+# Maps to: environment variables for the service.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: discovery-service-config
+data:
+  SPRING_PROFILES_ACTIVE: "docker,k8s"

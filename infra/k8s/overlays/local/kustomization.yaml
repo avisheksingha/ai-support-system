@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Sets the namespace for all resources included in this kustomization
+namespace: ai-support
+
+resources:
+  - namespace.yaml
+  - secret.yaml
+  - ../../base/infrastructure/postgres
+  - ../../base/infrastructure/zookeeper
+  - ../../base/infrastructure/kafka
+  - ../../base/applications/discovery-service
+  - ../../base/applications/ticket-service
+  - ../../base/applications/auth-service
+  - ../../base/applications/ai-analysis-service
+  - ../../base/applications/routing-service
+  - ../../base/applications/rag-service

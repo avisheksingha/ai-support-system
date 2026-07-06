@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ticket-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ticket-service
+  template:
+    metadata:
+      labels:
+        app: ticket-service
+    spec:
+      containers:
+        - name: ticket-service
+          image: ticket-service:v2
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8082
+              name: http
+          envFrom:
+            - configMapRef:
+                name: ticket-service-config
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://postgres.ai-support.svc.cluster.local:5432/ticket_db"
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: "http://discovery-service.ai-support.svc.cluster.local:8761/eureka"
+            - name: EUREKA_INSTANCE_PREFERIPADDRESS
+              value: "true"
+            - name: SPRING_KAFKA_BOOTSTRAPSERVERS
+              value: "kafka.ai-support.svc.cluster.local:9092"
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ai-support-secrets
+                  key: DB_PASSWORD
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: ai-support-secrets
+                  key: DB_USERNAME
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            initialDelaySeconds: 120
+            periodSeconds: 15
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            initialDelaySeconds: 120
+            periodSeconds: 10
+            timeoutSeconds: 10

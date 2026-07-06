@@ -3,12 +3,15 @@ package com.aisupport.ticket.controller;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/api/v1/tickets")
+@RequestMapping(value = "/api/v1/tickets", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Tickets", description = "Support ticket management endpoints")
@@ -37,9 +40,12 @@ private final TicketService ticketService;
  		summary = "Create a new support ticket",
         description = "Creates a new support ticket and automatically analyzes it using AI"
     )
+    @PreAuthorize("hasRole('AGENT') or hasRole('ADMIN') or hasRole('CUSTOMER')")
     @PostMapping
-    public ResponseEntity<TicketResponse> createTicket(@Valid @RequestBody TicketRequest request) {
-        TicketResponse response = ticketService.createTicket(request);
+    public ResponseEntity<TicketResponse> createTicket(
+            @RequestHeader(value = "X-User-Id", required = false) String userId,
+            @Valid @RequestBody TicketRequest request) {
+        TicketResponse response = ticketService.createTicket(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
     
@@ -47,6 +53,7 @@ private final TicketService ticketService;
 		summary = "Get ticket by number",
 		description = "Retrieves a support ticket by its unique ticket number"
     )
+    @PreAuthorize("hasAnyRole('AGENT', 'ADMIN', 'CUSTOMER')")
     @GetMapping("/{ticketNumber}")
     public ResponseEntity<TicketResponse> getTicket(
     	@Parameter(description = "Unique ticket number") @PathVariable String ticketNumber) {
@@ -60,6 +67,7 @@ private final TicketService ticketService;
 		summary = "Get ticket by ID",
 		description = "Retrieves a support ticket by its database ID"
     )
+    @PreAuthorize("hasAnyRole('AGENT', 'ADMIN', 'CUSTOMER')")
     @GetMapping("/id/{id}")
     public ResponseEntity<TicketResponse> getTicketById(
     		@Parameter(description = "Database ID of the ticket") @PathVariable Long id) {
@@ -73,6 +81,7 @@ private final TicketService ticketService;
 		summary = "Get all tickets",
 		description = "Retrieves a list of all support tickets, with optional filtering by status"
 	)
+    @PreAuthorize("hasAnyRole('AGENT', 'ADMIN', 'CUSTOMER')")
     @GetMapping
     public ResponseEntity<List<TicketResponse>> getAllTickets(
 		@Parameter(description = "Filter by status: NEW, ANALYZING, ANALYZED, ASSIGNED, RESOLVED, CLOSED")
@@ -92,6 +101,7 @@ private final TicketService ticketService;
 		summary = "Update ticket status",
 		description = "Updates the status of a support ticket (e.g., NEW, ANALYZING, ANALYZED, ASSIGNED, RESOLVED, CLOSED)"
 	)
+    @PreAuthorize("hasAnyRole('AGENT', 'ADMIN')")
     @PatchMapping("/{ticketNumber}/status")
     public ResponseEntity<TicketResponse> updateStatus(
 		@Parameter(description = "Unique ticket number") @PathVariable String ticketNumber,
@@ -111,6 +121,7 @@ private final TicketService ticketService;
 		summary = "Assign ticket to support agent",
 		description = "Assigns a support ticket to a specific agent and updates the ticket status to ASSIGNED"
 	)
+    @PreAuthorize("hasAnyRole('AGENT', 'ADMIN')")
     @PatchMapping("/{ticketNumber}/assign")
     public ResponseEntity<TicketResponse> assignTicket(
 		@Parameter(description = "Unique ticket number") @PathVariable String ticketNumber,
@@ -129,6 +140,7 @@ private final TicketService ticketService;
 		summary = "Update ticket priority",
 		description = "Updates the priority level of a support ticket"
 	)
+    @PreAuthorize("hasAnyRole('AGENT', 'ADMIN')")
     @PatchMapping("/{ticketNumber}/priority")
     public ResponseEntity<TicketResponse> updatePriority(
 		@Parameter(description = "Unique ticket number") @PathVariable String ticketNumber,

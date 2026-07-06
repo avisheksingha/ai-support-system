@@ -12,7 +12,7 @@ COPY ai-analysis-service ./ai-analysis-service
 # 1) Build and install parent if it produces an installable artifact (optional)
 #   If aisupport-parent is a pom packaging parent only, the next step (install common) will pick up relativePath.
 #   If aisupport-parent must be installed, run: mvn -f aisupport-parent/pom.xml clean install -DskipTests
-RUN mvn -f aisupport-parent/pom.xml clean install -DskipTests
+RUN mvn -N -f aisupport-parent/pom.xml clean install -DskipTests
 
 # 2) Build & install common-library into local repo so service can resolve it
 RUN mvn -f common-library/pom.xml clean install -DskipTests
@@ -25,7 +25,7 @@ RUN mvn clean package -DskipTests \
   && cp "$JAR" /app/app.jar
 
 # Stage 2: Runtime
-FROM eclipse-temurin:21-jdk-alpine
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 # Copy the jar from the builder stage

@@ -17,14 +17,16 @@ import com.aisupport.common.dto.AnalysisResultDTO;
 )
 public interface AnalysisResultMapper {
 
+    
     @Mapping(target = "version", ignore = true)
 	@Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "keywords", source = "keywords", qualifiedByName = "listToArray")
+	@Mapping(target = "keywords", source = "keywords", qualifiedByName = "listToArray")
     AnalysisResult toEntity(AnalysisResultDTO dto);
 
-    @Mapping(target = "analysisProvider", constant = "Gemini AI")
-    @Mapping(source = "createdAt", target = "analyzedAt")
-    @Mapping(target = "keywords", source = "keywords", qualifiedByName = "arrayToList")
+    
+    @Mapping(target = "analysisProvider", constant = "Google GenAI")
+	@Mapping(target = "analyzedAt", source = "createdAt")
+	@Mapping(target = "keywords", source = "keywords", qualifiedByName = "arrayToList")
     AnalysisResultDTO toDto(AnalysisResult entity);
 
     // Helper methods for converting between String[] and List<String>

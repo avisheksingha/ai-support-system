@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-	<!-- Parent POM Reference -->
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- ========================================================== -->
+    <!-- Parent -->
+    <!-- ========================================================== -->
     <parent>
         <groupId>com.aisupport</groupId>
         <artifactId>aisupport-parent</artifactId>
@@ -11,30 +15,114 @@
         <relativePath>../aisupport-parent</relativePath>
     </parent>
 
-	<!-- This Module's Identity -->
-	<artifactId>common-library</artifactId>
-	<name>Common Library</name>
-	<description>Shared utilities and components for AI Support System</description>
+    <!-- ========================================================== -->
+    <!-- Module -->
+    <!-- ========================================================== -->
+    <artifactId>common-library</artifactId>
+    <name>Common Library</name>
+    <description>
+        Shared DTOs, security utilities, constants and helper classes
+        for AI Support System microservices.
+    </description>
+    
+    <!-- ========================================================== -->
+    <!-- Dependencies -->
+    <!-- ========================================================== -->
+    <dependencies>
 
-    <!-- Dependencies specific to this module -->
-	<dependencies>
-		<!-- Apache Commons Lang for String and Object Utilities -->
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>					
-		</dependency>
+        <!-- ====================================================== -->
+        <!-- Utility Libraries                                      -->
+        <!-- ====================================================== -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
 
-	    <!-- Swagger annotations for shared DTO documentation -->
-	    <dependency>
-	        <groupId>io.swagger.core.v3</groupId>
-	        <artifactId>swagger-annotations-jakarta</artifactId>
-	    </dependency>
-	    
-	    <!-- Jakarta Validation API for shared validation annotations -->
-		<dependency>
-		    <groupId>jakarta.validation</groupId>
-		    <artifactId>jakarta.validation-api</artifactId>
-		</dependency>
-	</dependencies>
-	
+        <!-- ====================================================== -->
+        <!-- Validation API                                         -->
+        <!-- ====================================================== -->
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+        </dependency>
+
+        <!-- ====================================================== -->
+        <!-- Swagger Annotations                                    -->
+        <!-- ====================================================== -->
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations-jakarta</artifactId>
+        </dependency>
+
+        <!-- ====================================================== -->
+        <!-- JWT                                                    -->
+        <!-- ====================================================== -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- ====================================================== -->
+        <!-- Spring APIs (Compile Only)                             -->
+        <!-- ====================================================== -->
+
+        <!-- Required by HeaderAuthenticationFilter -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Required by HeaderAuthenticationFilter -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- ====================================================== -->
+        <!-- Lombok                                                 -->
+        <!-- ====================================================== -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- ================= Tests ================= -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <!-- ========================================================== -->
+    <!-- Build -->
+    <!-- ========================================================== -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!-- Skip executable jar for library -->
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -6,11 +6,11 @@ import com.aisupport.analysis.dto.ParsedAnalysis;
  * Strategy interface for AI-powered ticket analysis.
  *
  * Implementations are provided for each supported Chat provider
- * (e.g., Gemini, OpenAI). The active provider is selected at startup
+ * (e.g., Google GenAI, OpenAI). The active provider is selected at startup
  * via the {@code chat.provider} property — no business logic changes required.
  *
  * Example configuration:
- * chat.provider=gemini → GeminiChatProvider
+ * chat.provider=google-genai → GoogleGenAiChatProvider
  * chat.provider=openai → OpenAiChatProvider
  * 
  */

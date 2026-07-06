@@ -1,0 +1,15 @@
+﻿# Docker Compose -> Kubernetes mapping:
+# Maps to: volumes: - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+# In K8s, we store small initialization scripts in a ConfigMap and mount them into the Pod.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-config
+data:
+  init.sql: |
+    CREATE DATABASE ticket_db;
+    CREATE DATABASE analysis_db;
+    CREATE DATABASE routing_db;
+    CREATE DATABASE rag_db;
+    CREATE DATABASE auth_db;

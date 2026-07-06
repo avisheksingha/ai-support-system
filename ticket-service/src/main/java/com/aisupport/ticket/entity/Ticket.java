@@ -15,8 +15,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
@@ -39,7 +37,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Ticket {
+public class Ticket extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,6 +45,9 @@ public class Ticket {
 
     @Version // NEW: Optimistic locking
     private Long version;
+
+    @Column(name = "customer_id")
+    private Long customerId;
 
     @Column(name = "ticket_number", unique = true, nullable = false, updatable = false)
     private String ticketNumber;
@@ -63,13 +64,15 @@ public class Ticket {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String message;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TicketStatus status;
+    private TicketStatus status = TicketStatus.NEW;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TicketPriority priority;
+    private TicketPriority priority = TicketPriority.MEDIUM;
 
     @Column(name = "assigned_to")
     private String assignedTo;
@@ -92,14 +95,10 @@ public class Ticket {
 
     @Column(name = "rag_generated_at")
     private Instant ragGeneratedAt;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
     
-    // NEW: State machine transitions
+    /**
+     * Allowed ticket state transitions.
+     */
     private static final Map<TicketStatus, Set<TicketStatus>> VALID_TRANSITIONS = Map.of(
 	    TicketStatus.NEW,          Set.of(TicketStatus.ANALYZING, TicketStatus.ASSIGNED), // fast-path
 	    TicketStatus.ANALYZING,    Set.of(TicketStatus.ANALYZED),
@@ -109,33 +108,25 @@ public class Ticket {
 	    TicketStatus.RESOLVED,     Set.of(TicketStatus.CLOSED),
 	    TicketStatus.CLOSED,       Set.of()
 	);
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = Instant.now();
-        updatedAt = Instant.now();
-
-        if (status == null) {
-            status = TicketStatus.NEW;
-        }
-
-        if (priority == null) {
-            priority = TicketPriority.MEDIUM;
-        }
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = Instant.now();
-    }
-
-    // NEW: Enforce state machine transitions
+    
+    /**
+     * Enforce state machine transitions
+     * Changes the ticket status after validating
+     * the requested transition.
+     *
+     * @param newStatus the desired status
+     * @throws IllegalStateException if the transition is invalid
+     */
     public void transitionTo(TicketStatus newStatus) {
-    	if (!VALID_TRANSITIONS.getOrDefault(this.status, Set.of()).contains(newStatus)) {
+    	if (!VALID_TRANSITIONS
+    			.getOrDefault(this.status, Set.of())
+    			.contains(newStatus)) {
+    		
             throw new IllegalStateException(
                 "Invalid transition from " + this.status + " to " + newStatus
             );
         }
+    	
         this.status = newStatus;
     }
 }
