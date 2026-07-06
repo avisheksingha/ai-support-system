@@ -15,7 +15,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Schema(description = "Analysis result DTO")
 public class AnalysisResultDTO implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
