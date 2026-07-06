@@ -65,7 +65,7 @@ public class SecurityConfig {
     ) {
         try {
         http
-            .csrf(csrf -> csrf.disable())  // NOSONAR: Disabling CSRF protection for stateless REST APIs
+            .csrf(csrf -> { })
             .sessionManagement(session ->
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 

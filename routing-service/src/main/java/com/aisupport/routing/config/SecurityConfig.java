@@ -66,7 +66,7 @@ public class SecurityConfig {
     ) {
         try {
         http
-            .csrf(csrf -> csrf.disable())  // NOSONAR: Disabling CSRF protection for stateless REST APIs
+            .csrf(org.springframework.security.config.Customizer.withDefaults())
             .sessionManagement(session ->
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
