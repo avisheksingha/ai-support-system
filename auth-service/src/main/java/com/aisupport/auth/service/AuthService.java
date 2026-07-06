@@ -1,9 +1,11 @@
 package com.aisupport.auth.service;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.aisupport.auth.config.JwtConfig;
 import com.aisupport.auth.dto.AuthResponse;
 import com.aisupport.auth.dto.LoginRequest;
 import com.aisupport.auth.dto.RefreshRequest;
@@ -12,14 +14,12 @@ import com.aisupport.auth.dto.UserResponse;
 import com.aisupport.auth.entity.LoginAudit;
 import com.aisupport.auth.entity.RefreshToken;
 import com.aisupport.auth.entity.User;
-import com.aisupport.common.enums.UserRole;
 import com.aisupport.auth.exception.AuthException;
+import com.aisupport.auth.mapper.UserMapper;
 import com.aisupport.auth.repository.LoginAuditRepository;
 import com.aisupport.auth.repository.RefreshTokenRepository;
 import com.aisupport.auth.repository.UserRepository;
-import com.aisupport.auth.config.JwtConfig;
-import com.aisupport.auth.mapper.UserMapper;
-import org.springframework.http.HttpStatus;
+import com.aisupport.common.enums.UserRole;
 
 import lombok.RequiredArgsConstructor;
 
@@ -91,8 +91,7 @@ public class AuthService {
                     }
                     refreshTokenRepository.delete(oldToken);
                     refreshTokenRepository.flush();
-                    AuthResponse response = buildAuthResponse(user);
-                    return response;
+                    return buildAuthResponse(user);
                 })
                 .orElseThrow(() -> new AuthException(HttpStatus.UNAUTHORIZED, "Invalid refresh token"));
     }

@@ -1,5 +1,8 @@
 package com.aisupport.routing.config;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -9,6 +12,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.aisupport.common.exception.SecurityConfigurationException;
+import com.aisupport.common.security.CookieGuardFilter;
 import com.aisupport.common.security.HeaderAuthenticationFilter;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -52,11 +57,13 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(
             HttpSecurity http,
-            HeaderAuthenticationFilter headerAuthFilter
+            HeaderAuthenticationFilter headerAuthFilter,
+            CookieGuardFilter cookieGuardFilter
     ) {
-
-        http
-            .csrf(csrf -> csrf.disable()) // NOSONAR: Stateless REST API
+        try {
+            http
+            // codeql[java/spring-disabled-csrf-protection] - stateless REST API, enforced via CookieGuardFilter; see ADR-004
+            .csrf(csrf -> csrf.disable()) // NOSONAR
             .sessionManagement(session ->
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
@@ -71,11 +78,18 @@ public class SecurityConfig {
                             response.sendError(HttpServletResponse.SC_UNAUTHORIZED))
             )
 
-            .addFilterBefore(
-                    headerAuthFilter,
-                    UsernamePasswordAuthenticationFilter.class
-            );
+            .addFilterBefore(cookieGuardFilter, HeaderAuthenticationFilter.class)
+            .addFilterBefore(headerAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
+            return http.build();
+        } catch (Exception ex) {
+            throw new SecurityConfigurationException("Failed to configure Spring Security filter chain", ex);
+        }
+    }
+
+    @Bean
+    CookieGuardFilter cookieGuardFilter(
+            @Value("${security.cookie-guard.allowed-paths:}") List<String> allowedPaths) {
+        return new CookieGuardFilter(allowedPaths);
     }
 }

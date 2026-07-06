@@ -38,8 +38,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     private static final List<String> PUBLIC_AUTH_ENDPOINTS = List.of(
             "/api/v1/auth/register",
             "/api/v1/auth/login",
-            "/api/v1/auth/refresh",
-            "/eureka/**" // TODO: Remove this after Eureka is secured
+            "/api/v1/auth/refresh"
     );
 
     /**
