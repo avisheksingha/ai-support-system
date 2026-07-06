@@ -1,15 +1,24 @@
 # AI Support System Microservices Platform
 
+<!-- Project Status & Quality -->
+[![GitHub release](https://img.shields.io/github/v/release/avisheksingha/ai-support-system)](https://github.com/avisheksingha/ai-support-system/releases/latest)
+[![GitHub Repo stars](https://img.shields.io/github/stars/avisheksingha/ai-support-system)](https://github.com/avisheksingha/ai-support-system/stargazers)
+[![CI/CD](https://github.com/avisheksingha/ai-support-system/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/avisheksingha/ai-support-system/actions/workflows/ci-cd.yml)
+[![CodeQL](https://github.com/avisheksingha/ai-support-system/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/avisheksingha/ai-support-system/actions/workflows/github-code-scanning/codeql)
+[![Dependabot Updates](https://github.com/avisheksingha/ai-support-system/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/avisheksingha/ai-support-system/actions/workflows/dependabot/dependabot-updates)
+[![Codecov](https://img.shields.io/codecov/c/github/avisheksingha/ai-support-system)](https://codecov.io/gh/avisheksingha/ai-support-system)
+
+<!-- Tech Stack -->
 [![Java 21](https://img.shields.io/badge/Java-21-007396?logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/21/)
 [![Spring Boot 4](https://img.shields.io/badge/Spring_Boot-4.1.0-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![Spring Cloud](https://img.shields.io/badge/Spring_Cloud-2025.1.2-0ea5e9)](https://spring.io/projects/spring-cloud)
 [![Kafka](https://img.shields.io/badge/Apache_Kafka-Event_Driven-231F20?logo=apachekafka&logoColor=white)](https://kafka.apache.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-pgvector-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+
+<!-- Docs & Tools -->
 [![Architecture](https://img.shields.io/badge/Architecture-Microservices-orange)](OVERVIEW.md)
 [![GitHub Copilot](https://img.shields.io/badge/GitHub%20Copilot-Ready-0F66D9?logo=github&logoColor=white)](.github/copilot-instructions.md)
-[![CI/CD](https://github.com/avisheksingha/ai-support-system/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/avisheksingha/ai-support-system/actions/workflows/ci-cd.yml)
-[![CodeQL](https://github.com/avisheksingha/ai-support-system/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/avisheksingha/ai-support-system/actions/workflows/github-code-scanning/codeql)
 
 ## Business Problem
 
