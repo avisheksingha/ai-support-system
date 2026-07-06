@@ -8,24 +8,24 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.aisupport.analysis.chat.ChatProvider;
-import com.aisupport.analysis.chat.GeminiChatProvider;
+import com.aisupport.analysis.chat.GoogleGenAiChatProvider;
 import com.aisupport.analysis.chat.OpenAiChatProvider;
 
 /**
  * ChatConfig centralizes the configuration of AI providers and their ChatClient beans.
- * It uses Spring's @ConditionalOnProperty to switch between Gemini and OpenAI implementations
+ * It uses Spring's @ConditionalOnProperty to switch between Google GenAI and OpenAI implementations
  * based on the "chat.provider" property, allowing for flexible provider selection without code changes.
  */
 @Configuration
 public class ChatConfig {
 
 	/**
-	 * Creates Gemini ChatClient when Gemini is the active provider.
+	 * Creates Google GenAI ChatClient when Google GenAI is the active provider.
 	 */
     @Bean
-    @ConditionalOnProperty(name = "chat.provider", havingValue = "gemini", matchIfMissing = true)
-    ChatClient geminiChatClient(GoogleGenAiChatModel geminiChatModel) {
-        return ChatClient.create(geminiChatModel);
+    @ConditionalOnProperty(name = "chat.provider", havingValue = "google-genai", matchIfMissing = true)
+    ChatClient googleGenAiChatClient(GoogleGenAiChatModel googleGenAiChatModel) {
+        return ChatClient.create(googleGenAiChatModel);
     }
 
     /**
@@ -38,13 +38,13 @@ public class ChatConfig {
     }
 
     /**
-	 * Creates the Gemini ChatProvider when chat.provider=gemini
+	 * Creates the Google GenAI ChatProvider when chat.provider=google-genai
 	 * (or when the property is not specified).
 	 */
     @Bean
-    @ConditionalOnProperty(name = "chat.provider", havingValue = "gemini", matchIfMissing = true)
-    ChatProvider geminiChatProvider(ChatClient geminiChatClient) {
-        return new GeminiChatProvider(geminiChatClient);
+    @ConditionalOnProperty(name = "chat.provider", havingValue = "google-genai", matchIfMissing = true)
+    ChatProvider googleGenAiChatProvider(ChatClient googleGenAiChatClient) {
+        return new GoogleGenAiChatProvider(googleGenAiChatClient);
     }
 
     /**

@@ -12,7 +12,7 @@ The AI Support System is built using a microservices architecture pattern. This 
 2. **Service Registry (`discovery-service`)**: Utilizes Netflix Eureka to allow microservices to register themselves and discover each other dynamically.
 3. **Authentication (`auth-service`)**: Manages user authentication, authorization, and issues JWTs for secure access across the microservices.
 4. **Ticket Management (`ticket-service`)**: Handles the core CRUD operations for support tickets, applying state machine validations for status transitions, and persists data to PostgreSQL.
-5. **AI Processing (`ai-analysis-service`)**: Uses Google Vertex AI (Gemini) as the active provider to perform sentiment analysis, determine urgency, and extract user intent. OpenAI support is available as an optional provider.
+5. **AI Processing (`ai-analysis-service`)**: Uses Google GenAI (supporting Gemini and Vertex AI modes) as the active provider to perform sentiment analysis, determine urgency, and extract user intent. OpenAI support is available as an optional provider.
 6. **Intelligent Routing (`routing-service`)**: Applies business rules to the AI-generated tags to route tickets to specific agents or queues.
 7. **Knowledge Context (`rag-service`)**: A Retrieval-Augmented Generation service that queries a vector database (`pgvector`) to provide intelligent, context-aware responses and suggestions.
 8. **AI Support Marketplace (`ai-support-marketplace`)**: A plugin and tooling ecosystem that extends development capabilities with agents, hooks, and commands.
@@ -50,7 +50,7 @@ graph TD
 
     TS -->|Publishes TicketCreated| Kafka[Apache Kafka<br>Message Broker]
     Kafka -->|Consumes TicketCreated| AIS
-    AIS -->|Calls API| ExternalAI[Google Vertex AI (Active)<br/>OpenAI (Optional)]
+    AIS -->|Calls API| ExternalAI[Google GenAI (Active)<br/>OpenAI (Optional)]
     AIS -->|Publishes TicketAnalyzed| Kafka
     Kafka -->|Consumes TicketAnalyzed| RS
     Kafka -->|Consumes TicketAnalyzed| RAG
@@ -68,7 +68,7 @@ sequenceDiagram
     participant TicketSvc as Ticket Service
     participant Kafka as Apache Kafka
     participant AISvc as AI Analysis Service
-    participant ExternalAI as Vertex AI (Active) / OpenAI (Optional)
+    participant ExternalAI as Google GenAI (Active) / OpenAI (Optional)
     participant RoutingSvc as Routing Service
     participant RAGSvc as RAG Service
 

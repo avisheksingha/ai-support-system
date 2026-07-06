@@ -14,24 +14,24 @@ import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class GeminiChatProvider implements ChatProvider {
+public class GoogleGenAiChatProvider implements ChatProvider {
 
     private final ChatClient chatClient;
 
-    public GeminiChatProvider(@Qualifier("geminiChatClient") ChatClient chatClient) {
+    public GoogleGenAiChatProvider(@Qualifier("googleGenAiChatClient") ChatClient chatClient) {
         this.chatClient = chatClient;
     }
 
     /**
-	 * Analyzes a support ticket using Gemini. The method is protected by a rate limiter and a circuit breaker.
+	 * Analyzes a support ticket using Google GenAI. The method is protected by a rate limiter and a circuit breaker.
 	 * If the circuit breaker is open or an error occurs, it falls back to a default analysis.
 	 *
 	 * @param subject the subject of the support ticket
 	 * @param message the message body of the support ticket
 	 * @return a ParsedAnalysis containing the results of the analysis
 	 */
-    @RateLimiter(name = "geminiRateLimiter")
-    @CircuitBreaker(name = "geminiCircuitBreaker", fallbackMethod = "fallbackAnalysis")
+    @RateLimiter(name = "googleGenAiRateLimiter")
+    @CircuitBreaker(name = "googleGenAiCircuitBreaker", fallbackMethod = "fallbackAnalysis")
     @Override
     public ParsedAnalysis analyzeTicket(String subject, String message) {
 
@@ -55,14 +55,14 @@ public class GeminiChatProvider implements ChatProvider {
                     .entity(outputConverter);
 
         } catch (Exception e) {
-            log.error("Unexpected error during Gemini analysis", e);
-            throw new AnalysisException("Gemini analysis failed: " + e.getMessage(), e);
+            log.error("Unexpected error during Google GenAI analysis", e);
+            throw new AnalysisException("Google GenAI analysis failed: " + e.getMessage(), e);
         }
     }
 
     protected ParsedAnalysis fallbackAnalysis(String subject, String message, Throwable ex) {
 
-        log.error("Gemini circuit open or failed - fallback used for ticket subject: '{}'", subject, ex);
+        log.error("Google GenAI circuit open or failed - fallback used for ticket subject: '{}'", subject, ex);
         log.trace("Original ticket message that caused failure: {}", message);
 
         return ParsedAnalysis.builder()

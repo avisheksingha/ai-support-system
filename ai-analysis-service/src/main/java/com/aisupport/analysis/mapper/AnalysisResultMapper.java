@@ -24,7 +24,7 @@ public interface AnalysisResultMapper {
     AnalysisResult toEntity(AnalysisResultDTO dto);
 
     
-    @Mapping(target = "analysisProvider", constant = "Gemini AI")
+    @Mapping(target = "analysisProvider", constant = "Google GenAI")
 	@Mapping(target = "analyzedAt", source = "createdAt")
 	@Mapping(target = "keywords", source = "keywords", qualifiedByName = "arrayToList")
     AnalysisResultDTO toDto(AnalysisResult entity);

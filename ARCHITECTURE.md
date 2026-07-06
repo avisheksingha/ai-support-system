@@ -7,7 +7,7 @@
 | Application Architecture | Microservices | Modular Monolith | Independent scaling and service isolation |
 | Communication Pattern | Event-Driven | Synchronous REST-only | Reduced coupling and improved responsiveness |
 | Message Broker | Apache Kafka | RabbitMQ, ActiveMQ | High throughput, durability, event replay capabilities |
-| AI Provider | Vertex AI | OpenAI, Self-hosted Models | Managed infrastructure and enterprise integration |
+| AI Provider | Google GenAI (Gemini/Vertex AI) | OpenAI, Self-hosted Models | Managed infrastructure and enterprise integration |
 | Vector Storage | PostgreSQL + pgvector | Pinecone, Milvus, Weaviate | Reduced operational complexity and unified storage |
 | Service Discovery | Eureka | Static Configuration | Dynamic service registration and scaling |
 | API Entry Point | Spring Cloud Gateway | Direct Service Exposure | Centralized routing and security controls |
@@ -62,11 +62,11 @@ To avoid code duplication (especially around DTOs and Kafka Event schemas), a sh
 | **Java 21** | Core Language | Utilizes modern Java features like virtual threads (Project Loom) suitable for high API throughput. |
 | **Spring Boot 4.x** | App Framework | Rapid development, vast ecosystem, and native support for Spring Cloud patterns. |
 | **Spring Cloud** | Microservices Tooling | Native integrations for Gateway and Eureka Service Discovery. |
-| **Spring AI** | AI Orchestration | Provides a unified, provider-agnostic abstraction layer. Current active provider is Vertex AI (Gemini), with OpenAI retained as an optional/fallback-ready integration. |
+| **Spring AI** | AI Orchestration | Provides a unified, provider-agnostic abstraction layer. Current active provider is Google GenAI, with OpenAI retained as an optional/fallback-ready integration. |
 | **PostgreSQL** | Primary Database | Robust, ACID-compliant relational storage. Reliable for ticket states and metadata. |
 | **pgvector** | Vector Store | Extension for PostgreSQL allowing efficient similarity search for the `rag-service` embeddings without needing a standalone vector DB (like Milvus or Pinecone). |
 | **Apache Kafka** | Event Broker | Highly durable and scalable log-based messaging perfect for choreography-based sagas and asynchronous processing. |
-| **Resilience4j** | Circuit Breaker | Prevents cascading failures when a downstream service (or an external API like Google Vertex AI) becomes unresponsive or throws rate limit errors. |
+| **Resilience4j** | Circuit Breaker | Prevents cascading failures when a downstream service (or an external API like Google GenAI) becomes unresponsive or throws rate limit errors. |
 
 ## Scalability and Performance Considerations
 
@@ -83,7 +83,7 @@ The architecture is inherently stateless at the application layer. By leveraging
 
 ### Resilience and Circuit Breaking
 
-* **External API Limits:** The active Vertex AI integration (with optional OpenAI support) can face rate-limiting (`429 Too Many Requests`). `Resilience4j` is configured to wrap these calls, failing fast when the circuit opens, returning a fallback response, and preventing threads from hanging in the `ai-analysis-service`.
+* **External API Limits:** The active Google GenAI integration (with optional OpenAI support) can face rate-limiting (`429 Too Many Requests`). `Resilience4j` is configured to wrap these calls, failing fast when the circuit opens, returning a fallback response, and preventing threads from hanging in the `ai-analysis-service`.
 
 ### Asynchronous Throughput
 

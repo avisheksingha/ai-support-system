@@ -31,7 +31,7 @@ The platform combines AI-powered sentiment analysis, urgency detection, intellig
 
 Key capabilities include:
 
-- AI-driven sentiment and urgency analysis using Vertex AI.
+- AI-driven sentiment and urgency analysis using Google GenAI (Gemini/Vertex AI).
 - Event-driven asynchronous processing using Apache Kafka.
 - Intelligent ticket routing based on business rules and AI insights.
 - Semantic search and contextual knowledge retrieval using PostgreSQL pgvector.
@@ -59,7 +59,7 @@ The AI Support System is a leading-edge, microservices-based ticket management p
 - **[api-gateway](api-gateway/README.md)**: Centralized entry point and request routing.
 - **[auth-service](auth-service/README.md)**: Authentication, authorization, and JWT management.
 - **[ticket-service](ticket-service/README.md)**: Core ticket management and lifecycle operations.
-- **[ai-analysis-service](ai-analysis-service/README.md)**: AI-powered analysis for sentiment and urgency (Vertex AI Gemini active, OpenAI optional).
+- **[ai-analysis-service](ai-analysis-service/README.md)**: AI-powered analysis for sentiment and urgency (Google GenAI active, OpenAI optional).
 - **[routing-service](routing-service/README.md)**: Orchestrator for intelligent ticket assignment based on analysis.
 - **[rag-service](rag-service/README.md)**: Vector embedding and RAG capabilities for automated contextual responses.
 - **[common-library](common-library/README.md)**: Shared models, DTOs, events, and utilities.
@@ -92,9 +92,9 @@ Ticket processing involves multiple asynchronous operations such as AI analysis,
 
 Traditional relational data is stored in PostgreSQL while pgvector enables semantic similarity search for Retrieval-Augmented Generation (RAG) workflows. This combination allows structured transactional storage and AI-powered contextual retrieval within the same database platform.
 
-### Why Vertex AI?
+### Why Google GenAI (Gemini / Vertex AI)?
 
-Vertex AI provides managed access to modern foundation models for sentiment analysis, urgency detection, and intent classification while reducing operational overhead associated with hosting and maintaining custom AI models.
+Google GenAI (via Vertex AI or Gemini API) provides managed access to modern foundation models for sentiment analysis, urgency detection, and intent classification while reducing operational overhead associated with hosting and maintaining custom AI models.
 
 ### Why Spring Boot and Spring Cloud?
 
@@ -230,7 +230,7 @@ ai-support-system/
 ├── api-gateway/            # Spring Cloud Gateway (Port: 8080)
 ├── auth-service/           # Authentication & Authorization (Port: 8081)
 ├── ticket-service/         # Ticket Management (Port: 8082)
-├── ai-analysis-service/    # AI Analysis via Vertex AI Gemini (OpenAI optional) (Port: 8083)
+├── ai-analysis-service/    # AI Analysis via Google GenAI (OpenAI optional) (Port: 8083)
 ├── routing-service/        # Intelligent Routing Orchestrator (Port: 8084)
 ├── rag-service/            # Contextual Knowledge Response (Port: 8085)
 ├── common-library/         # Shared DTOs and Logic

@@ -47,8 +47,8 @@ public class AnalysisResultDTO implements Serializable {
 	@Schema(description = "Raw response of the analysis result", example = "Order Status")
     private String rawResponse;
     
-	@Schema(description = "Analysis provider of the analysis result", example = "Gemini AI")
-    private String analysisProvider; // always "Gemini AI"
+	@Schema(description = "Analysis provider of the analysis result", example = "Google GenAI")
+    private String analysisProvider; // always "Google GenAI"
 	
 	@Schema(description = "Analyzed at of the analysis result", example = "2022-01-01T00:00:00")
     private Instant analyzedAt; // maps from createdAt

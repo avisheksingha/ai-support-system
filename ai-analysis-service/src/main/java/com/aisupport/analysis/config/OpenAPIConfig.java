@@ -26,7 +26,7 @@ public class OpenAPIConfig {
                 .info(new Info()
                         .title("AI Analysis Service API")
                         .version("1.0.0")
-                        .description("AI-powered ticket analysis using Google Gemini")
+                        .description("AI-powered ticket analysis using Google GenAI")
                         .contact(new Contact()
                                 .name("AI Support Team")
                                 .email("support@aisupport.com"))

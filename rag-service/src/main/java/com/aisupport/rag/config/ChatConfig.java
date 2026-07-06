@@ -6,8 +6,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
+/**
  * Configures the ChatClient bean used by RagService for response generation.
- * The ChatClient wraps the Vertex AI Gemini chat model and provides
+ * The ChatClient wraps the Google GenAI chat model and provides
  * a fluent API for building prompts, attaching advisors, and calling the LLM.
  */
 @Configuration

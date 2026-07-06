@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
  * 1. Reads all KnowledgeArticle records from the database
  * 2. Converts each article into a Spring AI Document (with title + content as text)
  * 3. Adds them to the VectorStore — this automatically:
- *    a. Sends each document's text to the Vertex AI Embedding Model
+ *    a. Sends each document's text to the Google GenAI Embedding Model
  *    b. Stores the resulting embedding vector + document text in the PGVector table
  *
  * Once loaded, these embeddings are used by QuestionAnswerAdvisor for similarity search

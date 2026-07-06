@@ -1,6 +1,6 @@
 # AI Analysis Service
 
-Microservice that uses Spring AI to analyze support tickets for sentiment, urgency, and intent. The active provider is Google Vertex AI (Gemini), with OpenAI available as an optional provider.
+Microservice that uses Spring AI to analyze support tickets for sentiment, urgency, and intent. The active provider is Google GenAI (supporting both Gemini API and Vertex AI), with OpenAI available as an optional provider.
 
 ## Features
 
@@ -10,7 +10,7 @@ Microservice that uses Spring AI to analyze support tickets for sentiment, urgen
 - Identifies User Intent (TECHNICAL, BILLING, etc.)
 - Auto-tagging with keywords
 - Built on **Spring Boot 4.1.0** and **Spring AI**
-- Active AI provider: **Google Vertex AI (Gemini)**
+- Active AI provider: **Google GenAI (Gemini/Vertex AI)**
 - Optional provider support: **OpenAI**
 
 ## Configuration
@@ -18,16 +18,16 @@ Microservice that uses Spring AI to analyze support tickets for sentiment, urgen
 | Property | Value | Description |
 | ---------- | ------- | ------------- |
 | Server Port | 8083 | Port where service runs |
-| AI Providers | Vertex AI Gemini (active), OpenAI (optional) | Supported provider options via Spring AI |
+| AI Providers | Google GenAI (active), OpenAI (optional) | Supported provider options via Spring AI |
 | Database | PostgreSQL | `analysis_db` |
 | Service Discovery | Enabled | Registers with Eureka |
 
 > [!IMPORTANT]
-> Set Vertex AI credentials for standard runs. OpenAI credentials are only needed if you switch provider.
+> Set Google GenAI credentials (API Key or GCP Auth) for standard runs. OpenAI credentials are only needed if you switch provider.
 
 ### Environment Variables
 
-#### Google Vertex AI (Gemini)
+#### Google GenAI (Gemini / Vertex AI)
 
 - `GCP_PROJECT_ID`: Your Google Cloud Project ID.
 - `GCP_LOCATION`: Your Google Cloud Project location (e.g., `us-central1`).
@@ -55,7 +55,7 @@ Microservice that uses Spring AI to analyze support tickets for sentiment, urgen
 
 ## Running Locally
 
-1. Configure Vertex AI credentials (OpenAI is optional).
+1. Configure Google GenAI credentials (OpenAI is optional).
 2. Run the application:
 
 ```bash

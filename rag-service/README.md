@@ -4,7 +4,7 @@ The RAG (Retrieval-Augmented Generation) Service is responsible for managing emb
 
 ## Features
 
-- **Document Embedding**: Uses Spring AI and Google Vertex AI to generate embeddings for knowledge base articles or past tickets.
+- **Document Embedding**: Uses Spring AI and Google GenAI to generate embeddings for knowledge base articles or past tickets.
 - **Vector Storage**: Stores embeddings in a PostgreSQL database using the `pgvector` extension.
 - **Contextual Generation**: Leverages the `QuestionAnswerAdvisor` pattern to retrieve relevant documents and generate accurate, context-aware answers.
 - **Kafka Integration**: Listens to domain events to trigger automated document indexing.
@@ -13,7 +13,7 @@ The RAG (Retrieval-Augmented Generation) Service is responsible for managing emb
 ## Technology Stack
 
 - **Spring AI**: For AI model integration and Vector Store abstraction.
-- **Google Vertex AI**: For both Chat Models (Gemini) and Embedding Models.
+- **Google GenAI**: For both Chat Models and Embedding Models.
 - **PostgreSQL + pgvector**: For efficient similarity search.
 
 ## Configuration
@@ -27,7 +27,7 @@ The RAG (Retrieval-Augmented Generation) Service is responsible for managing emb
 ## Prerequisites
 
 - PostgreSQL with `pgvector` installed.
-- Appropriate Vertex AI credentials configured (e.g., `GOOGLE_APPLICATION_CREDENTIALS`).
+- Appropriate Google GenAI credentials configured (API Key or Google Cloud credentials).
 
 ## Running Locally
 

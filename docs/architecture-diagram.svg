@@ -69,7 +69,7 @@
 
   <!-- External AI -->
   <rect x="1210" y="220" width="150" height="90" class="node external" />
-  <text x="1242" y="270" class="label">Vertex AI</text>
+  <text x="1242" y="270" class="label">Google GenAI</text>
 
   <!-- Gateway to Services -->
   <line x1="520" y1="155" x2="610" y2="145" class="arrow" />
