@@ -60,7 +60,7 @@
         <swagger-annotations.version>2.2.49</swagger-annotations.version>
 
         <!-- Utilities -->
-        <commons-lang3.version>3.14.0</commons-lang3.version>
+        <commons-lang3.version>3.18.0</commons-lang3.version>
         <jakarta.validation-api.version>3.0.2</jakarta.validation-api.version>
 
         <!-- Build -->
