@@ -40,7 +40,7 @@ public class RagService {
 	private final RagResponseRepository ragResponseRepository;
 	private final OutboxEventService outboxEventService;
 	
-	@Value("${spring.ai.google.genai.chat.options.model}")
+	@Value("${spring.ai.google.genai.chat.model}")
 	private String chatModel;
 
 	/**
