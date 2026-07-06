@@ -53,7 +53,7 @@ class TicketControllerTest {
                 .status(TicketStatus.NEW)
                 .build();
 
-        when(ticketService.createTicket(any(TicketRequest.class))).thenReturn(response);
+        when(ticketService.createTicket(any(), any(TicketRequest.class))).thenReturn(response);
 
         TicketRequest request = TicketRequest.builder()
                 .customerEmail("user@example.com")
@@ -63,6 +63,7 @@ class TicketControllerTest {
                 .build();
 
         mockMvc.perform(post("/api/v1/tickets")
+                        .header("X-User-Id", "123")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -70,7 +71,7 @@ class TicketControllerTest {
                 .andExpect(jsonPath("$.customerEmail").value("user@example.com"));
 
         ArgumentCaptor<TicketRequest> captor = ArgumentCaptor.forClass(TicketRequest.class);
-        verify(ticketService).createTicket(captor.capture());
+        verify(ticketService).createTicket(any(), captor.capture());
         assertThat(captor.getValue().getSubject()).isEqualTo("Login issue");
     }
 

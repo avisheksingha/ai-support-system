@@ -40,8 +40,10 @@ private final TicketService ticketService;
     )
     @PreAuthorize("hasRole('AGENT') or hasRole('ADMIN') or hasRole('CUSTOMER')")
     @PostMapping
-    public ResponseEntity<TicketResponse> createTicket(@Valid @RequestBody TicketRequest request) {
-        TicketResponse response = ticketService.createTicket(request);
+    public ResponseEntity<TicketResponse> createTicket(
+            @org.springframework.web.bind.annotation.RequestHeader(value = "X-User-Id", required = false) String userId,
+            @Valid @RequestBody TicketRequest request) {
+        TicketResponse response = ticketService.createTicket(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
     

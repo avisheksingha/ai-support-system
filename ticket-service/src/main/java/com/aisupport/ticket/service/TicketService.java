@@ -43,16 +43,25 @@ public class TicketService {
      * Creates a new ticket and stores a corresponding {@code TicketCreatedEvent}
      * in the outbox for asynchronous downstream processing.
      *
+     * @param userId optional user ID of the creator
      * @param request ticket creation request payload
      * @return persisted ticket response
      */
     @Transactional
-    public TicketResponse createTicket(TicketRequest request) {
+    public TicketResponse createTicket(String userId, TicketRequest request) {
 
         Ticket ticket = ticketMapper.toEntity(request);
         ticket.setTicketNumber(generateTicketNumber());
         ticket.setStatus(TicketStatus.NEW);
         ticket.setPriority(TicketPriority.MEDIUM);
+        
+        if (userId != null && !userId.isBlank()) {
+            try {
+                ticket.setCustomerId(Long.valueOf(userId));
+            } catch (NumberFormatException e) {
+                log.warn("Invalid user ID format: {}", userId);
+            }
+        }
 
         ticket = ticketRepository.save(ticket);
 

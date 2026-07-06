@@ -24,6 +24,9 @@ public class TicketResponse {
     @Schema(description = "Unique ticket number", example = "TICKET-2024-001")
     private String ticketNumber;
     
+    @Schema(description = "Customer ID", example = "1")
+    private Long customerId;
+    
     @Schema(description = "Customer's email address", example = "user@example.com")
     private String customerEmail;
     
