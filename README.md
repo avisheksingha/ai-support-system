@@ -49,6 +49,21 @@ Key capabilities include:
 
 The result is a system that demonstrates how modern AI services, vector search, and event-driven microservices can work together to improve customer support workflows while maintaining scalability, observability, and maintainability.
 
+### Feature Matrix
+
+| Capability | Status |
+|---|---|
+| Ticket Management | ✅ |
+| Event-Driven Processing | ✅ |
+| AI Sentiment Analysis | ✅ |
+| AI Intent Detection | ✅ |
+| Intelligent Routing | ✅ |
+| Retrieval-Augmented Generation (RAG) | ✅ |
+| Correlation ID Tracing | ✅ |
+| Outbox Pattern | ✅ |
+| Docker Deployment | ✅ |
+| CI/CD Pipeline | ✅ |
+
 ## Overview
 
 The AI Support System is a leading-edge, microservices-based ticket management platform designed to automate and augment traditional support workflows. It leverages AI for analyzing ticket sentiment, urgency, and intent, employs event-driven communication via Apache Kafka, and utilizes rule-based orchestration to intelligently route tickets. Finally, it integrates a Retrieval-Augmented Generation (RAG) service to provide contextual AI responses.
