@@ -38,3 +38,6 @@ GEMINI.md
 .env
 .env.*
 !.env.example
+
+# Custom Agent Settings
+.agents/
