@@ -52,7 +52,7 @@ The result is a system that demonstrates how modern AI services, vector search, 
 ### Feature Matrix
 
 | Capability | Status |
-|---|---|
+| --- | --- |
 | Ticket Management | ✅ |
 | Event-Driven Processing | ✅ |
 | AI Sentiment Analysis | ✅ |
