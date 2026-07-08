@@ -4,7 +4,7 @@
 
 The AI Support System is built using a microservices architecture pattern. This approach allows independent scaling, development, and deployment of distinct business capabilities. Each microservice is designed to be loosely coupled, communicating primarily through RESTful APIs and asynchronous messaging via Apache Kafka. The system is structured around a central API Gateway that serves as the single entry point for all client interactions, ensuring consistent request handling and traceability across services.
 
-![Architecture Diagram](docs/architecture-diagram.svg)
+![Architecture Diagram](docs/architecture/architecture.png)
 
 ### Core Components
 
