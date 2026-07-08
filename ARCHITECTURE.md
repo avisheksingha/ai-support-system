@@ -1,5 +1,101 @@
 # Architectural Design & Decisions
 
+## Architecture Diagram
+
+```mermaid
+flowchart TB
+
+%% ==========================
+%% Client Layer
+%% ==========================
+subgraph CLIENT["Client Layer"]
+    WEB["🌐 Web / Mobile Client"]
+end
+
+%% ==========================
+%% Edge Layer
+%% ==========================
+subgraph EDGE["Edge Layer"]
+    GW["API Gateway"]
+    AUTH["Auth Service"]
+    DISC["Discovery Service"]
+end
+
+%% ==========================
+%% Business Layer
+%% ==========================
+subgraph BUSINESS["Business Services"]
+    TICKET["Ticket Service"]
+    ANALYSIS["AI Analysis Service"]
+    ROUTING["Routing Service"]
+    RAG["RAG Service"]
+end
+
+%% ==========================
+%% Shared Layer
+%% ==========================
+subgraph SHARED["Shared Components"]
+    COMMON["Common Library"]
+end
+
+%% ==========================
+%% Messaging Layer
+%% ==========================
+subgraph EVENTS["Event Streaming"]
+    KAFKA["Apache Kafka"]
+end
+
+%% ==========================
+%% AI Layer
+%% ==========================
+subgraph AI["AI Platform"]
+    GEMINI["Google GenAI (Gemini / Vertex AI)"]
+end
+
+%% ==========================
+%% Data Layer
+%% ==========================
+subgraph DATA["Persistence Layer"]
+    POSTGRES["PostgreSQL"]
+    PGVECTOR["pgvector"]
+end
+
+%% ==========================
+%% Connections
+%% ==========================
+
+WEB --> GW
+
+GW --> AUTH
+GW --> TICKET
+
+AUTH --> POSTGRES
+
+TICKET --> POSTGRES
+TICKET --> KAFKA
+
+KAFKA --> ANALYSIS
+ANALYSIS --> GEMINI
+ANALYSIS --> POSTGRES
+ANALYSIS --> KAFKA
+
+KAFKA --> ROUTING
+ROUTING --> POSTGRES
+
+KAFKA --> RAG
+RAG --> GEMINI
+RAG --> PGVECTOR
+PGVECTOR --> POSTGRES
+
+GW -. Service Discovery .-> DISC
+
+COMMON -. Shared Models .- AUTH
+COMMON -. Shared Models .- TICKET
+COMMON -. Shared Models .- ANALYSIS
+COMMON -. Shared Models .- ROUTING
+COMMON -. Shared Models .- RAG
+```
+
 ## Architecture Decision Summary
 
 | Decision | Selected Option | Alternatives Considered | Reason |
