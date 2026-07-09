@@ -1,9 +1,11 @@
 package com.aisupport.rag.service;
 
 import java.time.Instant;
+import java.util.Map;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
+import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +41,7 @@ public class RagService {
 	private final QuestionAnswerAdvisor questionAnswerAdvisor;
 	private final RagResponseRepository ragResponseRepository;
 	private final OutboxEventService outboxEventService;
+	private final PromptTemplate ragSystemPromptTemplate;
 	
 	@Value("${spring.ai.google.genai.chat.model}")
 	private String chatModel;
@@ -57,18 +60,8 @@ public class RagService {
 		
 		String response;
 		
-		String systemPrompt = """
-			You are a customer support assistant.
-			
-			Rules:
-			1. Use ONLY the retrieved knowledge base context.
-			2. Never invent policies, procedures, timelines, or facts.
-			3. Never answer from your own knowledge.
-			4. If the context does not contain the answer, respond exactly:
-			   "%s"
-			5. Keep the response practical and under 3 sentences.
-			"""
-			.formatted(NO_KNOWLEDGE_FOUND);
+		String systemPrompt = ragSystemPromptTemplate.render(
+		        Map.of("noKnowledgeFound", NO_KNOWLEDGE_FOUND));
 		
 		// Google GenAI call — can fail due to network/quota/model issues
 		try {
