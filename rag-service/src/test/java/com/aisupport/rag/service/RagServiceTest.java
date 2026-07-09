@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
+import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.aisupport.common.event.TicketRagResponseEvent;
@@ -37,13 +38,23 @@ class RagServiceTest {
     private RagResponseRepository ragResponseRepository;
     @Mock
     private OutboxEventService outboxEventService;
+    
+    // Real instance — cheap, deterministic, no mocking needed for a plain value object
+    private final PromptTemplate ragSystemPromptTemplate =
+            new PromptTemplate("You are a support assistant. No answer: {noKnowledgeFound}");
 
     private RagService ragService;
 
     @BeforeEach
     void setUp() {
         chatClient = mock(ChatClient.class, Answers.RETURNS_DEEP_STUBS);
-        ragService = new RagService(chatClient, questionAnswerAdvisor, ragResponseRepository, outboxEventService);
+        ragService = new RagService(
+                chatClient,
+                questionAnswerAdvisor,
+                ragResponseRepository,
+                outboxEventService,
+                ragSystemPromptTemplate
+        );
         ReflectionTestUtils.setField(ragService, "chatModel", "gemini-2.5-flash");
     }
 

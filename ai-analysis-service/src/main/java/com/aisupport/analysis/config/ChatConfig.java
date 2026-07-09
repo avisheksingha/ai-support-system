@@ -1,6 +1,7 @@
 package com.aisupport.analysis.config;
 
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.google.genai.GoogleGenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -38,21 +39,29 @@ public class ChatConfig {
     }
 
     /**
-	 * Creates the Google GenAI ChatProvider when chat.provider=google-genai
-	 * (or when the property is not specified).
-	 */
+     * Creates the Google GenAI ChatProvider when chat.provider=google-genai
+     * (or when the property is not specified).
+     * 
+     * Note: PromptTemplate is injected here to satisfy the constructor dependencies
+     * of the AbstractChatProvider.
+     */
     @Bean
     @ConditionalOnProperty(name = "chat.provider", havingValue = "google-genai", matchIfMissing = true)
-    ChatProvider googleGenAiChatProvider(ChatClient googleGenAiChatClient) {
-        return new GoogleGenAiChatProvider(googleGenAiChatClient);
+    ChatProvider googleGenAiChatProvider(ChatClient googleGenAiChatClient,
+    		PromptTemplate ticketAnalysisPromptTemplate) {
+        return new GoogleGenAiChatProvider(googleGenAiChatClient, ticketAnalysisPromptTemplate);
     }
 
     /**
      * Creates the OpenAI ChatProvider when chat.provider=openai.
+     * 
+     * Note: PromptTemplate is injected here to satisfy the constructor dependencies
+     * of the AbstractChatProvider.
      */
     @Bean
     @ConditionalOnProperty(name = "chat.provider", havingValue = "openai")
-    ChatProvider openAiChatProvider(ChatClient openAiChatClient) {
-        return new OpenAiChatProvider(openAiChatClient);
+    ChatProvider openAiChatProvider(ChatClient openAiChatClient,
+    		PromptTemplate ticketAnalysisPromptTemplate) {
+        return new OpenAiChatProvider(openAiChatClient, ticketAnalysisPromptTemplate);
     }
 }
