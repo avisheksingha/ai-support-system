@@ -3,7 +3,7 @@ import { useTicketList, useTimeline } from "@/features/workspace/hooks/useWorksp
 import { BusinessMetricsCalculator } from "../lib/BusinessMetricsCalculator";
 import {
   Activity, Server, LayoutDashboard, BrainCircuit,
-  CheckCircle2, AlertCircle, TrendingUp, Ticket, Zap, Clock,
+  CheckCircle2, TrendingUp, Ticket, Zap, Clock,
 } from "lucide-react";
 import { TicketTimeline } from "@/features/workspace/components/TicketTimeline";
 import { Skeleton } from "@/components/ui/skeleton";

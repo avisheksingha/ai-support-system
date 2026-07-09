@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { workspaceApi } from "../api/workspaceApi";
 import { workspaceKeys } from "./workspaceKeys";
-import type { TicketStatus, TicketPriority } from "@/shared/types/workspace";
+import type { TicketStatus, TicketPriority } from "@/shared/types/ticket";
 import { toast } from "sonner";
 
 export const useTicketList = (status?: string) => {

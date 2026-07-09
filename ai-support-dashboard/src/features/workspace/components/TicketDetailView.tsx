@@ -12,7 +12,7 @@ const AiInsightsPanel = React.lazy(() => import("./AiInsightsPanel").then(m => (
 const RagResponsePanel = React.lazy(() => import("./RagResponsePanel").then(m => ({ default: m.RagResponsePanel })));
 const RoutingPanel = React.lazy(() => import("./RoutingPanel").then(m => ({ default: m.RoutingPanel })));
 const DiagnosticsPanel = React.lazy(() => import("./DiagnosticsPanel").then(m => ({ default: m.DiagnosticsPanel })));
-import type { TicketStatus } from "@/shared/types/workspace";
+import type { TicketStatus } from "@/shared/types/ticket";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { formatDistanceToNow } from "date-fns";
@@ -28,7 +28,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
   const [searchParams] = useSearchParams();
   const showDiagnostics = searchParams.get("diagnostics") === "true";
   const { user } = useAuth();
-  const isAdmin = user?.role === "ROLE_ADMIN";
+  const isAdmin = user?.role === "ADMIN";
   const isDiagnosticsActive = showDiagnostics && isAdmin;
   
   // We only enable AI/Routing queries if we have the ticket ID
@@ -70,7 +70,6 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
                  ticket={ticket} 
                  analysis={analysis} 
                  knowledge={knowledge} 
-                 routing={routing} 
               />
             </Suspense>
           </ErrorBoundary>

@@ -1,13 +1,15 @@
 import { apiClient } from "@/lib/api-client";
 import type { 
-  TicketModel, 
   AnalysisModel, 
   KnowledgeModel, 
   RoutingModel,
   TimelineEvent,
+} from "@/shared/types/workspace";
+import type {
+  TicketModel,
   TicketStatus,
   TicketPriority
-} from "@/shared/types/workspace";
+} from "@/shared/types/ticket";
 
 export const workspaceApi = {
   // Ticket Service

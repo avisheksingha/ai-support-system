@@ -25,7 +25,7 @@ export function UserDetailDialog({ open, onOpenChange, user }: UserDetailDialogP
   if (!user) return null;
 
   const roleMeta = ROLE_META[user.role] ?? { label: user.role, color: "text-zinc-400 bg-zinc-800 border-zinc-700" };
-  const displayName = user.fullName || user.email?.split("@")[0].replace(/[^a-zA-Z]/g, " ").replace(/\b\w/g, l => l.toUpperCase()) || "Unknown";
+  const displayName = user.fullName || user.email?.split("@")[0]?.replace(/[^a-zA-Z]/g, " ").replace(/\b\w/g, l => l.toUpperCase()) || "Unknown";
   const createdDate = user.createdAt
     ? new Date(user.createdAt).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
     : "—";
@@ -37,12 +37,11 @@ export function UserDetailDialog({ open, onOpenChange, user }: UserDetailDialogP
           <DialogTitle className="text-zinc-100">User Details</DialogTitle>
         </DialogHeader>
 
-        {/* Profile Header */}
         <div className="flex items-center gap-4 py-2">
-          <Avatar nameOrEmail={user.email} size="lg" />
+          <Avatar nameOrEmail={user?.email || undefined} size="lg" className="h-16 w-16" />
           <div>
             <p className="text-lg font-semibold text-zinc-100">{displayName}</p>
-            <p className="text-sm text-zinc-400">{user.email}</p>
+            <p className="text-sm text-zinc-400">{user?.email}</p>
           </div>
         </div>
 

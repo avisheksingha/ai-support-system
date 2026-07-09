@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { BusinessMetricsCalculator } from './BusinessMetricsCalculator';
-import type { TicketModel } from '@/shared/types/workspace';
+import type { TicketModel } from '@/shared/types/ticket';
 
 describe('BusinessMetricsCalculator', () => {
   const mockTickets: TicketModel[] = [

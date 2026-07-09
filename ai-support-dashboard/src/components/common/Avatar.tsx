@@ -3,7 +3,7 @@ import { User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
-  nameOrEmail?: string;
+  nameOrEmail?: string | undefined;
   size?: "sm" | "md" | "lg" | "xl";
 }
 
@@ -22,13 +22,13 @@ export function Avatar({ nameOrEmail, size = "md", className, ...props }: Avatar
     xl: "w-10 h-10",
   };
 
-  const getInitials = (str: string) => {
+  const getInitials = (str?: string | null) => {
     if (!str) return null;
     
     // If it's an email, try to extract first and last name from the first part
-    let namePart = str;
-    if (str.includes('@')) {
-      namePart = str.split('@')[0];
+    let namePart = str as string;
+    if (namePart.includes('@')) {
+      namePart = namePart.split('@')[0] || '';
     }
     
     // Replace non-letters with spaces
@@ -37,10 +37,12 @@ export function Avatar({ nameOrEmail, size = "md", className, ...props }: Avatar
     if (!namePart) return null;
 
     const parts = namePart.split(/\s+/);
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    if (parts.length >= 2 && parts[0] && parts[parts.length - 1]) {
+      const first = parts[0]?.charAt(0) || '';
+      const last = parts[parts.length - 1]?.charAt(0) || '';
+      return (first + last).toUpperCase();
     }
-    return parts[0].substring(0, 2).toUpperCase();
+    return parts[0]?.substring(0, 2).toUpperCase() || null;
   };
 
   const initials = getInitials(nameOrEmail || "?");

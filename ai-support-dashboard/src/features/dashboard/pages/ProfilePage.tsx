@@ -1,5 +1,4 @@
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import { Avatar } from "@/components/common/Avatar";
 import { Mail, Shield, Hash, Calendar, Info } from "lucide-react";
 
 const ROLE_META: Record<string, { label: string; color: string }> = {

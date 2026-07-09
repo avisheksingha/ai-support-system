@@ -14,6 +14,8 @@ const DashboardOverview = React.lazy(() => import("@/features/dashboard/pages/Da
 const SettingsPage = React.lazy(() => import("@/features/dashboard/pages/SettingsPage").then(module => ({ default: module.SettingsPage })));
 const ProfilePage = React.lazy(() => import("@/features/dashboard/pages/ProfilePage").then(module => ({ default: module.ProfilePage })));
 const UsersPage = React.lazy(() => import("@/features/users/pages/UsersPage").then(module => ({ default: module.UsersPage })));
+const MyTicketsPage = React.lazy(() => import("@/features/customer/pages/MyTicketsPage").then(module => ({ default: module.MyTicketsPage })));
+const CustomerTicketDetailPage = React.lazy(() => import("@/features/customer/pages/CustomerTicketDetailPage").then(module => ({ default: module.CustomerTicketDetailPage })));
 import { RoleBasedLanding } from "./RoleBasedLanding";
 
 // A root boundary that injects Auth context so it has access to routing hooks
@@ -90,6 +92,22 @@ export const router = createBrowserRouter([
             element: (
               <Suspense fallback={<DashboardSkeleton />}>
                 <ProfilePage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "my-tickets",
+            element: (
+              <Suspense fallback={<DashboardSkeleton />}>
+                <MyTicketsPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "my-tickets/:ticketNumber",
+            element: (
+              <Suspense fallback={<DashboardSkeleton />}>
+                <CustomerTicketDetailPage />
               </Suspense>
             ),
           },

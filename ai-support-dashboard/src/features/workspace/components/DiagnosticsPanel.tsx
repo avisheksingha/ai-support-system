@@ -1,14 +1,14 @@
-import { Terminal, Activity, FileJson, Clock, Hash, Cpu, Search, BrainCircuit, Network, BookOpen, AlertCircle } from "lucide-react";
-import type { TicketModel, AnalysisModel, KnowledgeModel, RoutingModel } from "@/shared/types/workspace";
+import { Terminal, Activity, Clock, Hash, BrainCircuit, Network, BookOpen, AlertCircle, FileText } from "lucide-react";
+import type { AnalysisModel, KnowledgeModel } from "@/shared/types/workspace";
+import type { TicketModel } from "@/shared/types/ticket";
 
 interface DiagnosticsPanelProps {
   ticket: TicketModel;
-  analysis?: AnalysisModel;
-  knowledge?: KnowledgeModel;
-  routing?: RoutingModel;
+  analysis?: AnalysisModel | undefined;
+  knowledge?: KnowledgeModel | undefined;
 }
 
-export function DiagnosticsPanel({ ticket, analysis, knowledge, routing }: DiagnosticsPanelProps) {
+export function DiagnosticsPanel({ ticket, analysis, knowledge }: DiagnosticsPanelProps) {
   return (
     <div className="bg-zinc-950 border border-red-900/50 rounded-xl overflow-hidden mb-6">
       <div className="bg-red-950/30 border-b border-red-900/50 p-4 flex items-center justify-between">
@@ -116,4 +116,3 @@ function DataPoint({ label, value, icon }: { label: string, value: string | numb
   );
 }
 
-import { FileText } from "lucide-react";

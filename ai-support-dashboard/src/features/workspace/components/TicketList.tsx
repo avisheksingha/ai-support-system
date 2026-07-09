@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { Search, Loader2 } from "lucide-react";
-import type { TicketModel } from "@/shared/types/workspace";
+import type { TicketModel } from "@/shared/types/ticket";
 
 interface TicketListProps {
   selectedTicket: string | null;

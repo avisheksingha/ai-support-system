@@ -1,6 +1,6 @@
 import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import { LogOut, LayoutDashboard, Ticket, Settings, User, Users, Bot, ChevronRight } from "lucide-react";
+import { LogOut, LayoutDashboard, Ticket, Settings, User, Users, Bot, ChevronRight, ExternalLink, Radio } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +12,7 @@ import {
 const NAV_ITEMS = [
   { name: "Dashboard",  path: "/dashboard", icon: LayoutDashboard, roles: ["ADMIN"] },
   { name: "Workspace",  path: "/tickets",   icon: Ticket,          roles: ["AGENT", "ADMIN"] },
+  { name: "My Tickets", path: "/my-tickets",icon: Ticket,          roles: ["CUSTOMER"] },
   { name: "Users",      path: "/users",     icon: Users,           roles: ["ADMIN"] },
   { name: "Settings",   path: "/settings",  icon: Settings,        roles: ["ADMIN"] },
 ];
@@ -19,6 +20,7 @@ const NAV_ITEMS = [
 const BREADCRUMB_MAP: Record<string, string> = {
   "/dashboard": "Operations Center",
   "/tickets":   "Ticket Workspace",
+  "/my-tickets":"Customer Portal",
   "/users":     "User Management",
   "/settings":  "Settings",
   "/profile":   "My Profile",
@@ -89,11 +91,32 @@ export function DashboardLayout() {
               )}
             </NavLink>
           ))}
+
+          {/* External Tools — ADMIN only */}
+          {user?.role === "ADMIN" && (
+            <>
+              <div className="my-3 border-t border-zinc-800/60" />
+              <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-widest px-3 mb-3 mt-1">
+                Infrastructure
+              </p>
+              <a
+                href={import.meta.env.VITE_REDPANDA_URL || "http://localhost:9090"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm font-medium text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200 border border-transparent"
+              >
+                <Radio className="h-4 w-4 shrink-0 text-zinc-600 group-hover:text-orange-400 transition-colors" />
+                <span className="flex-1">Kafka Console</span>
+                <ExternalLink className="h-3 w-3 text-zinc-700 group-hover:text-zinc-500 transition-colors" />
+              </a>
+            </>
+          )}
         </nav>
 
         {/* User footer */}
         <div className="p-3 border-t border-zinc-800/60">
           <DropdownMenu>
+            {/* @ts-ignore: Radix UI asChild type incompatibility */}
             <DropdownMenuTrigger asChild>
               <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-zinc-900 transition-colors text-left outline-none border border-transparent hover:border-zinc-800">
                 <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white text-[11px] font-bold shrink-0 shadow-md shadow-indigo-500/20">

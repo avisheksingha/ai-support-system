@@ -1,4 +1,4 @@
-import type { TicketModel, TicketPriority, TicketStatus } from "@/shared/types/workspace";
+import type { TicketModel, TicketPriority } from "@/shared/types/ticket";
 
 export class BusinessMetricsCalculator {
   static calculateOpenTickets(tickets: TicketModel[]): number {
@@ -6,10 +6,10 @@ export class BusinessMetricsCalculator {
   }
 
   static calculateResolvedToday(tickets: TicketModel[]): number {
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split('T')[0] || '';
     return tickets.filter(t => 
       (t.status === "RESOLVED" || t.status === "CLOSED") && 
-      t.updatedAt.startsWith(today)
+      t.updatedAt && t.updatedAt.startsWith(today)
     ).length;
   }
 

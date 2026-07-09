@@ -66,6 +66,7 @@ public class SecurityConfig {
     ) {
         try {
 	        http
+	            .csrf(csrf -> csrf.disable())
 	            .sessionManagement(session ->
 	                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 	            

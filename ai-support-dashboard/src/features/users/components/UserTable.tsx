@@ -75,12 +75,12 @@ export function UserTable({ users }: UserTableProps) {
               users.map((user) => (
                 <TableRow key={user.id} className="border-zinc-800 hover:bg-zinc-900/50 transition-colors">
                   <TableCell className="py-3">
-                    <Avatar nameOrEmail={user.email} size="sm" />
+                    <Avatar nameOrEmail={user?.email || undefined} size="sm" />
                   </TableCell>
                   <TableCell className="py-3">
                     <div className="flex flex-col">
                       <span className="font-medium text-zinc-200">
-                        {user.email?.split('@')[0].replace(/[^a-zA-Z]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'System User'}
+                        {user.email?.split('@')[0]?.replace(/[^a-zA-Z]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'System User'}
                       </span>
                       <span className="text-xs text-zinc-500">{user.email}</span>
                     </div>

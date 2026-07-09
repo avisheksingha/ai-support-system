@@ -11,3 +11,11 @@ export const canViewDashboard = (user: User | null): boolean => {
 export const canManageTickets = (user: User | null): boolean => {
   return !!user && (user.role === "ADMIN" || user.role === "AGENT");
 };
+
+export const canViewOwnTickets = (user: User | null): boolean => {
+  return !!user && user.role === "CUSTOMER";
+};
+
+export const canCreateTicket = (user: User | null): boolean => {
+  return !!user && user.role === "CUSTOMER";
+};

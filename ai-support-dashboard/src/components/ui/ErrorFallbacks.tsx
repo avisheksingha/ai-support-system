@@ -2,7 +2,7 @@ import { AlertTriangle, RefreshCcw } from "lucide-react";
 import { Button } from "./button";
 
 interface FallbackProps {
-  error: Error;
+  error: any;
   resetErrorBoundary: () => void;
 }
 

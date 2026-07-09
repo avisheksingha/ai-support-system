@@ -1,20 +1,5 @@
-export type TicketStatus = "NEW" | "ANALYZING" | "ANALYZED" | "ASSIGNED" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
-export type TicketPriority = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+import type { TicketPriority } from "../ticket";
 
-export interface TicketModel {
-  id: number;
-  ticketNumber: string;
-  customerId: number;
-  customerEmail: string;
-  customerName: string;
-  subject: string;
-  message: string;
-  status: TicketStatus;
-  priority: TicketPriority;
-  assignedTo?: string;
-  createdAt: string;
-  updatedAt: string;
-}
 
 export interface AnalysisModel {
   id: number;
