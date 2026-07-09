@@ -1,78 +1,47 @@
 package com.aisupport.analysis.chat;
 
-import java.util.List;
-
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.converter.BeanOutputConverter;
+import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.aisupport.analysis.dto.ParsedAnalysis;
-import com.aisupport.analysis.exception.AnalysisException;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
-public class OpenAiChatProvider implements ChatProvider {
+/**
+ * OpenAI implementation of the ChatProvider strategy.
+ * 
+ * Utilizes Resilience4j for rate limiting and circuit breaking to ensure
+ * system stability during OpenAI API outages or rate limit breaches.
+ */
+public class OpenAiChatProvider extends AbstractChatProvider {
 
-    private final ChatClient chatClient;
-
-    public OpenAiChatProvider(@Qualifier("openAiChatClient") ChatClient chatClient) {
-        this.chatClient = chatClient;
+    /**
+     * Injects the OpenAI-specific ChatClient and the shared PromptTemplate.
+     * 
+     * @param chatClient The OpenAI ChatClient bean
+     * @param ticketAnalysisPromptTemplate The shared prompt template
+     */
+    public OpenAiChatProvider(@Qualifier("openAiChatClient") ChatClient chatClient,
+                              PromptTemplate ticketAnalysisPromptTemplate) {
+        super(chatClient, ticketAnalysisPromptTemplate, "OpenAI");
     }
 
     /**
-	 * Analyzes a support ticket using OpenAI's chat model.
-	 * The method is protected by a rate limiter and a circuit breaker to ensure resilience.
-	 * If the OpenAI service is unavailable or fails, it falls back to a default analysis.
-	 *
-	 * @param subject the subject of the support ticket
-	 * @param message the message content of the support ticket
-	 * @return a ParsedAnalysis object containing the analysis results
-	 */
+     * Analyzes a support ticket using OpenAI's chat model.
+     * The method is protected by a rate limiter and a circuit breaker to ensure resilience.
+     * If the OpenAI service is unavailable or fails, it falls back to a default analysis.
+     *
+     * @param subject the subject of the support ticket
+     * @param message the message content of the support ticket
+     * @return a ParsedAnalysis object containing the analysis results
+     */
     @RateLimiter(name = "openAiRateLimiter")
     @CircuitBreaker(name = "openAiCircuitBreaker", fallbackMethod = "fallbackAnalysis")
     @Override
     public ParsedAnalysis analyzeTicket(String subject, String message) {
-
-        try {
-            var outputConverter = new BeanOutputConverter<>(ParsedAnalysis.class);
-
-            String promptTemplate = """
-                    You are an AI support ticket analyzer.
-                    Subject: {subject}
-                    Message: {message}
-
-                    {format}
-                    """;
-
-            return chatClient.prompt()
-                    .user(u -> u.text(promptTemplate)
-                            .param("subject", subject)
-                            .param("message", message)
-                            .param("format", outputConverter.getFormat()))
-                    .call()
-                    .entity(outputConverter);
-
-        } catch (Exception e) {
-            log.error("Unexpected error during OpenAI analysis", e);
-            throw new AnalysisException("OpenAI analysis failed: " + e.getMessage(), e);
-        }
-    }
-
-    protected ParsedAnalysis fallbackAnalysis(String subject, String message, Throwable ex) {
-
-        log.error("OpenAI circuit open or failed - fallback used for ticket subject: '{}'", subject, ex);
-        log.trace("Original ticket message that caused failure: {}", message);
-
-        return ParsedAnalysis.builder()
-                .intent("GENERAL")
-                .sentiment("NEUTRAL")
-                .urgency("LOW")
-                .confidenceScore(0.0)
-                .keywords(List.of())
-                .suggestedCategory("Fallback")
-                .build();
+        // Delegates to the shared implementation in AbstractChatProvider
+        return super.analyzeTicket(subject, message);
     }
 }
