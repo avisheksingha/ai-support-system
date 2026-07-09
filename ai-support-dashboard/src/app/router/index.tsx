@@ -9,6 +9,7 @@ import { NotFound } from "@/components/common/NotFound";
 
 // Lazy Loaded Routes
 const LoginPage = React.lazy(() => import("@/features/auth/pages/LoginPage").then(module => ({ default: module.LoginPage })));
+const SignupPage = React.lazy(() => import("@/features/auth/pages/SignupPage").then(module => ({ default: module.SignupPage })));
 const TicketWorkspace = React.lazy(() => import("@/features/workspace/pages/TicketWorkspace").then(module => ({ default: module.TicketWorkspace })));
 const DashboardOverview = React.lazy(() => import("@/features/dashboard/pages/DashboardOverview").then(module => ({ default: module.DashboardOverview })));
 const SettingsPage = React.lazy(() => import("@/features/dashboard/pages/SettingsPage").then(module => ({ default: module.SettingsPage })));
@@ -38,6 +39,14 @@ export const router = createBrowserRouter([
             element: (
               <Suspense fallback={<LoginSkeleton />}>
                 <LoginPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "signup",
+            element: (
+              <Suspense fallback={<LoginSkeleton />}>
+                <SignupPage />
               </Suspense>
             ),
           },

@@ -29,19 +29,19 @@ export function LockUserDialog({
   
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="bg-zinc-950 border-zinc-800 text-zinc-100">
+      <AlertDialogContent className="bg-background border-border text-foreground">
         <AlertDialogHeader>
           <AlertDialogTitle>
             {isLocking ? "Lock User Account?" : "Unlock User Account?"}
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-zinc-400">
+          <AlertDialogDescription className="text-muted-foreground">
             {isLocking 
               ? `Are you sure you want to lock ${user.email}? They will immediately lose access to the system and will not be able to log in.`
               : `Are you sure you want to unlock ${user.email}? Their access will be restored immediately.`}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading} className="border-zinc-800 hover:bg-zinc-800 hover:text-zinc-100">
+          <AlertDialogCancel disabled={isLoading} className="border-border hover:bg-muted hover:text-foreground">
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction 

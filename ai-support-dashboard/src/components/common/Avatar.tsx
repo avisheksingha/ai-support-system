@@ -50,7 +50,7 @@ export function Avatar({ nameOrEmail, size = "md", className, ...props }: Avatar
   return (
     <div
       className={cn(
-        "rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-md",
+        "rounded-full bg-gradient-to-br from-blue-600 to-blue-600 flex items-center justify-center shadow-md",
         sizeClasses[size],
         className
       )}

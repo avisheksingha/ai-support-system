@@ -23,22 +23,28 @@ export function TicketList({ selectedTicket, onSelectTicket }: TicketListProps) 
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <div className="p-4 border-b border-zinc-800 shrink-0">
-        <h2 className="text-xl font-bold mb-4">Tickets</h2>
-        <div className="relative">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
-          <Input 
-            placeholder="Search tickets..." 
-            className="pl-9 bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-indigo-500"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      <div className="shrink-0">
+        <div className="h-16 flex items-center px-5 border-b border-border">
+          <span className="font-bold text-sm tracking-tight text-foreground">
+            Tickets
+          </span>
+        </div>
+        <div className="p-4 border-b border-border">
+          <div className="relative">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="Search tickets..." 
+              className="pl-9 bg-card border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-[#0C66E4] shadow-sm"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
       </div>
       
       <div className="flex-1 overflow-y-auto p-2 space-y-1">
         {isLoading && (
-          <div className="flex justify-center p-8 text-zinc-500">
+          <div className="flex justify-center p-8 text-muted-foreground">
             <Loader2 className="h-6 w-6 animate-spin" />
           </div>
         )}
@@ -50,7 +56,7 @@ export function TicketList({ selectedTicket, onSelectTicket }: TicketListProps) 
         )}
 
         {!isLoading && filteredTickets.length === 0 && (
-          <div className="text-zinc-500 p-4 text-sm text-center">
+          <div className="text-muted-foreground p-4 text-sm text-center">
             No tickets found.
           </div>
         )}
@@ -61,17 +67,17 @@ export function TicketList({ selectedTicket, onSelectTicket }: TicketListProps) 
             onClick={() => onSelectTicket(ticket.ticketNumber)}
             className={`w-full text-left p-4 rounded-xl border transition-all duration-300 ease-in-out ${
               selectedTicket === ticket.ticketNumber
-                ? "bg-indigo-500/10 border-indigo-500/50 scale-[1.02]"
-                : "bg-zinc-900/30 border-transparent hover:bg-zinc-900 hover:border-zinc-800 hover:scale-[1.01]"
+                ? "bg-blue-500/10 border-blue-500/50 scale-[1.02]"
+                : "bg-card border-transparent hover:bg-card hover:border-border hover:scale-[1.01]"
             }`}
           >
             <div className="flex justify-between items-start mb-2">
-              <span className="text-xs font-mono text-zinc-400">{ticket.ticketNumber}</span>
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs font-mono text-muted-foreground">{ticket.ticketNumber}</span>
+              <span className="text-xs text-muted-foreground">
                 {ticket.updatedAt ? formatDistanceToNow(new Date(ticket.updatedAt), { addSuffix: true }) : 'just now'}
               </span>
             </div>
-            <h3 className="text-sm font-medium text-zinc-100 line-clamp-2 mb-3">
+            <h3 className="text-sm font-medium text-foreground line-clamp-2 mb-3">
               {ticket.subject}
             </h3>
             
@@ -79,11 +85,11 @@ export function TicketList({ selectedTicket, onSelectTicket }: TicketListProps) 
               <Badge variant="outline" className={`text-[10px] uppercase ${getPriorityColor(ticket.priority)}`}>
                 {ticket.priority}
               </Badge>
-              <Badge variant="secondary" className="text-[10px] bg-zinc-800 text-zinc-300">
+              <Badge variant="secondary" className="text-[10px] bg-muted text-foreground">
                 {ticket.status}
               </Badge>
               {ticket.assignedTo && (
-                <div className="ml-auto text-xs text-zinc-500 truncate max-w-[80px]">
+                <div className="ml-auto text-xs text-muted-foreground truncate max-w-[80px]">
                   @{ticket.assignedTo}
                 </div>
               )}
@@ -97,10 +103,10 @@ export function TicketList({ selectedTicket, onSelectTicket }: TicketListProps) 
 
 function getPriorityColor(priority: string) {
   switch (priority) {
-    case "CRITICAL": return "text-red-400 border-red-400/30 bg-red-400/10";
-    case "HIGH": return "text-orange-400 border-orange-400/30 bg-orange-400/10";
-    case "MEDIUM": return "text-yellow-400 border-yellow-400/30 bg-yellow-400/10";
-    case "LOW": return "text-blue-400 border-blue-400/30 bg-blue-400/10";
-    default: return "text-zinc-400 border-zinc-700";
+    case "CRITICAL": return "text-red-600 border-red-200 bg-red-50";
+    case "HIGH": return "text-orange-600 border-orange-200 bg-orange-50";
+    case "MEDIUM": return "text-yellow-600 border-yellow-200 bg-yellow-50";
+    case "LOW": return "text-blue-600 border-blue-200 bg-blue-50";
+    default: return "text-muted-foreground border-border";
   }
 }

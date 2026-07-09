@@ -41,14 +41,14 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
     return (
       <div className="flex-1 p-6 md:p-8 flex flex-col xl:flex-row gap-8">
         <div className="flex-1 min-w-[50%] flex flex-col gap-6">
-          <Skeleton className="h-8 w-2/3 bg-zinc-900" />
-          <Skeleton className="h-4 w-1/3 bg-zinc-900" />
-          <Skeleton className="h-32 w-full bg-zinc-900 rounded-xl" />
+          <Skeleton className="h-8 w-2/3 bg-card" />
+          <Skeleton className="h-4 w-1/3 bg-card" />
+          <Skeleton className="h-32 w-full bg-card rounded-xl" />
         </div>
         <div className="xl:w-[400px] shrink-0 flex flex-col gap-6">
-          <Skeleton className="h-6 w-1/2 bg-zinc-900" />
-          <Skeleton className="h-48 w-full bg-zinc-900 rounded-xl" />
-          <Skeleton className="h-48 w-full bg-zinc-900 rounded-xl" />
+          <Skeleton className="h-6 w-1/2 bg-card" />
+          <Skeleton className="h-48 w-full bg-card rounded-xl" />
+          <Skeleton className="h-48 w-full bg-card rounded-xl" />
         </div>
       </div>
     );
@@ -59,13 +59,13 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 md:p-8 flex flex-col xl:flex-row gap-8">
+    <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 flex flex-col xl:flex-row gap-6 lg:gap-8">
       {/* Primary Column: Conversation & Actions */}
-      <div className="flex-1 min-w-[50%] flex flex-col gap-6">
+      <div className="flex-1 min-w-0 flex flex-col gap-6">
         
         {isDiagnosticsActive && (
           <ErrorBoundary FallbackComponent={WorkspaceErrorFallback}>
-            <Suspense fallback={<Skeleton className="h-64 w-full bg-zinc-900 rounded-xl" />}>
+            <Suspense fallback={<Skeleton className="h-64 w-full bg-card rounded-xl" />}>
               <DiagnosticsPanel 
                  ticket={ticket} 
                  analysis={analysis} 
@@ -75,17 +75,18 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
           </ErrorBoundary>
         )}
 
-        <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-5 mb-2 shadow-sm">
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <div className="flex items-center gap-3 mb-1">
-                <span className="text-zinc-500 font-mono text-sm">{ticket.ticketNumber}</span>
-                <h1 className="text-xl font-bold text-zinc-100">{ticket.subject}</h1>
+        <div className="bg-card shadow-sm border-0 ring-1 ring-border/50 rounded-lg p-5 mb-2">
+          <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-4">
+            <div className="flex-1 min-w-0">
+              <div className="mb-1">
+                <span className="text-muted-foreground font-mono text-[11px] uppercase tracking-wider">{ticket.ticketNumber}</span>
               </div>
-              <div className="flex items-center gap-3 text-sm">
-                <span className="text-zinc-400">Created {formatDistanceToNow(new Date(ticket.createdAt))} ago</span>
-                <span className="text-zinc-600">•</span>
-                <span className="text-zinc-400">Customer: <span className="text-zinc-200">{ticket.customerName}</span></span>
+              <h1 className="text-2xl font-medium text-foreground leading-snug mb-3 break-words">{ticket.subject}</h1>
+              
+              <div className="flex flex-wrap items-center gap-2 text-[13px]">
+                <span className="text-muted-foreground">Created {formatDistanceToNow(new Date(ticket.createdAt))} ago</span>
+                <span className="text-muted-foreground font-bold px-1">·</span>
+                <span className="text-muted-foreground">Customer: <span className="text-foreground font-medium">{ticket.customerName}</span></span>
               </div>
             </div>
             
@@ -102,7 +103,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
                 value={ticket.status} 
                 onValueChange={(val) => updateStatus({ ticketNumber: ticket.ticketNumber, status: val as TicketStatus })}
               >
-                <SelectTrigger className="h-8 text-xs bg-zinc-800 text-zinc-200 border-zinc-700 w-[130px]">
+                <SelectTrigger className="h-8 text-xs bg-muted text-foreground border-border w-[130px]">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -121,56 +122,56 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
 
         {/* Conversation (Customer Message) */}
         <div>
-          <h2 className="text-sm font-semibold text-zinc-400 mb-3 uppercase tracking-wider">Conversation</h2>
-          <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6">
+          <h2 className="text-[11px] font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Conversation</h2>
+          <div className="bg-card shadow-sm border-0 ring-1 ring-border/50 rounded-lg p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="h-8 w-8 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-xs">
+              <div className="h-8 w-8 rounded-full bg-[#0C66E4]/10 text-[#0C66E4] flex items-center justify-center font-bold text-xs">
                 {ticket.customerName.charAt(0)}
               </div>
               <div>
-                <div className="text-sm font-medium text-zinc-200">{ticket.customerName}</div>
-                <div className="text-xs text-zinc-500">Customer</div>
+                <div className="text-sm font-medium text-foreground">{ticket.customerName}</div>
+                <div className="text-xs text-muted-foreground">Customer</div>
               </div>
             </div>
-            <p className="text-zinc-300 whitespace-pre-wrap ml-11">{ticket.message}</p>
+            <p className="text-foreground whitespace-pre-wrap text-sm leading-relaxed ml-11">{ticket.message}</p>
           </div>
         </div>
 
         {/* Activity Feed */}
         <div className="mt-4">
-          <h2 className="text-sm font-semibold text-zinc-400 mb-4 uppercase tracking-wider">Activity Feed</h2>
+          <h2 className="text-[11px] font-semibold text-muted-foreground mb-4 uppercase tracking-wider">Activity Feed</h2>
           {isTimelineLoading ? (
             <div className="space-y-4 ml-4">
-              <Skeleton className="h-10 w-full bg-zinc-900" />
-              <Skeleton className="h-10 w-full bg-zinc-900" />
-              <Skeleton className="h-10 w-full bg-zinc-900" />
+              <Skeleton className="h-10 w-full bg-card" />
+              <Skeleton className="h-10 w-full bg-card" />
+              <Skeleton className="h-10 w-full bg-card" />
             </div>
           ) : timeline ? (
             <TicketTimeline events={timeline} />
           ) : (
-            <div className="text-sm text-zinc-500 italic ml-4">No activity yet.</div>
+            <div className="text-sm text-muted-foreground italic ml-4">No activity yet.</div>
           )}
         </div>
       </div>
 
       {/* Secondary Column: AI & Automation Workspace */}
-      <div className="xl:w-[400px] shrink-0 flex flex-col gap-6">
+      <div className="w-full xl:w-[360px] shrink-0 flex flex-col gap-6">
         
         {/* AI Insights Panel */}
         {isAnalysisLoading ? (
-          <Skeleton className="h-48 w-full bg-zinc-900 rounded-xl" />
+          <Skeleton className="h-48 w-full bg-card rounded-xl" />
         ) : analysis ? (
           <ErrorBoundary FallbackComponent={WorkspaceErrorFallback}>
-            <Suspense fallback={<Skeleton className="h-48 w-full bg-zinc-900 rounded-xl" />}>
+            <Suspense fallback={<Skeleton className="h-48 w-full bg-card rounded-xl" />}>
               <AiInsightsPanel analysis={analysis} />
             </Suspense>
           </ErrorBoundary>
         ) : (
-          <div className="border border-zinc-800/50 border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center gap-3">
+          <div className="border border-border border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center gap-3">
             <div className="text-2xl animate-bounce">🤖</div>
             <div className="flex flex-col items-center gap-1">
-              <p className="text-sm font-medium text-zinc-300">Analyzing customer issue</p>
-              <div className="flex gap-1 text-indigo-500">
+              <p className="text-sm font-medium text-foreground">Analyzing customer issue</p>
+              <div className="flex gap-1 text-blue-500">
                 <span className="animate-pulse delay-75">●</span>
                 <span className="animate-pulse delay-150">○</span>
                 <span className="animate-pulse delay-300">○</span>
@@ -181,18 +182,18 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
 
         {/* Knowledge Panel */}
         {isKnowledgeLoading ? (
-           <Skeleton className="h-48 w-full bg-zinc-900 rounded-xl" />
+           <Skeleton className="h-48 w-full bg-card rounded-xl" />
         ) : knowledge ? (
           <ErrorBoundary FallbackComponent={WorkspaceErrorFallback}>
-            <Suspense fallback={<Skeleton className="h-48 w-full bg-zinc-900 rounded-xl" />}>
+            <Suspense fallback={<Skeleton className="h-48 w-full bg-card rounded-xl" />}>
               <RagResponsePanel knowledge={knowledge} />
             </Suspense>
           </ErrorBoundary>
         ) : (
-          <div className="border border-zinc-800/50 border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center gap-3">
+          <div className="border border-border border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center gap-3">
             <div className="text-2xl animate-bounce" style={{ animationDelay: '0.2s' }}>📚</div>
             <div className="flex flex-col items-center gap-1">
-              <p className="text-sm font-medium text-zinc-300">Retrieving Knowledge</p>
+              <p className="text-sm font-medium text-foreground">Retrieving Knowledge</p>
               <div className="flex gap-1 text-emerald-500">
                 <span className="animate-pulse delay-75">●</span>
                 <span className="animate-pulse delay-150">○</span>
@@ -204,19 +205,19 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
 
         {/* Assignment Panel */}
         {isRoutingLoading ? (
-           <Skeleton className="h-32 w-full bg-zinc-900 rounded-xl" />
+           <Skeleton className="h-32 w-full bg-card rounded-xl" />
         ) : routing ? (
           <ErrorBoundary FallbackComponent={WorkspaceErrorFallback}>
-            <Suspense fallback={<Skeleton className="h-32 w-full bg-zinc-900 rounded-xl" />}>
+            <Suspense fallback={<Skeleton className="h-32 w-full bg-card rounded-xl" />}>
               <RoutingPanel routing={routing} />
             </Suspense>
           </ErrorBoundary>
         ) : (
-          <div className="border border-zinc-800/50 border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center gap-3">
+          <div className="border border-border border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center gap-3">
             <div className="text-2xl animate-bounce" style={{ animationDelay: '0.4s' }}>🧭</div>
             <div className="flex flex-col items-center gap-1">
-              <p className="text-sm font-medium text-zinc-300">Evaluating Routing Rules</p>
-              <div className="flex gap-1 text-purple-500">
+              <p className="text-sm font-medium text-foreground">Evaluating Routing Rules</p>
+              <div className="flex gap-1 text-blue-500">
                 <span className="animate-pulse delay-75">●</span>
                 <span className="animate-pulse delay-150">○</span>
                 <span className="animate-pulse delay-300">○</span>

@@ -26,14 +26,17 @@ export function UserActionsMenu({ user, onEditRole, onToggleLock, onViewDetails 
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger className="h-8 w-8 p-0 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded-md inline-flex items-center justify-center outline-none border-none">
+      <DropdownMenuTrigger 
+        disabled={user.role === 'ADMIN'}
+        className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md inline-flex items-center justify-center outline-none border-none disabled:opacity-30 disabled:cursor-not-allowed"
+      >
         <span className="sr-only">Open menu</span>
         <MoreHorizontal className="h-4 w-4" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48 bg-zinc-950 border-zinc-800 text-zinc-200">
+      <DropdownMenuContent align="end" className="w-48 bg-background border-border text-foreground">
         <DropdownMenuItem
           onClick={onViewDetails}
-          className="focus:bg-zinc-900 cursor-pointer"
+          className="focus:bg-card cursor-pointer"
         >
           <Eye className="mr-2 h-4 w-4" />
           <span>View Details</span>
@@ -42,13 +45,13 @@ export function UserActionsMenu({ user, onEditRole, onToggleLock, onViewDetails 
         <DropdownMenuItem
           onClick={onEditRole}
           disabled={isSelf}
-          className="focus:bg-zinc-900 cursor-pointer"
+          className="focus:bg-card cursor-pointer"
         >
           <Shield className="mr-2 h-4 w-4" />
           <span>Edit Role</span>
         </DropdownMenuItem>
 
-        <DropdownMenuSeparator className="bg-zinc-800" />
+        <DropdownMenuSeparator className="bg-muted" />
 
         <DropdownMenuItem
           onClick={onToggleLock}

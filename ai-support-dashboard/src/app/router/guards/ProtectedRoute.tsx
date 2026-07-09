@@ -8,9 +8,9 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 text-zinc-50 space-y-4">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
-        <p className="text-zinc-400 text-sm font-medium animate-pulse">Authenticating...</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground space-y-4">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+        <p className="text-muted-foreground text-sm font-medium animate-pulse">Authenticating...</p>
       </div>
     );
   }

@@ -6,19 +6,20 @@ import { useAuth } from "../hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Eye, EyeOff, Lock, Mail } from "lucide-react";
+import { Loader2, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
 import type { ApiError } from "@/lib/api-client";
 import { Link } from "react-router-dom";
 
-const loginSchema = z.object({
+const signupSchema = z.object({
+  fullName: z.string().min(2, "Full name must be at least 2 characters."),
   email: z.string().email("Please enter a valid email address."),
-  password: z.string().min(1, "Password is required."),
+  password: z.string().min(6, "Password must be at least 6 characters."),
 });
 
-type LoginFormValues = z.infer<typeof loginSchema>;
+type SignupFormValues = z.infer<typeof signupSchema>;
 
-export function LoginPage() {
-  const { login } = useAuth();
+export function SignupPage() {
+  const { register: registerUser } = useAuth();
   const [apiError, setApiError] = useState<{ message: string; type: "error" | "warning" } | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -26,36 +27,21 @@ export function LoginPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { email: "", password: "" },
+  } = useForm<SignupFormValues>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: { fullName: "", email: "", password: "" },
   });
 
-  const onSubmit = async (data: LoginFormValues) => {
+  const onSubmit = async (data: SignupFormValues) => {
     setApiError(null);
     try {
-      await login(data);
+      await registerUser(data);
     } catch (error) {
       const err = error as ApiError;
-      if (err.status === 401) {
-        const msg = err.message?.toLowerCase() ?? "";
-        if (msg.includes("locked") || msg.includes("disabled")) {
-          setApiError({
-            message: "Your account has been locked. Please contact an administrator.",
-            type: "warning",
-          });
-        } else {
-          setApiError({
-            message: "Invalid email or password. Please try again.",
-            type: "error",
-          });
-        }
-      } else {
-        setApiError({
-          message: err.message || "An unexpected error occurred during login.",
-          type: "error",
-        });
-      }
+      setApiError({
+        message: err.message || "An unexpected error occurred during signup.",
+        type: "error",
+      });
     }
   };
 
@@ -64,15 +50,36 @@ export function LoginPage() {
       {/* Header */}
       <div className="space-y-1.5 text-center pb-2">
         <h2 className="text-xl font-semibold tracking-tight text-foreground">
-          Log in to continue
+          Create an account
         </h2>
         <p className="text-sm text-muted-foreground">
-          to your AI Support account
+          Join the AI Support Ops platform
         </p>
       </div>
 
       {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        
+        {/* Full Name */}
+        <div className="space-y-1.5">
+          <Label htmlFor="fullName" className="text-sm font-medium text-foreground">
+            Full name
+          </Label>
+          <div className="relative">
+            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              id="fullName"
+              type="text"
+              autoComplete="name"
+              placeholder="John Doe"
+              className="pl-10 h-11 bg-card border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-[#0C66E4] focus-visible:border-[#0C66E4]/50 transition-colors"
+              {...register("fullName")}
+            />
+          </div>
+          {errors.fullName && (
+            <p className="text-xs font-medium text-red-400">{errors.fullName.message}</p>
+          )}
+        </div>
 
         {/* Email */}
         <div className="space-y-1.5">
@@ -86,7 +93,7 @@ export function LoginPage() {
               type="email"
               autoComplete="email"
               placeholder="you@aisupport.com"
-              className="pl-10 h-11 bg-card border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500/50 transition-colors"
+              className="pl-10 h-11 bg-card border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-[#0C66E4] focus-visible:border-[#0C66E4]/50 transition-colors"
               {...register("email")}
             />
           </div>
@@ -97,26 +104,17 @@ export function LoginPage() {
 
         {/* Password */}
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password" className="text-sm font-medium text-foreground">
-              Password
-            </Label>
-            <button
-              type="button"
-              className="text-xs text-blue-400 hover:text-blue-300 transition-colors font-medium"
-              tabIndex={-1}
-            >
-              Forgot password?
-            </button>
-          </div>
+          <Label htmlFor="password" className="text-sm font-medium text-foreground">
+            Password
+          </Label>
           <div className="relative">
             <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
-              autoComplete="current-password"
+              autoComplete="new-password"
               placeholder="••••••••"
-              className="pl-10 pr-10 h-11 bg-card border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500/50 transition-colors"
+              className="pl-10 pr-10 h-11 bg-card border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-[#0C66E4] focus-visible:border-[#0C66E4]/50 transition-colors"
               {...register("password")}
             />
             <button
@@ -134,16 +132,10 @@ export function LoginPage() {
           )}
         </div>
 
-        {/* Error / Warning banner */}
+        {/* Error banner */}
         {apiError && (
-          <div className={`flex items-start gap-3 p-3.5 rounded-lg text-sm border ${
-            apiError.type === "warning"
-              ? "bg-amber-500/8 border-amber-500/25 text-amber-300"
-              : "bg-red-500/8 border-red-500/20 text-red-400"
-          }`}>
-            <span className="text-base leading-none mt-0.5 shrink-0">
-              {apiError.type === "warning" ? "🔒" : "⚠️"}
-            </span>
+          <div className={`flex items-start gap-3 p-3.5 rounded-lg text-sm border bg-red-500/8 border-red-500/20 text-red-400`}>
+            <span className="text-base leading-none mt-0.5 shrink-0">⚠️</span>
             <span>{apiError.message}</span>
           </div>
         )}
@@ -157,26 +149,19 @@ export function LoginPage() {
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Authenticating…
+              Creating account…
             </>
           ) : (
-            "Sign in"
+            "Sign up"
           )}
         </Button>
       </form>
 
-      {/* Divider */}
-      <div className="flex items-center gap-3">
-        <div className="flex-1 h-px bg-muted" />
-        <span className="text-xs text-muted-foreground">Secure access only</span>
-        <div className="flex-1 h-px bg-muted" />
-      </div>
-
       {/* Help text */}
       <p className="text-center text-sm text-muted-foreground">
-        Don't have an account?{" "}
-        <Link to="/auth/signup" className="text-[#0C66E4] hover:text-[#0052CC] font-medium transition-colors">
-          Sign up
+        Already have an account?{" "}
+        <Link to="/auth/login" className="text-[#0C66E4] hover:text-[#0052CC] font-medium transition-colors">
+          Log in
         </Link>
       </p>
     </div>

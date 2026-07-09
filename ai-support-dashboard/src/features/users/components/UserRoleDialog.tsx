@@ -44,30 +44,30 @@ export function UserRoleDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] bg-zinc-950 border-zinc-800 text-zinc-100">
+      <DialogContent className="sm:max-w-[425px] bg-background border-border text-foreground">
         <DialogHeader>
           <DialogTitle>Edit User Role</DialogTitle>
-          <DialogDescription className="text-zinc-400">
+          <DialogDescription className="text-muted-foreground">
             Change the permission level for this user. This determines what features they can access.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <Select value={selectedRole} onValueChange={(val) => setSelectedRole(val as Role)}>
-            <SelectTrigger className="w-full bg-zinc-900 border-zinc-800">
+            <SelectTrigger className="w-full bg-card border-border">
               <SelectValue placeholder="Select a role" />
             </SelectTrigger>
-            <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-100">
+            <SelectContent className="bg-card border-border text-foreground">
               <SelectItem value="ADMIN">Admin (Full Access)</SelectItem>
               <SelectItem value="AGENT">Agent (Workspace & Tickets)</SelectItem>
               <SelectItem value="CUSTOMER">Customer (Portal Only)</SelectItem>
             </SelectContent>
           </Select>
         </div>
-        <DialogFooter>
+        <DialogFooter className="border-t border-border pt-4">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="border-zinc-800 hover:bg-zinc-800 hover:text-zinc-100"
+            className="border-border hover:bg-muted hover:text-foreground shadow-sm"
             disabled={isLoading}
           >
             Cancel
@@ -75,9 +75,9 @@ export function UserRoleDialog({
           <Button 
             onClick={handleSave} 
             disabled={selectedRole === currentRole || isLoading}
-            className="bg-indigo-600 text-white hover:bg-indigo-500"
+            className="bg-[#0C66E4] text-white hover:bg-[#0052CC] shadow-sm"
           >
-            {isLoading ? "Saving..." : "Save changes"}
+            {isLoading ? "Saving..." : "Save Changes"}
           </Button>
         </DialogFooter>
       </DialogContent>

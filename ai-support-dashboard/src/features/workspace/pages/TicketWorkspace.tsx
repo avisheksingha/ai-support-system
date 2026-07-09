@@ -6,18 +6,18 @@ export function TicketWorkspace() {
   const [selectedTicket, setSelectedTicket] = useState<string | null>(null);
 
   return (
-    <div className="flex h-full w-full bg-zinc-950 overflow-hidden text-zinc-50">
+    <div className="flex h-full w-full bg-background overflow-hidden text-foreground">
       {/* Left Pane: Ticket List */}
-      <div className="w-1/3 min-w-[320px] max-w-[400px] border-r border-zinc-800 bg-zinc-950 flex flex-col">
+      <div className="w-[320px] shrink-0 border-r border-border bg-card flex flex-col z-10">
         <TicketList selectedTicket={selectedTicket} onSelectTicket={setSelectedTicket} />
       </div>
 
       {/* Right Pane: Ticket Details & AI Workspace */}
-      <div className="flex-1 flex flex-col bg-zinc-950 overflow-y-auto">
+      <div className="flex-1 flex flex-col bg-background overflow-y-auto">
         {selectedTicket ? (
           <TicketDetailView ticketNumber={selectedTicket} />
         ) : (
-          <div className="flex-1 flex items-center justify-center text-zinc-500">
+          <div className="flex-1 flex items-center justify-center text-muted-foreground">
             Select a ticket from the list to view its workspace.
           </div>
         )}

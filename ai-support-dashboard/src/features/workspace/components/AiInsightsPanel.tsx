@@ -10,23 +10,23 @@ export function AiInsightsPanel({ analysis }: AiInsightsPanelProps) {
   const confidenceScore = analysis.confidenceScore * 100;
   
   return (
-    <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden">
-      <div className="bg-zinc-900 border-b border-zinc-800 p-4 flex items-center gap-2">
-        <BrainCircuit className="h-5 w-5 text-indigo-400" />
-        <h3 className="font-semibold text-zinc-100">AI Insights</h3>
+    <div className="bg-card shadow-sm border-0 ring-1 ring-border/50 rounded-lg overflow-hidden">
+      <div className="bg-card border-b border-border p-4 flex items-center gap-2">
+        <BrainCircuit className="h-5 w-5 text-blue-400" />
+        <h3 className="font-semibold text-foreground">AI Insights</h3>
       </div>
       
       <div className="p-4 space-y-5">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <div className="text-xs text-zinc-500 mb-1 flex items-center gap-1"><Target className="h-3 w-3" /> Intent</div>
-            <Badge variant="outline" className={`border-zinc-700 ${getIntentColor(analysis.intent)}`}>
+            <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Target className="h-3 w-3" /> Intent</div>
+            <Badge variant="outline" className={`border-border ${getIntentColor(analysis.intent)}`}>
               {formatSemanticString(analysis.intent)}
             </Badge>
           </div>
           <div>
-            <div className="text-xs text-zinc-500 mb-1 flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Urgency</div>
-            <Badge variant="outline" className={`border-zinc-700 ${getUrgencyColor(analysis.urgency)}`}>
+            <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Urgency</div>
+            <Badge variant="outline" className={`border-border ${getUrgencyColor(analysis.urgency)}`}>
               {formatSemanticString(analysis.urgency)}
             </Badge>
           </div>
@@ -34,17 +34,17 @@ export function AiInsightsPanel({ analysis }: AiInsightsPanelProps) {
 
         <div>
           <div className="flex justify-between items-center mb-2">
-             <div className="text-xs text-zinc-500">Confidence Score</div>
-             <div className="text-xs font-medium text-zinc-300">{getConfidenceString(analysis.confidenceScore)}</div>
+             <div className="text-xs text-muted-foreground">Confidence Score</div>
+             <div className="text-xs font-medium text-foreground">{getConfidenceString(analysis.confidenceScore)}</div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
+            <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
               <div 
                 className={`h-full rounded-full ${getConfidenceColor(analysis.confidenceScore)}`}
                 style={{ width: `${Math.max(0, Math.min(100, confidenceScore))}%` }}
               />
             </div>
-            <span className="text-xs font-medium font-mono text-zinc-400">
+            <span className="text-xs font-medium font-mono text-muted-foreground">
               {confidenceScore.toFixed(0)}%
             </span>
           </div>
@@ -52,10 +52,10 @@ export function AiInsightsPanel({ analysis }: AiInsightsPanelProps) {
 
         {analysis.keywords && analysis.keywords.length > 0 && (
           <div>
-            <div className="text-xs text-zinc-500 mb-2 flex items-center gap-1"><Key className="h-3 w-3" /> Keywords</div>
+            <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1"><Key className="h-3 w-3" /> Keywords</div>
             <div className="flex flex-wrap gap-1">
               {analysis.keywords.map((kw, i) => (
-                <span key={i} className="text-[11px] px-2 py-1 bg-zinc-800 border border-zinc-700 text-zinc-300 rounded-md">
+                <span key={i} className="text-[11px] px-2 py-1 bg-muted border border-border text-foreground rounded-md">
                   {kw}
                 </span>
               ))}
@@ -72,18 +72,18 @@ function formatSemanticString(val: string) {
 }
 
 function getIntentColor(intent: string) {
-  if (intent.includes("LOGIN") || intent.includes("PASSWORD")) return "text-purple-400 bg-purple-400/10 border-purple-400/30";
-  if (intent.includes("BILLING") || intent.includes("REFUND")) return "text-emerald-400 bg-emerald-400/10 border-emerald-400/30";
-  return "text-blue-400 bg-blue-400/10 border-blue-400/30";
+  if (intent.includes("LOGIN") || intent.includes("PASSWORD")) return "text-blue-600 bg-blue-50 border-blue-200";
+  if (intent.includes("BILLING") || intent.includes("REFUND")) return "text-emerald-600 bg-emerald-50 border-emerald-200";
+  return "text-blue-600 bg-blue-50 border-blue-200";
 }
 
 function getUrgencyColor(urgency: string) {
   switch (urgency.toUpperCase()) {
-    case "CRITICAL": return "text-red-400 border-red-400/30 bg-red-400/10";
-    case "HIGH": return "text-orange-400 border-orange-400/30 bg-orange-400/10";
-    case "MEDIUM": return "text-yellow-400 border-yellow-400/30 bg-yellow-400/10";
-    case "LOW": return "text-blue-400 border-blue-400/30 bg-blue-400/10";
-    default: return "text-zinc-400 bg-zinc-800/50";
+    case "CRITICAL": return "text-red-600 border-red-200 bg-red-50";
+    case "HIGH": return "text-orange-600 border-orange-200 bg-orange-50";
+    case "MEDIUM": return "text-yellow-600 border-yellow-200 bg-yellow-50";
+    case "LOW": return "text-blue-600 border-blue-200 bg-blue-50";
+    default: return "text-muted-foreground bg-muted";
   }
 }
 
