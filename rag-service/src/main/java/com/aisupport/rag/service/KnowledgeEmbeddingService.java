@@ -7,6 +7,7 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.aisupport.rag.entity.KnowledgeArticle;
 import com.aisupport.rag.repository.KnowledgeArticleRepository;
@@ -34,6 +35,7 @@ public class KnowledgeEmbeddingService {
      * Embeds all currently un-embedded articles.
      * @return number of articles successfully embedded and flagged
      */
+    @Transactional
     public int embedPendingArticles() {
         List<KnowledgeArticle> unembeddedArticles = repo.findByEmbeddedFalse();
         if (unembeddedArticles.isEmpty()) {
