@@ -139,7 +139,7 @@ The AI Support System is a leading-edge, microservices-based ticket management p
 - **[common-library](common-library/README.md)**: Shared models, DTOs, events, and utilities.
 - **[ai-support-marketplace](ai-support-marketplace/README.md)**: AI assistant plugins, agents, and tooling ecosystem.
 - **[aisupport-parent](aisupport-parent/README.md)**: Central Maven POM for uniform dependency management.
-- **[infra](infra/README.md)**: Docker Compose setup for infrastructure (PostgreSQL, Kafka, pgvector).
+- **[infra](infra/README.md)**: Docker Compose setup for infrastructure (PostgreSQL, Kafka, pgvector, Redpanda Console).
 
 ## Engineering Decisions
 
@@ -221,6 +221,7 @@ This launches:
 - PostgreSQL + PGVector
 - Apache Kafka
 - Apache ZooKeeper
+- Redpanda Console (Kafka UI at <http://localhost:9090>)
 
 ```bash
 docker compose --env-file .env -f infra/docker-compose.yml up -d
@@ -284,6 +285,7 @@ Each service provides its own OpenAPI documentation. Available locally at:
 | RAG         | 8085 | `/swagger-ui/index.html` |
 | Gateway     | 8080 | `/` (entrypoint)         |
 | Eureka      | 8761 | `/` (dashboard)          |
+| Redpanda    | 9090 | `/overview` (Kafka UI)   |
 
 ## Authentication Architecture
 
@@ -425,7 +427,7 @@ ai-support-system/
 ├── rag-service/            # Contextual Knowledge Response (Port: 8085)
 ├── common-library/         # Shared DTOs and Logic
 ├── aisupport-parent/       # Maven Parent POM
-├── infra/                  # Docker Config for DB/Kafka
+├── infra/                  # Docker Config for DB/Kafka/Redpanda Console
 ├── docs/                   # Architecture diagram and visuals
 ├── ARCHITECTURE.md         # Design decisions and scalability
 ├── CONTRIBUTING.md         # Contribution workflow and PR expectations
