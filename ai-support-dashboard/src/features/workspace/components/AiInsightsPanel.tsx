@@ -1,6 +1,4 @@
-import { useState, useEffect } from "react";
-import { Badge } from "@/components/ui/badge";
-import { BrainCircuit, Target, AlertTriangle, Key } from "lucide-react";
+import { BrainCircuit, Key } from "lucide-react";
 import type { AnalysisModel } from "@/shared/types/workspace";
 
 interface AiInsightsPanelProps {
@@ -9,14 +7,6 @@ interface AiInsightsPanelProps {
 
 export function AiInsightsPanel({ analysis }: AiInsightsPanelProps) {
   const rawScore = analysis.confidenceScore ?? 0;
-  const [confidenceScore, setConfidenceScore] = useState(0);
-
-  useEffect(() => {
-    // Animate the progress bar after mount
-    const timer = setTimeout(() => setConfidenceScore(rawScore * 100), 50);
-    return () => clearTimeout(timer);
-  }, [rawScore]);
-  
   let keywords: string[] = [];
   if (Array.isArray(analysis.keywords)) {
     keywords = analysis.keywords;
@@ -88,30 +78,3 @@ function formatSemanticString(val: string) {
   return val.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
 }
 
-function getIntentColor(intent: string) {
-  if (intent.includes("LOGIN") || intent.includes("PASSWORD")) return "text-blue-600 bg-blue-50 border-blue-200";
-  if (intent.includes("BILLING") || intent.includes("REFUND")) return "text-emerald-600 bg-emerald-50 border-emerald-200";
-  return "text-blue-600 bg-blue-50 border-blue-200";
-}
-
-function getUrgencyColor(urgency: string) {
-  switch (urgency.toUpperCase()) {
-    case "CRITICAL": return "text-red-600 border-red-200 bg-red-50";
-    case "HIGH": return "text-orange-600 border-orange-200 bg-orange-50";
-    case "MEDIUM": return "text-yellow-600 border-yellow-200 bg-yellow-50";
-    case "LOW": return "text-blue-600 border-blue-200 bg-blue-50";
-    default: return "text-muted-foreground bg-muted";
-  }
-}
-
-function getConfidenceString(score: number) {
-  if (score >= 0.9) return "High Confidence";
-  if (score >= 0.7) return "Medium Confidence";
-  return "Low Confidence";
-}
-
-function getConfidenceColor(score: number) {
-  if (score >= 0.9) return "bg-emerald-500";
-  if (score >= 0.7) return "bg-yellow-500";
-  return "bg-red-500";
-}

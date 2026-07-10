@@ -75,29 +75,43 @@ export const workspaceApi = {
   },
 
   // Mocked Timeline Events (Will be powered by Orchestrator later)
-  getTimeline: async (ticketId: number): Promise<TimelineEvent[]> => {
+  getTimeline: async (ticketId: number, baseDate?: any): Promise<TimelineEvent[]> => {
     await new Promise(resolve => setTimeout(resolve, 400));
     
+    // We import parseDate inline to avoid circular dependencies if any, but since it's just a util it's fine.
+    // Actually we can just dynamically import or use the provided logic, since I can't easily add import to the top of this file in one replace chunk.
     let baseTime = new Date().getTime();
-    try {
-      const response = await apiClient.get<TicketModel>(`/tickets/id/${ticketId}`);
-      if (response.data && response.data.createdAt) {
-         // parseDate is needed if the backend sends an array or naive string
-         // but since we are just mocking, we can try to parse it directly
-         const backendDate = response.data.createdAt;
-         if (Array.isArray(backendDate)) {
-           const [y, m, d, h=0, min=0, s=0, ms=0] = backendDate;
-           baseTime = Date.UTC(y, m - 1, d, h, min, s, ms / 1000000);
-         } else if (typeof backendDate === 'string') {
-           let str = backendDate;
-           if (str.includes('T') && !str.endsWith('Z') && !str.match(/[+-]\d{2}:?\d{2}$/)) {
-             str += 'Z';
-           }
-           baseTime = new Date(str).getTime();
-         }
+    if (baseDate) {
+      // Just manually do the parseDate logic to be safe without imports
+      if (Array.isArray(baseDate)) {
+        const [y, m, d, h=0, min=0, s=0, ms=0] = baseDate;
+        baseTime = Date.UTC(y, m - 1, d, h, min, s, ms / 1000000);
+      } else if (typeof baseDate === 'string') {
+        let str = baseDate;
+        if (str.includes('T') && !str.endsWith('Z') && !str.match(/[+-]\d{2}:?\d{2}$/)) {
+          str += 'Z';
+        }
+        baseTime = new Date(str).getTime();
       }
-    } catch (e) {
-      // Ignore and fallback to current time
+    } else {
+      try {
+        const response = await apiClient.get<TicketModel>(`/tickets/id/${ticketId}`);
+        if (response.data && response.data.createdAt) {
+           const backendDate = response.data.createdAt;
+           if (Array.isArray(backendDate)) {
+             const [y, m, d, h=0, min=0, s=0, ms=0] = backendDate;
+             baseTime = Date.UTC(y, m - 1, d, h, min, s, ms / 1000000);
+           } else if (typeof backendDate === 'string') {
+             let str = backendDate;
+             if (str.includes('T') && !str.endsWith('Z') && !str.match(/[+-]\d{2}:?\d{2}$/)) {
+               str += 'Z';
+             }
+             baseTime = new Date(str).getTime();
+           }
+        }
+      } catch (e) {
+        // Ignore and fallback to current time
+      }
     }
 
     return [

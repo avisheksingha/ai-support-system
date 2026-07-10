@@ -1,7 +1,6 @@
-import { Network, ShieldAlert, Cpu } from "lucide-react";
+import { Network } from "lucide-react";
 import type { RoutingModel } from "@/shared/types/workspace";
 import type { TicketModel } from "@/shared/types/ticket";
-import { Badge } from "@/components/ui/badge";
 
 interface RoutingPanelProps {
   routing: RoutingModel;

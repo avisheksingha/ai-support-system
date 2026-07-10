@@ -1,15 +1,4 @@
-import { 
-  CheckCircle2, 
-  Clock, 
-  PlayCircle, 
-  CircleDashed,
-  FileText,
-  BrainCircuit,
-  BookOpen,
-  Network,
-  UserCheck,
-  CheckSquare
-} from "lucide-react";
+
 import type { TimelineEvent, TimelineEventType } from "@/shared/types/workspace";
 import { formatTime, parseDate } from "@/shared/utils/date";
 

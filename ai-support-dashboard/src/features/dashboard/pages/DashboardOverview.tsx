@@ -26,7 +26,7 @@ export function DashboardOverview() {
   const isTicketsLoading = isCustomer ? isCustomerLoading : isAdminLoading;
 
   const mostRecentTicket = tickets && tickets.length > 0 ? tickets[0] : null;
-  const { data: recentTimeline, isLoading: isTimelineLoading } = useTimeline(mostRecentTicket?.id);
+  const { data: recentTimeline, isLoading: isTimelineLoading } = useTimeline(mostRecentTicket?.id, mostRecentTicket?.createdAt);
 
   const openTickets = tickets ? BusinessMetricsCalculator.calculateOpenTickets(tickets) : 0;
   const resolvedToday = tickets ? BusinessMetricsCalculator.calculateResolvedToday(tickets) : 0;

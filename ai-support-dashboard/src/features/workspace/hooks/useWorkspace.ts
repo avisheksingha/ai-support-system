@@ -58,10 +58,10 @@ export const useRouting = (ticketId?: number) => {
   });
 };
 
-export const useTimeline = (ticketId?: number) => {
+export const useTimeline = (ticketId?: number, baseDate?: any) => {
   return useQuery({
     queryKey: ticketId ? workspaceKeys.timeline(ticketId) : [],
-    queryFn: () => workspaceApi.getTimeline(ticketId!),
+    queryFn: () => workspaceApi.getTimeline(ticketId!, baseDate),
     enabled: !!ticketId,
     retry: 2,
     refetchInterval: 10000,
