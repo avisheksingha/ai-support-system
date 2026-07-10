@@ -2,6 +2,7 @@ package com.aisupport.routing.controller;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +30,8 @@ public class RoutingController {
         summary = "Get routing reasoning for a ticket",
         description = "Temporary internal endpoint. Retrieves the routing rule execution history and reasoning for a specific ticket. Will later be consumed by orchestration-service."
     )
+    @PreAuthorize("hasAnyRole('AGENT', 'ADMIN')")
+    // TODO: Remove after ai-orchestration-service provides workspace aggregation.
     @GetMapping("/ticket/{ticketId}")
     public ResponseEntity<RoutingResponse> getRoutingForTicket(
             @Parameter(description = "The ID of the ticket") @PathVariable Long ticketId) {

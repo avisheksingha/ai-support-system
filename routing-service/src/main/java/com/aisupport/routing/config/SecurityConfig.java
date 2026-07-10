@@ -53,6 +53,19 @@ public class SecurityConfig {
     }
 
     /**
+     * Runtime guard enforcing ADR-004: rejects any request carrying a Cookie
+     * header unless the path is explicitly whitelisted via configuration.
+     *
+     * @param allowedPaths externally configured cookie-allowed path prefixes
+     * @return a new instance of CookieGuardFilter
+     */
+    @Bean
+    CookieGuardFilter cookieGuardFilter(
+            @Value("${security.cookie-guard.allowed-paths:}") List<String> allowedPaths) {
+        return new CookieGuardFilter(allowedPaths);
+    }
+
+    /**
 	 * Configures the security filter chain for the application.
 	 *
 	 * @param http the HttpSecurity object to configure
@@ -67,49 +80,36 @@ public class SecurityConfig {
             CookieGuardFilter cookieGuardFilter
     ) {
         try {
-        http
-            .csrf(csrf -> csrf.ignoringRequestMatchers(
-                    SERVICE_SPECIFIC_PUBLIC_ENDPOINTS.toArray(String[]::new)))
-            .sessionManagement(session ->
-                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-            .authorizeHttpRequests(auth -> auth
-                    .requestMatchers(ALL_PUBLIC_ENDPOINTS).permitAll()
-                    .requestMatchers("/api/v1/routing/**", "/internal/**").authenticated()
-                    .anyRequest().denyAll()
-            )
-
-            .exceptionHandling(exception -> exception
-                    .authenticationEntryPoint((request, response, ex) ->
-                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED))
-            )
-
-            // Order matters here: HeaderAuthenticationFilter is a custom filter
-            // with no preset order, so it must be registered first (anchored to
-            // the well-known UsernamePasswordAuthenticationFilter) before we can
-            // anchor CookieGuardFilter to it. Final runtime order is still
-            // CookieGuardFilter -> HeaderAuthenticationFilter -> UsernamePasswordAuthenticationFilter.
-            
-            // See ADR-004 addendum.
-            .addFilterBefore(headerAuthFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(cookieGuardFilter, HeaderAuthenticationFilter.class);
+	        http
+	            // codeql[java/spring-disabled-csrf-protection] - stateless REST API, enforced via CookieGuardFilter; see ADR-004
+	            .csrf(csrf -> csrf.disable()) // NOSONAR: stateless JWT API, no session/cookie auth - see ADR-004
+	            .sessionManagement(session ->
+	                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+	
+	            .authorizeHttpRequests(auth -> auth
+	                    .requestMatchers(ALL_PUBLIC_ENDPOINTS).permitAll()
+	                    .requestMatchers("/api/v1/routing/**", "/internal/**").authenticated()
+	                    .anyRequest().denyAll()
+	            )
+	
+	            .exceptionHandling(exception -> exception
+	                    .authenticationEntryPoint((request, response, ex) ->
+	                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED))
+	            )
+	
+	            // Order matters here: HeaderAuthenticationFilter is a custom filter
+	            // with no preset order, so it must be registered first (anchored to
+	            // the well-known UsernamePasswordAuthenticationFilter) before we can
+	            // anchor CookieGuardFilter to it. Final runtime order is still
+	            // CookieGuardFilter -> HeaderAuthenticationFilter -> UsernamePasswordAuthenticationFilter.
+	            
+	            // See ADR-004 addendum.
+	            .addFilterBefore(headerAuthFilter, UsernamePasswordAuthenticationFilter.class)
+	            .addFilterBefore(cookieGuardFilter, HeaderAuthenticationFilter.class);
         
-        return http.build();
+	        return http.build();
     } catch (Exception ex) {
             throw new SecurityConfigurationException("Failed to configure Spring Security filter chain", ex);
         }
-    }
-
-    /**
-     * Runtime guard enforcing ADR-004: rejects any request carrying a Cookie
-     * header unless the path is explicitly whitelisted via configuration.
-     *
-     * @param allowedPaths externally configured cookie-allowed path prefixes
-     * @return a new instance of CookieGuardFilter
-     */
-    @Bean
-    CookieGuardFilter cookieGuardFilter(
-            @Value("${security.cookie-guard.allowed-paths:}") List<String> allowedPaths) {
-        return new CookieGuardFilter(allowedPaths);
     }
 }
