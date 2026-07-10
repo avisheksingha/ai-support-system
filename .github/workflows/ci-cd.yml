@@ -75,14 +75,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # - name: Install Playwright Browsers
-        # run: npx playwright install --with-deps chromium
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
 
       - name: Component Tests (Vitest)
         run: npx vitest run
 
-      # - name: E2E Tests (Playwright)
-        # run: npx playwright test
+      - name: E2E Tests (Playwright)
+        run: npx playwright test
 
       - name: Build and Analyze
         run: npm run build
