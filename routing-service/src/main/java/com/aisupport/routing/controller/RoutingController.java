@@ -31,6 +31,7 @@ public class RoutingController {
         description = "Temporary internal endpoint. Retrieves the routing rule execution history and reasoning for a specific ticket. Will later be consumed by orchestration-service."
     )
     @PreAuthorize("hasAnyRole('AGENT', 'ADMIN')")
+    // TODO: Remove after ai-orchestration-service provides workspace aggregation.
     @GetMapping("/ticket/{ticketId}")
     public ResponseEntity<RoutingResponse> getRoutingForTicket(
             @Parameter(description = "The ID of the ticket") @PathVariable Long ticketId) {
