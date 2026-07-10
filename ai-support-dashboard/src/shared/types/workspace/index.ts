@@ -29,11 +29,13 @@ export interface KnowledgeModel {
 export interface RoutingModel {
   id?: number;
   ticketId?: number;
-  suggestedDepartment: string;
-  suggestedAgent?: string;
+  department: string;
+  assignedAgent?: string;
   confidenceScore: number;
-  reasoning: string;
-  routedAt?: string;
+  reason: string;
+  ruleName?: string;
+  ruleVersion?: number;
+  executedAt?: string;
 }
 
 export type TimelineEventType = "CREATED" | "AI_ANALYSIS" | "KNOWLEDGE_RETRIEVED" | "ROUTING_DECISION" | "ASSIGNMENT" | "STATUS_CHANGE" | "RESOLVED";

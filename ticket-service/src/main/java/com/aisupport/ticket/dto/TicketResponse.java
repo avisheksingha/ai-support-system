@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @Schema(
     description = "Response payload for a support ticket",
-    example = "{\n  \"id\": 1,\n  \"ticketNumber\": \"TICKET-2024-001\",\n  \"customerId\": 1,\n  \"customerEmail\": \"user@example.com\",\n  \"customerName\": \"Jane Doe\",\n  \"subject\": \"Cannot access my account\",\n  \"message\": \"I am unable to log in with my credentials.\",\n  \"status\": \"NEW\",\n  \"priority\": \"HIGH\",\n  \"assignedTo\": \"agent123\",\n  \"intent\": \"ACCOUNT_ACCESS\",\n  \"sentiment\": \"NEGATIVE\",\n  \"urgency\": \"HIGH\",\n  \"slaHours\": 24\n}"
+    example = "{\n  \"id\": 1,\n  \"ticketNumber\": \"TICKET-2024-001\",\n  \"customerUserId\": 1,\n  \"customerEmail\": \"user@example.com\",\n  \"customerName\": \"Jane Doe\",\n  \"subject\": \"Cannot access my account\",\n  \"message\": \"I am unable to log in with my credentials.\",\n  \"status\": \"NEW\",\n  \"priority\": \"HIGH\",\n  \"assignedTo\": \"agent123\",\n  \"intent\": \"ACCOUNT_ACCESS\",\n  \"sentiment\": \"NEGATIVE\",\n  \"urgency\": \"HIGH\",\n  \"slaHours\": 24\n}"
 )
 public class TicketResponse {
     
@@ -27,8 +27,8 @@ public class TicketResponse {
     @Schema(description = "Unique ticket number", example = "TICKET-2024-001")
     private String ticketNumber;
     
-    @Schema(description = "Customer ID", example = "1")
-    private Long customerId;
+    @Schema(description = "Customer User ID", example = "1")
+    private Long customerUserId;
     
     @Schema(description = "Customer's email address", example = "user@example.com")
     private String customerEmail;

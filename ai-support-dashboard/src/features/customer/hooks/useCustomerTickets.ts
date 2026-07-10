@@ -9,10 +9,15 @@ export const customerKeys = {
   detail: (ticketNumber: string) => [...customerKeys.all, "detail", ticketNumber] as const,
 };
 
+import { parseDate } from "@/shared/utils/date";
+
 export const useCustomerTickets = () => {
   return useQuery({
     queryKey: customerKeys.lists(),
     queryFn: customerTicketApi.getMyTickets,
+    select: (tickets) => {
+      return [...tickets].sort((a, b) => parseDate(b.createdAt).getTime() - parseDate(a.createdAt).getTime());
+    },
     retry: 2,
     refetchInterval: 15000,
   });

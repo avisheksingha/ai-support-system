@@ -3,6 +3,7 @@ package com.aisupport.gateway.filter;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -17,6 +18,7 @@ import org.springframework.web.server.ServerWebExchange;
 
 import com.aisupport.common.auth.JwtUtil;
 import com.aisupport.common.auth.SecurityConstants;
+import com.aisupport.common.security.CommonSecurityEndpoints;
 
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
@@ -40,22 +42,25 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             "/api/v1/auth/login",
             "/api/v1/auth/refresh"
     );
-
+    
     /**
-     * List of infrastructure endpoints that do not require JWT validation.
-     */
-    private static final List<String> PUBLIC_ENDPOINTS = List.of(
-            "/swagger-ui/**",
-            "/swagger-ui.html",
-            "/v3/api-docs/**",
+	 * Service-specific public endpoints that are accessible without authentication.
+	 */
+	private static final List<String> SERVICE_SPECIFIC_PUBLIC = List.of(
             "/auth-docs/**",
             "/ticket-docs/**",
             "/analysis-docs/**",
             "/routing-docs/**",
-            "/rag-docs/**",
-            "/actuator/health",
-            "/actuator/info"
-    );
+            "/rag-docs/**"
+	);
+
+	/**
+	 * Combines common public endpoints with service-specific public endpoints.
+	 */
+	private static final String[] ALL_PUBLIC_ENDPOINTS = Stream.concat(
+	        CommonSecurityEndpoints.PUBLIC.stream(),
+	        SERVICE_SPECIFIC_PUBLIC.stream()
+	).toArray(String[]::new);
     
     // Constructor for JwtAuthenticationFilter that initializes the JwtUtil and refresh threshold.
     public JwtAuthenticationFilter(
@@ -122,9 +127,15 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                             headers.remove(SecurityConstants.HEADER_USER_ID);
                             headers.remove(SecurityConstants.HEADER_USER_ROLE);
                             headers.remove(SecurityConstants.HEADER_USER_EMAIL);
+                            headers.remove(SecurityConstants.HEADER_USER_NAME);
                             headers.set(SecurityConstants.HEADER_USER_ID, jwtUtil.extractUserId(token));
                             headers.set(SecurityConstants.HEADER_USER_ROLE, jwtUtil.extractRole(token));
                             headers.set(SecurityConstants.HEADER_USER_EMAIL, jwtUtil.extractEmail(token));
+                            
+                            String name = jwtUtil.extractName(token);
+                            if (name != null) {
+                                headers.set(SecurityConstants.HEADER_USER_NAME, name);
+                            }
                         }))
                 .build();
 

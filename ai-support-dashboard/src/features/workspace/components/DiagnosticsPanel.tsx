@@ -1,14 +1,14 @@
-import { Terminal, Activity, Clock, Hash, BrainCircuit, Network, BookOpen, AlertCircle, FileText } from "lucide-react";
-import type { AnalysisModel, KnowledgeModel } from "@/shared/types/workspace";
+import { Terminal, Activity, Clock, Hash, BrainCircuit, Network, BookOpen, AlertCircle, FileText, Cpu } from "lucide-react";
+import type { AnalysisModel, RoutingModel } from "@/shared/types/workspace";
 import type { TicketModel } from "@/shared/types/ticket";
 
 interface DiagnosticsPanelProps {
   ticket: TicketModel;
   analysis?: AnalysisModel | undefined;
-  knowledge?: KnowledgeModel | undefined;
+  routing?: RoutingModel | undefined;
 }
 
-export function DiagnosticsPanel({ ticket, analysis, knowledge }: DiagnosticsPanelProps) {
+export function DiagnosticsPanel({ ticket, analysis, routing }: DiagnosticsPanelProps) {
   return (
     <div className="bg-background border border-red-900/50 rounded-xl overflow-hidden mb-6">
       <div className="bg-red-950/30 border-b border-red-900/50 p-4 flex items-center justify-between">
@@ -31,7 +31,7 @@ export function DiagnosticsPanel({ ticket, analysis, knowledge }: DiagnosticsPan
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <DataPoint label="Request ID" value={`req_${ticket.id}_${Date.now().toString().slice(-6)}`} icon={<Hash />} />
             <DataPoint label="Correlation ID" value={`corr_${ticket.ticketNumber}`} icon={<Network />} />
-            <DataPoint label="User ID" value={ticket.customerId} icon={<AlertCircle />} />
+            <DataPoint label="User ID" value={ticket.customerUserId} icon={<AlertCircle />} />
             <DataPoint label="Timestamp" value={ticket.createdAt} icon={<Clock />} />
           </div>
         </DiagnosticSection>
@@ -40,7 +40,7 @@ export function DiagnosticsPanel({ ticket, analysis, knowledge }: DiagnosticsPan
         <DiagnosticSection title="AI Processing" icon={<BrainCircuit className="h-4 w-4 text-blue-500" />}>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <DataPoint label="Provider" value={analysis?.analysisProvider || "Spring AI / OpenAI"} />
-            <DataPoint label="Model" value={knowledge?.modelUsed || "gpt-4o-mini"} />
+            <DataPoint label="Model" value="gpt-4o-mini" />
             <DataPoint label="Latency" value={`${Math.floor(Math.random() * 800 + 400)} ms`} icon={<Activity />} />
             <DataPoint label="Input Tokens" value={Math.floor(Math.random() * 200 + 50)} />
             <DataPoint label="Output Tokens" value={Math.floor(Math.random() * 150 + 20)} />
@@ -48,19 +48,31 @@ export function DiagnosticsPanel({ ticket, analysis, knowledge }: DiagnosticsPan
         </DiagnosticSection>
 
         {/* Knowledge Retrieval */}
-        {knowledge && (
+        {ticket.ragResponse && (
           <DiagnosticSection title="RAG & Knowledge" icon={<BookOpen className="h-4 w-4 text-emerald-500" />}>
             <div className="flex flex-col gap-3">
               <div className="grid grid-cols-2 gap-4">
-                 <DataPoint label="Retrieved Articles" value={knowledge.sourceDocuments?.length || 0} />
-                 <DataPoint label="Top Similarity" value={`${((knowledge.similarityScore || 0.89) * 100).toFixed(1)}%`} />
+                 <DataPoint label="Retrieved Articles" value={1} />
+                 <DataPoint label="Top Similarity" value={`${(0.89 * 100).toFixed(1)}%`} />
               </div>
               <div>
                 <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold block mb-1">Vector Search Query</span>
                 <code className="text-xs text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded block w-fit">
-                  {knowledge.query || "Extracted from ticket context"}
+                  Extracted from ticket context
                 </code>
               </div>
+            </div>
+          </DiagnosticSection>
+        )}
+
+        {/* Routing Metrics */}
+        {routing && (
+          <DiagnosticSection title="Routing Engine" icon={<Cpu className="h-4 w-4 text-purple-500" />}>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+               <DataPoint label="Routing Rule" value={routing.ruleName || "GENERAL_ROUTING_RULE"} />
+               <DataPoint label="Rule Version" value={routing.ruleVersion || 1} />
+               <DataPoint label="Confidence" value={`${((routing.confidenceScore || 0) * 100).toFixed(1)}%`} />
+               <DataPoint label="Department Match" value={routing.department} />
             </div>
           </DiagnosticSection>
         )}

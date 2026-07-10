@@ -1,16 +1,15 @@
-import { BookOpen, Sparkles, Copy, Check, FileText, ExternalLink } from "lucide-react";
+import { BookOpen, Sparkles, Copy, Check } from "lucide-react";
 import { useState } from "react";
-import type { KnowledgeModel } from "@/shared/types/workspace";
 
 interface RagResponsePanelProps {
-  knowledge: KnowledgeModel;
+  ragResponse: string;
 }
 
-export function RagResponsePanel({ knowledge }: RagResponsePanelProps) {
+export function RagResponsePanel({ ragResponse }: RagResponsePanelProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(knowledge.generatedReply);
+    navigator.clipboard.writeText(ragResponse);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -40,38 +39,21 @@ export function RagResponsePanel({ knowledge }: RagResponsePanelProps) {
               {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
             </button>
           </div>
-          <div className="bg-background border border-border rounded-lg p-3 text-sm text-foreground leading-relaxed relative group">
-            {knowledge.generatedReply}
+          <div className="bg-background border border-border rounded-lg p-3 text-sm text-foreground leading-relaxed relative group whitespace-pre-wrap max-h-64 overflow-y-auto">
+            {(() => {
+              try {
+                const parsed = JSON.parse(ragResponse);
+                if (parsed && typeof parsed === 'object') {
+                  return parsed.response || parsed.generatedReply || ragResponse;
+                }
+              } catch {
+                // Ignore parse error, return raw string
+              }
+              return ragResponse;
+            })()}
           </div>
         </div>
 
-        {/* Source Documents */}
-        {knowledge.sourceDocuments && knowledge.sourceDocuments.length > 0 && (
-          <div>
-             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 block">Knowledge Articles Used</span>
-             <ul className="space-y-2">
-               {knowledge.sourceDocuments.map((doc, idx) => (
-                 <li key={idx} className="group border border-border bg-card rounded-lg p-3 cursor-pointer hover:border-border transition-colors">
-                   <div className="flex justify-between items-start mb-1">
-                     <div className="flex items-center gap-2">
-                       <FileText className="h-4 w-4 text-emerald-500/70" />
-                       <span className="text-sm font-medium text-foreground group-hover:text-emerald-400 transition-colors">{doc.title}</span>
-                     </div>
-                     {knowledge.similarityScore !== undefined && (
-                        <span className="text-[10px] font-mono text-emerald-500/70 bg-emerald-500/10 px-1.5 py-0.5 rounded">
-                          {(knowledge.similarityScore * 100).toFixed(0)}% match
-                        </span>
-                     )}
-                   </div>
-                   <div className="flex justify-between items-center mt-2">
-                     <span className="text-[11px] text-muted-foreground line-clamp-1 max-w-[80%]">Excerpt preview unavailable.</span>
-                     <ExternalLink className="h-3 w-3 text-muted-foreground group-hover:text-emerald-500 transition-colors" />
-                   </div>
-                 </li>
-               ))}
-             </ul>
-          </div>
-        )}
       </div>
     </div>
   );

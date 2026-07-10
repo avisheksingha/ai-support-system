@@ -16,7 +16,7 @@ public interface TicketMapper {
 	
 	@Mapping(target = "id", ignore = true)
 	@Mapping(target = "version", ignore = true)
-	@Mapping(target = "customerId", ignore = true)
+	@Mapping(target = "customerUserId", ignore = true)
 	@Mapping(target = "ticketNumber", ignore = true)
 	@Mapping(target = "customerEmail", ignore = true)
 	@Mapping(target = "customerName", ignore = true)

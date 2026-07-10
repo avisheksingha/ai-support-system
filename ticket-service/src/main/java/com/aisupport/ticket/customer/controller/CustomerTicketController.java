@@ -41,10 +41,11 @@ public class CustomerTicketController {
     @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping
     public ResponseEntity<TicketResponse> createCustomerTicket(
-            @RequestHeader(value = "X-User-Id", required = false) String userId,
-            @RequestHeader(value = "X-User-Email", required = true) String userEmail,
+            @Parameter(hidden = true) @RequestHeader(value = "X-User-Id", required = false) String userId,
+            @Parameter(hidden = true) @RequestHeader(value = "X-User-Email", required = true) String userEmail,
+            @Parameter(hidden = true) @RequestHeader(value = "X-User-Name", required = false) String userName,
             @Valid @RequestBody TicketRequest request) {
-        TicketResponse response = ticketService.createTicket(userId, userEmail, request);
+        TicketResponse response = ticketService.createTicket(userId, userEmail, userName, request);
         log.info("Customer [{}] created ticket [{}]", userEmail, response.getTicketNumber());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -56,7 +57,7 @@ public class CustomerTicketController {
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/my")
     public ResponseEntity<List<TicketResponse>> getMyTickets(
-            @RequestHeader(value = "X-User-Email", required = true) String userEmail) {
+            @Parameter(hidden = true) @RequestHeader(value = "X-User-Email", required = true) String userEmail) {
         log.info("Customer [{}] requested their tickets list", userEmail);
         return ResponseEntity.ok(ticketService.getTicketsByCustomerEmail(userEmail));
     }
@@ -69,7 +70,7 @@ public class CustomerTicketController {
     @GetMapping("/my/{ticketNumber}")
     public ResponseEntity<TicketResponse> getMyTicket(
             @Parameter(description = "Unique ticket number") @PathVariable String ticketNumber,
-            @RequestHeader(value = "X-User-Email", required = true) String userEmail) {
+            @Parameter(hidden = true) @RequestHeader(value = "X-User-Email", required = true) String userEmail) {
         log.info("Customer [{}] requested ticket [{}]", userEmail, ticketNumber);
         return ResponseEntity.ok(ticketService.getCustomerTicketByNumber(ticketNumber, userEmail));
     }

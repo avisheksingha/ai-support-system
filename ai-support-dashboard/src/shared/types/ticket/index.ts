@@ -4,7 +4,7 @@ export type TicketPriority = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 export interface TicketModel {
   id: number;
   ticketNumber: string;
-  customerId: number;
+  customerUserId: number;
   customerEmail: string;
   customerName: string;
   subject: string;
@@ -12,6 +12,8 @@ export interface TicketModel {
   status: TicketStatus;
   priority: TicketPriority;
   assignedTo?: string;
+  ragResponse?: string;
+  ragGeneratedAt?: string;
   createdAt: string;
   updatedAt: string;
 }

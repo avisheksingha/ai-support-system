@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { userApi } from "../api/userApi";
 import type { GetUsersParams } from "../api/userApi";
 import { userKeys } from "./userKeys";
@@ -35,9 +36,12 @@ export function useUpdateRoleMutation() {
   return useMutation({
     mutationFn: ({ id, role }: { id: number; role: Role }) => userApi.updateUserRole(id, role),
     onSuccess: (updatedUser) => {
-      // Patch the user in-place — preserves list order
       patchUserInCache(queryClient, updatedUser);
+      toast.success("User role updated successfully");
     },
+    onError: () => {
+      toast.error("Failed to update user role");
+    }
   });
 }
 
@@ -48,7 +52,11 @@ export function useLockUserMutation() {
     mutationFn: (id: number) => userApi.lockUser(id),
     onSuccess: (updatedUser) => {
       patchUserInCache(queryClient, updatedUser);
+      toast.success("User account locked");
     },
+    onError: () => {
+      toast.error("Failed to lock user account");
+    }
   });
 }
 
@@ -59,6 +67,10 @@ export function useUnlockUserMutation() {
     mutationFn: (id: number) => userApi.unlockUser(id),
     onSuccess: (updatedUser) => {
       patchUserInCache(queryClient, updatedUser);
+      toast.success("User account unlocked");
     },
+    onError: () => {
+      toast.error("Failed to unlock user account");
+    }
   });
 }

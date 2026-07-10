@@ -29,6 +29,10 @@ public class RoutingRule extends AuditableEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    @Column(name = "rule_version", nullable = false)
+    @Builder.Default
+    private Integer ruleVersion = 1;
+    
     @Column(name = "rule_name", unique = true, nullable = false, length = 100)
     private String ruleName;
     

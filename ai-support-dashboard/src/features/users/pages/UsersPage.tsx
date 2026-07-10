@@ -85,7 +85,7 @@ export function UsersPage() {
                       onClick={() => setPage(i)}
                       className={`h-8 min-w-8 px-2 rounded text-sm font-medium transition-colors ${
                         page === i
-                          ? "bg-[#0C66E4] text-white shadow-sm"
+                          ? "bg-primary text-primary-foreground shadow-sm"
                           : "text-muted-foreground hover:bg-muted hover:text-foreground"
                       }`}
                     >

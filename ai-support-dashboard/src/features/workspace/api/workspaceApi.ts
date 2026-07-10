@@ -68,17 +68,10 @@ export const workspaceApi = {
     };
   },
 
-  // Mocked Routing Service
+  // Routing Service API call (Temporary internal endpoint. Will later be consumed by orchestration-service.)
   getRouting: async (ticketId: number): Promise<RoutingModel> => {
-    await new Promise(resolve => setTimeout(resolve, 800)); // simulate network delay
-    return {
-      ticketId,
-      suggestedDepartment: "L2 Technical Support",
-      suggestedAgent: "agent123",
-      confidenceScore: 0.95,
-      reasoning: "Ticket intent matched technical issue with high urgency.",
-      routedAt: new Date().toISOString()
-    };
+    const response = await apiClient.get<RoutingModel>(`/routing/ticket/${ticketId}`);
+    return response.data;
   },
 
   // Mocked Timeline Events (Will be powered by Orchestrator later)

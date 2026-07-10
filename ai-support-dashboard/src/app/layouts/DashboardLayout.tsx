@@ -10,20 +10,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const NAV_ITEMS = [
-  { name: "Dashboard",  path: "/dashboard", icon: LayoutDashboard, roles: ["ADMIN"] },
+  { name: "Dashboard",  path: "/dashboard", icon: LayoutDashboard, roles: ["ADMIN", "CUSTOMER"] },
   { name: "Workspace",  path: "/tickets",   icon: Ticket,          roles: ["AGENT", "ADMIN"] },
   { name: "My Tickets", path: "/my-tickets",icon: Ticket,          roles: ["CUSTOMER"] },
   { name: "Users",      path: "/users",     icon: Users,           roles: ["ADMIN"] },
   { name: "Settings",   path: "/settings",  icon: Settings,        roles: ["ADMIN"] },
 ];
 
-const BREADCRUMB_MAP: Record<string, string> = {
-  "/dashboard": "Operations Center",
-  "/tickets":   "Ticket Workspace",
-  "/my-tickets":"Customer Portal",
-  "/users":     "User Management",
-  "/settings":  "Settings",
-  "/profile":   "My Profile",
+const BREADCRUMB_MAP: Record<string, Record<string, string>> = {
+  "/dashboard": { default: "Operations Center", CUSTOMER: "My Dashboard" },
+  "/tickets":   { default: "Ticket Workspace" },
+  "/my-tickets":{ default: "My Tickets" },
+  "/users":     { default: "User Management" },
+  "/settings":  { default: "Settings" },
+  "/profile":   { default: "My Profile" },
 };
 
 export function DashboardLayout() {
@@ -41,7 +41,11 @@ export function DashboardLayout() {
   );
 
   const currentKey = Object.keys(BREADCRUMB_MAP).find((k) => location.pathname.startsWith(k));
-  const breadcrumbText = currentKey ? BREADCRUMB_MAP[currentKey] : "Platform";
+  const breadcrumbEntry = currentKey ? BREADCRUMB_MAP[currentKey] : undefined;
+  const breadcrumbText = breadcrumbEntry
+    ? (user?.role && breadcrumbEntry[user.role]) || breadcrumbEntry["default"]
+    : "Home";
+  const breadcrumbRoot = user?.role === "CUSTOMER" ? "Portal" : "Platform";
 
   const displayName =
     user?.fullName ||
@@ -152,7 +156,7 @@ export function DashboardLayout() {
         {/* Top header */}
         <header className="h-16 border-b border-border bg-card flex items-center px-6 justify-between shrink-0 z-10">
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">Platform</span>
+            <span className="text-muted-foreground">{breadcrumbRoot}</span>
             <span className="text-zinc-800">/</span>
             <span className="font-medium text-foreground">{breadcrumbText}</span>
           </div>

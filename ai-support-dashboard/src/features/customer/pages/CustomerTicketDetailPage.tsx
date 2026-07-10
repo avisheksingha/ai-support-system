@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useCustomerTicket } from "../hooks/useCustomerTickets";
-import { formatDistanceToNow, format } from "date-fns";
+import { formatTimeAgo, parseDate } from "@/shared/utils/date";
+import { format } from "date-fns";
 import { ArrowLeft, Loader2, Clock, CheckCircle2, MessageSquare, Paperclip } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -58,10 +59,10 @@ export function CustomerTicketDetailPage() {
             <div className="flex items-center gap-4 text-sm text-muted-foreground bg-card p-3 rounded-lg border border-border">
               <div className="flex flex-col">
                 <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground mb-1">Created</span>
-                <span className="flex items-center gap-1.5 text-foreground">
-                  <Clock className="h-3.5 w-3.5" />
-                  {format(new Date(ticket.createdAt), "MMM d, yyyy")}
-                </span>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  {format(parseDate(ticket.createdAt), "MMM d, yyyy")}
+                </div>
               </div>
             </div>
           </div>
@@ -81,7 +82,7 @@ export function CustomerTicketDetailPage() {
                 </div>
                 <div>
                   <div className="text-sm font-medium text-foreground">You</div>
-                  <div className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })}</div>
+                  <div className="text-xs text-muted-foreground">{formatTimeAgo(ticket.createdAt)}</div>
                 </div>
               </div>
               <div className="p-5 text-sm text-foreground whitespace-pre-wrap leading-relaxed">

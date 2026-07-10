@@ -1,11 +1,12 @@
 import React, { Suspense } from "react";
-import { useTicket, useAnalysis, useKnowledge, useRouting, useTimeline, useUpdateTicketStatus } from "../hooks/useWorkspace";
+import { useTicket, useAnalysis, useRouting, useTimeline, useUpdateTicketStatus } from "../hooks/useWorkspace";
 import { TicketTimeline } from "./TicketTimeline";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ErrorBoundary } from "react-error-boundary";
 import { WorkspaceErrorFallback } from "@/components/ui/ErrorFallbacks";
+import { formatTimeAgo } from "@/shared/utils/date";
 
 // Lazy Loaded Panels
 const AiInsightsPanel = React.lazy(() => import("./AiInsightsPanel").then(m => ({ default: m.AiInsightsPanel })));
@@ -15,7 +16,6 @@ const DiagnosticsPanel = React.lazy(() => import("./DiagnosticsPanel").then(m =>
 import type { TicketStatus } from "@/shared/types/ticket";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import { formatDistanceToNow } from "date-fns";
 
 interface TicketDetailViewProps {
   ticketNumber: string;
@@ -33,7 +33,6 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
   
   // We only enable AI/Routing queries if we have the ticket ID
   const { data: analysis, isLoading: isAnalysisLoading } = useAnalysis(ticket?.id);
-  const { data: knowledge, isLoading: isKnowledgeLoading } = useKnowledge(ticket?.id);
   const { data: routing, isLoading: isRoutingLoading } = useRouting(ticket?.id);
   const { data: timeline, isLoading: isTimelineLoading } = useTimeline(ticket?.id);
 
@@ -59,7 +58,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 flex flex-col xl:flex-row gap-6 lg:gap-8">
+    <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 flex flex-col xl:flex-row gap-6 lg:gap-8 items-start">
       {/* Primary Column: Conversation & Actions */}
       <div className="flex-1 min-w-0 flex flex-col gap-6">
         
@@ -69,7 +68,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
               <DiagnosticsPanel 
                  ticket={ticket} 
                  analysis={analysis} 
-                 knowledge={knowledge} 
+                 routing={routing}
               />
             </Suspense>
           </ErrorBoundary>
@@ -84,7 +83,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
               <h1 className="text-2xl font-medium text-foreground leading-snug mb-3 break-words">{ticket.subject}</h1>
               
               <div className="flex flex-wrap items-center gap-2 text-[13px]">
-                <span className="text-muted-foreground">Created {formatDistanceToNow(new Date(ticket.createdAt))} ago</span>
+                <span className="text-muted-foreground">Created {formatTimeAgo(ticket.createdAt)}</span>
                 <span className="text-muted-foreground font-bold px-1">·</span>
                 <span className="text-muted-foreground">Customer: <span className="text-foreground font-medium">{ticket.customerName}</span></span>
               </div>
@@ -155,18 +154,10 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
       </div>
 
       {/* Secondary Column: AI & Automation Workspace */}
-      <div className="w-full xl:w-[360px] shrink-0 flex flex-col gap-6">
+      <div className="w-full xl:w-[360px] shrink-0 flex flex-col gap-6 h-fit">
         
         {/* AI Insights Panel */}
-        {isAnalysisLoading ? (
-          <Skeleton className="h-48 w-full bg-card rounded-xl" />
-        ) : analysis ? (
-          <ErrorBoundary FallbackComponent={WorkspaceErrorFallback}>
-            <Suspense fallback={<Skeleton className="h-48 w-full bg-card rounded-xl" />}>
-              <AiInsightsPanel analysis={analysis} />
-            </Suspense>
-          </ErrorBoundary>
-        ) : (
+        {isAnalysisLoading || !analysis ? (
           <div className="border border-border border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center gap-3">
             <div className="text-2xl animate-bounce">🤖</div>
             <div className="flex flex-col items-center gap-1">
@@ -178,18 +169,16 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
               </div>
             </div>
           </div>
+        ) : (
+          <ErrorBoundary FallbackComponent={WorkspaceErrorFallback}>
+            <Suspense fallback={<Skeleton className="h-48 w-full bg-card rounded-xl" />}>
+              <AiInsightsPanel analysis={analysis} />
+            </Suspense>
+          </ErrorBoundary>
         )}
 
         {/* Knowledge Panel */}
-        {isKnowledgeLoading ? (
-           <Skeleton className="h-48 w-full bg-card rounded-xl" />
-        ) : knowledge ? (
-          <ErrorBoundary FallbackComponent={WorkspaceErrorFallback}>
-            <Suspense fallback={<Skeleton className="h-48 w-full bg-card rounded-xl" />}>
-              <RagResponsePanel knowledge={knowledge} />
-            </Suspense>
-          </ErrorBoundary>
-        ) : (
+        {!ticket.ragResponse ? (
           <div className="border border-border border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center gap-3">
             <div className="text-2xl animate-bounce" style={{ animationDelay: '0.2s' }}>📚</div>
             <div className="flex flex-col items-center gap-1">
@@ -201,18 +190,17 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
               </div>
             </div>
           </div>
-        )}
-
-        {/* Assignment Panel */}
-        {isRoutingLoading ? (
-           <Skeleton className="h-32 w-full bg-card rounded-xl" />
-        ) : routing ? (
+        ) : (
           <ErrorBoundary FallbackComponent={WorkspaceErrorFallback}>
-            <Suspense fallback={<Skeleton className="h-32 w-full bg-card rounded-xl" />}>
-              <RoutingPanel routing={routing} />
+            <Suspense fallback={<Skeleton className="h-48 w-full bg-card rounded-xl" />}>
+              <RagResponsePanel ragResponse={ticket.ragResponse} />
             </Suspense>
           </ErrorBoundary>
-        ) : (
+        )}
+
+
+        {/* Assignment Panel */}
+        {isRoutingLoading || !routing ? (
           <div className="border border-border border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center gap-3">
             <div className="text-2xl animate-bounce" style={{ animationDelay: '0.4s' }}>🧭</div>
             <div className="flex flex-col items-center gap-1">
@@ -224,6 +212,12 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
               </div>
             </div>
           </div>
+        ) : (
+          <ErrorBoundary FallbackComponent={WorkspaceErrorFallback}>
+            <Suspense fallback={<Skeleton className="h-32 w-full bg-card rounded-xl" />}>
+              <RoutingPanel routing={routing} ticket={ticket} />
+            </Suspense>
+          </ErrorBoundary>
         )}
       </div>
     </div>

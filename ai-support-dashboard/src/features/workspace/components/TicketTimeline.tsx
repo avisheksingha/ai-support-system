@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import { 
   CheckCircle2, 
   Clock, 
@@ -12,6 +11,7 @@ import {
   CheckSquare
 } from "lucide-react";
 import type { TimelineEvent, TimelineEventType } from "@/shared/types/workspace";
+import { formatTime, parseDate } from "@/shared/utils/date";
 
 interface TicketTimelineProps {
   events: TimelineEvent[];
@@ -19,7 +19,7 @@ interface TicketTimelineProps {
 
 export function TicketTimeline({ events }: TicketTimelineProps) {
   // Sort events by timestamp ascending
-  const sortedEvents = [...events].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  const sortedEvents = [...events].sort((a, b) => parseDate(a.timestamp).getTime() - parseDate(b.timestamp).getTime());
 
   return (
     <div className="relative border-l border-border ml-3 py-2 space-y-7">
@@ -36,7 +36,7 @@ export function TicketTimeline({ events }: TicketTimelineProps) {
                   {event.title}
                 </span>
                 <span className="text-xs text-muted-foreground font-mono">
-                  {format(new Date(event.timestamp), "HH:mm:ss")}
+                  {formatTime(event.timestamp)}
                 </span>
               </div>
               

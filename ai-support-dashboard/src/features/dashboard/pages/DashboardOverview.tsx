@@ -1,5 +1,6 @@
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { useTicketList, useTimeline } from "@/features/workspace/hooks/useWorkspace";
+import { useCustomerTickets } from "@/features/customer/hooks/useCustomerTickets";
 import { BusinessMetricsCalculator } from "../lib/BusinessMetricsCalculator";
 import {
   Activity, LayoutDashboard,
@@ -15,7 +16,15 @@ const PRIORITY_COLORS: Record<string, string> = {
 
 export function DashboardOverview() {
   const { user } = useAuth();
-  const { data: tickets, isLoading: isTicketsLoading } = useTicketList();
+  const isCustomer = user?.role === "CUSTOMER";
+
+  // Use the correct data source based on role
+  const { data: adminTickets, isLoading: isAdminLoading } = useTicketList();
+  const { data: customerTickets, isLoading: isCustomerLoading } = useCustomerTickets();
+
+  const tickets = isCustomer ? customerTickets : adminTickets;
+  const isTicketsLoading = isCustomer ? isCustomerLoading : isAdminLoading;
+
   const mostRecentTicket = tickets && tickets.length > 0 ? tickets[0] : null;
   const { data: recentTimeline, isLoading: isTimelineLoading } = useTimeline(mostRecentTicket?.id);
 

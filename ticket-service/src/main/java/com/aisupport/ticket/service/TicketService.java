@@ -48,7 +48,7 @@ public class TicketService {
      * @return persisted ticket response
      */
     @Transactional
-    public TicketResponse createTicket(String userId, String customerEmail, TicketRequest request) {
+    public TicketResponse createTicket(String userId, String customerEmail, String userName, TicketRequest request) {
 
         Ticket ticket = ticketMapper.toEntity(request);
         ticket.setTicketNumber(generateTicketNumber());
@@ -57,13 +57,18 @@ public class TicketService {
         
         if (customerEmail != null && !customerEmail.isBlank()) {
             ticket.setCustomerEmail(customerEmail);
-            // Default customerName to email prefix if not provided (could be extracted from another header in the future)
-            ticket.setCustomerName(customerEmail.split("@")[0]);
+            
+            if (userName != null && !userName.isBlank()) {
+                ticket.setCustomerName(userName);
+            } else {
+                // Default customerName to email prefix if not provided (could be extracted from another header in the future)
+                ticket.setCustomerName(customerEmail.split("@")[0]);
+            }
         }
         
         if (userId != null && !userId.isBlank()) {
             try {
-                ticket.setCustomerId(Long.valueOf(userId));
+                ticket.setCustomerUserId(Long.valueOf(userId));
             } catch (NumberFormatException e) {
                 log.warn("Invalid user ID format: {}", userId);
             }

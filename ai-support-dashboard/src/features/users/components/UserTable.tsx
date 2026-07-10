@@ -6,6 +6,7 @@ import { UserActionsMenu } from "./UserActionsMenu";
 import { UserRoleDialog } from "./UserRoleDialog";
 import { LockUserDialog } from "./LockUserDialog";
 import { UserDetailDialog } from "./UserDetailDialog";
+import { formatDateStr } from "@/shared/utils/date";
 import { useUpdateRoleMutation, useLockUserMutation, useUnlockUserMutation } from "../hooks/useUsers";
 import {
   Table,
@@ -81,12 +82,12 @@ export function UserTable({ users }: UserTableProps) {
               users.map((user) => (
                 <TableRow key={user.id} className="border-border hover:bg-card transition-colors">
                   <TableCell className="py-3">
-                    <Avatar nameOrEmail={user?.email || undefined} size="sm" />
+                    <Avatar nameOrEmail={user.fullName || user.email || undefined} size="sm" />
                   </TableCell>
                   <TableCell className="py-3">
                     <div className="flex flex-col">
                       <span className="font-medium text-foreground">
-                        {user.email?.split('@')[0]?.replace(/[^a-zA-Z]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'System User'}
+                        {user.fullName || 'System User'}
                       </span>
                       <span className="text-xs text-muted-foreground">{user.email}</span>
                     </div>
@@ -102,7 +103,7 @@ export function UserTable({ users }: UserTableProps) {
                   <TableCell className="py-3">
                     {user.createdAt ? (
                       <span className="text-sm text-muted-foreground">
-                        {new Date(user.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                        {formatDateStr(user.createdAt)}
                       </span>
                     ) : (
                       <span className="text-sm text-muted-foreground">—</span>
@@ -128,6 +129,7 @@ export function UserTable({ users }: UserTableProps) {
         <UserRoleDialog
           open={!!editingRoleUser}
           onOpenChange={(open) => !open && setEditingRoleUser(null)}
+          user={editingRoleUser}
           currentRole={editingRoleUser.role}
           onSave={handleSaveRole}
           isLoading={updateRoleMutation.isPending}

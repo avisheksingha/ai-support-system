@@ -4,10 +4,15 @@ import { workspaceKeys } from "./workspaceKeys";
 import type { TicketStatus, TicketPriority } from "@/shared/types/ticket";
 import { toast } from "sonner";
 
+import { parseDate } from "@/shared/utils/date";
+
 export const useTicketList = (status?: string) => {
   return useQuery({
     queryKey: workspaceKeys.ticketList(status),
     queryFn: () => workspaceApi.getTickets(status),
+    select: (tickets) => {
+      return [...tickets].sort((a, b) => parseDate(b.createdAt).getTime() - parseDate(a.createdAt).getTime());
+    },
     retry: 2,
     refetchInterval: 10000,
   });
@@ -42,15 +47,6 @@ export const useAnalysis = (ticketId?: number) => {
   });
 };
 
-export const useKnowledge = (ticketId?: number) => {
-  return useQuery({
-    queryKey: ticketId ? workspaceKeys.knowledge(ticketId) : [],
-    queryFn: () => workspaceApi.getKnowledge(ticketId!),
-    enabled: !!ticketId,
-    retry: 2,
-    refetchInterval: (query) => query.state.data ? false : 5000,
-  });
-};
 
 export const useRouting = (ticketId?: number) => {
   return useQuery({
@@ -83,6 +79,12 @@ export const useUpdateTicketStatus = () => {
       queryClient.setQueryData(workspaceKeys.ticketDetail(updatedTicket.ticketNumber), updatedTicket);
       toast.success(`Ticket Status Updated`, {
         description: `${updatedTicket.ticketNumber} is now ${updatedTicket.status}`
+      });
+    },
+    onError: (error: any) => {
+      const message = error?.response?.data?.message || "Failed to update ticket status. Invalid transition.";
+      toast.error(`Update Failed`, {
+        description: message
       });
     }
   });

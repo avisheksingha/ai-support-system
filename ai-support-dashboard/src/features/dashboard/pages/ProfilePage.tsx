@@ -1,5 +1,6 @@
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { Mail, Shield, Hash, Calendar, Info } from "lucide-react";
+import { formatLongDateStr } from "@/shared/utils/date";
 
 const ROLE_META: Record<string, { label: string; color: string }> = {
   ADMIN:    { label: "Administrator", color: "text-blue-400 bg-blue-500/10 border-blue-500/20" },
@@ -55,10 +56,9 @@ export function ProfilePage() {
             <DetailRow icon={Hash} label="User ID" value={`#${user?.id ?? "—"}`} mono />
             <DetailRow icon={Mail} label="Email Address" value={user?.email ?? "—"} />
             <DetailRow icon={Shield} label="Access Role" value={roleMeta.label} />
-            <DetailRow icon={Calendar} label="Member Since" value={
-              user?.createdAt
-                ? new Date(user.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
-                : "—"
+            <DetailRow icon={Calendar} label="Member Since" value={user?.createdAt
+              ? formatLongDateStr(user.createdAt)
+              : "—"
             } />
           </div>
         </div>

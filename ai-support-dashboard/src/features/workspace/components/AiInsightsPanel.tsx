@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { BrainCircuit, Target, AlertTriangle, Key } from "lucide-react";
 import type { AnalysisModel } from "@/shared/types/workspace";
@@ -7,7 +8,25 @@ interface AiInsightsPanelProps {
 }
 
 export function AiInsightsPanel({ analysis }: AiInsightsPanelProps) {
-  const confidenceScore = analysis.confidenceScore * 100;
+  const rawScore = analysis.confidenceScore ?? 0;
+  const [confidenceScore, setConfidenceScore] = useState(0);
+
+  useEffect(() => {
+    // Animate the progress bar after mount
+    const timer = setTimeout(() => setConfidenceScore(rawScore * 100), 50);
+    return () => clearTimeout(timer);
+  }, [rawScore]);
+  
+  let keywords: string[] = [];
+  if (Array.isArray(analysis.keywords)) {
+    keywords = analysis.keywords;
+  } else if (typeof analysis.keywords === 'string') {
+    try {
+      keywords = JSON.parse(analysis.keywords);
+    } catch {
+      keywords = (analysis.keywords as string).replace(/^\[|\]$/g, '').split(',').map((k: string) => k.trim()).filter(Boolean);
+    }
+  }
   
   return (
     <div className="bg-card shadow-sm border-0 ring-1 ring-border/50 rounded-lg overflow-hidden">
@@ -33,35 +52,37 @@ export function AiInsightsPanel({ analysis }: AiInsightsPanelProps) {
         </div>
 
         <div>
-          <div className="flex justify-between items-center mb-2">
-             <div className="text-xs text-muted-foreground">Confidence Score</div>
-             <div className="text-xs font-medium text-foreground">{getConfidenceString(analysis.confidenceScore)}</div>
+          <div className="text-xs text-muted-foreground mb-3 flex items-center justify-between">
+            <span>Confidence Score</span>
+            <span className="font-medium text-foreground">{getConfidenceString(rawScore)}</span>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
               <div 
-                className={`h-full rounded-full ${getConfidenceColor(analysis.confidenceScore)}`}
+                className={`h-full rounded-full ${getConfidenceColor(rawScore)} transition-all duration-1000 ease-out`}
                 style={{ width: `${Math.max(0, Math.min(100, confidenceScore))}%` }}
               />
             </div>
-            <span className="text-xs font-medium font-mono text-muted-foreground">
-              {confidenceScore.toFixed(0)}%
+            <span className="text-xs font-medium font-mono text-muted-foreground whitespace-nowrap min-w-[32px] text-right">
+              {rawScore > 0 ? (rawScore * 100).toFixed(0) : 0}%
             </span>
           </div>
         </div>
 
-        {analysis.keywords && analysis.keywords.length > 0 && (
-          <div>
-            <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1"><Key className="h-3 w-3" /> Keywords</div>
-            <div className="flex flex-wrap gap-1">
-              {analysis.keywords.map((kw, i) => (
+        <div>
+          <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1"><Key className="h-3 w-3" /> Keywords</div>
+          <div className="flex flex-wrap gap-1">
+            {keywords.length > 0 ? (
+              keywords.map((kw, i) => (
                 <span key={i} className="text-[11px] px-2 py-1 bg-muted border border-border text-foreground rounded-md">
                   {kw}
                 </span>
-              ))}
-            </div>
+              ))
+            ) : (
+              <span className="text-[11px] text-muted-foreground italic">No keywords detected</span>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

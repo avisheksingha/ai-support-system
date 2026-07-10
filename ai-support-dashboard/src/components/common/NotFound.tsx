@@ -15,7 +15,7 @@ export function NotFound() {
         We can't seem to find the page you're looking for. It might have been removed, had its name changed, or is temporarily unavailable.
       </p>
       <Link to="/">
-        <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-900/20 border-none transition-all">
+        <Button size="lg" className="shadow-lg shadow-blue-900/20 border-none transition-all">
           <Home className="mr-2 h-5 w-5" />
           Back to Home
         </Button>

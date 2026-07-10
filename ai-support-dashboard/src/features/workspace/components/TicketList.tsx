@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useTicketList } from "../hooks/useWorkspace";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { formatDistanceToNow } from "date-fns";
 import { Search, Loader2 } from "lucide-react";
 import type { TicketModel } from "@/shared/types/ticket";
+import { formatTimeAgo } from "@/shared/utils/date";
 
 interface TicketListProps {
   selectedTicket: string | null;
@@ -74,7 +74,7 @@ export function TicketList({ selectedTicket, onSelectTicket }: TicketListProps) 
             <div className="flex justify-between items-start mb-2">
               <span className="text-xs font-mono text-muted-foreground">{ticket.ticketNumber}</span>
               <span className="text-xs text-muted-foreground">
-                {ticket.updatedAt ? formatDistanceToNow(new Date(ticket.updatedAt), { addSuffix: true }) : 'just now'}
+                {ticket.updatedAt ? formatTimeAgo(ticket.updatedAt) : 'just now'}
               </span>
             </div>
             <h3 className="text-sm font-medium text-foreground line-clamp-2 mb-3">

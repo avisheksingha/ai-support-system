@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCreateTicket } from "../hooks/useCustomerTickets";
@@ -32,25 +32,25 @@ export function CreateTicketDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       {/* @ts-ignore: Radix UI asChild type incompatibility */}
       <DialogTrigger asChild>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white gap-2">
+        <Button className="shadow-sm h-9 px-4 text-sm font-medium gap-1.5">
           <Plus className="h-4 w-4" />
           Create Ticket
         </Button>
       </DialogTrigger>
       <DialogContent className="bg-background border-border text-foreground sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">How can we help?</DialogTitle>
+          <DialogTitle className="text-lg font-semibold">Create New Ticket</DialogTitle>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           <div className="space-y-2">
-            <label htmlFor="subject" className="text-sm font-medium text-muted-foreground">
+            <label htmlFor="subject" className="text-sm font-medium text-foreground">
               Subject
             </label>
             <Input
               id="subject"
               placeholder="Brief summary of your issue"
-              className="bg-card border-border focus-visible:ring-blue-500"
+              className="bg-card border-border focus-visible:ring-[#0C66E4]"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               required
@@ -59,13 +59,13 @@ export function CreateTicketDialog() {
           </div>
           
           <div className="space-y-2 flex flex-col">
-            <label htmlFor="message" className="text-sm font-medium text-muted-foreground">
-              Details
+            <label htmlFor="message" className="text-sm font-medium text-foreground">
+              Description
             </label>
             <textarea
               id="message"
               placeholder="Please describe the issue in detail so we can best assist you."
-              className="min-h-[150px] bg-card border border-border rounded-md p-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 resize-none"
+              className="min-h-[150px] bg-card border border-border rounded-md p-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0C66E4] resize-none"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               required
@@ -73,19 +73,19 @@ export function CreateTicketDialog() {
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-border">
+          <DialogFooter className="border-t border-border pt-4">
             <Button 
               type="button" 
               variant="outline" 
               onClick={() => setOpen(false)}
-              className="border-border hover:bg-muted text-foreground"
+              className="border-border hover:bg-muted text-foreground shadow-sm"
               disabled={createTicketMutation.isPending}
             >
               Cancel
             </Button>
             <Button 
               type="submit" 
-              className="bg-blue-600 hover:bg-blue-700 text-white min-w-[100px]"
+              className="min-w-[120px]"
               disabled={createTicketMutation.isPending || !subject.trim() || !message.trim()}
             >
               {createTicketMutation.isPending ? (
@@ -94,7 +94,7 @@ export function CreateTicketDialog() {
                 "Submit Ticket"
               )}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

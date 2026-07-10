@@ -1,4 +1,4 @@
-import { formatDistanceToNow } from "date-fns";
+import { formatTimeAgo } from "@/shared/utils/date";
 import { Badge } from "@/components/ui/badge";
 import type { TicketModel } from "@/shared/types/ticket";
 import { ChevronRight } from "lucide-react";
@@ -12,7 +12,7 @@ export function CustomerTicketCard({ ticket, onClick }: CustomerTicketCardProps)
   return (
     <button
       onClick={onClick}
-      className="w-full text-left p-5 rounded-xl border border-border bg-card hover:bg-card hover:border-border transition-all duration-200 group flex items-start gap-4"
+      className="w-full text-left p-5 rounded-xl border border-border bg-card hover:bg-muted/50 hover:border-border transition-all duration-200 group flex items-start gap-4"
     >
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-3 mb-2">
@@ -20,7 +20,7 @@ export function CustomerTicketCard({ ticket, onClick }: CustomerTicketCardProps)
           <StatusBadge status={ticket.status} />
         </div>
         
-        <h3 className="text-base font-medium text-foreground truncate mb-1.5 group-hover:text-blue-400 transition-colors">
+        <h3 className="text-base font-medium text-foreground truncate mb-1.5 group-hover:text-[#0C66E4] transition-colors">
           {ticket.subject}
         </h3>
         
@@ -29,7 +29,7 @@ export function CustomerTicketCard({ ticket, onClick }: CustomerTicketCardProps)
         </p>
         
         <div className="text-[11px] text-muted-foreground font-medium tracking-wide uppercase">
-          Last updated {ticket.updatedAt ? formatDistanceToNow(new Date(ticket.updatedAt), { addSuffix: true }) : 'just now'}
+          Last updated <span className="text-foreground font-semibold">{ticket.updatedAt ? formatTimeAgo(ticket.updatedAt) : 'just now'}</span>
         </div>
       </div>
       
@@ -48,20 +48,20 @@ function StatusBadge({ status }: { status: string }) {
     case "NEW":
     case "ANALYZING":
     case "ANALYZED":
-      style = "text-blue-400 border-blue-400/30 bg-blue-400/10";
+      style = "text-blue-500 border-blue-500/30 bg-blue-500/10";
       label = "Submitted";
       break;
     case "ASSIGNED":
     case "IN_PROGRESS":
-      style = "text-amber-400 border-amber-400/30 bg-amber-400/10";
+      style = "text-amber-500 border-amber-500/30 bg-amber-500/10";
       label = "In Progress";
       break;
     case "RESOLVED":
-      style = "text-emerald-400 border-emerald-400/30 bg-emerald-400/10";
+      style = "text-emerald-500 border-emerald-500/30 bg-emerald-500/10";
       label = "Resolved";
       break;
     case "CLOSED":
-      style = "text-muted-foreground border-zinc-400/30 bg-zinc-400/10";
+      style = "text-muted-foreground border-zinc-500/30 bg-zinc-500/10";
       label = "Closed";
       break;
   }

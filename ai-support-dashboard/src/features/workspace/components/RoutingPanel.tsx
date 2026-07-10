@@ -1,12 +1,16 @@
 import { Network, UserCheck, ShieldAlert, Cpu } from "lucide-react";
 import type { RoutingModel } from "@/shared/types/workspace";
+import type { TicketModel } from "@/shared/types/ticket";
 import { Badge } from "@/components/ui/badge";
 
 interface RoutingPanelProps {
   routing: RoutingModel;
+  ticket: TicketModel;
 }
 
-export function RoutingPanel({ routing }: RoutingPanelProps) {
+export function RoutingPanel({ routing, ticket }: RoutingPanelProps) {
+  const assignee = ticket.assignedTo || routing.assignedAgent;
+  
   return (
     <div className="bg-card shadow-sm border-0 ring-1 ring-border/50 rounded-lg overflow-hidden">
       <div className="bg-card border-b border-border p-4 flex items-center justify-between">
@@ -19,16 +23,18 @@ export function RoutingPanel({ routing }: RoutingPanelProps) {
       <div className="p-4 space-y-5">
         <div>
            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Assigned To</span>
-           <div className="flex gap-2 items-center">
-             <Badge variant="outline" className="text-foreground border-border bg-muted text-sm py-1">
-               {routing.suggestedDepartment}
-             </Badge>
-             {routing.suggestedAgent && (
-                <div className="flex items-center gap-1.5 text-sm text-foreground">
-                  <UserCheck className="h-4 w-4 text-blue-400" />
-                  @{routing.suggestedAgent}
-                </div>
+           <div className="flex gap-3 items-center mt-3">
+             {assignee && (
+               <div className="flex items-center gap-2">
+                 <div className="h-7 w-7 rounded-full bg-blue-500/20 text-blue-500 flex items-center justify-center font-medium border border-blue-500/30 text-xs">
+                   {assignee.charAt(0).toUpperCase()}
+                 </div>
+                 <span className="text-sm font-medium text-foreground">{assignee}</span>
+               </div>
              )}
+             <Badge variant="secondary" className="text-xs bg-muted text-muted-foreground hover:bg-muted font-normal">
+               {routing.department}
+             </Badge>
            </div>
         </div>
 
@@ -42,7 +48,7 @@ export function RoutingPanel({ routing }: RoutingPanelProps) {
                 <span className="text-[11px] text-muted-foreground font-semibold uppercase">Reason</span>
               </div>
               <p className="text-xs text-foreground leading-relaxed pl-5">
-                {routing.reasoning}
+                {routing.reason}
               </p>
             </div>
 
@@ -53,7 +59,7 @@ export function RoutingPanel({ routing }: RoutingPanelProps) {
               </div>
               <div className="pl-5 flex justify-between items-center">
                 <code className="text-[10px] text-blue-400 bg-blue-400/10 px-1.5 py-0.5 rounded border border-blue-500/20">
-                  {extractRuleName(routing.reasoning)}
+                  {routing.ruleName || "GENERAL_ROUTING_RULE"}
                 </code>
                 <span className="text-[10px] font-mono text-blue-400 bg-blue-400/10 px-1.5 py-0.5 rounded">
                   {(routing.confidenceScore * 100).toFixed(0)}% Confidence
@@ -66,12 +72,4 @@ export function RoutingPanel({ routing }: RoutingPanelProps) {
       </div>
     </div>
   );
-}
-
-function extractRuleName(reasoning: string) {
-  // A simple heuristic to extract a rule name or fallback
-  if (reasoning.toLowerCase().includes("login")) return "LOGIN_RULE_01";
-  if (reasoning.toLowerCase().includes("billing")) return "BILLING_RULE_02";
-  if (reasoning.toLowerCase().includes("critical")) return "CRITICAL_SLA_RULE";
-  return "GENERAL_ROUTING_RULE";
 }
