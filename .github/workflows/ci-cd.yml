@@ -14,9 +14,14 @@ on:
       - master
   workflow_dispatch:
 
+# Default token permissions for every job in this workflow.
+# Individual jobs can request more if they ever need it (none do today).
+permissions:
+  contents: read
+
 jobs:
-  build-test:
-    name: Build and Test (${{ matrix.module }})
+  backend-build-test:
+    name: Backend - Build and Test (${{ matrix.module }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -50,12 +55,41 @@ jobs:
       - name: Build and test module
         run: mvn -B -ntp -f ${{ matrix.module }}/pom.xml clean test
 
+  frontend-build-test:
+    name: Frontend - Build and Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./ai-support-dashboard
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: ./ai-support-dashboard/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Component Tests (Vitest)
+        run: npx vitest run
+
+      - name: E2E Tests (Playwright)
+        run: npx playwright test
+
+      - name: Build and Analyze
+        run: npm run build
+
   docker:
     name: Build and Push Docker Images
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    needs: build-test
+    needs:
+      - backend-build-test
+      - frontend-build-test
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/master')
     env:
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -97,4 +131,3 @@ jobs:
           docker push ${DOCKER_USER}/ai-analysis-service:latest
           docker push ${DOCKER_USER}/routing-service:latest
           docker push ${DOCKER_USER}/rag-service:latest
-
