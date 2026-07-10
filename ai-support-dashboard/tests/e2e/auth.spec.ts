@@ -1,6 +1,32 @@
 import { test, expect } from '@playwright/test';
 
 test('login and navigate to dashboard for admin', async ({ page }) => {
+  // Mock login endpoint
+  await page.route('**/auth/login', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        accessToken: 'fake-access-token',
+        refreshToken: 'fake-refresh-token'
+      })
+    });
+  });
+
+  // Mock getMe endpoint
+  await page.route('**/auth/me', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        id: 1,
+        email: 'admin@aisupport.com',
+        role: 'ADMIN',
+        fullName: 'Admin User'
+      })
+    });
+  });
+
   await page.goto('/auth/login');
   
   // Fill in login form
