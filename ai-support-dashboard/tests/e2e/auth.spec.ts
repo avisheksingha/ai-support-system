@@ -4,7 +4,7 @@ test('login and navigate to dashboard for admin', async ({ page }) => {
   await page.goto('/auth/login');
   
   // Fill in login form
-  await page.fill('input[placeholder="name@example.com"]', 'admin@ai-support.com');
+  await page.fill('input[placeholder="you@aisupport.com"]', 'admin@aisupport.com');
   await page.fill('input[type="password"]', 'admin123');
   
   // Submit form
