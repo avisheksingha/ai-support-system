@@ -70,11 +70,12 @@ export function MyTicketsPage() {
                 <Inbox className="h-6 w-6 text-muted-foreground" />
               </div>
               <h3 className="text-lg font-medium text-foreground mb-1">No tickets found</h3>
-              <p className="text-sm text-muted-foreground max-w-[250px]">
+              <p className="text-sm text-muted-foreground max-w-[250px] mb-6">
                 {filter === "ALL" 
                   ? "You haven't submitted any support requests yet." 
                   : `You don't have any ${filter.toLowerCase()} tickets at the moment.`}
               </p>
+              {filter === "ALL" && <CreateTicketDialog />}
             </div>
           ) : (
             <div className="grid gap-3">

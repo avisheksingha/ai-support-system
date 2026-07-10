@@ -2,7 +2,6 @@ package com.aisupport.analysis.chat;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.PromptTemplate;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.aisupport.analysis.dto.ParsedAnalysis;
 
@@ -23,7 +22,7 @@ public class OpenAiChatProvider extends AbstractChatProvider {
      * @param chatClient The OpenAI ChatClient bean
      * @param ticketAnalysisPromptTemplate The shared prompt template
      */
-    public OpenAiChatProvider(@Qualifier("openAiChatClient") ChatClient chatClient,
+    public OpenAiChatProvider(ChatClient chatClient,
                               PromptTemplate ticketAnalysisPromptTemplate) {
         super(chatClient, ticketAnalysisPromptTemplate, "OpenAI");
     }

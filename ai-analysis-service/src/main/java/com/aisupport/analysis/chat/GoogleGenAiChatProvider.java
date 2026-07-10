@@ -2,7 +2,6 @@ package com.aisupport.analysis.chat;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.PromptTemplate;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.aisupport.analysis.dto.ParsedAnalysis;
 
@@ -24,7 +23,7 @@ public class GoogleGenAiChatProvider extends AbstractChatProvider {
      * @param chatClient The Google GenAI ChatClient bean
      * @param ticketAnalysisPromptTemplate The shared prompt template
      */
-    public GoogleGenAiChatProvider(@Qualifier("googleGenAiChatClient") ChatClient chatClient,
+    public GoogleGenAiChatProvider(ChatClient chatClient,
                                    PromptTemplate ticketAnalysisPromptTemplate) {
         super(chatClient, ticketAnalysisPromptTemplate, "Google GenAI");
     }

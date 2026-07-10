@@ -1,15 +1,4 @@
-import { 
-  CheckCircle2, 
-  Clock, 
-  PlayCircle, 
-  CircleDashed,
-  FileText,
-  BrainCircuit,
-  BookOpen,
-  Network,
-  UserCheck,
-  CheckSquare
-} from "lucide-react";
+
 import type { TimelineEvent, TimelineEventType } from "@/shared/types/workspace";
 import { formatTime, parseDate } from "@/shared/utils/date";
 
@@ -22,60 +11,43 @@ export function TicketTimeline({ events }: TicketTimelineProps) {
   const sortedEvents = [...events].sort((a, b) => parseDate(a.timestamp).getTime() - parseDate(b.timestamp).getTime());
 
   return (
-    <div className="relative border-l border-border ml-3 py-2 space-y-7">
-      {sortedEvents.map((event) => {
-        return (
-          <div key={event.id} className="relative pl-6">
-            <div className={`absolute -left-[14px] top-0.5 bg-background p-1 border border-border rounded-full`}>
-              <EventIcon type={event.type} />
-            </div>
-            
-            <div className="flex flex-col gap-1.5 pt-0.5">
-              <div className="flex items-center gap-2">
-                <span className={`text-sm font-medium ${event.status === 'completed' ? 'text-foreground' : 'text-muted-foreground'}`}>
-                  {event.title}
-                </span>
-                <span className="text-xs text-muted-foreground font-mono">
-                  {formatTime(event.timestamp)}
-                </span>
-              </div>
-              
-              <div className="flex items-start gap-2">
-                <StatusIndicator status={event.status} />
-                <p className="text-xs text-muted-foreground">
-                  {event.description}
-                </p>
-              </div>
-            </div>
+    <div className="space-y-4 px-2">
+      {sortedEvents.map((event, index) => (
+        <div key={event.id} className="flex flex-col">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-sm"><EventIcon type={event.type} /></span>
+            <span className={`text-sm font-semibold ${event.status === 'completed' ? 'text-foreground' : 'text-muted-foreground'}`}>
+              {event.title}
+            </span>
           </div>
-        );
-      })}
+          
+          <div className="flex justify-between items-start pl-6">
+            <p className="text-[13px] text-foreground/80 leading-snug max-w-[80%]">
+              {event.description}
+            </p>
+            <span className="text-xs text-muted-foreground font-mono whitespace-nowrap">
+              {formatTime(event.timestamp)}
+            </span>
+          </div>
+
+          {index < sortedEvents.length - 1 && (
+            <div className="border-b border-border/60 my-4 ml-6" />
+          )}
+        </div>
+      ))}
     </div>
   );
 }
 
 function EventIcon({ type }: { type: TimelineEventType }) {
   switch (type) {
-    case "CREATED": return <FileText className="h-4 w-4 text-blue-400" />;
-    case "AI_ANALYSIS": return <BrainCircuit className="h-4 w-4 text-blue-400" />;
-    case "KNOWLEDGE_RETRIEVED": return <BookOpen className="h-4 w-4 text-emerald-400" />;
-    case "ROUTING_DECISION": return <Network className="h-4 w-4 text-blue-400" />;
-    case "ASSIGNMENT": return <UserCheck className="h-4 w-4 text-orange-400" />;
-    case "STATUS_CHANGE": return <CircleDashed className="h-4 w-4 text-muted-foreground" />;
-    case "RESOLVED": return <CheckSquare className="h-4 w-4 text-emerald-500" />;
-    default: return <CircleDashed className="h-4 w-4 text-muted-foreground" />;
-  }
-}
-
-function StatusIndicator({ status }: { status: TimelineEvent['status'] }) {
-  switch (status) {
-    case "completed":
-      return <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500/70 mt-0.5 shrink-0" />;
-    case "in_progress":
-      return <PlayCircle className="h-3.5 w-3.5 text-blue-400/70 mt-0.5 shrink-0" />;
-    case "pending":
-      return <Clock className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />;
-    case "failed":
-      return <CircleDashed className="h-3.5 w-3.5 text-red-400/70 mt-0.5 shrink-0" />;
+    case "CREATED": return "📝";
+    case "AI_ANALYSIS": return "🤖";
+    case "KNOWLEDGE_RETRIEVED": return "📚";
+    case "ROUTING_DECISION": return "🧭";
+    case "ASSIGNMENT": return "👤";
+    case "STATUS_CHANGE": return "🔄";
+    case "RESOLVED": return "✅";
+    default: return "🔹";
   }
 }
