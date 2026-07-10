@@ -6,6 +6,7 @@
 [![CI/CD](https://github.com/avisheksingha/ai-support-system/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/avisheksingha/ai-support-system/actions/workflows/ci-cd.yml)
 [![CodeQL](https://github.com/avisheksingha/ai-support-system/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/avisheksingha/ai-support-system/actions/workflows/github-code-scanning/codeql)
 [![Dependabot Updates](https://github.com/avisheksingha/ai-support-system/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/avisheksingha/ai-support-system/actions/workflows/dependabot/dependabot-updates)
+[![Deploy to AWS EC2](https://github.com/avisheksingha/ai-support-system/actions/workflows/deploy-aws.yml/badge.svg)](https://github.com/avisheksingha/ai-support-system/actions/workflows/deploy-aws.yml)
 
 <!-- Tech Stack -->
 [![Java 21](https://img.shields.io/badge/Java-21-007396?logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/21/)
