@@ -13,13 +13,13 @@ import com.aisupport.common.enums.TicketStatus;
 import com.aisupport.common.event.TicketCreatedEvent;
 import com.aisupport.common.event.TicketRagResponseEvent;
 import com.aisupport.common.event.TicketRoutedEvent;
-import com.aisupport.ticket.outbox.OutboxEventService;
 import com.aisupport.ticket.dto.TicketRequest;
 import com.aisupport.ticket.dto.TicketResponse;
 import com.aisupport.ticket.entity.Ticket;
 import com.aisupport.ticket.exception.InvalidTicketInputException;
 import com.aisupport.ticket.exception.TicketNotFoundException;
 import com.aisupport.ticket.mapper.TicketMapper;
+import com.aisupport.ticket.outbox.OutboxEventService;
 import com.aisupport.ticket.repository.TicketRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -48,16 +48,27 @@ public class TicketService {
      * @return persisted ticket response
      */
     @Transactional
-    public TicketResponse createTicket(String userId, TicketRequest request) {
+    public TicketResponse createTicket(String userId, String customerEmail, String userName, TicketRequest request) {
 
         Ticket ticket = ticketMapper.toEntity(request);
         ticket.setTicketNumber(generateTicketNumber());
         ticket.setStatus(TicketStatus.NEW);
         ticket.setPriority(TicketPriority.MEDIUM);
         
+        if (customerEmail != null && !customerEmail.isBlank()) {
+            ticket.setCustomerEmail(customerEmail);
+            
+            if (userName != null && !userName.isBlank()) {
+                ticket.setCustomerName(userName);
+            } else {
+                // Default customerName to email prefix if not provided (could be extracted from another header in the future)
+                ticket.setCustomerName(customerEmail.split("@")[0]);
+            }
+        }
+        
         if (userId != null && !userId.isBlank()) {
             try {
-                ticket.setCustomerId(Long.valueOf(userId));
+                ticket.setCustomerUserId(Long.valueOf(userId));
             } catch (NumberFormatException e) {
                 log.warn("Invalid user ID format: {}", userId);
             }
@@ -142,6 +153,35 @@ public class TicketService {
                 .stream()
                 .map(ticketMapper::toResponse)
                 .toList();
+    }
+
+    /**
+     * Returns all tickets belonging to a customer, ordered by newest first.
+     *
+     * @param customerEmail customer's email
+     * @return list of matching ticket responses
+     */
+    @Transactional(readOnly = true)
+    public List<TicketResponse> getTicketsByCustomerEmail(String customerEmail) {
+        return ticketRepository.findByCustomerEmailOrderByCreatedAtDesc(customerEmail)
+                .stream()
+                .map(ticketMapper::toResponse)
+                .toList();
+    }
+
+    /**
+     * Fetches a specific ticket for a customer, enforcing ownership.
+     *
+     * @param ticketNumber unique ticket number
+     * @param customerEmail customer's email
+     * @return ticket response
+     */
+    @Transactional(readOnly = true)
+    public TicketResponse getCustomerTicketByNumber(String ticketNumber, String customerEmail) {
+        Ticket ticket = ticketRepository.findByTicketNumberAndCustomerEmail(ticketNumber, customerEmail)
+                .orElseThrow(() -> new TicketNotFoundException(
+                        "Ticket not found or access denied: " + ticketNumber));
+        return ticketMapper.toResponse(ticket);
     }
 
     /**

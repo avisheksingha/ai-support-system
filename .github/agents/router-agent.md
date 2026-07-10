@@ -46,13 +46,13 @@ mvn -pl routing-service -Dtest=RoutingServiceTest,RuleEvaluationServiceTest test
 
 ## Current API Endpoints
 
-N/A
+- `GET /api/v1/routing/ticket/{ticketId}`: Retrieves routing execution history and reasoning for a ticket. (Temporary UI endpoint)
 
 ## Database Snapshot
 
 ### routing_rules
 - `id` (Long, PK)
-- `rule_name`, `description`
+- `rule_name`, `description`, `rule_version`
 - `priority`, `active`
 - `intent_pattern`, `sentiment_pattern`, `urgency_pattern`, `keyword_patterns` (TEXT[])
 - `assign_to_team`, `priority_override`, `sla_hours`

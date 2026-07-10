@@ -15,7 +15,9 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     
     List<Ticket> findByStatus(TicketStatus status);
     
-    List<Ticket> findByCustomerEmail(String customerEmail);
+    List<Ticket> findByCustomerEmailOrderByCreatedAtDesc(String customerEmail);
+    
+    Optional<Ticket> findByTicketNumberAndCustomerEmail(String ticketNumber, String customerEmail);
     
     List<Ticket> findByAssignedTo(String assignedTo);
 

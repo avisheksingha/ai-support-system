@@ -62,7 +62,7 @@ Transition checks are enforced in `Ticket.transitionTo(...)`.
 ### tickets
 - `id` (Long, PK)
 - `version` (optimistic lock)
-- `ticket_number`, `customer_email`, `customer_name`
+- `ticket_number`, `customer_user_id`, `customer_email`, `customer_name`
 - `subject`, `message`
 - `status`, `priority`, `assigned_to`
 - `intent`, `sentiment`, `urgency`, `sla_hours`

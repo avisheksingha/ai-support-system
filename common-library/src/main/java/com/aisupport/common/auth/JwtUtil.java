@@ -32,6 +32,10 @@ public class JwtUtil {
         return extractClaim(token, claims -> claims.get("email", String.class));
     }
 
+    public String extractName(String token) {
+        return extractClaim(token, claims -> claims.get("name", String.class));
+    }
+
     // CHANGED: Return Instant instead of Date
     public Instant extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration).toInstant();

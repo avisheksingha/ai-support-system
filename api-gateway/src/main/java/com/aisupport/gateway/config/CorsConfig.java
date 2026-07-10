@@ -8,6 +8,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
+import com.aisupport.common.auth.SecurityConstants;
+
 @Configuration
 public class CorsConfig {
 
@@ -26,6 +28,9 @@ public class CorsConfig {
         
         // Crucial: If you are passing Authorization headers for JWTs, this must be true
         corsConfig.setAllowCredentials(true); 
+        
+        // Expose custom headers to the frontend so they can be read by JS
+        corsConfig.setExposedHeaders(List.of(SecurityConstants.HEADER_ACCESS_TOKEN_REFRESH));
         
         // Cache the preflight response for 1 hour
         corsConfig.setMaxAge(3600L);

@@ -1,7 +1,6 @@
 package com.aisupport.ticket.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -15,18 +14,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @Schema(
     description = "Request payload for creating a support ticket", 
-    requiredProperties = {"customerEmail", "subject", "message"},
-    example = "{\n  \"customerEmail\": \"user@example.com\",\n  \"customerName\": \"Jane Doe\",\n  \"subject\": \"Cannot access my account\",\n  \"message\": \"I am unable to log in with my credentials.\"\n}"
+    requiredProperties = {"subject", "message"},
+    example = "{\n  \"subject\": \"Cannot access my account\",\n  \"message\": \"I am unable to log in with my credentials.\"\n}"
 )
 public class TicketRequest {
-    
-    @Schema(description = "Customer's email address", example = "user@example.com")
-    @NotBlank(message = "Customer email is required")
-    @Email(message = "Invalid email format")
-    private String customerEmail;
-    
-    @Schema(description = "Customer's full name", example = "Jane Doe")
-    private String customerName;
     
     @Schema(description = "Ticket subject", example = "Cannot access my account")
     @NotBlank(message = "Subject is required")
