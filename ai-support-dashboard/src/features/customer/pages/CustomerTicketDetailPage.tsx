@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useCustomerTicket } from "../hooks/useCustomerTickets";
 import { formatTimeAgo, parseDate, formatTime } from "@/shared/utils/date";
 import { format } from "date-fns";
-import { ArrowLeft, Loader2, MessageSquare, Paperclip, CheckCircle2, ChevronRight } from "lucide-react";
+import { Loader2, MessageSquare, Paperclip, CheckCircle2, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { TicketModel } from "@/shared/types/ticket";
 
