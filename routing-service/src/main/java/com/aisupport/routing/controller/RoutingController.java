@@ -30,7 +30,7 @@ public class RoutingController {
         summary = "Get routing reasoning for a ticket",
         description = "Temporary internal endpoint. Retrieves the routing rule execution history and reasoning for a specific ticket. Will later be consumed by orchestration-service."
     )
-    @PreAuthorize("hasAnyRole('SUPPORT', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('AGENT', 'ADMIN')")
     @GetMapping("/ticket/{ticketId}")
     public ResponseEntity<RoutingResponse> getRoutingForTicket(
             @Parameter(description = "The ID of the ticket") @PathVariable Long ticketId) {
