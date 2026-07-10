@@ -51,6 +51,19 @@ public class SecurityConfig {
     }
 
     /**
+     * Runtime guard enforcing ADR-004: rejects any request carrying a Cookie
+     * header unless the path is explicitly whitelisted via configuration.
+     *
+     * @param allowedPaths externally configured cookie-allowed path prefixes
+     * @return a new instance of CookieGuardFilter
+     */
+    @Bean
+    CookieGuardFilter cookieGuardFilter(
+            @Value("${security.cookie-guard.allowed-paths:}") List<String> allowedPaths) {
+        return new CookieGuardFilter(allowedPaths);
+    }
+
+    /**
 	 * Configures the security filter chain for the application.
 	 *
 	 * @param http the HttpSecurity object to configure
@@ -96,18 +109,5 @@ public class SecurityConfig {
     } catch (Exception ex) {
             throw new SecurityConfigurationException("Failed to configure Spring Security filter chain", ex);
         }
-    }
-
-    /**
-     * Runtime guard enforcing ADR-004: rejects any request carrying a Cookie
-     * header unless the path is explicitly whitelisted via configuration.
-     *
-     * @param allowedPaths externally configured cookie-allowed path prefixes
-     * @return a new instance of CookieGuardFilter
-     */
-    @Bean
-    CookieGuardFilter cookieGuardFilter(
-            @Value("${security.cookie-guard.allowed-paths:}") List<String> allowedPaths) {
-        return new CookieGuardFilter(allowedPaths);
     }
 }
