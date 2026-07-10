@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   backend-build-test:
-    name: Backend - Build and Test (${{ matrix.module }})
+    name: Build and Test (${{ matrix.module }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
