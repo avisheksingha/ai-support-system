@@ -75,14 +75,36 @@ export const workspaceApi = {
   },
 
   // Mocked Timeline Events (Will be powered by Orchestrator later)
-  getTimeline: async (_ticketId: number): Promise<TimelineEvent[]> => {
+  getTimeline: async (ticketId: number): Promise<TimelineEvent[]> => {
     await new Promise(resolve => setTimeout(resolve, 400));
-    const now = new Date();
+    
+    let baseTime = new Date().getTime();
+    try {
+      const response = await apiClient.get<TicketModel>(`/tickets/id/${ticketId}`);
+      if (response.data && response.data.createdAt) {
+         // parseDate is needed if the backend sends an array or naive string
+         // but since we are just mocking, we can try to parse it directly
+         const backendDate = response.data.createdAt;
+         if (Array.isArray(backendDate)) {
+           const [y, m, d, h=0, min=0, s=0, ms=0] = backendDate;
+           baseTime = Date.UTC(y, m - 1, d, h, min, s, ms / 1000000);
+         } else if (typeof backendDate === 'string') {
+           let str = backendDate;
+           if (str.includes('T') && !str.endsWith('Z') && !str.match(/[+-]\d{2}:?\d{2}$/)) {
+             str += 'Z';
+           }
+           baseTime = new Date(str).getTime();
+         }
+      }
+    } catch (e) {
+      // Ignore and fallback to current time
+    }
+
     return [
       {
         id: "1",
         type: "CREATED",
-        timestamp: new Date(now.getTime() - 600000).toISOString(), // 10 mins ago
+        timestamp: new Date(baseTime).toISOString(),
         title: "Ticket Created",
         description: "Customer submitted support request",
         status: "completed"
@@ -90,7 +112,7 @@ export const workspaceApi = {
       {
         id: "2",
         type: "AI_ANALYSIS",
-        timestamp: new Date(now.getTime() - 590000).toISOString(),
+        timestamp: new Date(baseTime + 420).toISOString(),
         title: "AI Analysis",
         description: "Google GenAI categorized intent and urgency",
         status: "completed"
@@ -98,7 +120,7 @@ export const workspaceApi = {
       {
         id: "3",
         type: "KNOWLEDGE_RETRIEVED",
-        timestamp: new Date(now.getTime() - 580000).toISOString(),
+        timestamp: new Date(baseTime + 600).toISOString(),
         title: "Knowledge Base Search",
         description: "RAG agent retrieved similar documentation",
         status: "completed"
@@ -106,7 +128,7 @@ export const workspaceApi = {
       {
         id: "4",
         type: "ROUTING_DECISION",
-        timestamp: new Date(now.getTime() - 570000).toISOString(),
+        timestamp: new Date(baseTime + 670).toISOString(),
         title: "Rule-based Routing",
         description: "Ticket routed to L2 Technical Support",
         status: "completed"

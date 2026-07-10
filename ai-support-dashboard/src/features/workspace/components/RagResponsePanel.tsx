@@ -24,17 +24,36 @@ export function RagResponsePanel({ ragResponse }: RagResponsePanelProps) {
       </div>
 
       <div className="p-4 flex flex-col gap-5">
+        {/* Mocked Knowledge Articles Used */}
+        <div>
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 block flex items-center gap-1">
+            <BookOpen className="h-3.5 w-3.5" /> Knowledge Used
+          </span>
+          <ul className="space-y-2 text-[13px] text-foreground/80 pl-1">
+            <li className="flex items-center justify-between">
+              <span className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-emerald-500" /> Subscription Upgrades</span>
+              <span className="text-[11px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">94%</span>
+            </li>
+            <li className="flex items-center justify-between">
+              <span className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-emerald-500" /> Billing Policy</span>
+              <span className="text-[11px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">89%</span>
+            </li>
+          </ul>
+        </div>
+
+        <div className="border-t border-border/60" />
+
         {/* Generated Reply */}
         <div>
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-              <Sparkles className="h-3 w-3 text-emerald-500" /> 
+              <Sparkles className="h-3.5 w-3.5 text-emerald-500" /> 
               Suggested Reply
             </span>
             <button 
               onClick={handleCopy}
               className="text-muted-foreground hover:text-foreground transition-colors bg-muted p-1.5 rounded-md"
-              title="Copy to clipboard"
+              title="Copy suggested reply"
             >
               {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
             </button>
@@ -53,7 +72,6 @@ export function RagResponsePanel({ ragResponse }: RagResponsePanelProps) {
             })()}
           </div>
         </div>
-
       </div>
     </div>
   );

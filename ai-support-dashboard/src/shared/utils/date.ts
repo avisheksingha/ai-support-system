@@ -7,7 +7,7 @@ export function parseDate(value: any): Date {
   // Spring Boot Jackson array format: [year, month, day, hour, minute, second, nano]
   if (Array.isArray(value)) {
     const [year, month, day, hour = 0, minute = 0, second = 0, nano = 0] = value;
-    return new Date(year, month - 1, day, hour, minute, second, nano / 1000000);
+    return new Date(Date.UTC(year, month - 1, day, hour, minute, second, nano / 1000000));
   }
   
   if (typeof value === 'number') {
@@ -16,6 +16,13 @@ export function parseDate(value: any): Date {
     return new Date(value);
   }
   
+  if (typeof value === 'string') {
+    // Treat naive ISO strings from backend as UTC
+    if (value.includes('T') && !value.endsWith('Z') && !value.match(/[+-]\d{2}:?\d{2}$/)) {
+      value = value + 'Z';
+    }
+  }
+
   const parsed = new Date(value);
   if (isNaN(parsed.getTime()) && typeof value === 'string') {
     const parsedFloat = parseFloat(value);

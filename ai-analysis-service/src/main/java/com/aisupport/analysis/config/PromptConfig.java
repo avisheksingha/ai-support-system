@@ -14,4 +14,16 @@ public class PromptConfig {
             @Value("classpath:prompts/ticket-analysis-prompt.st") Resource resource) {
         return new PromptTemplate(resource);
     }
+    
+    @Bean
+    PromptTemplate writingSupportTicketPromptTemplate(
+            @Value("classpath:prompts/writing-support-ticket.st") Resource resource) {
+        return new PromptTemplate(resource);
+    }
+
+    @Bean
+    PromptTemplate writingAgentReplyPromptTemplate(
+            @Value("classpath:prompts/writing-agent-reply.st") Resource resource) {
+        return new PromptTemplate(resource);
+    }
 }

@@ -71,28 +71,32 @@ export function TicketList({ selectedTicket, onSelectTicket }: TicketListProps) 
                 : "bg-card border-transparent hover:bg-card hover:border-border hover:scale-[1.01]"
             }`}
           >
-            <div className="flex justify-between items-start mb-2">
-              <span className="text-xs font-mono text-muted-foreground">{ticket.ticketNumber}</span>
-              <span className="text-xs text-muted-foreground">
-                {ticket.updatedAt ? formatTimeAgo(ticket.updatedAt) : 'just now'}
-              </span>
+            <div className="mb-1">
+              <span className="text-[10px] font-mono text-muted-foreground">{ticket.ticketNumber}</span>
             </div>
-            <h3 className="text-sm font-medium text-foreground line-clamp-2 mb-3">
+            <h3 className="text-base font-semibold text-foreground line-clamp-2 mb-3 leading-tight">
               {ticket.subject}
             </h3>
             
-            <div className="flex flex-wrap gap-2 items-center">
+            <div className="space-y-1.5 mb-3">
+              <div className="text-xs text-foreground/80 flex items-center gap-2">
+                <span>👤</span> {ticket.customerName || "Customer"}
+              </div>
+              <div className="text-xs text-foreground/80 flex items-center gap-2">
+                <span>👨</span> {ticket.assignedTo ? `Assigned: ${ticket.assignedTo}` : "Unassigned"}
+              </div>
+              <div className="text-[11px] text-muted-foreground flex items-center gap-2">
+                <span>🕒</span> Updated {ticket.updatedAt ? formatTimeAgo(ticket.updatedAt) : 'just now'}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2 items-center mt-3 pt-3 border-t border-border/50">
               <Badge variant="outline" className={`text-[10px] uppercase ${getPriorityColor(ticket.priority)}`}>
                 {ticket.priority}
               </Badge>
-              <Badge variant="secondary" className="text-[10px] bg-muted text-foreground">
+              <Badge variant="outline" className={`text-[10px] uppercase ${getStatusColor(ticket.status)}`}>
                 {ticket.status}
               </Badge>
-              {ticket.assignedTo && (
-                <div className="ml-auto text-xs text-muted-foreground truncate max-w-[80px]">
-                  @{ticket.assignedTo}
-                </div>
-              )}
             </div>
           </button>
         ))}
@@ -107,6 +111,19 @@ function getPriorityColor(priority: string) {
     case "HIGH": return "text-orange-600 border-orange-200 bg-orange-50";
     case "MEDIUM": return "text-yellow-600 border-yellow-200 bg-yellow-50";
     case "LOW": return "text-blue-600 border-blue-200 bg-blue-50";
+    default: return "text-muted-foreground border-border";
+  }
+}
+
+function getStatusColor(status: string) {
+  switch (status) {
+    case "NEW": return "text-blue-600 border-blue-200 bg-blue-50";
+    case "ANALYZING":
+    case "ANALYZED": return "text-purple-600 border-purple-200 bg-purple-50";
+    case "ASSIGNED": return "text-emerald-600 border-emerald-200 bg-emerald-50";
+    case "IN_PROGRESS": return "text-cyan-600 border-cyan-200 bg-cyan-50";
+    case "RESOLVED": return "text-green-600 border-green-200 bg-green-50";
+    case "CLOSED": return "text-gray-600 border-gray-200 bg-gray-50";
     default: return "text-muted-foreground border-border";
   }
 }

@@ -35,42 +35,38 @@ export function AiInsightsPanel({ analysis }: AiInsightsPanelProps) {
         <h3 className="font-semibold text-foreground">AI Insights</h3>
       </div>
       
-      <div className="p-4 space-y-5">
-        <div className="grid grid-cols-2 gap-4">
+      <div className="p-4 space-y-3 text-[13px]">
+        <div className="grid grid-cols-2 gap-3">
           <div>
-            <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Target className="h-3 w-3" /> Intent</div>
-            <Badge variant="outline" className={`border-border ${getIntentColor(analysis.intent)}`}>
-              {formatSemanticString(analysis.intent)}
-            </Badge>
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">Model</span>
+            <div className="font-medium text-foreground">Gemini 2.5 Flash</div>
           </div>
           <div>
-            <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Urgency</div>
-            <Badge variant="outline" className={`border-border ${getUrgencyColor(analysis.urgency)}`}>
-              {formatSemanticString(analysis.urgency)}
-            </Badge>
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">Confidence</span>
+            <div className="font-medium text-emerald-600">{(rawScore * 100).toFixed(0)}%</div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">Latency</span>
+            <div className="font-medium text-foreground font-mono">842 ms</div>
+          </div>
+          <div>
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">Intent</span>
+            <div className="font-medium text-foreground">{formatSemanticString(analysis.intent)}</div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">Urgency</span>
+            <div className="font-medium text-foreground">{formatSemanticString(analysis.urgency)}</div>
           </div>
         </div>
 
         <div>
-          <div className="text-xs text-muted-foreground mb-3 flex items-center justify-between">
-            <span>Confidence Score</span>
-            <span className="font-medium text-foreground">{getConfidenceString(rawScore)}</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-              <div 
-                className={`h-full rounded-full ${getConfidenceColor(rawScore)} transition-all duration-1000 ease-out`}
-                style={{ width: `${Math.max(0, Math.min(100, confidenceScore))}%` }}
-              />
-            </div>
-            <span className="text-xs font-medium font-mono text-muted-foreground whitespace-nowrap min-w-[32px] text-right">
-              {rawScore > 0 ? (rawScore * 100).toFixed(0) : 0}%
-            </span>
-          </div>
-        </div>
-
-        <div>
-          <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1"><Key className="h-3 w-3" /> Keywords</div>
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1"><Key className="h-3 w-3" /> Extracted Keywords</span>
           <div className="flex flex-wrap gap-1">
             {keywords.length > 0 ? (
               keywords.map((kw, i) => (
