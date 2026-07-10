@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const NAV_ITEMS = [
-  { name: "Dashboard",  path: "/dashboard", icon: LayoutDashboard, roles: ["ADMIN", "CUSTOMER"] },
+  { name: "Dashboard",  path: "/dashboard", icon: LayoutDashboard, roles: ["ADMIN", "CUSTOMER", "AGENT"] },
   { name: "Workspace",  path: "/tickets",   icon: Ticket,          roles: ["AGENT", "ADMIN"] },
   { name: "My Tickets", path: "/my-tickets",icon: Ticket,          roles: ["CUSTOMER"] },
   { name: "Users",      path: "/users",     icon: Users,           roles: ["ADMIN"] },
@@ -18,7 +18,7 @@ const NAV_ITEMS = [
 ];
 
 const BREADCRUMB_MAP: Record<string, Record<string, string>> = {
-  "/dashboard": { default: "Operations Center", CUSTOMER: "My Dashboard" },
+  "/dashboard": { default: "Operations Center", CUSTOMER: "My Dashboard", AGENT: "Agent Workbench" },
   "/tickets":   { default: "Ticket Workspace" },
   "/my-tickets":{ default: "My Tickets" },
   "/users":     { default: "User Management" },
