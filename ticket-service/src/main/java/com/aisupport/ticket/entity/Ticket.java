@@ -46,8 +46,8 @@ public class Ticket extends AuditableEntity {
     @Version // NEW: Optimistic locking
     private Long version;
 
-    @Column(name = "customer_id")
-    private Long customerId;
+    @Column(name = "customer_user_id")
+    private Long customerUserId;
 
     @Column(name = "ticket_number", unique = true, nullable = false, updatable = false)
     private String ticketNumber;

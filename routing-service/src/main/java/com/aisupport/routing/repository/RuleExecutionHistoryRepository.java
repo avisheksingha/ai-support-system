@@ -17,6 +17,8 @@ public interface RuleExecutionHistoryRepository extends JpaRepository<RuleExecut
     
     List<RuleExecutionHistory> findByTicketId(Long ticketId);
     
+    java.util.Optional<RuleExecutionHistory> findTopByTicketIdAndMatchedTrueOrderByExecutedAtDesc(Long ticketId);
+    
     @Query("SELECT h FROM RuleExecutionHistory h WHERE h.executedAt >= :startDate ORDER BY h.executedAt DESC")
     List<RuleExecutionHistory> findRecentExecutions(@Param("startDate") Instant startDate);
     

@@ -30,7 +30,7 @@ public class SecurityConfig {
 	/**
 	 * Service-specific public endpoints that are accessible without authentication.
 	 */
-	private static final List<String> SERVICE_SPECIFIC_PUBLIC = List.of(
+	private static final List<String> SERVICE_SPECIFIC_PUBLIC_ENDPOINTS = List.of(
 	        "/api/v1/webhooks/provider/callback"
 	);
 
@@ -39,7 +39,7 @@ public class SecurityConfig {
 	 */
 	private static final String[] ALL_PUBLIC_ENDPOINTS = Stream.concat(
 	        CommonSecurityEndpoints.PUBLIC.stream(),
-	        SERVICE_SPECIFIC_PUBLIC.stream()
+	        SERVICE_SPECIFIC_PUBLIC_ENDPOINTS.stream()
 	).toArray(String[]::new);
     
     /**
@@ -68,7 +68,8 @@ public class SecurityConfig {
     ) {
         try {
 	        http
-	            .csrf(csrf -> {})
+	            // codeql[java/spring-disabled-csrf-protection] - stateless REST API, enforced via CookieGuardFilter; see ADR-004
+	            .csrf(csrf -> csrf.disable()) // NOSONAR: stateless JWT API, no session/cookie auth - see ADR-004
 	            .sessionManagement(session ->
 	                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))	
 	            

@@ -27,7 +27,7 @@ public class SecurityConfig {
     /**
 	 * Endpoints related to authentication that are publicly accessible.
 	 */
-    private static final String[] AUTH_ENDPOINTS = {
+    private static final String[] PUBLIC_AUTH_ENDPOINTS = {
             "/api/v1/auth/register",
             "/api/v1/auth/login",
             "/api/v1/auth/refresh"
@@ -79,7 +79,7 @@ public class SecurityConfig {
                 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(CommonSecurityEndpoints.PUBLIC.toArray(String[]::new)).permitAll()
-                        .requestMatchers(AUTH_ENDPOINTS).permitAll()
+                        .requestMatchers(PUBLIC_AUTH_ENDPOINTS).permitAll()
                         .requestMatchers("/api/v1/auth/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )

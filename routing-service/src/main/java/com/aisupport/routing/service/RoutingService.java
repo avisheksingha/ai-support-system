@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.aisupport.common.enums.TicketPriority;
 import com.aisupport.common.event.TicketAnalyzedEvent;
 import com.aisupport.common.event.TicketRoutedEvent;
+import com.aisupport.routing.dto.RoutingResponse;
 import com.aisupport.routing.entity.RoutingRule;
 import com.aisupport.routing.outbox.OutboxEventService;
 
@@ -66,5 +67,39 @@ public class RoutingService {
         );
 
         log.info("Routing completed ticketId={} team={} priority={}", ticketId, team, priority);
+    }
+    
+    /**
+     * Retrieves the routing execution result for a specific ticket.
+     * 
+     * @param ticketId the ticket ID
+     * @return RoutingResponse containing the reasoning and rule matched
+     */
+    @Transactional(readOnly = true)
+    public RoutingResponse getRoutingForTicket(Long ticketId) {
+        log.info("Fetching routing result for ticketId={}", ticketId);
+        
+        // Use history to find the matched rule
+        return ruleEvaluationService.getMatchedExecution(ticketId)
+            .map(history -> {
+                RoutingRule rule = ruleEvaluationService.getRuleById(history.getRuleId());
+                
+                return RoutingResponse.builder()
+                    .id(history.getId())
+                    .ticketId(ticketId)
+                    .department(rule != null ? rule.getAssignToTeam() : "General Support")
+                    .confidenceScore(0.95) // High confidence for deterministic rules
+                    .reason(rule != null ? rule.getDescription() : "Fallback routing")
+                    .ruleName(rule != null ? rule.getRuleName() : "FALLBACK_RULE")
+                    .ruleVersion(rule != null ? rule.getRuleVersion() : 1)
+                    .executedAt(history.getExecutedAt())
+                    .build();
+            })
+            .orElseGet(() -> RoutingResponse.builder()
+                .ticketId(ticketId)
+                .department("General Support")
+                .confidenceScore(0.5)
+                .reason("No routing rule matched.")
+                .build());
     }
 }

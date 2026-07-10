@@ -2,6 +2,7 @@ package com.aisupport.routing.service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -107,5 +108,13 @@ public class RuleEvaluationService {
                 .build();
 
         historyRepository.save(history);
+    }
+    
+    public Optional<RuleExecutionHistory> getMatchedExecution(Long ticketId) {
+        return historyRepository.findTopByTicketIdAndMatchedTrueOrderByExecutedAtDesc(ticketId);
+    }
+    
+    public RoutingRule getRuleById(Long ruleId) {
+        return routingRuleRepository.findById(ruleId).orElse(null);
     }
 }

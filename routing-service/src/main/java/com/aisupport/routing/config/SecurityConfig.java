@@ -6,7 +6,6 @@ import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -31,7 +30,7 @@ public class SecurityConfig {
 	/**
 	 * Service-specific public endpoints that are accessible without authentication.
 	 */
-	private static final List<String> SERVICE_SPECIFIC_PUBLIC = List.of(
+	private static final List<String> SERVICE_SPECIFIC_PUBLIC_ENDPOINTS = List.of(
 	        "/api/v1/webhooks/provider/callback"
 	);
 
@@ -40,7 +39,7 @@ public class SecurityConfig {
 	 */
 	private static final String[] ALL_PUBLIC_ENDPOINTS = Stream.concat(
 	        CommonSecurityEndpoints.PUBLIC.stream(),
-	        SERVICE_SPECIFIC_PUBLIC.stream()
+	        SERVICE_SPECIFIC_PUBLIC_ENDPOINTS.stream()
 	).toArray(String[]::new);
     
     /**
@@ -69,7 +68,8 @@ public class SecurityConfig {
     ) {
         try {
         http
-            .csrf(Customizer.withDefaults())
+            .csrf(csrf -> csrf.ignoringRequestMatchers(
+                    SERVICE_SPECIFIC_PUBLIC_ENDPOINTS.toArray(String[]::new)))
             .sessionManagement(session ->
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
