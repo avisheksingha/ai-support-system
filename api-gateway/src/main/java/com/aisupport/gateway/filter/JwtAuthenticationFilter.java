@@ -33,34 +33,34 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     private final long refreshThresholdSeconds;
 
     /**
-     * List of public authentication endpoints that do not require JWT validation.
-     * Requests to these endpoints will bypass the JWT authentication filter.
-     * 
+     * Public authentication endpoints (register/login/refresh) that bypass JWT validation.
+     * Not part of CommonSecurityEndpoints.PUBLIC — those cover swagger/actuator only.
      */
     private static final List<String> PUBLIC_AUTH_ENDPOINTS = List.of(
             "/api/v1/auth/register",
             "/api/v1/auth/login",
             "/api/v1/auth/refresh"
     );
-    
+
     /**
-	 * Service-specific public endpoints that are accessible without authentication.
-	 */
-	private static final List<String> SERVICE_SPECIFIC_PUBLIC = List.of(
+     * Service-specific public endpoints accessible without authentication.
+     */
+    private static final List<String> SERVICE_SPECIFIC_PUBLIC_ENDPOINTS = List.of(
             "/auth-docs/**",
             "/ticket-docs/**",
             "/analysis-docs/**",
             "/routing-docs/**",
             "/rag-docs/**"
-	);
+    );
 
-	/**
-	 * Combines common public endpoints with service-specific public endpoints.
-	 */
-	private static final String[] ALL_PUBLIC_ENDPOINTS = Stream.concat(
-	        CommonSecurityEndpoints.PUBLIC.stream(),
-	        SERVICE_SPECIFIC_PUBLIC.stream()
-	).toArray(String[]::new);
+    /**
+     * Combined set of all public endpoint patterns checked on every request.
+     */
+    private static final List<String> ALL_PUBLIC_ENDPOINTS = Stream.of(
+            PUBLIC_AUTH_ENDPOINTS.stream(),
+            CommonSecurityEndpoints.PUBLIC.stream(),
+            SERVICE_SPECIFIC_PUBLIC_ENDPOINTS.stream()
+    ).flatMap(s -> s).toList();
     
     // Constructor for JwtAuthenticationFilter that initializes the JwtUtil and refresh threshold.
     public JwtAuthenticationFilter(
@@ -84,9 +84,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getURI().getPath();
 
-        boolean isPublic = PUBLIC_AUTH_ENDPOINTS.stream()
-                .anyMatch(pattern -> PATH_MATCHER.match(pattern, path))
-                || PUBLIC_ENDPOINTS.stream()
+        boolean isPublic = ALL_PUBLIC_ENDPOINTS.stream()
                 .anyMatch(pattern -> PATH_MATCHER.match(pattern, path));
 
         if (isPublic) {

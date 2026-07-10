@@ -24,11 +24,11 @@ import jakarta.servlet.http.HttpServletResponse;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-	
-	/**
-	 * Service-specific public endpoints that are accessible without authentication.
-	 */
-	private static final List<String> SERVICE_SPECIFIC_PUBLIC = List.of(
+
+    /**
+     * Service-specific public endpoints accessible without authentication.
+     */
+	private static final List<String> SERVICE_SPECIFIC_PUBLIC_ENDPOINTS = List.of(
 	        "/api/v1/webhooks/provider/callback"
 	);
 
@@ -37,7 +37,7 @@ public class SecurityConfig {
 	 */
 	private static final String[] ALL_PUBLIC_ENDPOINTS = Stream.concat(
 	        CommonSecurityEndpoints.PUBLIC.stream(),
-	        SERVICE_SPECIFIC_PUBLIC.stream()
+	        SERVICE_SPECIFIC_PUBLIC_ENDPOINTS.stream()
 	).toArray(String[]::new);
     
     /**
