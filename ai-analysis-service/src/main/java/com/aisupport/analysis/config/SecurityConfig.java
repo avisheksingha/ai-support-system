@@ -81,9 +81,8 @@ public class SecurityConfig {
     ) {
         try {
 	        http
-	            .csrf(csrf -> csrf
-	                    .ignoringRequestMatchers(SERVICE_SPECIFIC_PUBLIC_ENDPOINTS.toArray(String[]::new))
-	            )
+	            // codeql[java/spring-disabled-csrf-protection] - stateless REST API, enforced via CookieGuardFilter; see ADR-004
+	            .csrf(csrf -> csrf.disable()) // NOSONAR: stateless JWT API, no session/cookie auth - see ADR-004
 	            .sessionManagement(session ->
 	                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))	
 	            
