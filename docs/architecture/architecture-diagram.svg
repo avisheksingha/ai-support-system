@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="820" viewBox="0 0 1400 820" role="img" aria-label="AI Support System architecture diagram">
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900" role="img" aria-label="AI Support System architecture diagram">
   <defs>
     <style>
       .title { font: 700 28px Arial, sans-serif; fill: #0f172a; }
@@ -11,11 +11,18 @@
       .small { font: 400 12px Arial, sans-serif; fill: #334155; }
       .arrow { stroke: #475569; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
       .dashed { stroke-dasharray: 6 6; }
+      .sync-arrow { stroke: #0284c7; stroke-width: 2; fill: none; marker-end: url(#syncarrowhead); }
     </style>
     <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
       <polygon points="0 0, 10 3.5, 0 7" fill="#475569" />
     </marker>
+    <marker id="syncarrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#0284c7" />
+    </marker>
   </defs>
+
+  <!-- Solid white background for dark mode compatibility -->
+  <rect width="100%" height="100%" fill="#ffffff" rx="10" />
 
   <text x="40" y="48" class="title">AI Support System - High-Level Architecture</text>
   <text x="40" y="74" class="subtitle">Event-driven microservices with Eureka, Kafka, PostgreSQL, and AI orchestration</text>
@@ -46,22 +53,26 @@
   <text x="662" y="266" class="small">Port 8082</text>
 
   <rect x="610" y="320" width="220" height="90" class="node" />
-  <text x="635" y="355" class="label">AI Analysis Service</text>
-  <text x="662" y="376" class="small">Port 8083</text>
+  <text x="625" y="355" class="label">AI Orchestration Service</text>
+  <text x="662" y="376" class="small">Port 8086</text>
 
   <rect x="610" y="430" width="220" height="90" class="node" />
-  <text x="647" y="465" class="label">Routing Service</text>
-  <text x="662" y="486" class="small">Port 8084</text>
+  <text x="635" y="465" class="label">AI Analysis Service</text>
+  <text x="662" y="486" class="small">Port 8083</text>
 
   <rect x="610" y="540" width="220" height="90" class="node" />
-  <text x="664" y="575" class="label">RAG Service</text>
-  <text x="662" y="596" class="small">Port 8085</text>
+  <text x="647" y="575" class="label">Routing Service</text>
+  <text x="662" y="596" class="small">Port 8084</text>
+
+  <rect x="610" y="650" width="220" height="90" class="node" />
+  <text x="664" y="685" class="label">RAG Service</text>
+  <text x="662" y="706" class="small">Port 8085</text>
 
   <!-- Data / Event Stores -->
   <rect x="930" y="220" width="220" height="90" class="node infra" />
   <text x="1002" y="255" class="label">Kafka</text>
   <text x="972" y="276" class="small">Event Backbone :9092</text>
-  <text x="965" y="200" class="small">Ticket events / analysis events</text>
+  <text x="965" y="200" class="small">Ticket &amp; workflow events</text>
 
   <rect x="930" y="360" width="220" height="90" class="node data" />
   <text x="965" y="395" class="label">PostgreSQL + pgvector</text>
@@ -72,35 +83,40 @@
   <text x="1242" y="270" class="label">Google GenAI</text>
 
   <!-- Gateway to Services -->
-  <line x1="520" y1="155" x2="610" y2="145" class="arrow" />
-  <line x1="520" y1="165" x2="610" y2="255" class="arrow" />
-  <line x1="520" y1="175" x2="610" y2="365" class="arrow" />
-  <line x1="520" y1="185" x2="610" y2="475" class="arrow" />
-  <line x1="520" y1="195" x2="610" y2="585" class="arrow" />
+  <line x1="520" y1="150" x2="610" y2="145" class="arrow" />
+  <line x1="520" y1="160" x2="610" y2="255" class="arrow" />
+  <line x1="520" y1="170" x2="610" y2="365" class="arrow" />
+  <line x1="520" y1="180" x2="610" y2="475" class="arrow" />
+  <line x1="520" y1="190" x2="610" y2="585" class="arrow" />
+  <line x1="520" y1="200" x2="610" y2="695" class="arrow" />
 
   <!-- Discovery to Services -->
-  <line x1="520" y1="305" x2="610" y2="145" class="arrow dashed" />
-  <line x1="520" y1="315" x2="610" y2="255" class="arrow dashed" />
-  <line x1="520" y1="325" x2="610" y2="365" class="arrow dashed" />
-  <line x1="520" y1="335" x2="610" y2="475" class="arrow dashed" />
-  <line x1="520" y1="345" x2="610" y2="585" class="arrow dashed" />
+  <line x1="520" y1="300" x2="610" y2="145" class="arrow dashed" />
+  <line x1="520" y1="310" x2="610" y2="255" class="arrow dashed" />
+  <line x1="520" y1="320" x2="610" y2="365" class="arrow dashed" />
+  <line x1="520" y1="330" x2="610" y2="475" class="arrow dashed" />
+  <line x1="520" y1="340" x2="610" y2="585" class="arrow dashed" />
+  <line x1="520" y1="350" x2="610" y2="695" class="arrow dashed" />
+
+  <!-- Orchestrator to Domain Services (REST/Tools) -->
+  <path d="M 830 365 Q 880 420 830 475" class="sync-arrow" />
+  <path d="M 830 365 Q 900 475 830 585" class="sync-arrow" />
+  <path d="M 830 365 Q 920 530 830 695" class="sync-arrow" />
 
   <!-- Services to Kafka -->
-  <line x1="830" y1="255" x2="930" y2="255" class="arrow" />
-  <line x1="830" y1="365" x2="930" y2="265" class="arrow" />
-  <line x1="830" y1="475" x2="930" y2="275" class="arrow" />
-  <line x1="830" y1="585" x2="930" y2="285" class="arrow" />
+  <line x1="830" y1="255" x2="930" y2="255" class="arrow" /> <!-- Ticket -->
+  <line x1="930" y1="275" x2="830" y2="345" class="arrow" /> <!-- Kafka -> Orchestrator -->
+  <line x1="830" y1="385" x2="930" y2="295" class="arrow" /> <!-- Orchestrator -> Kafka -->
 
   <!-- Services to PostgreSQL -->
-  <line x1="830" y1="145" x2="930" y2="385" class="arrow" />
-  <line x1="830" y1="255" x2="930" y2="395" class="arrow" />
-  <line x1="830" y1="365" x2="930" y2="405" class="arrow" />
-  <line x1="830" y1="475" x2="930" y2="415" class="arrow" />
-  <line x1="830" y1="585" x2="930" y2="425" class="arrow" />
+  <line x1="830" y1="145" x2="930" y2="385" class="arrow" /> <!-- Auth -->
+  <line x1="830" y1="255" x2="930" y2="395" class="arrow" /> <!-- Ticket -->
+  <line x1="830" y1="365" x2="930" y2="405" class="arrow" /> <!-- Orch -->
+  <line x1="830" y1="695" x2="930" y2="435" class="arrow" /> <!-- RAG -->
 
   <!-- Services to External AI -->
-  <line x1="830" y1="365" x2="1210" y2="255" class="arrow" />
-  <line x1="830" y1="585" x2="1210" y2="275" class="arrow" />
+  <line x1="830" y1="475" x2="1210" y2="255" class="arrow" /> <!-- Analysis -->
+  <line x1="830" y1="695" x2="1210" y2="285" class="arrow" /> <!-- RAG -->
 
-  <text x="70" y="760" class="small">Solid lines: request/event flow  |  Dashed lines: service registration/discovery</text>
+  <text x="70" y="800" class="small">Solid lines: Async Event/Request  |  Dashed lines: Discovery  |  Blue lines: Synchronous REST (Tool Calling)</text>
 </svg>

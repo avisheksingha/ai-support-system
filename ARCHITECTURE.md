@@ -26,6 +26,7 @@ end
 %% ==========================
 subgraph BUSINESS["Business Services"]
     TICKET["Ticket Service"]
+    ORCH["AI Orchestration Service"]
     ANALYSIS["AI Analysis Service"]
     ROUTING["Routing Service"]
     RAG["RAG Service"]
@@ -74,26 +75,23 @@ AUTH --> POSTGRES
 TICKET --> POSTGRES
 TICKET --> KAFKA
 
-KAFKA --> ANALYSIS
+KAFKA <--> ORCH
+
+ORCH -.REST.-> ANALYSIS
+ORCH -.REST.-> ROUTING
+ORCH -.REST.-> RAG
+
+ORCH --> POSTGRES
+
 ANALYSIS --> GEMINI
-ANALYSIS --> POSTGRES
-ANALYSIS --> KAFKA
-
-KAFKA --> ROUTING
-ROUTING --> POSTGRES
-
-KAFKA --> RAG
 RAG --> GEMINI
 RAG --> PGVECTOR
 PGVECTOR --> POSTGRES
 
 GW -. Service Discovery .-> DISC
 
-COMMON -. Shared Models .- AUTH
-COMMON -. Shared Models .- TICKET
-COMMON -. Shared Models .- ANALYSIS
-COMMON -. Shared Models .- ROUTING
-COMMON -. Shared Models .- RAG
+%% Note: Common Library provides Shared Models to all Business and Edge services.
+%% Explicit lines are omitted to keep the diagram clean.
 ```
 
 ## Architecture Decision Summary
@@ -122,8 +120,8 @@ We chose a microservices pattern over a monolithic design to decouple the AI pro
 
 By introducing **Apache Kafka** as a message broker, we decoupled the execution flows.
 
-* **Why:** When a ticket is created, the `ticket-service` responds to the user immediately. AI analysis and routing happen in the background through Kafka events (`TicketCreatedEvent`, `AnalysisCompletedEvent`).
-* **Benefit:** This dramatically improves API response times and prevents upstream timeouts if the AI service takes several seconds to process a prompt.
+* **Why:** When a ticket is created, the `ticket-service` responds to the user immediately. AI analysis and routing happen in the background through Kafka events (e.g. `TicketCreatedEvent`) triggering the `ai-orchestration-service`.
+* **Benefit:** This dramatically improves API response times. The orchestrator handles long-running workflows without tying up the primary web threads.
 
 ### 3. Service Registry and API Gateway
 
@@ -145,7 +143,7 @@ To ensure deep observability across asynchronous and synchronous boundaries:
 
 ### 5. Resilient Event Publishing (Outbox Pattern)
 
-To handle discrepancies and ensure zero-loss observability across Kafka interactions, an **Outbox Pattern** is implemented across publishing services (e.g. `ticket-service`, `ai-analysis-service`). Background asynchronous schedulers publish pending events, and maintain strict tracking with a `retryCount` mechanism (up to `MAX_RETRIES`), eventually escalating unrecoverable tasks to a `DEAD` status flag.
+To handle discrepancies and ensure zero-loss observability across Kafka interactions, an **Outbox Pattern** is implemented across publishing services (e.g. `ticket-service`, `ai-orchestration-service`). Background asynchronous schedulers publish pending events, and maintain strict tracking with a `retryCount` mechanism (up to `MAX_RETRIES`), eventually escalating unrecoverable tasks to a `DEAD` status flag.
 
 ### 6. Shared Library (`common-library`)
 

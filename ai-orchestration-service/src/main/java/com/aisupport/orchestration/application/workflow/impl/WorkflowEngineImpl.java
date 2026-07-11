@@ -1,0 +1,207 @@
+package com.aisupport.orchestration.application.workflow.impl;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+
+import org.springframework.stereotype.Component;
+
+import com.aisupport.orchestration.application.workflow.WorkflowEngine;
+import com.aisupport.orchestration.application.workflow.WorkflowExecutionListener;
+import com.aisupport.orchestration.application.workflow.WorkflowExecutionResult;
+import com.aisupport.orchestration.application.workflow.WorkflowFactory;
+import com.aisupport.orchestration.application.workflow.WorkflowStatus;
+import com.aisupport.orchestration.domain.state.WorkflowState;
+import com.aisupport.orchestration.domain.workflow.WorkflowContext;
+import com.aisupport.orchestration.domain.workflow.WorkflowDefinition;
+import com.aisupport.orchestration.domain.workflow.WorkflowStep;
+import com.aisupport.orchestration.infrastructure.persistence.entity.WorkflowCheckpointEntity;
+import com.aisupport.orchestration.infrastructure.persistence.entity.WorkflowExecutionEntity;
+import com.aisupport.orchestration.infrastructure.persistence.repository.WorkflowCheckpointRepository;
+import com.aisupport.orchestration.infrastructure.persistence.repository.WorkflowExecutionRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class WorkflowEngineImpl implements WorkflowEngine {
+
+    private final WorkflowFactory workflowFactory;
+    private final StepExecutor stepExecutor;
+    private final List<WorkflowExecutionListener> listeners;
+    private final WorkflowExecutionRepository executionRepository;
+    private final WorkflowCheckpointRepository checkpointRepository;
+
+    @Override
+    public WorkflowExecutionResult resume(String executionId) {
+        log.info("Resuming execution: {}", executionId);
+        
+        WorkflowExecutionEntity execution = 
+            executionRepository.findById(executionId).orElseThrow(() -> new IllegalArgumentException("Execution not found: " + executionId));
+            
+        if (!WorkflowState.FAILED.equals(execution.getState()) && 
+            !WorkflowState.CREATED.equals(execution.getState())) {
+            throw new IllegalStateException("Can only resume FAILED or CREATED executions. Current state: " + execution.getState());
+        }
+
+        List<WorkflowCheckpointEntity> checkpoints = 
+            checkpointRepository.findByExecutionIdOrderByCreatedAtDesc(executionId);
+            
+        WorkflowCheckpointEntity lastCheckpoint = checkpoints.isEmpty() ? null : checkpoints.get(0);
+
+        String lastCompletedStep = lastCheckpoint != null ? lastCheckpoint.getStepName() : null;
+        
+        WorkflowContext context = WorkflowContext.builder()
+                .workflowId(execution.getDefinitionId())
+                .executionId(executionId)
+                .correlationId(execution.getCorrelationId())
+                .ticketId(execution.getTicketId())
+                .conversationId(execution.getConversationId())
+                .build();
+                
+        if (lastCheckpoint != null && lastCheckpoint.getAttributesSnapshot() != null) {
+            lastCheckpoint.getAttributesSnapshot().forEach(context::putAttribute);
+        } else if (execution.getAttributes() != null) {
+            execution.getAttributes().forEach(context::putAttribute);
+        }
+        
+        // Increment recovery count
+        execution.setRecoveryCount(execution.getRecoveryCount() + 1);
+        executionRepository.save(execution);
+
+        return executeInternal(execution.getDefinitionId(), context, lastCompletedStep);
+    }
+
+    @Override
+    public WorkflowExecutionResult execute(String workflowId, WorkflowContext context) {
+        log.info("Starting execution of workflow: {} for correlationId: {}", workflowId, context.getCorrelationId());
+        
+        if (executionRepository.existsByCorrelationIdAndDefinitionIdAndVersion(
+                context.getCorrelationId(), workflowId, 1)) { // Assume v1
+            log.warn("Idempotency check failed. Workflow {} for correlationId {} already processed.", 
+                     workflowId, context.getCorrelationId());
+            return WorkflowExecutionResult.builder()
+                    .workflowId(workflowId)
+                    .executionId(context.getExecutionId())
+                    .status(WorkflowStatus.SKIPPED)
+                    .duration(Duration.ZERO)
+                    .build();
+        }
+        return executeInternal(workflowId, context, null);
+    }
+
+    private WorkflowExecutionResult executeInternal(String workflowId, WorkflowContext context, String skipUpToStep) {
+        Instant start = Instant.now();
+        
+        WorkflowDefinition definition = workflowFactory.create(workflowId);
+        if (definition == null) {
+            log.error("Workflow definition not found for id: {}", workflowId);
+            return WorkflowExecutionResult.builder()
+                    .workflowId(workflowId)
+                    .executionId(context.getExecutionId())
+                    .status(WorkflowStatus.FAILED)
+                    .error("Definition not found")
+                    .duration(Duration.between(start, Instant.now()))
+                    .build();
+        }
+
+        if (skipUpToStep == null) {
+            dispatchBeforeWorkflow(context);
+        }
+        
+        int stepsExecuted = 0;
+        boolean skip = skipUpToStep != null;
+        
+        try {
+            for (WorkflowStep step : definition.getSteps()) {
+                if (skip) {
+                    if (step.getName().equals(skipUpToStep)) {
+                        skip = false; // We found the last completed step, start executing the NEXT step
+                    }
+                    continue;
+                }
+                
+                if (step.supports(context)) {
+                    dispatchBeforeStep(context, step);
+                    stepExecutor.executeStep(step, context);
+                    dispatchAfterStep(context, step);
+                    stepsExecuted++;
+                } else {
+                    log.debug("Step {} skipped as it does not support current context", step.getName());
+                }
+            }
+            dispatchAfterWorkflow(context);
+            
+            return WorkflowExecutionResult.builder()
+                    .workflowId(workflowId)
+                    .executionId(context.getExecutionId())
+                    .status(WorkflowStatus.SUCCESS)
+                    .stepsExecuted(stepsExecuted)
+                    .duration(Duration.between(start, Instant.now()))
+                    .build();
+        } catch (Exception e) {
+            log.error("Workflow {} failed", workflowId, e);
+            dispatchOnFailure(context, e);
+            return WorkflowExecutionResult.builder()
+                    .workflowId(workflowId)
+                    .executionId(context.getExecutionId())
+                    .status(WorkflowStatus.FAILED)
+                    .error(e.getMessage())
+                    .stepsExecuted(stepsExecuted)
+                    .duration(Duration.between(start, Instant.now()))
+                    .build();
+        }
+    }
+
+    private void dispatchBeforeWorkflow(WorkflowContext context) {
+        listeners.forEach(l -> {
+            try {
+                l.beforeWorkflow(context);
+            } catch (Exception e) {
+                log.error("Listener error in beforeWorkflow", e);
+            }
+        });
+    }
+
+    private void dispatchAfterWorkflow(WorkflowContext context) {
+        listeners.forEach(l -> {
+            try {
+                l.afterWorkflow(context);
+            } catch (Exception e) {
+                log.error("Listener error in afterWorkflow", e);
+            }
+        });
+    }
+
+    private void dispatchBeforeStep(WorkflowContext context, WorkflowStep step) {
+        listeners.forEach(l -> {
+            try {
+                l.beforeStep(context, step);
+            } catch (Exception e) {
+                log.error("Listener error in beforeStep", e);
+            }
+        });
+    }
+
+    private void dispatchAfterStep(WorkflowContext context, WorkflowStep step) {
+        listeners.forEach(l -> {
+            try {
+                l.afterStep(context, step);
+            } catch (Exception e) {
+                log.error("Listener error in afterStep", e);
+            }
+        });
+    }
+
+    private void dispatchOnFailure(WorkflowContext context, Throwable error) {
+        listeners.forEach(l -> {
+            try {
+                l.onFailure(context, error);
+            } catch (Exception e) {
+                log.error("Listener error in onFailure", e);
+            }
+        });
+    }
+}

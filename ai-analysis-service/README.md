@@ -1,6 +1,6 @@
 # AI Analysis Service
 
-Microservice that uses Spring AI to analyze support tickets for sentiment, urgency, and intent. The active provider is Google GenAI (supporting both Gemini API and Vertex AI), with OpenAI available as an optional provider.
+Domain Capability Service that uses Spring AI to analyze support tickets for sentiment, urgency, and intent. The active provider is Google GenAI (supporting both Gemini API and Vertex AI), with OpenAI available as an optional provider.
 
 ## Features
 
@@ -39,10 +39,10 @@ Microservice that uses Spring AI to analyze support tickets for sentiment, urgen
 
 ## Interfaces & Endpoints
 
-### Event-Driven (Kafka)
+### Interactions (REST & Kafka)
 
-- **Consumes**: `TicketCreatedEvent` (Triggers AI analysis workflow). Extracts `X-Correlation-Id` from Kafka headers for tracing.
-- **Produces**: `TicketAnalyzedEvent` (Publishes results for routing and RAG). Employs a **Resilient Outbox Pattern** with timeout/retry mechanisms to guarantee delivery.
+- **Synchronous**: Provides analysis capabilities to the `ai-orchestration-service` via REST endpoints (often consumed as Tools).
+- **Asynchronous**: Can optionally consume/produce Kafka events for fallback or specialized asynchronous workflows. Employs a **Resilient Outbox Pattern** with timeout/retry mechanisms to guarantee delivery of any generated events. Extracts `X-Correlation-Id` for distributed tracing.
 
 ### Observability
 

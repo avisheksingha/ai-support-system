@@ -1,0 +1,87 @@
+package com.aisupport.orchestration.infrastructure;
+
+import com.aisupport.orchestration.infrastructure.persistence.entity.AiExecutionRecordEntity;
+import com.aisupport.orchestration.infrastructure.persistence.entity.WorkflowCheckpointEntity;
+import com.aisupport.orchestration.infrastructure.persistence.entity.WorkflowExecutionEntity;
+import java.util.List;
+import com.aisupport.common.event.TicketCreatedEvent;
+import com.aisupport.orchestration.infrastructure.persistence.repository.AiExecutionRecordRepository;
+import com.aisupport.orchestration.infrastructure.persistence.repository.WorkflowCheckpointRepository;
+import com.aisupport.orchestration.infrastructure.persistence.repository.WorkflowExecutionRepository;
+import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.Test;
+import org.springframework.context.annotation.Import;
+import org.springframework.kafka.core.KafkaTemplate;
+
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
+
+@Import(TestAiConfiguration.class)
+@RequiredArgsConstructor
+public class WorkflowPersistenceIT extends AbstractIntegrationTest {
+
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+
+    private final WorkflowExecutionRepository workflowExecutionRepository;
+
+    private final WorkflowCheckpointRepository workflowCheckpointRepository;
+
+    private final AiExecutionRecordRepository aiExecutionRecordRepository;
+
+@Test
+    public void testFullPersistenceLifecycle() {
+        // Given
+        String ticketId = UUID.randomUUID().toString();
+        TicketCreatedEvent event = new TicketCreatedEvent();
+        event.setTicketId(100L); event.setTicketNumber(ticketId);
+        event.setSubject("Persistence Test");
+        event.setMessage("Verify all entities are saved");
+
+        // When
+        kafkaTemplate.send("ticket-analyzed", ticketId, event);
+
+        // Then - Wait for workflow completion and verify ALL persistence layers
+        await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
+            WorkflowExecutionEntity execution = workflowExecutionRepository.findAll().stream()
+                    .filter(e -> ticketId.equals(e.getCorrelationId()))
+                    .findFirst()
+                    .orElse(null);
+            
+            assertThat(execution).isNotNull();
+            assertThat(execution.getState()).isEqualTo("COMPLETED");
+
+            // Verify checkpoints were saved
+            List<WorkflowCheckpointEntity> checkpoints = workflowCheckpointRepository.findAll().stream()
+                    .filter(c -> c.getExecution().getId().equals(execution.getId()))
+                    .toList();
+            // Depending on how many states we have, we should see checkpoints
+            assertThat(checkpoints).isNotEmpty();
+
+            // Verify AI Audit record
+            List<AiExecutionRecordEntity> auditRecords = aiExecutionRecordRepository.findAll().stream()
+                    .filter(a -> a.getCorrelationId().equals(execution.getCorrelationId()))
+                    .toList();
+            assertThat(auditRecords).isNotEmpty();
+            assertThat(auditRecords.get(0).getOutcome()).isEqualTo("SUCCESS");
+        });
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

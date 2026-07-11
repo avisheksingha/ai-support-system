@@ -12,17 +12,18 @@ The AI Support System is built using a microservices architecture pattern. This 
 2. **Service Registry (`discovery-service`)**: Utilizes Netflix Eureka to allow microservices to register themselves and discover each other dynamically.
 3. **Authentication (`auth-service`)**: Manages user authentication, authorization, and issues JWTs for secure access across the microservices.
 4. **Ticket Management (`ticket-service`)**: Handles the core CRUD operations for support tickets, applying state machine validations for status transitions, and persists data to PostgreSQL.
-5. **AI Processing (`ai-analysis-service`)**: Uses Google GenAI (supporting Gemini and Vertex AI modes) as the active provider to perform sentiment analysis, determine urgency, and extract user intent. OpenAI support is available as an optional provider.
-6. **Intelligent Routing (`routing-service`)**: Applies business rules to the AI-generated tags to route tickets to specific agents or queues.
-7. **Knowledge Context (`rag-service`)**: A Retrieval-Augmented Generation service that queries a vector database (`pgvector`) to provide intelligent, context-aware responses and suggestions.
-8. **AI Support Marketplace (`ai-support-marketplace`)**: A plugin and tooling ecosystem that extends development capabilities with agents, hooks, and commands.
+5. **AI Workflow Runtime (`ai-orchestration-service`)**: The central orchestrator that consumes events and coordinates the AI execution lifecycle.
+6. **AI Processing (`ai-analysis-service`)**: Domain capability providing sentiment analysis, urgency detection, and intent extraction via Google GenAI.
+7. **Intelligent Routing (`routing-service`)**: Domain capability providing deterministic ticket routing decisions based on AI tags.
+8. **Knowledge Context (`rag-service`)**: Domain capability providing intelligent, context-aware responses via `pgvector`.
+9. **AI Support Marketplace (`ai-support-marketplace`)**: A plugin and tooling ecosystem that extends development capabilities with agents, hooks, and commands.
 
 ## Module Interactions and Dependencies
 
 The system employs both synchronous and asynchronous communication:
 
 * **Synchronous (REST)**: Handled primarily through the API Gateway for external requests, or directly via Eureka service discovery for direct service-to-service queries (e.g., fetching ticket details). All synchronized requests are logged with a traceable `X-Correlation-Id`.
-* **Asynchronous (Event-Driven)**: Handled via Apache Kafka. When a significant domain event occurs (such as a ticket being created), an event is reliably published to a Kafka topic leveraging a robust **Outbox Pattern** with retry semantics. Services like `ai-analysis-service` and `routing-service` react to these events without tight coupling and extract the correlation ID directly from Kafka headers for consistent lifecycle tracing.
+* **Asynchronous (Event-Driven)**: Handled via Apache Kafka. When a significant domain event occurs (such as a ticket being created), an event is reliably published to a Kafka topic leveraging a robust **Outbox Pattern** with retry semantics. The `ai-orchestration-service` reacts to these business events and manages the asynchronous workflow execution, extracting the correlation ID directly from Kafka headers for consistent lifecycle tracing.
 
 ## Diagrams
 
@@ -34,29 +35,34 @@ graph TD
     
     API_GW -->|Route| AUTH[Auth Service<br>:8081]
     API_GW -->|Route| TS[Ticket Service<br>:8082]
-    API_GW -->|Route| AIS[AI Analysis Service<br>:8083]
-    API_GW -->|Route| RS[Routing Service<br>:8084]
+    API_GW -->|Route| ORCH[AI Orchestrator<br>:8086]
+    API_GW -->|Route| AIS[AI Analysis<br>:8083]
+    API_GW -->|Route| RS[Routing<br>:8084]
     API_GW -->|Route| RAG[RAG Service<br>:8085]
 
     DS[Discovery Service<br>:8761] -.->|Service Registry| API_GW
     DS -.->|Registers| AUTH
     DS -.->|Registers| TS
+    DS -.->|Registers| ORCH
     DS -.->|Registers| AIS
     DS -.->|Registers| RS
     DS -.->|Registers| RAG
 
     TS <-->|Reads/Writes| DB[(PostgreSQL<br>ticket_db)]
-    AIS <-->|Reads/Writes| DB
+    ORCH <-->|Reads/Writes| ORCH_DB[(PostgreSQL<br>orchestrator_db)]
 
     TS -->|Publishes TicketCreated| Kafka[Apache Kafka<br>Message Broker]
-    Kafka -->|Consumes TicketCreated| AIS
-    AIS -->|Calls API| ExternalAI[Google GenAI (Active)<br/>OpenAI (Optional)]
-    AIS -->|Publishes TicketAnalyzed| Kafka
-    Kafka -->|Consumes TicketAnalyzed| RS
-    Kafka -->|Consumes TicketAnalyzed| RAG
+    Kafka -->|Consumes TicketCreated| ORCH
     
-    RAG <-->|Vector Search| PGV[(PostgreSQL + pgvector)]
+    ORCH -.->|Sync REST| AIS
+    ORCH -.->|Sync REST| RS
+    ORCH -.->|Sync REST| RAG
+
+    AIS -->|Calls API| ExternalAI[Google GenAI / OpenAI]
     RAG -->|Calls API| ExternalAI
+    RAG <-->|Vector Search| PGV[(PostgreSQL + pgvector)]
+    
+    ORCH -->|Publishes Workflow Events| Kafka
 ```
 
 ### 2. Sequence Diagram: Ticket Creation & AI Routing
@@ -67,10 +73,11 @@ sequenceDiagram
     participant Gateway as API Gateway
     participant TicketSvc as Ticket Service
     participant Kafka as Apache Kafka
+    participant OrchSvc as AI Orchestration Service
     participant AISvc as AI Analysis Service
-    participant ExternalAI as Google GenAI (Active) / OpenAI (Optional)
     participant RoutingSvc as Routing Service
     participant RAGSvc as RAG Service
+    participant ExternalAI as Google GenAI
 
     Client->>Gateway: POST /api/v1/tickets
     Gateway->>TicketSvc: Forward Request
@@ -79,23 +86,24 @@ sequenceDiagram
     Gateway-->>Client: 201 Created
     
     TicketSvc->>Kafka: Publish "TicketCreatedEvent"
-    Kafka-->>AISvc: Consume "TicketCreatedEvent"
+    Kafka-->>OrchSvc: Consume "TicketCreatedEvent"
     
-    AISvc->>ExternalAI: Send Ticket Text for Analysis
-    ExternalAI-->>AISvc: Return Sentiment, Urgency, Intent
-    AISvc->>TicketSvc: PATCH /api/v1/tickets/{id}/status (Update AI Tags)
-    AISvc->>Kafka: Publish "TicketAnalyzedEvent"
+    OrchSvc->>OrchSvc: Initialize Workflow Runtime
     
-    par AI Routing Workflow
-        Kafka-->>RoutingSvc: Consume "TicketAnalyzedEvent"
-        RoutingSvc->>RoutingSvc: Evaluate Rules based on AI Tags
-        RoutingSvc->>TicketSvc: PATCH /api/v1/tickets/{id}/assign (Assign Agent/Queue)
-    and RAG Suggestion Workflow
-        Kafka-->>RAGSvc: Consume "TicketAnalyzedEvent"
-        RAGSvc->>ExternalAI: Generate Embeddings & Search VectorDB
-        ExternalAI-->>RAGSvc: Context/Similar Articles
-        RAGSvc->>ExternalAI: Prompt QuestionAnswerAdvisor
-        ExternalAI-->>RAGSvc: Context-Aware Suggestion
-        RAGSvc->>TicketSvc: Add AI Suggestion to Ticket
+    opt Synchronous Composition (Tool Calling)
+        OrchSvc->>AISvc: Analyze Ticket Data (REST)
+        AISvc->>ExternalAI: Generate Sentiment, Urgency
+        ExternalAI-->>AISvc: Results
+        AISvc-->>OrchSvc: Extracted Tags
+        
+        OrchSvc->>RAGSvc: Retrieve Context (REST)
+        RAGSvc->>ExternalAI: Embed & Search pgvector
+        RAGSvc-->>OrchSvc: Contextual Suggestions
+        
+        OrchSvc->>RoutingSvc: Evaluate Rules (REST)
+        RoutingSvc-->>OrchSvc: Recommended Queue
     end
+    
+    OrchSvc->>TicketSvc: PATCH /api/v1/tickets/{id}/assign (Apply Updates)
+    OrchSvc->>Kafka: Publish "WorkflowCompletedEvent"
 ```

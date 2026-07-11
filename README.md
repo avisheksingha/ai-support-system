@@ -134,9 +134,10 @@ The AI Support System is a leading-edge, microservices-based ticket management p
 - **[api-gateway](api-gateway/README.md)**: Centralized entry point and request routing.
 - **[auth-service](auth-service/README.md)**: Authentication, authorization, and JWT management.
 - **[ticket-service](ticket-service/README.md)**: Core ticket management and lifecycle operations.
-- **[ai-analysis-service](ai-analysis-service/README.md)**: AI-powered analysis for sentiment and urgency (Google GenAI active, OpenAI optional).
-- **[routing-service](routing-service/README.md)**: Orchestrator for intelligent ticket assignment based on analysis.
-- **[rag-service](rag-service/README.md)**: Vector embedding and RAG capabilities for automated contextual responses.
+- **[ai-orchestration-service](ai-orchestration-service/README.md)**: Central workflow runtime that coordinates AI executions by composing domain capabilities.
+- **[ai-analysis-service](ai-analysis-service/README.md)**: Domain capability service for AI-powered analysis (sentiment and urgency).
+- **[routing-service](routing-service/README.md)**: Domain capability service for deterministic ticket routing decisions.
+- **[rag-service](rag-service/README.md)**: Domain capability service providing vector embedding and contextual knowledge retrieval.
 - **[common-library](common-library/README.md)**: Shared models, DTOs, events, and utilities.
 - **[ai-support-marketplace](ai-support-marketplace/README.md)**: AI assistant plugins, agents, and tooling ecosystem.
 - **[aisupport-parent](aisupport-parent/README.md)**: Central Maven POM for uniform dependency management.
@@ -385,10 +386,10 @@ curl "http://localhost:8080/api/v1/tickets/{ticketId}"
 1. Client submits a ticket through the API Gateway.
 2. The `ticket-service` persists the ticket and immediately returns a response.
 3. A `TicketCreatedEvent` is published to Apache Kafka.
-4. The `ai-analysis-service` performs sentiment, urgency, and intent analysis.
-5. A `TicketAnalyzedEvent` is published.
-6. The `routing-service` assigns the ticket to the appropriate queue or team.
-7. The `rag-service` retrieves relevant knowledge base content.
+4. The `ai-orchestration-service` consumes the event and starts a workflow.
+5. The orchestrator composes the `ai-analysis-service` (via synchronous REST tools) for sentiment/urgency, and the `rag-service` for knowledge retrieval.
+6. Based on the analysis, it coordinates with the `routing-service` to assign the ticket to the appropriate queue.
+7. A `TicketAnalyzedEvent` (or similar business event) is published asynchronously upon workflow completion.
 8. Correlation IDs enable end-to-end request tracing across all services.
 
 ### Processing Flow
@@ -404,15 +405,15 @@ flowchart LR
 
     E --> F[Kafka]
 
-    F --> G[AI Analysis Service]
-    G --> H[TicketAnalyzedEvent]
-
-    H --> I[Routing Service]
-    H --> J[RAG Service]
-
-    I --> K[Assigned Queue]
-    J --> L[Knowledge Suggestions]
+    F --> G[AI Orchestration Service]
+    G -.REST.-> H[AI Analysis Service]
+    G -.REST.-> I[Routing Service]
+    G -.REST.-> J[RAG Service]
+    
+    G --> K[Business Events]
 ```
+
+> **Hybrid Communication Model:** The platform intentionally uses Kafka for asynchronous business events (like `TicketCreatedEvent`), while the AI Orchestration Service uses synchronous REST/internal clients to execute Tool Calling and compose the domain capabilities.
 
 ## Project Structure
 

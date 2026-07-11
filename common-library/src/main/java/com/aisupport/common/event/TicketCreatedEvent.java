@@ -19,5 +19,6 @@ public class TicketCreatedEvent {
     private String ticketNumber;
     private String subject;
     private String message;
+    private String priority;
     private Instant createdAt;
 }
