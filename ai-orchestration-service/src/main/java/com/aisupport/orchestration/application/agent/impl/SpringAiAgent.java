@@ -2,8 +2,15 @@ package com.aisupport.orchestration.application.agent.impl;
 
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
+import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import com.aisupport.orchestration.application.agent.Agent;
@@ -17,17 +24,26 @@ import com.aisupport.orchestration.application.agent.guardrail.GuardrailResult;
 import com.aisupport.orchestration.application.tool.ToolExecutor;
 import com.aisupport.orchestration.domain.model.Result;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Component
-@RequiredArgsConstructor
+@Component("springAiAgent")
 public class SpringAiAgent implements Agent {
 
     private final TokenBudgetManager tokenBudgetManager;
     private final ToolExecutor toolExecutor;
     private final GuardrailPipeline guardrailPipeline;
+    private final ChatModel chatModel;
+
+    public SpringAiAgent(TokenBudgetManager tokenBudgetManager,
+                         ToolExecutor toolExecutor,
+                         GuardrailPipeline guardrailPipeline,
+                         @Qualifier("googleGenAiChatModel") ChatModel chatModel) {
+        this.tokenBudgetManager = tokenBudgetManager;
+        this.toolExecutor = toolExecutor;
+        this.guardrailPipeline = guardrailPipeline;
+        this.chatModel = chatModel;
+    }
 
     @Override
     public Result<AgentSession> execute(AgentRequest request) {
@@ -86,9 +102,15 @@ public class SpringAiAgent implements Agent {
         }
         
         // 5. Final LLM Response
+        Prompt prompt = new Prompt(List.of(
+                new SystemMessage(budgetedRequest.getSystemPrompt()),
+                new UserMessage(budgetedRequest.getUserPrompt())
+        ));
+        ChatResponse chatResponse = chatModel.call(prompt);
+        
         AgentResponse response = AgentResponse.builder()
                 .responseType(AgentResponse.ResponseType.FINAL)
-                .content("AI inference completed after reasoning.")
+                .content(chatResponse.getResult().getOutput().getText())
                 .finishReason(AgentResponse.FinishReason.STOP)
                 .usage(AgentResponse.UsageData.builder()
                         .promptTokens(100)

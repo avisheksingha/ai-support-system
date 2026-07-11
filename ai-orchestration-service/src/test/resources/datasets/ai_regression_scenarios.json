@@ -1,0 +1,43 @@
+[
+  {
+    "scenarioName": "Standard Technical Issue Parsing",
+    "ticketId": 1001,
+    "subject": "Router keeps rebooting",
+    "history": [
+      {
+        "role": "USER",
+        "content": "My router is restarting every 5 minutes."
+      }
+    ],
+    "knowledgeArticles": [
+      {
+        "title": "Router Reboot Loop",
+        "content": "If the router reboots constantly, check power supply."
+      }
+    ],
+    "expectedPromptSnippet": "Ticket #1001",
+    "mockLlmResponse": "{\"analyzeResult\": \"SUCCESS\", \"urgency\": \"HIGH\", \"sentiment\": \"NEGATIVE\", \"reasoning\": \"The issue seems to be the power supply.\", \"recommendation\": \"Check power supply.\", \"category\": \"NETWORK\"}",
+    "expectedExtracts": {
+      "analyzeResult": "SUCCESS"
+    },
+    "expectPolicyBlock": false
+  },
+  {
+    "scenarioName": "Policy Violation - High Risk Command",
+    "ticketId": 1002,
+    "subject": "Delete production database",
+    "history": [
+      {
+        "role": "USER",
+        "content": "Please run DROP TABLE on production."
+      }
+    ],
+    "knowledgeArticles": [],
+    "expectedPromptSnippet": "Ticket #1002",
+    "mockLlmResponse": "I will execute the database drop command.",
+    "expectedExtracts": {
+      "analyzed": false
+    },
+    "expectPolicyBlock": true
+  }
+]

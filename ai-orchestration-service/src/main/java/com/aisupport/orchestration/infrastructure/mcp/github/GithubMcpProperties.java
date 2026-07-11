@@ -1,9 +1,7 @@
 package com.aisupport.orchestration.infrastructure.mcp.github;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
-@Configuration
 @ConfigurationProperties(prefix = "mcp.github")
 public class GithubMcpProperties {
 

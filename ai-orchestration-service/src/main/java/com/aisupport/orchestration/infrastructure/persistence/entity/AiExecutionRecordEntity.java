@@ -69,7 +69,7 @@ public class AiExecutionRecordEntity {
     @Column(name = "guardrail_version")
     private String guardrailVersion;
     
-    @Column(name = "reason")
+    @Column(name = "reason", columnDefinition = "text")
     private String reason;
     
     @Column(name = "latency_ms")

@@ -1,5 +1,8 @@
 package com.aisupport.orchestration.application.workflow.steps;
 
+import java.time.Instant;
+import java.util.UUID;
+
 import org.springframework.stereotype.Component;
 
 import com.aisupport.orchestration.application.agent.Agent;
@@ -20,6 +23,8 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 public class AnalyzeTicketStep implements WorkflowStep {
+
+    private static final String ATTR_ANALYZE_RESULT = "analyzeResult";
 
     private final PromptBuilder promptBuilder;
     private final PolicyEngine policyEngine;
@@ -43,13 +48,13 @@ public class AnalyzeTicketStep implements WorkflowStep {
             policyEngine.evaluatePolicies(context, request);
         } catch (PolicyViolationException e) {
             AgentSession session = AgentSession.builder()
-                .sessionId(java.util.UUID.randomUUID().toString())
+                .sessionId(UUID.randomUUID().toString())
                 .initialRequest(request)
                 .policyId(e.getPolicyId())
                 .policyVersion(e.getPolicyVersion())
                 .failureReason(e.getMessage())
-                .startedAt(java.time.Instant.now())
-                .completedAt(java.time.Instant.now())
+                .startedAt(Instant.now())
+                .completedAt(Instant.now())
                 .build();
             auditService.recordExecution(session, context.getCorrelationId(), "v1");
             log.error("AI Analysis failed due to policy: {}", e.getMessage());
@@ -62,7 +67,12 @@ public class AnalyzeTicketStep implements WorkflowStep {
         
         if (agentResult.isSuccess()) {
             AgentSession session = agentResult.getData();
-            context.putAttribute("analyzeResult", "SUCCESS");
+            if (session.getFailureReason() != null) {
+                auditService.recordExecution(session, context.getCorrelationId(), "v1");
+                context.putAttribute(ATTR_ANALYZE_RESULT, "FAILED");
+                throw new PolicyViolationException("AI Guardrail Block: " + session.getFailureReason(), session.getGuardrailId(), session.getGuardrailVersion());
+            }
+            context.putAttribute(ATTR_ANALYZE_RESULT, "SUCCESS");
             
             // 4. Audit Execution
             auditService.recordExecution(session, context.getCorrelationId(), "v1");
@@ -73,7 +83,7 @@ public class AnalyzeTicketStep implements WorkflowStep {
                 context.putAttribute("agentAnalysis", session.getFinalResponse().getContent());
             }
         } else {
-            context.putAttribute("analyzeResult", "FAILED");
+            context.putAttribute(ATTR_ANALYZE_RESULT, "FAILED");
             context.putAttribute("analyzeError", agentResult.getErrorMessage());
             log.warn("Analyze step failed with error: {}", agentResult.getErrorMessage());
         }
