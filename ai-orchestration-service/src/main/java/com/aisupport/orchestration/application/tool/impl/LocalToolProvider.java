@@ -10,14 +10,14 @@ import com.aisupport.orchestration.domain.tool.ToolProvider;
 @Component
 public class LocalToolProvider implements ToolProvider {
     
-    private final List<ToolDefinition<?, ?>> localTools;
+    private final List<ToolDefinition> localTools;
     
-    public LocalToolProvider(List<ToolDefinition<?, ?>> localTools) {
+    public LocalToolProvider(List<ToolDefinition> localTools) {
         this.localTools = localTools != null ? localTools : List.of();
     }
     
     @Override
-    public List<ToolDefinition<?, ?>> discoverTools() {
+    public List<ToolDefinition> discoverTools() {
         return localTools;
     }
 }

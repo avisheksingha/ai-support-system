@@ -8,5 +8,5 @@ public interface ToolProvider {
      * For local providers, this simply returns pre-registered beans.
      * For external providers (like MCP), this dynamically fetches available tools.
      */
-    List<ToolDefinition<?, ?>> discoverTools();
+    List<ToolDefinition> discoverTools();
 }

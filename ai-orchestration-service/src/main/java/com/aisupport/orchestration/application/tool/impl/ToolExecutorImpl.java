@@ -18,8 +18,8 @@ public class ToolExecutorImpl implements ToolExecutor {
     private final ToolRegistry toolRegistry;
 
     @Override
-    public ToolResult<?> execute(String toolName, Object input) {
-        ToolDefinition<?, ?> tool = toolRegistry.getTool(toolName);
+    public ToolResult execute(String toolName, Object input) {
+        ToolDefinition tool = toolRegistry.getTool(toolName);
         if (tool == null) {
             log.warn("Capability not found: {}", toolName);
             return ToolResult.failure("Tool capability not found: " + toolName, 0);

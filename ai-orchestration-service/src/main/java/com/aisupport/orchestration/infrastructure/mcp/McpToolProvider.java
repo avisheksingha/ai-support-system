@@ -22,12 +22,12 @@ public class McpToolProvider implements ToolProvider {
     }
 
     @Override
-    public List<ToolDefinition<?, ?>> discoverTools() {
+    public List<ToolDefinition> discoverTools() {
         // Step 1: Discover metadata from external MCP Server
         List<McpToolMetadata> mcpTools = mcpClient.discoverTools().join();
         
         // Step 2: Map each MCP tool to our internal ToolDefinition
-        return mcpTools.stream().map(metadata -> new ToolDefinition<Map<String, Object>, Map<String, Object>>() {
+        return mcpTools.stream().map(metadata -> new ToolDefinition() {
             @Override
             public ToolDescriptor getDescriptor() {
                 return ToolDescriptor.builder()
@@ -41,7 +41,7 @@ public class McpToolProvider implements ToolProvider {
             }
 
             @Override
-            public ToolResult<Map<String, Object>> execute(Object rawInput) {
+            public ToolResult execute(Object rawInput) {
                 if (!(rawInput instanceof Map<?, ?>)) {
                     return ToolResult.failure("Input must be a Map", 0);
                 }

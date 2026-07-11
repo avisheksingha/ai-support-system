@@ -15,23 +15,23 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class KnowledgeSearchTool implements ToolDefinition<String, List<Object>> {
+public class KnowledgeSearchTool implements ToolDefinition {
     
     private final RagClient ragClient;
 
     @Override
     public ToolDescriptor getDescriptor() {
         return ToolDescriptor.builder()
-                .name("knowledge.search")
-                .description("Searches the knowledge base for articles relevant to a query.")
+                .name("searchKnowledge")
+                .description("Searches the internal knowledge base for relevant articles.")
                 .parameters(Map.of("query", String.class))
                 .returnType(List.class)
-                .version("1.0")
+                .version("1.0.0")
                 .build();
     }
 
     @Override
-    public ToolResult<List<Object>> execute(Object rawInput) {
+    public ToolResult execute(Object rawInput) {
         if (!(rawInput instanceof String)) {
             return ToolResult.failure("Input must be a string query", 0);
         }

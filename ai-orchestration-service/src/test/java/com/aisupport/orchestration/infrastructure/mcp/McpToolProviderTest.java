@@ -27,7 +27,7 @@ class McpToolProviderTest {
         when(mockClient.discoverTools()).thenReturn(CompletableFuture.completedFuture(List.of(metadata)));
 
         // Act
-        List<ToolDefinition<?, ?>> tools = provider.discoverTools();
+        List<ToolDefinition> tools = provider.discoverTools();
 
         // Assert
         assertEquals(1, tools.size());
