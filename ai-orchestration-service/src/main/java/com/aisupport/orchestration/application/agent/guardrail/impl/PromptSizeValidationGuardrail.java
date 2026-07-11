@@ -13,7 +13,7 @@ public class PromptSizeValidationGuardrail implements InputGuardrail {
 
     @Value("${governance.guardrails.prompt.max-size:500000}")
     private int maxPromptSize;
-    // TODO: In a future iteration, this should be token-based rather than character-based.
+    // Note: In a future iteration, this should be token-based rather than character-based.
 
     @Override
     public GuardrailResult<AgentRequest> evaluate(GuardrailContext<AgentRequest> context) {

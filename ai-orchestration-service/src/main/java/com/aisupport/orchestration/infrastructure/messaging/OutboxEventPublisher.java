@@ -47,6 +47,9 @@ public class OutboxEventPublisher {
                 log.info("Published outbox event {} for aggregate {}", event.getEventType(), event.getAggregateId());
                 
             } catch (Exception e) {
+                if (e instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
                 log.error("Failed to publish outbox event {}, will retry next cycle", event.getId(), e);
                 // We don't throw to avoid rolling back successfully published events in this batch
             }

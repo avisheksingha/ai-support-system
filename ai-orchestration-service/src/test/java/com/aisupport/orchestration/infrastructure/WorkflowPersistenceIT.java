@@ -1,27 +1,30 @@
 package com.aisupport.orchestration.infrastructure;
 
-import com.aisupport.orchestration.infrastructure.persistence.entity.AiExecutionRecordEntity;
-import com.aisupport.orchestration.infrastructure.persistence.entity.WorkflowCheckpointEntity;
-import com.aisupport.orchestration.infrastructure.persistence.entity.WorkflowExecutionEntity;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
+
 import java.util.List;
-import com.aisupport.common.event.TicketCreatedEvent;
-import com.aisupport.orchestration.infrastructure.persistence.repository.AiExecutionRecordRepository;
-import com.aisupport.orchestration.infrastructure.persistence.repository.WorkflowCheckpointRepository;
-import com.aisupport.orchestration.infrastructure.persistence.repository.WorkflowExecutionRepository;
-import lombok.RequiredArgsConstructor;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Import;
 import org.springframework.kafka.core.KafkaTemplate;
 
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+import com.aisupport.common.event.TicketCreatedEvent;
+import com.aisupport.orchestration.domain.state.WorkflowState;
+import com.aisupport.orchestration.infrastructure.persistence.entity.AiExecutionRecordEntity;
+import com.aisupport.orchestration.infrastructure.persistence.entity.WorkflowCheckpointEntity;
+import com.aisupport.orchestration.infrastructure.persistence.entity.WorkflowExecutionEntity;
+import com.aisupport.orchestration.infrastructure.persistence.repository.AiExecutionRecordRepository;
+import com.aisupport.orchestration.infrastructure.persistence.repository.WorkflowCheckpointRepository;
+import com.aisupport.orchestration.infrastructure.persistence.repository.WorkflowExecutionRepository;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
+import lombok.RequiredArgsConstructor;
 
 @Import(TestAiConfiguration.class)
 @RequiredArgsConstructor
-public class WorkflowPersistenceIT extends AbstractIntegrationTest {
+class WorkflowPersistenceIT extends AbstractIntegrationTest {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
@@ -31,8 +34,8 @@ public class WorkflowPersistenceIT extends AbstractIntegrationTest {
 
     private final AiExecutionRecordRepository aiExecutionRecordRepository;
 
-@Test
-    public void testFullPersistenceLifecycle() {
+    @Test
+    void testFullPersistenceLifecycle() {
         // Given
         String ticketId = UUID.randomUUID().toString();
         TicketCreatedEvent event = new TicketCreatedEvent();
@@ -51,7 +54,7 @@ public class WorkflowPersistenceIT extends AbstractIntegrationTest {
                     .orElse(null);
             
             assertThat(execution).isNotNull();
-            assertThat(execution.getState()).isEqualTo("COMPLETED");
+            assertThat(execution.getState()).isEqualTo(WorkflowState.COMPLETED);
 
             // Verify checkpoints were saved
             List<WorkflowCheckpointEntity> checkpoints = workflowCheckpointRepository.findAll().stream()

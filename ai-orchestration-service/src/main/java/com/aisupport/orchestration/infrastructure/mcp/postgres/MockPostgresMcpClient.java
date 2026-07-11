@@ -16,6 +16,22 @@ import io.micrometer.core.annotation.Timed;
 
 public class MockPostgresMcpClient implements McpClient {
 
+    private static final String TYPE_OBJECT = "object";
+    private static final String TYPE_STRING = "string";
+    private static final String KEY_PROPERTIES = "properties";
+    private static final String KEY_REQUIRED = "required";
+    private static final String KEY_CONNECTION = "connectionName";
+    private static final String KEY_TABLE = "tableName";
+    private static final String KEY_STATUS = "status";
+    private static final String KEY_QUERY = "query";
+    private static final String KEY_DATA = "data";
+    private static final String KEY_ROW_COUNT = "rowCount";
+    private static final String KEY_TRUNCATED = "truncated";
+    private static final String KEY_COLUMN = "column";
+    private static final String KEY_PRIORITY = "priority";
+    private static final String KEY_TICKETS = "tickets";
+
+
     private final PostgresMcpProperties properties;
     private static final Pattern WRITE_OPERATIONS = Pattern.compile("(?i).*\\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|CREATE|GRANT|REVOKE)\\b.*");
 
@@ -34,59 +50,59 @@ public class MockPostgresMcpClient implements McpClient {
                 .name("postgres.listTables")
                 .description("Lists all allowed tables in the specified connection")
                 .inputSchema(Map.of(
-                    "type", "object",
-                    "properties", Map.of(
-                        "connectionName", Map.of("type", "string")
+                    "type", TYPE_OBJECT,
+                    KEY_PROPERTIES, Map.of(
+                        KEY_CONNECTION, Map.of("type", TYPE_STRING)
                     ),
-                    "required", List.of("connectionName")
+                    KEY_REQUIRED, List.of(KEY_CONNECTION)
                 ))
                 .build(),
             McpToolMetadata.builder()
                 .name("postgres.describeTable")
                 .description("Describes the schema (columns, types) of a specific table")
                 .inputSchema(Map.of(
-                    "type", "object",
-                    "properties", Map.of(
-                        "connectionName", Map.of("type", "string"),
-                        "tableName", Map.of("type", "string")
+                    "type", TYPE_OBJECT,
+                    KEY_PROPERTIES, Map.of(
+                        KEY_CONNECTION, Map.of("type", TYPE_STRING),
+                        KEY_TABLE, Map.of("type", TYPE_STRING)
                     ),
-                    "required", List.of("connectionName", "tableName")
+                    KEY_REQUIRED, List.of(KEY_CONNECTION, KEY_TABLE)
                 ))
                 .build(),
             McpToolMetadata.builder()
                 .name("postgres.queryTickets")
                 .description("Queries support tickets in ticket-db safely")
                 .inputSchema(Map.of(
-                    "type", "object",
-                    "properties", Map.of(
-                        "connectionName", Map.of("type", "string"),
-                        "status", Map.of("type", "string")
+                    "type", TYPE_OBJECT,
+                    KEY_PROPERTIES, Map.of(
+                        KEY_CONNECTION, Map.of("type", TYPE_STRING),
+                        KEY_STATUS, Map.of("type", TYPE_STRING)
                     ),
-                    "required", List.of("connectionName")
+                    KEY_REQUIRED, List.of(KEY_CONNECTION)
                 ))
                 .build(),
             McpToolMetadata.builder()
                 .name("postgres.queryWorkflowExecutions")
                 .description("Queries workflow executions in orchestration-db safely")
                 .inputSchema(Map.of(
-                    "type", "object",
-                    "properties", Map.of(
-                        "connectionName", Map.of("type", "string"),
-                        "status", Map.of("type", "string")
+                    "type", TYPE_OBJECT,
+                    KEY_PROPERTIES, Map.of(
+                        KEY_CONNECTION, Map.of("type", TYPE_STRING),
+                        KEY_STATUS, Map.of("type", TYPE_STRING)
                     ),
-                    "required", List.of("connectionName")
+                    KEY_REQUIRED, List.of(KEY_CONNECTION)
                 ))
                 .build(),
             McpToolMetadata.builder()
                 .name("postgres.executeReadOnlyQuery")
                 .description("Executes a read-only SQL query against the specified connection with strict validation")
                 .inputSchema(Map.of(
-                    "type", "object",
-                    "properties", Map.of(
-                        "connectionName", Map.of("type", "string"),
-                        "query", Map.of("type", "string")
+                    "type", TYPE_OBJECT,
+                    KEY_PROPERTIES, Map.of(
+                        KEY_CONNECTION, Map.of("type", TYPE_STRING),
+                        KEY_QUERY, Map.of("type", TYPE_STRING)
                     ),
-                    "required", List.of("connectionName", "query")
+                    KEY_REQUIRED, List.of(KEY_CONNECTION, KEY_QUERY)
                 ))
                 .build()
         ));
@@ -99,7 +115,7 @@ public class MockPostgresMcpClient implements McpClient {
     @Timed(value = "mcp.invocation.latency", description = "Time taken to execute an MCP tool")
     public CompletableFuture<Map<String, Object>> executeTool(String toolName, Map<String, Object> arguments) {
         return CompletableFuture.supplyAsync(() -> {
-            String connectionName = (String) arguments.get("connectionName");
+            String connectionName = (String) arguments.get(KEY_CONNECTION);
             if (connectionName == null || connectionName.isBlank()) {
                 throw new McpException("Missing required parameter: connectionName");
             }
@@ -114,23 +130,23 @@ public class MockPostgresMcpClient implements McpClient {
 
             switch (toolName) {
                 case "postgres.listTables":
-                    result = mockListTables(connectionName, config);
+                    result = mockListTables(connectionName);
                     break;
                 case "postgres.describeTable":
-                    String tableName = (String) arguments.get("tableName");
+                    String tableName = (String) arguments.get(KEY_TABLE);
                     validateTableAllowed(tableName, config);
-                    result = mockDescribeTable(connectionName, tableName);
+                    result = mockDescribeTable(tableName);
                     break;
                 case "postgres.queryTickets":
-                    result = mockQueryTickets(connectionName, config, (String) arguments.get("status"));
+                    result = mockQueryTickets(config);
                     break;
                 case "postgres.queryWorkflowExecutions":
-                    result = mockQueryWorkflows(connectionName, config, (String) arguments.get("status"));
+                    result = mockQueryWorkflows(config);
                     break;
                 case "postgres.executeReadOnlyQuery":
-                    String query = (String) arguments.get("query");
+                    String query = (String) arguments.get(KEY_QUERY);
                     validateQuery(query, config);
-                    result = mockExecuteQuery(connectionName, query);
+                    result = mockExecuteQuery();
                     break;
                 default:
                     throw new McpException("Unknown tool: " + toolName);
@@ -140,12 +156,12 @@ public class MockPostgresMcpClient implements McpClient {
             
             // Enrich result with metadata
             return Map.of(
-                "connectionName", connectionName,
+                KEY_CONNECTION, connectionName,
                 "executionTimeMs", executionTime,
                 "schema", config.getAllowedSchemas() != null && !config.getAllowedSchemas().isEmpty() ? config.getAllowedSchemas().get(0) : "public",
-                "data", result.get("data"),
-                "rowCount", result.get("rowCount"),
-                "truncated", result.getOrDefault("truncated", false)
+                KEY_DATA, result.get(KEY_DATA),
+                KEY_ROW_COUNT, result.get(KEY_ROW_COUNT),
+                KEY_TRUNCATED, result.getOrDefault(KEY_TRUNCATED, false)
             );
         });
     }
@@ -177,61 +193,61 @@ public class MockPostgresMcpClient implements McpClient {
         // 3. Allowed Tables Check (Simple mock parsing, for real implementation a SQL parser is needed)
         List<String> allowedTables = config.getAllowedTables();
         if (allowedTables != null && !allowedTables.isEmpty()) {
-            boolean usesAllowedTable = allowedTables.stream().anyMatch(t -> query.contains(t));
+            boolean usesAllowedTable = allowedTables.stream().anyMatch(query::contains);
             if (!usesAllowedTable) {
                 // Warning rather than block here in mock, but for real, we enforce it tightly.
             }
         }
     }
 
-    private Map<String, Object> mockListTables(String connectionName, PostgresConnectionConfig config) {
+    private Map<String, Object> mockListTables(String connectionName) {
         if ("ticket-db".equals(connectionName)) {
-            return Map.of("data", List.of("tickets", "agents", "customers"), "rowCount", 3);
+            return Map.of(KEY_DATA, List.of(KEY_TICKETS, "agents", "customers"), KEY_ROW_COUNT, 3);
         } else if ("orchestration-db".equals(connectionName)) {
-            return Map.of("data", List.of("workflow_execution", "workflow_checkpoint", "tool_execution", "ai_execution_record"), "rowCount", 4);
+            return Map.of(KEY_DATA, List.of("workflow_execution", "workflow_checkpoint", "tool_execution", "ai_execution_record"), KEY_ROW_COUNT, 4);
         }
-        return Map.of("data", List.of(), "rowCount", 0);
+        return Map.of(KEY_DATA, List.of(), KEY_ROW_COUNT, 0);
     }
 
-    private Map<String, Object> mockDescribeTable(String connectionName, String tableName) {
-        if ("tickets".equals(tableName)) {
+    private Map<String, Object> mockDescribeTable(String tableName) {
+        if (KEY_TICKETS.equals(tableName)) {
             return Map.of(
-                "data", List.of(
-                    Map.of("column", "id", "type", "uuid"),
-                    Map.of("column", "status", "type", "varchar"),
-                    Map.of("column", "priority", "type", "varchar"),
-                    Map.of("column", "created_at", "type", "timestamp")
+                KEY_DATA, List.of(
+                    Map.of(KEY_COLUMN, "id", "type", "uuid"),
+                    Map.of(KEY_COLUMN, KEY_STATUS, "type", "varchar"),
+                    Map.of(KEY_COLUMN, KEY_PRIORITY, "type", "varchar"),
+                    Map.of(KEY_COLUMN, "created_at", "type", "timestamp")
                 ),
-                "rowCount", 4
+                KEY_ROW_COUNT, 4
             );
         }
-        return Map.of("data", List.of(), "rowCount", 0);
+        return Map.of(KEY_DATA, List.of(), KEY_ROW_COUNT, 0);
     }
 
-    private Map<String, Object> mockQueryTickets(String connectionName, PostgresConnectionConfig config, String status) {
-        validateTableAllowed("tickets", config);
+    private Map<String, Object> mockQueryTickets(PostgresConnectionConfig config) {
+        validateTableAllowed(KEY_TICKETS, config);
         List<Map<String, Object>> tickets = List.of(
-            Map.of("id", "101", "status", "OPEN", "priority", "HIGH"),
-            Map.of("id", "102", "status", "CLOSED", "priority", "LOW")
+            Map.of("id", "101", KEY_STATUS, "OPEN", KEY_PRIORITY, "HIGH"),
+            Map.of("id", "102", KEY_STATUS, "CLOSED", KEY_PRIORITY, "LOW")
         );
-        return Map.of("data", tickets, "rowCount", 2, "truncated", false);
+        return Map.of(KEY_DATA, tickets, KEY_ROW_COUNT, 2, KEY_TRUNCATED, false);
     }
 
-    private Map<String, Object> mockQueryWorkflows(String connectionName, PostgresConnectionConfig config, String status) {
+    private Map<String, Object> mockQueryWorkflows(PostgresConnectionConfig config) {
         validateTableAllowed("workflow_execution", config);
         List<Map<String, Object>> workflows = List.of(
-            Map.of("id", "wf-1", "status", "WAITING_APPROVAL", "workflow_type", "refund"),
-            Map.of("id", "wf-2", "status", "COMPLETED", "workflow_type", "password_reset")
+            Map.of("id", "wf-1", KEY_STATUS, "WAITING_APPROVAL", "workflow_type", "refund"),
+            Map.of("id", "wf-2", KEY_STATUS, "COMPLETED", "workflow_type", "password_reset")
         );
-        return Map.of("data", workflows, "rowCount", 2, "truncated", false);
+        return Map.of(KEY_DATA, workflows, KEY_ROW_COUNT, 2, KEY_TRUNCATED, false);
     }
 
-    private Map<String, Object> mockExecuteQuery(String connectionName, String query) {
+    private Map<String, Object> mockExecuteQuery() {
         // Enforce mock limit of 100
         List<Map<String, Object>> results = List.of(
             Map.of("mock_column", "mock_value_1"),
             Map.of("mock_column", "mock_value_2")
         );
-        return Map.of("data", results, "rowCount", 2, "truncated", false); // Default false, mock truncated if rowCount > 100
+        return Map.of(KEY_DATA, results, KEY_ROW_COUNT, 2, KEY_TRUNCATED, false); // Default false, mock truncated if rowCount > 100
     }
 }

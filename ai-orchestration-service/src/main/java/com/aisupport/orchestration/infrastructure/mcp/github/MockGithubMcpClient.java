@@ -18,6 +18,12 @@ import io.micrometer.core.annotation.Timed;
 
 public class MockGithubMcpClient implements McpClient {
 
+    private static final String TYPE_OBJECT = "object";
+    private static final String TYPE_STRING = "string";
+    private static final String KEY_PROPERTIES = "properties";
+    private static final String KEY_STATE = "state";
+
+
     private final Random random = new Random();
 
     @Override
@@ -34,9 +40,9 @@ public class MockGithubMcpClient implements McpClient {
                     .name("github.searchRepository")
                     .description("Searches a GitHub repository for code or text")
                     .inputSchema(Map.of(
-                        "type", "object",
-                        "properties", Map.of(
-                            "query", Map.of("type", "string")
+                        "type", TYPE_OBJECT,
+                        KEY_PROPERTIES, Map.of(
+                            "query", Map.of("type", TYPE_STRING)
                         )
                     ))
                     .build(),
@@ -44,9 +50,9 @@ public class MockGithubMcpClient implements McpClient {
                     .name("github.readFile")
                     .description("Reads a specific file from a GitHub repository")
                     .inputSchema(Map.of(
-                        "type", "object",
-                        "properties", Map.of(
-                            "path", Map.of("type", "string")
+                        "type", TYPE_OBJECT,
+                        KEY_PROPERTIES, Map.of(
+                            "path", Map.of("type", TYPE_STRING)
                         )
                     ))
                     .build(),
@@ -54,9 +60,9 @@ public class MockGithubMcpClient implements McpClient {
                     .name("github.searchIssues")
                     .description("Searches issues in the GitHub repository")
                     .inputSchema(Map.of(
-                        "type", "object",
-                        "properties", Map.of(
-                            "state", Map.of("type", "string")
+                        "type", TYPE_OBJECT,
+                        KEY_PROPERTIES, Map.of(
+                            KEY_STATE, Map.of("type", TYPE_STRING)
                         )
                     ))
                     .build(),
@@ -64,8 +70,8 @@ public class MockGithubMcpClient implements McpClient {
                     .name("github.readPullRequest")
                     .description("Reads details of a specific Pull Request")
                     .inputSchema(Map.of(
-                        "type", "object",
-                        "properties", Map.of(
+                        "type", TYPE_OBJECT,
+                        KEY_PROPERTIES, Map.of(
                             "prNumber", Map.of("type", "number")
                         )
                     ))
@@ -103,14 +109,14 @@ public class MockGithubMcpClient implements McpClient {
                 case "github.searchIssues" -> Map.of(
                     "title", "Add MCP Integration",
                     "labels", List.of("enhancement", "phase-5"),
-                    "state", "open",
+                    KEY_STATE, "open",
                     "assignee", "avisheksingha",
                     "url", "https://github.com/avisheksingha/ai-support-system/issues/42"
                 );
                 case "github.readPullRequest" -> Map.of(
                     "number", arguments.getOrDefault("prNumber", 1),
                     "title", "Refactor ToolRegistry",
-                    "state", "merged",
+                    KEY_STATE, "merged",
                     "merged_by", "avisheksingha",
                     "url", "https://github.com/avisheksingha/ai-support-system/pull/1"
                 );
@@ -121,7 +127,7 @@ public class MockGithubMcpClient implements McpClient {
     
     private void simulateNetworkConditions() {
         try {
-            TimeUnit.MILLISECONDS.sleep(50 + random.nextInt(150));
+            TimeUnit.MILLISECONDS.sleep(50L + random.nextInt(150));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }

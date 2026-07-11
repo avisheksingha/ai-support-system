@@ -19,6 +19,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MetricsWorkflowExecutionListener implements WorkflowExecutionListener {
 
+    private static final String TAG_WORKFLOW_ID = "workflowId";
+    private static final String TAG_RESULT = "result";
+
     private final MeterRegistry meterRegistry;
     private final Map<String, Timer.Sample> workflowTimers = new ConcurrentHashMap<>();
     private final Map<String, Timer.Sample> stepTimers = new ConcurrentHashMap<>();
@@ -33,10 +36,10 @@ public class MetricsWorkflowExecutionListener implements WorkflowExecutionListen
         Timer.Sample sample = workflowTimers.remove(context.getExecutionId());
         if (sample != null) {
             sample.stop(meterRegistry.timer("workflow.duration", 
-                "workflowId", context.getWorkflowId(), 
-                "result", "success"));
+                TAG_WORKFLOW_ID, context.getWorkflowId(), 
+                TAG_RESULT, "success"));
         }
-        meterRegistry.counter("workflow.success", "workflowId", context.getWorkflowId()).increment();
+        meterRegistry.counter("workflow.success", TAG_WORKFLOW_ID, context.getWorkflowId()).increment();
     }
 
     @Override
@@ -51,9 +54,9 @@ public class MetricsWorkflowExecutionListener implements WorkflowExecutionListen
         Timer.Sample sample = stepTimers.remove(key);
         if (sample != null) {
             sample.stop(meterRegistry.timer("step.duration", 
-                "workflowId", context.getWorkflowId(), 
+                TAG_WORKFLOW_ID, context.getWorkflowId(), 
                 "step", step.getName(), 
-                "result", "success"));
+                TAG_RESULT, "success"));
         }
     }
 
@@ -62,9 +65,9 @@ public class MetricsWorkflowExecutionListener implements WorkflowExecutionListen
         Timer.Sample sample = workflowTimers.remove(context.getExecutionId());
         if (sample != null) {
             sample.stop(meterRegistry.timer("workflow.duration", 
-                "workflowId", context.getWorkflowId(), 
-                "result", "failure"));
+                TAG_WORKFLOW_ID, context.getWorkflowId(), 
+                TAG_RESULT, "failure"));
         }
-        meterRegistry.counter("workflow.failure", "workflowId", context.getWorkflowId()).increment();
+        meterRegistry.counter("workflow.failure", TAG_WORKFLOW_ID, context.getWorkflowId()).increment();
     }
 }

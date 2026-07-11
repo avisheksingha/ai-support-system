@@ -14,9 +14,6 @@ import io.micrometer.core.annotation.Timed;
 
 public class RealPostgresMcpClient implements McpClient {
 
-    public RealPostgresMcpClient() {
-    }
-
     @Override
     @CircuitBreaker(name = "postgres-mcp")
     @Retry(name = "postgres-mcp")

@@ -17,6 +17,15 @@ import io.micrometer.core.annotation.Timed;
 
 public class MockFilesystemMcpClient implements McpClient {
 
+    private static final String TYPE_OBJECT = "object";
+    private static final String TYPE_STRING = "string";
+    private static final String KEY_PROPERTIES = "properties";
+    private static final String KEY_PATH = "path";
+    private static final String KEY_CONTENT = "content";
+    private static final String KEY_METADATA = "metadata";
+    private static final String KEY_EXTENSION = "extension";
+
+
     private final FilesystemMcpProperties properties;
 
     public MockFilesystemMcpClient(FilesystemMcpProperties properties) {
@@ -34,9 +43,9 @@ public class MockFilesystemMcpClient implements McpClient {
                 .name("filesystem.readMarkdown")
                 .description("Reads a markdown documentation file from the workspace")
                 .inputSchema(Map.of(
-                    "type", "object",
-                    "properties", Map.of(
-                        "path", Map.of("type", "string")
+                    "type", TYPE_OBJECT,
+                    KEY_PROPERTIES, Map.of(
+                        KEY_PATH, Map.of("type", TYPE_STRING)
                     )
                 ))
                 .build(),
@@ -44,9 +53,9 @@ public class MockFilesystemMcpClient implements McpClient {
                 .name("filesystem.readConfiguration")
                 .description("Reads configuration files (yml/properties)")
                 .inputSchema(Map.of(
-                    "type", "object",
-                    "properties", Map.of(
-                        "path", Map.of("type", "string")
+                    "type", TYPE_OBJECT,
+                    KEY_PROPERTIES, Map.of(
+                        KEY_PATH, Map.of("type", TYPE_STRING)
                     )
                 ))
                 .build(),
@@ -54,9 +63,9 @@ public class MockFilesystemMcpClient implements McpClient {
                 .name("filesystem.readLogs")
                 .description("Reads application log files safely")
                 .inputSchema(Map.of(
-                    "type", "object",
-                    "properties", Map.of(
-                        "path", Map.of("type", "string")
+                    "type", TYPE_OBJECT,
+                    KEY_PROPERTIES, Map.of(
+                        KEY_PATH, Map.of("type", TYPE_STRING)
                     )
                 ))
                 .build(),
@@ -64,9 +73,9 @@ public class MockFilesystemMcpClient implements McpClient {
                 .name("filesystem.readPrompt")
                 .description("Reads AI prompt templates from the workspace")
                 .inputSchema(Map.of(
-                    "type", "object",
-                    "properties", Map.of(
-                        "path", Map.of("type", "string")
+                    "type", TYPE_OBJECT,
+                    KEY_PROPERTIES, Map.of(
+                        KEY_PATH, Map.of("type", TYPE_STRING)
                     )
                 ))
                 .build()
@@ -80,7 +89,7 @@ public class MockFilesystemMcpClient implements McpClient {
     @Timed(value = "mcp.invocation.latency", description = "Time taken to execute an MCP tool")
     public CompletableFuture<Map<String, Object>> executeTool(String toolName, Map<String, Object> arguments) {
         return CompletableFuture.supplyAsync(() -> {
-            String requestedPath = (String) arguments.get("path");
+            String requestedPath = (String) arguments.get(KEY_PATH);
             if (requestedPath == null || requestedPath.isBlank()) {
                 throw new McpException("Missing required parameter: path");
             }
@@ -89,24 +98,24 @@ public class MockFilesystemMcpClient implements McpClient {
 
             return switch (toolName) {
                 case "filesystem.readMarkdown" -> Map.of(
-                    "path", requestedPath,
-                    "content", "# Mock Markdown Content\n\nThis is a simulation of " + requestedPath,
-                    "metadata", Map.of("size", 2048, "extension", "md")
+                    KEY_PATH, requestedPath,
+                    KEY_CONTENT, "# Mock Markdown Content\n\nThis is a simulation of " + requestedPath,
+                    KEY_METADATA, Map.of("size", 2048, KEY_EXTENSION, "md")
                 );
                 case "filesystem.readConfiguration" -> Map.of(
-                    "path", requestedPath,
-                    "content", "mock.property=value\nmock.enabled=true",
-                    "metadata", Map.of("size", 512, "extension", "properties")
+                    KEY_PATH, requestedPath,
+                    KEY_CONTENT, "mock.property=value\nmock.enabled=true",
+                    KEY_METADATA, Map.of("size", 512, KEY_EXTENSION, KEY_PROPERTIES)
                 );
                 case "filesystem.readLogs" -> Map.of(
-                    "path", requestedPath,
-                    "content", "[INFO] 2026-07-11 10:00:00 - Mock log entry from " + requestedPath,
-                    "metadata", Map.of("size", 4096, "extension", "log")
+                    KEY_PATH, requestedPath,
+                    KEY_CONTENT, "[INFO] 2026-07-11 10:00:00 - Mock log entry from " + requestedPath,
+                    KEY_METADATA, Map.of("size", 4096, KEY_EXTENSION, "log")
                 );
                 case "filesystem.readPrompt" -> Map.of(
-                    "path", requestedPath,
-                    "content", "You are an AI assistant. Context: {context}",
-                    "metadata", Map.of("size", 1024, "extension", "txt")
+                    KEY_PATH, requestedPath,
+                    KEY_CONTENT, "You are an AI assistant. Context: {context}",
+                    KEY_METADATA, Map.of("size", 1024, KEY_EXTENSION, "txt")
                 );
                 default -> throw new McpException("Unknown tool: " + toolName);
             };

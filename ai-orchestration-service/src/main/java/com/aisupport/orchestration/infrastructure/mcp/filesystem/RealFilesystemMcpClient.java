@@ -14,9 +14,6 @@ import io.micrometer.core.annotation.Timed;
 
 public class RealFilesystemMcpClient implements McpClient {
 
-    public RealFilesystemMcpClient() {
-    }
-
     @Override
     @CircuitBreaker(name = "filesystem-mcp")
     @Retry(name = "filesystem-mcp")

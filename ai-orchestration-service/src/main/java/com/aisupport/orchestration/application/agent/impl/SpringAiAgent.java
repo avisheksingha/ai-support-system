@@ -28,9 +28,6 @@ public class SpringAiAgent implements Agent {
     private final TokenBudgetManager tokenBudgetManager;
     private final ToolExecutor toolExecutor;
     private final GuardrailPipeline guardrailPipeline;
-    
-    // In a real implementation, we would inject Spring AI's ChatClient here.
-    // private final ChatClient chatClient;
 
     @Override
     public Result<AgentSession> execute(AgentRequest request) {

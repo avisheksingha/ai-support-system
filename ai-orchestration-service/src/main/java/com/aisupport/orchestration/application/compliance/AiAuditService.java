@@ -39,7 +39,7 @@ public class AiAuditService {
                 .promptTokens(session.getTotalUsage() != null ? session.getTotalUsage().getPromptTokens() : 0)
                 .completionTokens(session.getTotalUsage() != null ? session.getTotalUsage().getCompletionTokens() : 0)
                 .finishReason(session.getFinalResponse() != null ? session.getFinalResponse().getFinishReason().name() : "UNKNOWN")
-                .outcome(session.getFinalResponse() != null ? "SUCCESS" : (session.getFailureReason() != null ? "BLOCKED" : "FAILED"))
+                .outcome(determineOutcome(session))
                 .toolsInvoked(tools)
                 .policyId(session.getPolicyId())
                 .policyVersion(session.getPolicyVersion())
@@ -51,5 +51,12 @@ public class AiAuditService {
                 .build();
 
         repository.save(entity);
+    }
+
+    private String determineOutcome(AgentSession session) {
+        if (session.getFinalResponse() != null) {
+            return "SUCCESS";
+        }
+        return session.getFailureReason() != null ? "BLOCKED" : "FAILED";
     }
 }

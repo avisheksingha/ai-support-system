@@ -29,7 +29,9 @@ public class RuntimeCoverageReporter implements WorkflowExecutionListener {
     private final AiExecutionRecordRepository aiRecordRepository;
 
     @Override
-    public void beforeWorkflow(WorkflowContext context) { }
+    public void beforeWorkflow(WorkflowContext context) { 
+        // No action needed before workflow starts
+    }
 
     @Override
     public void afterWorkflow(WorkflowContext context) {
@@ -51,6 +53,23 @@ public class RuntimeCoverageReporter implements WorkflowExecutionListener {
         report.append("- **Ticket ID**: ").append(context.getTicketId()).append("\n");
         report.append("- **Final Outcome**: ").append(finalStatus).append("\n\n");
 
+        appendWorkflowExecutionDetails(context, report);
+        appendAiExecutionDetails(context, report);
+
+        String reportContent = report.toString();
+        
+        log.info("\n========== RUNTIME COVERAGE ==========\n{}\n======================================", reportContent);
+        
+        try {
+            Path path = Paths.get(REPORT_PATH);
+            Files.createDirectories(path.getParent());
+            Files.writeString(path, reportContent);
+        } catch (IOException e) {
+            log.error("Failed to write runtime coverage report to {}", REPORT_PATH, e);
+        }
+    }
+
+    private void appendWorkflowExecutionDetails(WorkflowContext context, StringBuilder report) {
         WorkflowExecutionEntity workflowExecution = workflowRepository.findById(context.getExecutionId()).orElse(null);
         if (workflowExecution != null) {
             report.append("## Status Details\n");
@@ -65,33 +84,27 @@ public class RuntimeCoverageReporter implements WorkflowExecutionListener {
             }
             report.append("\n");
         }
+    }
 
+    private void appendAiExecutionDetails(WorkflowContext context, StringBuilder report) {
         List<AiExecutionRecordEntity> aiRecords = aiRecordRepository.findByCorrelationId(context.getCorrelationId());
         if (aiRecords != null && !aiRecords.isEmpty()) {
             report.append("## AI Governance & Execution\n");
-            for (AiExecutionRecordEntity record : aiRecords) {
-                report.append("### AI Record (").append(record.getOutcome()).append(")\n");
-                report.append("- **Prompt Hash**: ").append(record.getPromptHash()).append("\n");
-                report.append("- **Model Profile**: ").append(record.getModelId()).append("\n");
-                report.append("- **Tools Used**: ").append(record.getToolsInvoked() != null ? record.getToolsInvoked() : "None").append("\n");
-                report.append("- **Policy Triggered**: ").append(record.getPolicyId() != null ? record.getPolicyId() + " (v" + record.getPolicyVersion() + ")" : "None").append("\n");
-                report.append("- **Guardrail Triggered**: ").append(record.getGuardrailId() != null ? record.getGuardrailId() + " (v" + record.getGuardrailVersion() + ")" : "None").append("\n");
-                report.append("- **Reason**: ").append(record.getReason() != null ? record.getReason() : "N/A").append("\n");
-                report.append("- **Retries**: ").append("0").append("\n"); // V1 doesn't have agent retries
-                report.append("\n");
+            for (AiExecutionRecordEntity aiRecord : aiRecords) {
+                appendSingleAiRecord(report, aiRecord);
             }
         }
+    }
 
-        String reportContent = report.toString();
-        
-        log.info("\n========== RUNTIME COVERAGE ==========\n{}\n======================================", reportContent);
-        
-        try {
-            Path path = Paths.get(REPORT_PATH);
-            Files.createDirectories(path.getParent());
-            Files.writeString(path, reportContent);
-        } catch (IOException e) {
-            log.error("Failed to write runtime coverage report to {}", REPORT_PATH, e);
-        }
+    private void appendSingleAiRecord(StringBuilder report, AiExecutionRecordEntity aiRecord) {
+        report.append("### AI Record (").append(aiRecord.getOutcome()).append(")\n");
+        report.append("- **Prompt Hash**: ").append(aiRecord.getPromptHash()).append("\n");
+        report.append("- **Model Profile**: ").append(aiRecord.getModelId()).append("\n");
+        report.append("- **Tools Used**: ").append(aiRecord.getToolsInvoked() != null ? aiRecord.getToolsInvoked() : "None").append("\n");
+        report.append("- **Policy Triggered**: ").append(aiRecord.getPolicyId() != null ? aiRecord.getPolicyId() + " (v" + aiRecord.getPolicyVersion() + ")" : "None").append("\n");
+        report.append("- **Guardrail Triggered**: ").append(aiRecord.getGuardrailId() != null ? aiRecord.getGuardrailId() + " (v" + aiRecord.getGuardrailVersion() + ")" : "None").append("\n");
+        report.append("- **Reason**: ").append(aiRecord.getReason() != null ? aiRecord.getReason() : "N/A").append("\n");
+        report.append("- **Retries**: ").append("0").append("\n"); // V1 doesn't have agent retries
+        report.append("\n");
     }
 }
