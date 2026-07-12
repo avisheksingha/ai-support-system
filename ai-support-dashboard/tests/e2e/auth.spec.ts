@@ -48,5 +48,5 @@ test('login and navigate to dashboard for admin', async ({ page }) => {
   await expect(page).toHaveURL(/.*dashboard/);
   
   // Verify Dashboard elements
-  await expect(page.locator('h1:has-text("Operations Center")')).toBeVisible();
+  await expect(page.locator('h1:has-text("Admin User")')).toBeVisible();
 });
