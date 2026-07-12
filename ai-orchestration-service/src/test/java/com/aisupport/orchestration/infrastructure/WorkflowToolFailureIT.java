@@ -13,6 +13,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
 import com.aisupport.common.event.TicketCreatedEvent;
+import com.aisupport.orchestration.domain.state.WorkflowState;
 import com.aisupport.orchestration.infrastructure.persistence.entity.WorkflowExecutionEntity;
 import com.aisupport.orchestration.infrastructure.persistence.repository.WorkflowExecutionRepository;
 
@@ -52,7 +53,7 @@ class WorkflowToolFailureIT extends AbstractIntegrationTest {
             
             assertThat(execution).isNotNull();
             // Depending on resilience strategy, it may still complete if tool was optional, or go to FAILED
-            assertThat(execution.getState()).isIn("COMPLETED", "FAILED");
+            assertThat(execution.getState()).isIn(WorkflowState.COMPLETED, WorkflowState.FAILED);
         });
     }
 }

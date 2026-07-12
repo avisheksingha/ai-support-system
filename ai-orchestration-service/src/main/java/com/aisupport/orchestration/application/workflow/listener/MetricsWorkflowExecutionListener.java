@@ -21,6 +21,7 @@ public class MetricsWorkflowExecutionListener implements WorkflowExecutionListen
 
     private static final String TAG_WORKFLOW_ID = "workflowId";
     private static final String TAG_RESULT = "result";
+    private static final String UNKNOWN_WORKFLOW_ID = "unknown";
 
     private final MeterRegistry meterRegistry;
     private final Map<String, Timer.Sample> workflowTimers = new ConcurrentHashMap<>();
@@ -33,13 +34,14 @@ public class MetricsWorkflowExecutionListener implements WorkflowExecutionListen
 
     @Override
     public void afterWorkflow(WorkflowContext context) {
+        String workflowId = context.getWorkflowId() != null ? context.getWorkflowId() : UNKNOWN_WORKFLOW_ID;
         Timer.Sample sample = workflowTimers.remove(context.getExecutionId());
         if (sample != null) {
             sample.stop(meterRegistry.timer("workflow.duration", 
-                TAG_WORKFLOW_ID, context.getWorkflowId(), 
+                TAG_WORKFLOW_ID, workflowId, 
                 TAG_RESULT, "success"));
         }
-        meterRegistry.counter("workflow.success", TAG_WORKFLOW_ID, context.getWorkflowId()).increment();
+        meterRegistry.counter("workflow.success", TAG_WORKFLOW_ID, workflowId).increment();
     }
 
     @Override
@@ -50,11 +52,12 @@ public class MetricsWorkflowExecutionListener implements WorkflowExecutionListen
 
     @Override
     public void afterStep(WorkflowContext context, WorkflowStep step) {
+        String workflowId = context.getWorkflowId() != null ? context.getWorkflowId() : UNKNOWN_WORKFLOW_ID;
         String key = context.getExecutionId() + "-" + step.getName();
         Timer.Sample sample = stepTimers.remove(key);
         if (sample != null) {
             sample.stop(meterRegistry.timer("step.duration", 
-                TAG_WORKFLOW_ID, context.getWorkflowId(), 
+                TAG_WORKFLOW_ID, workflowId, 
                 "step", step.getName(), 
                 TAG_RESULT, "success"));
         }
@@ -62,12 +65,13 @@ public class MetricsWorkflowExecutionListener implements WorkflowExecutionListen
 
     @Override
     public void onFailure(WorkflowContext context, Throwable error) {
+        String workflowId = context.getWorkflowId() != null ? context.getWorkflowId() : UNKNOWN_WORKFLOW_ID;
         Timer.Sample sample = workflowTimers.remove(context.getExecutionId());
         if (sample != null) {
             sample.stop(meterRegistry.timer("workflow.duration", 
-                TAG_WORKFLOW_ID, context.getWorkflowId(), 
+                TAG_WORKFLOW_ID, workflowId, 
                 TAG_RESULT, "failure"));
         }
-        meterRegistry.counter("workflow.failure", TAG_WORKFLOW_ID, context.getWorkflowId()).increment();
+        meterRegistry.counter("workflow.failure", TAG_WORKFLOW_ID, workflowId).increment();
     }
 }

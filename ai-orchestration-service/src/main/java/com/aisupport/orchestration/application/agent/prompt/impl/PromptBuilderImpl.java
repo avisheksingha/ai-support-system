@@ -56,10 +56,14 @@ public class PromptBuilderImpl implements PromptBuilder {
                 .supportsStructuredOutput(true)
                 .build();
 
+        String subject = context.getAttribute("subject") != null ? (String) context.getAttribute("subject") : "";
+        String message = context.getAttribute("message") != null ? (String) context.getAttribute("message") : "";
+        String userPrompt = "Analyze the current state of this ticket.\nSubject: " + subject + "\nMessage: " + message;
+
         return AgentRequest.builder()
                 .promptVersion("v1.0.0")
                 .systemPrompt(systemPrompt)
-                .userPrompt("Analyze the current state of this ticket.")
+                .userPrompt(userPrompt)
                 .conversation(conversation)
                 .knowledge(knowledge)
                 .modelProfile(modelProfile)

@@ -4,6 +4,8 @@ import java.time.Duration;
 import java.time.Instant;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.aisupport.orchestration.application.agent.AgentResponse;
 import com.aisupport.orchestration.application.agent.AgentSession;
@@ -20,6 +22,7 @@ public class AiAuditService {
 
     private final AiExecutionRecordRepository repository;
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void recordExecution(AgentSession session, String correlationId, String workflowVersion) {
         log.info("Recording AI Execution for session: {}", session.getSessionId());
 

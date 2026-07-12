@@ -3,6 +3,7 @@ package com.aisupport.orchestration.infrastructure;
 import java.util.List;
 
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
@@ -14,7 +15,7 @@ import org.springframework.context.annotation.Primary;
 @TestConfiguration
 public class TestAiConfiguration {
 
-    @Bean
+    @Bean("googleGenAiChatModel")
     @Primary
     ChatModel mockChatModel() {
         return new ChatModel() {
@@ -22,7 +23,7 @@ public class TestAiConfiguration {
             public ChatResponse call(Prompt prompt) {
                 // Return a mock successful response with tool call or final text based on prompt
                 String responseText = "{\"recommendation\": \"Mock recommendation based on tools\"}";
-                Generation generation = new Generation(new org.springframework.ai.chat.messages.AssistantMessage(responseText));
+                Generation generation = new Generation(new AssistantMessage(responseText));
                 return new ChatResponse(List.of(generation));
             }
         };
@@ -30,7 +31,7 @@ public class TestAiConfiguration {
 
     @Bean
     @Primary
-    ChatClient mockChatClient(ChatModel chatModel) {
+    ChatClient mockChatClient(@org.springframework.beans.factory.annotation.Qualifier("googleGenAiChatModel") ChatModel chatModel) {
         return ChatClient.builder(chatModel).build();
     }
 }

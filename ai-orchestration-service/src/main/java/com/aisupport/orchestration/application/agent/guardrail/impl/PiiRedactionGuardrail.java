@@ -25,9 +25,9 @@ public class PiiRedactionGuardrail implements InputGuardrail {
     @Value("${governance.guardrails.pii.credit-card.enabled:true}")
     private boolean creditCardEnabled;
 
-    private static final String EMAIL_REGEX = "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}";
+    private static final String EMAIL_REGEX = "[a-zA-Z0-9._%+-]++@[a-zA-Z0-9.-]++\\.[a-zA-Z]{2,}";
     private static final String SSN_REGEX = "\\b\\d{3}-\\d{2}-\\d{4}\\b";
-    private static final String CC_REGEX = "\\b(?:\\d[ -]*?){13,16}\\b";
+    private static final String CC_REGEX = "\\b(?:\\d[ -]*?){13,16}+\\b";
 
     @Override
     public GuardrailResult<AgentRequest> evaluate(GuardrailContext<AgentRequest> context) {

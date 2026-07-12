@@ -49,7 +49,7 @@ class WorkflowRecoveryIT extends AbstractIntegrationTest {
 
         WorkflowExecutionEntity execution = WorkflowExecutionEntity.builder()
                 .id(executionId)
-                .definitionId("ticket-orchestration-workflow")
+                .definitionId("analyze-workflow")
                 .correlationId(correlationId)
                 .ticketId(ticketId)
                 .state(WorkflowState.CREATED)

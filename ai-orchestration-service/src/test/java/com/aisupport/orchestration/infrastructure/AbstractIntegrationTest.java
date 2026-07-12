@@ -4,28 +4,35 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 @SpringBootTest
-@Testcontainers
 @ActiveProfiles("test")
 public abstract class AbstractIntegrationTest {
 
-    @Container
-    static final PostgreSQLContainer postgres = new PostgreSQLContainer(DockerImageName.parse("ankane/pgvector:latest").asCompatibleSubstituteFor("postgres"));
+    static final PostgreSQLContainer postgres = new PostgreSQLContainer(
+    		DockerImageName
+	    		.parse("ankane/pgvector:latest")
+	    		.asCompatibleSubstituteFor("postgres")
+    );
     
     static {
         postgres.withDatabaseName("orchestration_db");
         postgres.withUsername("test");
         postgres.withPassword("test");
+        postgres.start();
     }
 
-    @Container
-    static final ConfluentKafkaContainer kafka = new ConfluentKafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.5.0"));
+    static final ConfluentKafkaContainer kafka = new ConfluentKafkaContainer(
+    		DockerImageName
+    			.parse("confluentinc/cp-kafka:7.5.0")
+    );
+
+    static {
+        kafka.start();
+    }
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {

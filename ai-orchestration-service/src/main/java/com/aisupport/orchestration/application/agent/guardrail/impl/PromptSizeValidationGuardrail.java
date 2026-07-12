@@ -1,6 +1,7 @@
 package com.aisupport.orchestration.application.agent.guardrail.impl;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import com.aisupport.orchestration.application.agent.AgentRequest;
@@ -9,6 +10,7 @@ import com.aisupport.orchestration.application.agent.guardrail.GuardrailResult;
 import com.aisupport.orchestration.application.agent.guardrail.InputGuardrail;
 
 @Component
+@Order(1)
 public class PromptSizeValidationGuardrail implements InputGuardrail {
 
     @Value("${governance.guardrails.prompt.max-size:500000}")

@@ -1,17 +1,37 @@
 # Ignore Eclipse project files
 .metadata/
+.project
+.classpath
+.settings/
 
-# Ignore SonarLint files
+# Maven
+target/
+
+# SonarLint
 .sonarlint/
 
-# Ignore Visual Studio Code settings
+# VS Code
 .vscode/
 
-# Ignore Claude Code Settings
+# IntelliJ
+.idea/
+*.iml
+
+# Claude Code
 .claude/
 ai-support-marketplace/
 
-# Ignore common temporary files
+# Gemini
+.gemini/
+GEMINI.md
+
+# Custom Agent Settings
+.agents/
+
+# Codex specific ignores
+.codex
+
+# Common temporary files
 *.log
 *.tmp
 *.bak
@@ -24,13 +44,6 @@ Thumbs.db
 .DS_Store
 Thumbs.db
 
-# Gemini CLI specific ignores
-.gemini/
-GEMINI.md
-
-# Codex specific ignores
-.codex
-
 # Docker artifacts
 *.jar
 *.war
@@ -38,6 +51,3 @@ GEMINI.md
 .env
 .env.*
 !.env.example
-
-# Custom Agent Settings
-.agents/

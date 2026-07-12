@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import com.aisupport.orchestration.domain.tool.ToolDefinition;
 import com.aisupport.orchestration.domain.tool.ToolProvider;
 import com.aisupport.orchestration.domain.tool.ToolRegistry;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -20,8 +21,12 @@ public class ToolRegistryImpl implements ToolRegistry {
 
     public ToolRegistryImpl(List<ToolProvider> providers) {
         for (ToolProvider provider : providers) {
-            for (ToolDefinition tool : provider.discoverTools()) {
-                register(tool);
+            try {
+                for (ToolDefinition tool : provider.discoverTools()) {
+                    register(tool);
+                }
+            } catch (Exception e) {
+                log.warn("Failed to discover tools from provider: {}. Error: {}", provider.getClass().getSimpleName(), e.getMessage());
             }
         }
     }

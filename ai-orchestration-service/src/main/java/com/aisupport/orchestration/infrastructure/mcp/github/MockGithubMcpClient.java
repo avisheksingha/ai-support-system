@@ -33,7 +33,6 @@ public class MockGithubMcpClient implements McpClient {
     @Timed(value = "mcp.discovery.latency", description = "Time taken to discover MCP tools")
     public CompletableFuture<List<McpToolMetadata>> discoverTools() {
         return CompletableFuture.supplyAsync(() -> {
-            simulateNetworkConditions();
             
             return List.of(
                 McpToolMetadata.builder()
