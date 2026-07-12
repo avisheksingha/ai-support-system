@@ -32,7 +32,7 @@ class WorkflowMessagingIT extends AbstractIntegrationTest {
         event.setMessage("Verify outbound kafka event");
 
         // When
-        kafkaTemplate.send("ticket-analyzed", ticketId, event);
+        kafkaTemplate.send("ticket-created", ticketId, event);
 
         // Then
         // We wait for the outbound event (would check a local test consumer queue)

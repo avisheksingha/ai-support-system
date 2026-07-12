@@ -112,6 +112,46 @@ public class RagService {
         return response;
 	}
 
+	@Transactional
+	public String generateResponseSync(Long ticketId, String query) {
+		log.info("Running sync RAG for query: {}", query);
+		
+		String response;
+		String systemPrompt = ragSystemPromptTemplate.render(
+		        Map.of("noKnowledgeFound", NO_KNOWLEDGE_FOUND));
+		
+		try {
+	        response = chatClient.prompt()
+				.system(systemPrompt)
+	            .user(query)
+	            .advisors(questionAnswerAdvisor)
+	            .call()
+	            .content();
+		} catch (Exception e) {
+			log.error("Google GenAI RAG generation failed for ticketId={}", ticketId, e);
+	        throw new RagGenerationException(
+	                "RAG generation failed for ticketId: " + ticketId, e);
+	    } 
+
+        // If exists, delete old one for idempotency
+        if (ragResponseRepository.existsById(ticketId)) {
+        	ragResponseRepository.deleteById(ticketId);
+        }
+
+        RagResponse ragResponse = RagResponse.builder()
+                .ticketId(ticketId)
+                .query(query)
+                .response(response)
+                .model(chatModel)
+                .knowledgeFound(isKnowledgeFound(response))
+                .build();
+
+        ragResponseRepository.save(ragResponse);
+        log.info("Sync RAG response persisted for ticketId={}", ticketId);
+
+        return response;
+	}
+
 	/**
 	 * Helper method to determine if the response indicates that relevant knowledge was found.
 	 * This is based on whether the response matches the NO_KNOWLEDGE_FOUND message.

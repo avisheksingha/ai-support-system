@@ -17,6 +17,8 @@ public interface AnalysisResultRepository
     Optional<AnalysisResult> findByTicketId(Long ticketId);
 
     boolean existsByTicketId(Long ticketId);
+    
+    void deleteByTicketId(Long ticketId);
 
     List<AnalysisResult> findByIntent(String intent);
 

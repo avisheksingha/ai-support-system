@@ -35,7 +35,7 @@ class WorkflowExecutionIT extends AbstractIntegrationTest {
         event.setMessage("Verify agent and tool calls");
 
         // When
-        kafkaTemplate.send("ticket-analyzed", ticketId, event);
+        kafkaTemplate.send("ticket-created", ticketId, event);
 
         // Then - Wait for the workflow to reach COMPLETED state
         await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {

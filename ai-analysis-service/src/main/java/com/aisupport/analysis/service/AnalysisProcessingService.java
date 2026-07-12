@@ -13,6 +13,7 @@ import com.aisupport.analysis.outbox.OutboxEventService;
 import com.aisupport.analysis.repository.AnalysisResultRepository;
 import com.aisupport.common.event.TicketAnalyzedEvent;
 import com.aisupport.common.event.TicketCreatedEvent;
+import com.aisupport.common.dto.AnalysisResultDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -88,6 +89,54 @@ public class AnalysisProcessingService {
                 "TicketAnalyzedEvent",
                 analyzedEvent
         );
+    }
+    
+    @Transactional
+    public AnalysisResultDTO analyzeTicketSync(Long ticketId, String subject, String message) {
+        log.info("Starting sync AI analysis for ticketId={}", ticketId);
+
+        ParsedAnalysis parsed = chatProvider.analyzeTicket(subject, message);
+        
+        String normalizedIntent = normalizeIntent(parsed.getIntent());
+        
+        BigDecimal confidence = parsed.getConfidenceScore() != null
+                ? BigDecimal.valueOf(parsed.getConfidenceScore())
+                : BigDecimal.ZERO;
+
+        AnalysisResult entity = AnalysisResult.builder()
+                .ticketId(ticketId)
+                .intent(normalizedIntent)
+                .sentiment(defaultIfNull(parsed.getSentiment(), "NEUTRAL").toUpperCase())
+                .urgency(defaultIfNull(parsed.getUrgency(), "LOW").toUpperCase())
+                .confidenceScore(confidence)
+                .keywords(parsed.getKeywords() != null
+                        ? parsed.getKeywords().toArray(new String[0])
+                        : new String[0])
+                .suggestedCategory(parsed.getSuggestedCategory())
+                .rawResponse(convertToJson(parsed))
+                .build();
+
+        // Overwrite if exists, since it's a sync call from orchestrator
+        if (repository.existsByTicketId(ticketId)) {
+            // we could update, but for simplicity we'll just save it, assuming DB constraints handle it
+            // or we do not save again.
+            // Let's just do save and hope the ID isn't causing a unique constraint violation if ticketId is unique.
+            // Better yet, just return the existing if it exists, or update. Let's delete existing or update.
+        	repository.deleteByTicketId(ticketId);
+        }
+
+        repository.save(entity);
+        log.info("Sync Analysis persisted for ticketId={}, intent={}", ticketId, normalizedIntent);
+
+        return AnalysisResultDTO.builder()
+                .ticketId(ticketId)
+                .intent(normalizedIntent)
+                .sentiment(entity.getSentiment())
+                .urgency(entity.getUrgency())
+                .confidenceScore(confidence)
+                .keywords(java.util.Arrays.asList(entity.getKeywords()))
+                .suggestedCategory(entity.getSuggestedCategory())
+                .build();
     }
     
     private String normalizeIntent(String intent) {

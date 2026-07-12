@@ -39,7 +39,7 @@ class WorkflowGovernanceIT extends AbstractIntegrationTest {
         event.setSubject("My email is test@example.com");
         event.setMessage("My SSN is 123-45-6789 and credit card is 1234-5678-9012-3456.");
         
-        kafkaTemplate.send("ticket-analyzed", ticketId, event);
+        kafkaTemplate.send("ticket-created", ticketId, event);
 
         await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
             WorkflowExecutionEntity execution = workflowExecutionRepository.findAll().stream()
@@ -70,7 +70,7 @@ class WorkflowGovernanceIT extends AbstractIntegrationTest {
         event.setSubject("Giant prompt");
         event.setMessage(sb.toString());
         
-        kafkaTemplate.send("ticket-analyzed", ticketId, event);
+        kafkaTemplate.send("ticket-created", ticketId, event);
 
         await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
             WorkflowExecutionEntity execution = workflowExecutionRepository.findAll().stream()
@@ -107,7 +107,7 @@ class WorkflowGovernanceIT extends AbstractIntegrationTest {
         // Actually, our ToolUsagePolicy explicitly blocks if workflowId is "public-ticket-workflow".
         // We'll need a way to mock that or we can just send the event to a specific workflow... 
         // Or we can modify the event/context so it triggers the policy block.
-        // Wait, for this IT, we are triggering "ticket-analyzed" which launches "analyze-workflow", so ToolUsagePolicy won't block it.
+        // Wait, for this IT, we are triggering "ticket-created" which launches "analyze-workflow", so ToolUsagePolicy won't block it.
         // Let's create a quick test by updating SensitiveWorkflowPolicy to block HIGH risk. // This might set riskLevel in context if we map it?
         
         // Since we didn't map priority to riskLevel in AssembleContextStep, let's just assume we can't easily trigger the policy here without changes to ContextAssembler.
@@ -131,7 +131,7 @@ class WorkflowGovernanceIT extends AbstractIntegrationTest {
         event.setTicketId(100L); event.setTicketNumber(ticketId);
         event.setSubject("Return Bad JSON");
         
-        kafkaTemplate.send("ticket-analyzed", ticketId, event);
+        kafkaTemplate.send("ticket-created", ticketId, event);
 
         await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
             WorkflowExecutionEntity execution = workflowExecutionRepository.findAll().stream()

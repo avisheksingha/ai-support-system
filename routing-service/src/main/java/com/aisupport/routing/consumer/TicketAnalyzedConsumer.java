@@ -5,13 +5,10 @@ import java.nio.charset.StandardCharsets;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.header.Header;
 import org.slf4j.MDC;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 import com.aisupport.common.constant.Correlation;
 import com.aisupport.common.constant.HttpHeaders;
-import com.aisupport.common.constant.KafkaGroups;
-import com.aisupport.common.constant.KafkaTopics;
 import com.aisupport.common.event.TicketAnalyzedEvent;
 import com.aisupport.common.exception.TicketEventProcessingException;
 import com.aisupport.routing.service.RoutingService;
@@ -28,7 +25,7 @@ public class TicketAnalyzedConsumer {
 	private final RoutingService routingService;
     private final ObjectMapper objectMapper;
 
-    @KafkaListener(topics = KafkaTopics.TICKET_ANALYZED, groupId = KafkaGroups.ROUTING)
+    // @KafkaListener(topics = KafkaTopics.TICKET_ANALYZED, groupId = KafkaGroups.ROUTING)
     public void consume(ConsumerRecord<String, String> consumerRecord){
     	
     	// Extract correlationId from Kafka header into MDC

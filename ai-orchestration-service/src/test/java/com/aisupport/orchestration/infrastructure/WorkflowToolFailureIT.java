@@ -41,7 +41,7 @@ class WorkflowToolFailureIT extends AbstractIntegrationTest {
         event.setSubject("Timeout Test");
 
         // When
-        kafkaTemplate.send("ticket-analyzed", ticketId, event);
+        kafkaTemplate.send("ticket-created", ticketId, event);
 
         // Then - We want to see it either complete without that tool, or fail gracefully into a FAILED state
         await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {

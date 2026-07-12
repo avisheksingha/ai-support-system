@@ -37,7 +37,7 @@ class AiOrchestrationEndToEndIT extends AbstractIntegrationTest {
         event.setMessage("Test full AI execution cycle");
 
         // When
-        kafkaTemplate.send("ticket-analyzed", ticketId, event);
+        kafkaTemplate.send("ticket-created", ticketId, event);
 
         // Then
         await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {

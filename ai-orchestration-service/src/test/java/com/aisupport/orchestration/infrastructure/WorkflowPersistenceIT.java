@@ -44,7 +44,7 @@ class WorkflowPersistenceIT extends AbstractIntegrationTest {
         event.setMessage("Verify all entities are saved");
 
         // When
-        kafkaTemplate.send("ticket-analyzed", ticketId, event);
+        kafkaTemplate.send("ticket-created", ticketId, event);
 
         // Then - Wait for workflow completion and verify ALL persistence layers
         await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {

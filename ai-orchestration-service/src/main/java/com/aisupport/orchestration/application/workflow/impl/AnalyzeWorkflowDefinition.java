@@ -39,7 +39,7 @@ public class AnalyzeWorkflowDefinition implements WorkflowDefinition {
 
     @Override
     public String getSupportedTrigger() {
-        return "ticket-analyzed";
+        return "ticket-created";
     }
 
     @Override

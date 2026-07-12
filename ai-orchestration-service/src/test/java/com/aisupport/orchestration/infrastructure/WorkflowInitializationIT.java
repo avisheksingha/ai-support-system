@@ -36,7 +36,7 @@ class WorkflowInitializationIT extends AbstractIntegrationTest {
         event.setMessage("Need help with initialization");
 
         // When
-        kafkaTemplate.send("ticket-analyzed", ticketId, event);
+        kafkaTemplate.send("ticket-created", ticketId, event);
 
         // Then - Wait for the orchestration service to pick it up and initialize the workflow
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {

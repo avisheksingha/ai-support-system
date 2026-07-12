@@ -68,6 +68,36 @@ public class RoutingService {
 
         log.info("Routing completed ticketId={} team={} priority={}", ticketId, team, priority);
     }
+
+    @Transactional
+    public TicketRoutedEvent routeSync(TicketAnalyzedEvent event) {
+        Long ticketId = event.getTicketId();
+        log.info("Running sync routing for ticketId={}", ticketId);
+
+        RoutingRule rule = ruleEvaluationService.evaluate(event);
+
+        String team = rule != null ? rule.getAssignToTeam() : "general-support";
+        TicketPriority priority = rule != null && rule.getPriorityOverride() != null
+                ? rule.getPriorityOverride()
+                : TicketPriority.MEDIUM;
+
+        Integer sla = rule != null && rule.getSlaHours() != null
+                ? rule.getSlaHours()
+                : 24;
+
+        TicketRoutedEvent routedEvent = TicketRoutedEvent.builder()
+                .ticketId(ticketId)
+                .assignToTeam(team)
+                .priority(priority)
+                .slaHours(sla)
+                .intent(event.getIntent())
+                .sentiment(event.getSentiment())
+                .urgency(event.getUrgency())
+                .build();
+
+        log.info("Sync Routing completed ticketId={} team={} priority={}", ticketId, team, priority);
+        return routedEvent;
+    }
     
     /**
      * Retrieves the routing execution result for a specific ticket.

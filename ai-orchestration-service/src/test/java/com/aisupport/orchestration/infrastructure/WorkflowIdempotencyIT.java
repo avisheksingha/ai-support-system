@@ -35,8 +35,8 @@ class WorkflowIdempotencyIT extends AbstractIntegrationTest {
         event.setSubject("Idempotency Test");
 
         // When - Send it twice rapidly
-        kafkaTemplate.send("ticket-analyzed", ticketId, event);
-        kafkaTemplate.send("ticket-analyzed", ticketId, event);
+        kafkaTemplate.send("ticket-created", ticketId, event);
+        kafkaTemplate.send("ticket-created", ticketId, event);
 
         // Then
         await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
