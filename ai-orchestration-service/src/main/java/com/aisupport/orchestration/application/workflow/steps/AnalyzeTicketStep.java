@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
+import com.aisupport.common.event.AnalysisResult;
 import com.aisupport.orchestration.application.agent.Agent;
 import com.aisupport.orchestration.application.agent.AgentRequest;
 import com.aisupport.orchestration.application.agent.AgentSession;
@@ -80,7 +81,14 @@ public class AnalyzeTicketStep implements WorkflowStep {
             // Extract attributes from agent response
             if (session != null && session.getFinalResponse() != null) {
                 // Parse intent, urgency, category if available
-                context.putAttribute("agentAnalysis", session.getFinalResponse().getContent());
+                String content = session.getFinalResponse().getContent();
+                context.putAttribute("agentAnalysis", content);
+                AnalysisResult analysis = new AnalysisResult(
+                    "Support", // placeholder intent
+                    "Neutral", // placeholder sentiment
+                    "Medium"   // placeholder urgency
+                );
+                context.putResource(AnalysisResult.class, analysis);
             }
         } else {
             context.putAttribute(ATTR_ANALYZE_RESULT, "FAILED");

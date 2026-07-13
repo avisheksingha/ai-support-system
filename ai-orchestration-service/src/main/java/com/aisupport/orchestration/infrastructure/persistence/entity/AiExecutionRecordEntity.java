@@ -77,4 +77,16 @@ public class AiExecutionRecordEntity {
     
     @Column(name = "executed_at")
     private Instant executedAt;
+    
+    @Column(name = "ticket_id")
+    private Long ticketId;
+    
+    @Column(name = "workflow_execution_id")
+    private String workflowExecutionId;
+    
+    @Column(name = "service_version")
+    private String serviceVersion;
+    
+    @Column(name = "workflow_duration_ms")
+    private Long workflowDurationMs;
 }

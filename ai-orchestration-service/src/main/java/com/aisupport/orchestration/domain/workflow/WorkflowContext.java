@@ -1,5 +1,6 @@
 package com.aisupport.orchestration.domain.workflow;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,10 +17,15 @@ public class WorkflowContext {
     private String conversationId;
 
     @Builder.Default
+    private Instant startTime = Instant.now();
+
+    @Builder.Default
     private Map<String, Object> attributes = new HashMap<>();
 
     @Builder.Default
     private Map<Class<?>, Object> resources = new HashMap<>();
+
+    private WorkflowExecutionResult result;
 
     public void putAttribute(String key, Object value) {
         this.attributes.put(key, value);

@@ -10,7 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.aisupport.common.enums.TicketPriority;
 import com.aisupport.common.enums.TicketStatus;
+import com.aisupport.common.event.AnalysisResult;
+import com.aisupport.common.event.KnowledgeContext;
+import com.aisupport.common.event.RoutingDecision;
 import com.aisupport.common.event.TicketCreatedEvent;
+import com.aisupport.common.event.TicketOrchestratedEvent;
 import com.aisupport.common.event.TicketRagResponseEvent;
 import com.aisupport.common.event.TicketRoutedEvent;
 import com.aisupport.ticket.dto.TicketRequest;
@@ -263,6 +267,43 @@ public class TicketService {
         return ticketMapper.toResponse(ticket);
     }
     
+    @Transactional
+    public void applyOrchestratedResult(TicketOrchestratedEvent event) {
+        Ticket ticket = ticketRepository.findById(event.ticketId())
+                .orElseThrow(() -> new TicketNotFoundException(TICKET_NOT_FOUND_MSG + event.ticketId()));
+        
+        if (isStatusAtOrBeyondAssigned(ticket.getStatus())) {
+            log.info("Ticket {} already at status {}, skipping orchestration event",
+                    ticket.getTicketNumber(), ticket.getStatus());
+            return;
+        }
+
+        applyAnalysis(ticket, event.analysis());
+        applyRouting(ticket, event.routing());
+        applyKnowledge(ticket, event.knowledge());
+
+        ticket.transitionTo(event.ticketStatus());
+    }
+
+    private void applyAnalysis(Ticket ticket, AnalysisResult analysis) {
+        if (analysis == null) return;
+        if (analysis.intent() != null) ticket.setIntent(analysis.intent());
+        if (analysis.sentiment() != null) ticket.setSentiment(analysis.sentiment());
+        if (analysis.urgency() != null) ticket.setUrgency(analysis.urgency());
+    }
+
+    private void applyRouting(Ticket ticket, RoutingDecision routing) {
+        if (routing == null) return;
+        if (routing.assignToTeam() != null) ticket.setAssignedTo(routing.assignToTeam());
+        if (routing.priority() != null) ticket.setPriority(routing.priority());
+        if (routing.slaHours() != null) ticket.setSlaHours(routing.slaHours());
+    }
+
+    private void applyKnowledge(Ticket ticket, KnowledgeContext knowledge) {
+        if (knowledge == null) return;
+        if (knowledge.knowledgeSummary() != null) ticket.setRagResponse(knowledge.knowledgeSummary());
+    }
+
     /**
      * Applies routing decision results received from routing-service.
      * Duplicate or out-of-order routing events are treated as no-ops.

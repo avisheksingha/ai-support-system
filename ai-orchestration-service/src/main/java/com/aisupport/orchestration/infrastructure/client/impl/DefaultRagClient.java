@@ -3,6 +3,7 @@ package com.aisupport.orchestration.infrastructure.client.impl;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -10,24 +11,24 @@ import org.springframework.web.client.RestClient;
 
 import com.aisupport.orchestration.domain.model.Result;
 import com.aisupport.orchestration.infrastructure.client.RagClient;
+import com.aisupport.orchestration.infrastructure.client.exception.RagUnavailableException;
 
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.retry.annotation.Retry;
+import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class RagClientImpl implements RagClient {
+public class DefaultRagClient implements RagClient {
 
     private final RestClient restClient;
 
-    public RagClientImpl(RestClient.Builder restClientBuilder) {
-        this.restClient = restClientBuilder.baseUrl("http://rag-service:8085").build();
+    public DefaultRagClient(RestClient.Builder restClientBuilder,
+                            @Value("${api.services.rag.url}") String ragServiceUrl) {
+        this.restClient = restClientBuilder.baseUrl(ragServiceUrl).build();
     }
 
     @Override
-    @CircuitBreaker(name = "rag")
-    @Retry(name = "rag")
+    @Timed(value = "rag.client.duration", description = "Time taken by RAG Service")
     public Result<List<Object>> searchKnowledge(String query) {
         log.info("Calling rag-service internal API for query={}", query);
         try {
@@ -46,7 +47,7 @@ public class RagClientImpl implements RagClient {
             return Result.success(List.of(response.get("response")));
         } catch (Exception e) {
             log.error("Failed to search knowledge for query={}", query, e);
-            return Result.failure("RAG search failed: " + e.getMessage());
+            throw new RagUnavailableException("RAG Service Unavailable: " + e.getMessage(), e);
         }
     }
 }

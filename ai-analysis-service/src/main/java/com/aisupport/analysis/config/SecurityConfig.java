@@ -31,7 +31,6 @@ public class SecurityConfig {
 	 * Service-specific public endpoints that are accessible without authentication.
 	 */
 	private static final List<String> SERVICE_SPECIFIC_PUBLIC_ENDPOINTS = List.of(
-	        "/api/v1/webhooks/provider/callback",
 	        "/api/internal/**"
 	);
 

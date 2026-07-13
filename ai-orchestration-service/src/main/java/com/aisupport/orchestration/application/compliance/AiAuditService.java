@@ -62,4 +62,21 @@ public class AiAuditService {
         }
         return session.getFailureReason() != null ? "BLOCKED" : "FAILED";
     }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void recordWorkflowExecution(Long ticketId, String workflowExecutionId, String correlationId, String outcome, long durationMs, String serviceVersion) {
+        log.info("Recording Orchestration Workflow Execution for ticketId={}, executionId={}, correlationId={}", ticketId, workflowExecutionId, correlationId);
+
+        AiExecutionRecordEntity entity = AiExecutionRecordEntity.builder()
+                .ticketId(ticketId)
+                .workflowExecutionId(workflowExecutionId)
+                .correlationId(correlationId)
+                .outcome(outcome)
+                .workflowDurationMs(durationMs)
+                .serviceVersion(serviceVersion)
+                .executedAt(Instant.now())
+                .build();
+
+        repository.save(entity);
+    }
 }

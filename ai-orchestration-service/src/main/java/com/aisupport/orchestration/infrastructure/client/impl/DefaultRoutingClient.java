@@ -1,29 +1,30 @@
 package com.aisupport.orchestration.infrastructure.client.impl;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
-import org.springframework.http.MediaType;
 
 import com.aisupport.orchestration.domain.model.Result;
 import com.aisupport.orchestration.infrastructure.client.RoutingClient;
+import com.aisupport.orchestration.infrastructure.client.exception.RoutingUnavailableException;
 
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.retry.annotation.Retry;
+import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class RoutingClientImpl implements RoutingClient {
+public class DefaultRoutingClient implements RoutingClient {
 
     private final RestClient restClient;
 
-    public RoutingClientImpl(RestClient.Builder restClientBuilder) {
-        this.restClient = restClientBuilder.baseUrl("http://routing-service:8084").build();
+    public DefaultRoutingClient(RestClient.Builder restClientBuilder,
+                                @Value("${api.services.routing.url}") String routingServiceUrl) {
+        this.restClient = restClientBuilder.baseUrl(routingServiceUrl).build();
     }
 
     @Override
-    @CircuitBreaker(name = "routing")
-    @Retry(name = "routing")
+    @Timed(value = "routing.client.duration", description = "Time taken by Routing Service")
     public Result<Object> route(Long ticketId, Object analysisResult) {
         log.info("Calling routing-service internal API for ticketId={}", ticketId);
         try {
@@ -37,7 +38,7 @@ public class RoutingClientImpl implements RoutingClient {
             return Result.success(response);
         } catch (Exception e) {
             log.error("Failed to route ticketId={}", ticketId, e);
-            return Result.failure("Routing failed: " + e.getMessage());
+            throw new RoutingUnavailableException("Routing Service Unavailable: " + e.getMessage(), e);
         }
     }
 }

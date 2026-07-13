@@ -2,6 +2,7 @@ package com.aisupport.orchestration.infrastructure.persistence.entity;
 
 import java.time.Instant;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -22,6 +23,7 @@ public class OutboxEventEntity {
     private String aggregateType;
     private String aggregateId;
     private String eventType;
+    @Column(columnDefinition = "TEXT")
     private String payload;
     private Instant createdAt;
 }

@@ -1,18 +1,8 @@
 {"properties": [
   {
-    "name": "app.jwt.secret",
+    "name": "api.services.auth.url",
     "type": "java.lang.String",
-    "description": "A description for 'app.jwt.secret'"
-  },
-  {
-    "name": "app.jwt.access-token-expiration-ms",
-    "type": "java.lang.String",
-    "description": "A description for 'app.jwt.access-token-expiration-ms'"
-  },
-  {
-    "name": "app.jwt.refresh-token-expiration-ms",
-    "type": "java.lang.String",
-    "description": "A description for 'app.jwt.refresh-token-expiration-ms'"
+    "description": "A description for 'api.services.auth.url'"
   },
   {
     "name": "api.services.ticket.url",
@@ -33,10 +23,5 @@
     "name": "api.services.rag.url",
     "type": "java.lang.String",
     "description": "A description for 'api.services.rag.url'"
-  },
-  {
-    "name": "api.services.ai-orchestration.url",
-    "type": "java.lang.String",
-    "description": "A description for 'api.services.ai-orchestration.url'"
   }
 ]}

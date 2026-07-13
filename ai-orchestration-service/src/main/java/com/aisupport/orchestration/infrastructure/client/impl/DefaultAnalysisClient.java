@@ -1,30 +1,32 @@
 package com.aisupport.orchestration.infrastructure.client.impl;
 
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
-import org.springframework.http.MediaType;
-import java.util.Map;
 
 import com.aisupport.orchestration.domain.model.Result;
 import com.aisupport.orchestration.infrastructure.client.AnalysisClient;
+import com.aisupport.orchestration.infrastructure.client.exception.AnalysisUnavailableException;
 
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.retry.annotation.Retry;
+import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class AnalysisClientImpl implements AnalysisClient {
+public class DefaultAnalysisClient implements AnalysisClient {
 
     private final RestClient restClient;
 
-    public AnalysisClientImpl(RestClient.Builder restClientBuilder) {
-        this.restClient = restClientBuilder.baseUrl("http://ai-analysis-service:8083").build();
+    public DefaultAnalysisClient(RestClient.Builder restClientBuilder,
+                                 @Value("${api.services.ai-analysis.url}") String analysisServiceUrl) {
+        this.restClient = restClientBuilder.baseUrl(analysisServiceUrl).build();
     }
 
     @Override
-    @CircuitBreaker(name = "analysis")
-    @Retry(name = "analysis")
+    @Timed(value = "analysis.client.duration", description = "Time taken by Analysis Service")
     public Result<Object> analyze(Long ticketId, String content) {
         log.info("Calling ai-analysis-service internal API for ticketId={}", ticketId);
         try {
@@ -44,7 +46,7 @@ public class AnalysisClientImpl implements AnalysisClient {
             return Result.success(response);
         } catch (Exception e) {
             log.error("Failed to analyze ticketId={}", ticketId, e);
-            return Result.failure("Analysis failed: " + e.getMessage());
+            throw new AnalysisUnavailableException("Analysis Service Unavailable: " + e.getMessage(), e);
         }
     }
 }

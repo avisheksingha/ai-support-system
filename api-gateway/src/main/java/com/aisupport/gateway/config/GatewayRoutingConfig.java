@@ -26,6 +26,9 @@ public class GatewayRoutingConfig {
     @Value("${api.services.rag.url:lb://RAG-SERVICE}")
     private String ragServiceUrl;
 
+    @Value("${api.services.ai-orchestration.url:lb://AI-ORCHESTRATION-SERVICE}")
+    private String orchestrationServiceUrl;
+
     @Bean
     RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
     	
@@ -41,6 +44,8 @@ public class GatewayRoutingConfig {
                 .uri(routingServiceUrl))
             .route("rag-service-route", r -> r.path("/api/v1/rag/**")
                 .uri(ragServiceUrl))
+            .route("ai-orchestration-service-route", r -> r.path("/api/v1/orchestration/**")
+                .uri(orchestrationServiceUrl))
             
             // Swagger Proxy Routes (No escaping needed here!)
             .route("auth-docs", r -> r.path("/auth-docs/**")
@@ -58,6 +63,9 @@ public class GatewayRoutingConfig {
             .route("rag-docs", r -> r.path("/rag-docs/**")
                 .filters(f -> f.rewritePath("/rag-docs/(?<segment>.*)", REWRITE_REPLACEMENT))
                 .uri(ragServiceUrl))
+            .route("orchestration-docs", r -> r.path("/orchestration-docs/**")
+                .filters(f -> f.rewritePath("/orchestration-docs/(?<segment>.*)", REWRITE_REPLACEMENT))
+                .uri(orchestrationServiceUrl))
             .build();
     }
 }
