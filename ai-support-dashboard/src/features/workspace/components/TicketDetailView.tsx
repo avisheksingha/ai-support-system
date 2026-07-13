@@ -35,7 +35,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
   // We only enable AI/Routing queries if we have the ticket ID
   const { data: analysis, isLoading: isAnalysisLoading } = useAnalysis(ticket?.id);
   const { data: routing, isLoading: isRoutingLoading } = useRouting(ticket?.id);
-  const { data: timeline, isLoading: isTimelineLoading } = useTimeline(ticket?.id, ticket?.createdAt);
+  const { data: timeline, isLoading: isTimelineLoading } = useTimeline(ticket?.id);
 
   if (isTicketLoading) {
     return (

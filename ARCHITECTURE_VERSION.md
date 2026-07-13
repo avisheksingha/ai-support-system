@@ -13,6 +13,16 @@ None planned before V2
 - **Phase 2**: Workflow Runtime (Idempotency, Event Handling)
 - **Phase 3**: Context Intelligence & AI Reasoning (Context Providers, Prompt Renderer, Agent Loop, Tool Registry)
 - **Phase 4**: AI Platform Governance (Policies, Guardrails, Execution Audit)
+- **Phase 5**: Operations Observability (Dashboard APIs, Metrics, Workflow Explorer)
+
+## V1 Freeze Rules
+As of Phase 5 completion, the `ai-orchestration-service` backend is officially **V1 Frozen**.
+- No new endpoints.
+- No new entities.
+- No new workflow abstractions.
+- Bug fixes only.
+- Documentation only.
+- Frontend integration only.
 
 ## Frozen Contracts
 The following architectural abstractions are considered stable and frozen. They should not be redesigned unless a demonstrated implementation limitation requires it:

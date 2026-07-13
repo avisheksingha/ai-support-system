@@ -58,13 +58,29 @@ export const useRouting = (ticketId?: number) => {
   });
 };
 
-export const useTimeline = (ticketId?: number, baseDate?: any) => {
+export const useTimeline = (ticketId?: number) => {
   return useQuery({
     queryKey: ticketId ? workspaceKeys.timeline(ticketId) : [],
-    queryFn: () => workspaceApi.getTimeline(ticketId!, baseDate),
+    queryFn: () => workspaceApi.getTimeline(ticketId!),
+    select: (data) => data.content,
     enabled: !!ticketId,
     retry: 2,
-    refetchInterval: 10000,
+    refetchInterval: (query) => {
+      const data = query.state.data as unknown as any;
+      const events = Array.isArray(data) ? data : data?.content;
+      
+      if (events && Array.isArray(events)) {
+        // Stop polling if a terminal outcome is reached
+        const hasTerminal = events.some((e: any) => 
+          e.outcome === "COMPLETED" || 
+          e.outcome === "FAILED" || 
+          e.outcome === "PARTIAL_SUCCESS" || 
+          e.outcome === "WAITING_APPROVAL"
+        );
+        if (hasTerminal) return false;
+      }
+      return 5000;
+    },
   });
 };
 
