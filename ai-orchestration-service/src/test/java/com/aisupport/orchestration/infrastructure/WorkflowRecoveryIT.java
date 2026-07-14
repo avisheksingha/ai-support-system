@@ -16,7 +16,7 @@ import com.aisupport.orchestration.application.workflow.WorkflowEngine;
 import com.aisupport.orchestration.application.workflow.WorkflowExecutionResult;
 import com.aisupport.orchestration.application.workflow.WorkflowStatus;
 import com.aisupport.orchestration.domain.state.WorkflowState;
-import com.aisupport.orchestration.infrastructure.messaging.OutboxEventPublisher;
+import com.aisupport.orchestration.infrastructure.messaging.publisher.OutboxEventPublisher;
 import com.aisupport.orchestration.infrastructure.persistence.entity.OutboxEventEntity;
 import com.aisupport.orchestration.infrastructure.persistence.entity.WorkflowCheckpointEntity;
 import com.aisupport.orchestration.infrastructure.persistence.entity.WorkflowExecutionEntity;

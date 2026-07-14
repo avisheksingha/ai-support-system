@@ -3,6 +3,8 @@ package com.aisupport.ticket.outbox;
 import java.time.Instant;
 import java.util.UUID;
 
+import com.aisupport.common.enums.OutboxStatus;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -22,7 +24,8 @@ import lombok.Setter;
 	name = "outbox_events",
 	indexes = {
 	    @Index(name = "idx_outbox_status", columnList = "status"),
-	    @Index(name = "idx_outbox_aggregate", columnList = "aggregate_type, aggregate_id")
+	    @Index(name = "idx_outbox_aggregate", columnList = "aggregate_type, aggregate_id"),
+        @Index(name = "idx_outbox_created_at", columnList = "created_at")
 	}
 )
 @Getter
@@ -54,7 +57,7 @@ public class OutboxEvent {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Status status;
+    private OutboxStatus status;
 
     @Column(name = "retry_count", nullable = false)
     @Builder.Default
@@ -62,22 +65,25 @@ public class OutboxEvent {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
-
+    
+    /**
+     * Timestamp when the event was successfully published to Kafka.
+     */
     @Column(name = "processed_at")
     private Instant processedAt;
-
-    public enum Status {
-        PENDING, SENT, FAILED, DEAD
-    }
 
     @PrePersist
     protected void onCreate() {
         if (id == null) {
             id = UUID.randomUUID().toString();
         }
-        createdAt = Instant.now();
+
+        if (createdAt == null) {
+            createdAt = Instant.now();
+        }
+        
         if (status == null) {
-            status = Status.PENDING;
+            status = OutboxStatus.PENDING;
         }
     }
 }

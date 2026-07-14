@@ -32,47 +32,70 @@ public class OrchestrationEventConsumer {
     private final WorkflowEngine workflowEngine;
     private final WorkflowExecutionRepository workflowExecutionRepository;
     
-    @KafkaListener(topics = KafkaTopics.TICKET_CREATED, groupId = KafkaGroups.AI_ORCHESTRATION)
+    @KafkaListener(
+    		topics = KafkaTopics.TICKET_CREATED,
+    		groupId = KafkaGroups.AI_ORCHESTRATION)
     public void onTicketCreated(ConsumerRecord<String, TicketCreatedEvent> consumerRecord) {
-        Header correlationHeader = consumerRecord.headers().lastHeader(HttpHeaders.CORRELATION_ID);
-        if (correlationHeader != null) {
-            MDC.put(Correlation.MDC_KEY, new String(correlationHeader.value(), StandardCharsets.UTF_8));
-        }
+    	
+    	TicketCreatedEvent event = consumerRecord.value();
+    	
+    	String correlationId = extractCorrelationId(consumerRecord, event);
+
+        MDC.put(Correlation.MDC_KEY, correlationId);
 
         try {
-            TicketCreatedEvent event = consumerRecord.value();
+        	log.info("Consumed ticket-created event: ticketId={}", event.getTicketId());
 
-            log.info("Received ticket-created event: ticketId={}", event.getTicketId());
+            String workflowId =
+                    triggerRegistry.getWorkflowIdForTrigger(KafkaTopics.TICKET_CREATED);
 
-            String workflowId = triggerRegistry.getWorkflowIdForTrigger(KafkaTopics.TICKET_CREATED);
             if (workflowId == null) {
-                log.warn("No workflow registered for trigger: {}", KafkaTopics.TICKET_CREATED);
+                log.warn("No workflow registered for trigger {}", KafkaTopics.TICKET_CREATED);
                 return;
             }
 
-            String workflowCorrelationId = "ticket-" + event.getTicketId();
-            if (workflowExecutionRepository.findByCorrelationId(workflowCorrelationId).isPresent()) {
-                log.info("Idempotency check: Workflow already executed for correlationId {}", workflowCorrelationId);
+            // Idempotency
+            if (workflowExecutionRepository.findByCorrelationId(correlationId).isPresent()) {
+                log.info("Workflow already executed for correlationId={}", correlationId);
                 return;
             }
-
-            log.info("Triggering workflow: {}", workflowId);
 
             WorkflowContext context = WorkflowContext.builder()
                     .executionId(UUID.randomUUID().toString())
-                    .correlationId(workflowCorrelationId)
+                    .correlationId(correlationId)
                     .ticketId(event.getTicketId())
                     .build();
 
             context.putAttribute("subject", event.getSubject());
             context.putAttribute("message", event.getMessage());
 
+            log.info("Triggering workflow {} for ticket {}", workflowId, event.getTicketId());
+
             workflowEngine.execute(workflowId, context);
+            
         } catch (Exception e) {
             log.error("Failed to process ticket-created event key={}", consumerRecord.key(), e);
             throw new TicketEventProcessingException("Error processing ticket-created event", e);
         } finally {
             MDC.remove(Correlation.MDC_KEY);
         }
+    }
+
+    private String extractCorrelationId(ConsumerRecord<?, ?> consumerRecord,
+            TicketCreatedEvent event) {
+
+        Header correlationHeader =
+                consumerRecord.headers().lastHeader(HttpHeaders.CORRELATION_ID);
+
+        if (correlationHeader != null) {
+            return new String(
+                    correlationHeader.value(),
+                    StandardCharsets.UTF_8);
+        }
+
+        // Fallback for local/manual publishers
+        log.warn("CorrelationId header missing. Falling back to ticket-based correlationId.");
+
+        return "ticket-" + event.getTicketId();
     }
 }

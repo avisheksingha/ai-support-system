@@ -4,12 +4,14 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.aisupport.common.enums.OutboxStatus;
+
 public interface OutboxEventRepository extends JpaRepository<OutboxEvent, String> {
-	List<OutboxEvent> findTop50ByStatusOrderByCreatedAtAsc(OutboxEvent.Status status);
+	List<OutboxEvent> findTop50ByStatusOrderByCreatedAtAsc(OutboxStatus status);
 	
-	List<OutboxEvent> findByStatus(OutboxEvent.Status status);
+	List<OutboxEvent> findByStatus(OutboxStatus status);
 
     List<OutboxEvent> findByStatusAndRetryCountLessThan(
-    	OutboxEvent.Status status, int maxRetries
+    		OutboxStatus status, int maxRetries
     );
 }

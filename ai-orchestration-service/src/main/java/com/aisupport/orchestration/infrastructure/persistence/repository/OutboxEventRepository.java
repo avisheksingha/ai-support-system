@@ -1,11 +1,32 @@
 package com.aisupport.orchestration.infrastructure.persistence.repository;
 
+import java.time.Instant;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
+import com.aisupport.common.enums.OutboxStatus;
 import com.aisupport.orchestration.infrastructure.persistence.entity.OutboxEventEntity;
 
-public interface OutboxEventRepository extends JpaRepository<OutboxEventEntity, String> {
+public interface OutboxEventRepository extends JpaRepository<OutboxEventEntity, String> {	
+
+	List<OutboxEventEntity> findTop50ByStatusOrderByCreatedAtAsc(OutboxStatus status);
+	
+	List<OutboxEventEntity> findByStatus(OutboxStatus status);
+
+    List<OutboxEventEntity> findByStatusAndRetryCountLessThan(
+    		OutboxStatus status, int maxRetries
+    );
+    
+    @Modifying
+    @Query("""
+    DELETE FROM OutboxEventEntity e
+    WHERE e.status = OutboxStatus.SENT
+    AND e.publishedAt < :cutoff
+    """)
+	int deleteSentEventsOlderThan(Instant cutoff);
+    
     List<OutboxEventEntity> findByAggregateTypeOrderByCreatedAtAsc(String aggregateType);
 }

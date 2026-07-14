@@ -15,7 +15,6 @@ import com.aisupport.common.constant.KafkaTopics;
 import com.aisupport.common.event.TicketOrchestratedEvent;
 import com.aisupport.common.exception.TicketEventProcessingException;
 import com.aisupport.ticket.service.TicketService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,10 +25,11 @@ import lombok.extern.slf4j.Slf4j;
 public class TicketOrchestratedConsumer {
 
     private final TicketService ticketService;
-    private final ObjectMapper objectMapper;
 
-    @KafkaListener(topics = KafkaTopics.TICKET_ORCHESTRATED, groupId = KafkaGroups.TICKET)
-    public void consume(ConsumerRecord<String, String> consumerRecord) {
+    @KafkaListener(
+    		topics = KafkaTopics.TICKET_ORCHESTRATED,
+    		groupId = KafkaGroups.TICKET)
+    public void consume(ConsumerRecord<String, TicketOrchestratedEvent> consumerRecord) {
         
         Header correlationHeader = consumerRecord.headers().lastHeader(HttpHeaders.CORRELATION_ID);
         if (correlationHeader != null) {
@@ -37,10 +37,9 @@ public class TicketOrchestratedConsumer {
         }
 
         try {
-            String payload = consumerRecord.value();
-            TicketOrchestratedEvent event = objectMapper.readValue(payload, TicketOrchestratedEvent.class);
-
-            log.info("Consumed ticket-orchestrated event: ticketId={}", event.ticketId());
+        	TicketOrchestratedEvent event = consumerRecord.value();
+        	
+        	log.info("Consumed ticket-orchestrated event: ticketId={}", event.ticketId());
 
             ticketService.applyOrchestratedResult(event);
 

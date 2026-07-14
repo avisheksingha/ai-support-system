@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 
+import com.aisupport.common.enums.OutboxStatus;
 import com.aisupport.common.event.TicketCreatedEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,15 +53,15 @@ class OutboxEventPublisherTest {
                 .aggregateId("42")
                 .eventType("TicketCreatedEvent")
                 .payload("{\"ticketId\":42}")
-                .status(OutboxEvent.Status.FAILED)
+                .status(OutboxStatus.FAILED)
                 .retryCount(1)
                 .build();
         failedEvent.setCreatedAt(Instant.now().minus(1, ChronoUnit.MINUTES));
 
-        when(repository.findTop50ByStatusOrderByCreatedAtAsc(OutboxEvent.Status.PENDING))
+        when(repository.findTop50ByStatusOrderByCreatedAtAsc(OutboxStatus.PENDING))
                 .thenReturn(List.of());
         when(repository.findByStatusAndRetryCountLessThan(
-                OutboxEvent.Status.FAILED, OutboxEvent.MAX_RETRIES))
+        		OutboxStatus.FAILED, OutboxEvent.MAX_RETRIES))
                 .thenReturn(List.of(failedEvent));
 
         TicketCreatedEvent payload = TicketCreatedEvent.builder()
@@ -85,8 +86,8 @@ class OutboxEventPublisherTest {
         publisher.publishEvents();
 
         verify(repository).findByStatusAndRetryCountLessThan(
-                OutboxEvent.Status.FAILED, OutboxEvent.MAX_RETRIES);
-        assertThat(failedEvent.getStatus()).isEqualTo(OutboxEvent.Status.SENT);
+        		OutboxStatus.FAILED, OutboxEvent.MAX_RETRIES);
+        assertThat(failedEvent.getStatus()).isEqualTo(OutboxStatus.SENT);
         assertThat(failedEvent.getProcessedAt()).isNotNull();
     }
 }

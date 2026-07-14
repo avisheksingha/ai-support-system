@@ -1,4 +1,4 @@
-package com.aisupport.ticket.outbox;
+package com.aisupport.orchestration.infrastructure.messaging.publisher;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -13,123 +13,129 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.MDC;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.aisupport.common.constant.Correlation;
 import com.aisupport.common.constant.HttpHeaders;
 import com.aisupport.common.constant.KafkaTopics;
 import com.aisupport.common.enums.OutboxStatus;
-import com.aisupport.common.event.TicketCreatedEvent;
+import com.aisupport.common.event.TicketOrchestratedEvent;
 import com.aisupport.common.exception.OutboxEventException;
+import com.aisupport.orchestration.infrastructure.persistence.entity.OutboxEventEntity;
+import com.aisupport.orchestration.infrastructure.persistence.repository.OutboxEventRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Service
-@RequiredArgsConstructor
 @Slf4j
+@Component
+@RequiredArgsConstructor
 public class OutboxEventPublisher {
 
     private final OutboxEventRepository repository;
     private final ObjectMapper objectMapper;
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Scheduled(fixedDelay = 2000)
+    @Scheduled(fixedDelayString = "${governance.outbox.poll-rate:5000}")
     @Transactional
     public void publishEvents() {
-        List<OutboxEvent> candidates = new ArrayList<>();
+        List<OutboxEventEntity> candidates = new ArrayList<>();
         candidates.addAll(repository.findTop50ByStatusOrderByCreatedAtAsc(OutboxStatus.PENDING));
         candidates.addAll(repository.findByStatusAndRetryCountLessThan(
-        		OutboxStatus.FAILED, OutboxEvent.MAX_RETRIES
+        		OutboxStatus.FAILED, OutboxEventEntity.MAX_RETRIES
         ));
-        List<OutboxEvent> events = candidates.stream()
-                .sorted(Comparator.comparing(OutboxEvent::getCreatedAt))
+ 
+        List<OutboxEventEntity> events = candidates.stream()
+                .sorted(Comparator.comparing(OutboxEventEntity::getCreatedAt))
                 .limit(50)
                 .toList();
-        
+ 
         if (events.isEmpty()) {
             return;
         }
 
         log.debug("Publishing {} new outbox events", events.size());
         
-        for (OutboxEvent event : events) {
+        for (OutboxEventEntity event : events) {
             processEvent(event);
         }
     }
-
-    private void processEvent(OutboxEvent event) {
-    	
+    
+    private void processEvent(OutboxEventEntity event) {
+    	 
         try {
-        	
-        	// Restore correlationId into MDC from stored value
-        	if (event.getCorrelationId() != null) {
+ 
+            // Restore correlationId into MDC from stored value
+            if (event.getCorrelationId() != null) {
                 MDC.put(Correlation.MDC_KEY, event.getCorrelationId());
             }
-        	
-        	log.debug("Processing outbox event {} type={}", event.getId(), event.getEventType()); // after MDC restore
-        	
+ 
+            log.debug("Processing outbox event {} type={}", event.getId(), event.getEventType()); // after MDC restore
+ 
             String topic = mapTopic(event.getEventType());
             Object payloadObject = deserializePayload(event.getPayload(), event.getEventType());
-            
+ 
             ProducerRecord<String, Object> producerRecord = new ProducerRecord<>(topic, null,
-            		event.getAggregateId(), payloadObject);
-
+                    event.getAggregateId(), payloadObject);
+ 
             // Propagate correlationId to Kafka header
             if (event.getCorrelationId() != null) {
-            	producerRecord.headers().add(HttpHeaders.CORRELATION_ID,
-            			event.getCorrelationId().getBytes(StandardCharsets.UTF_8));
+                producerRecord.headers().add(HttpHeaders.CORRELATION_ID,
+                        event.getCorrelationId().getBytes(StandardCharsets.UTF_8));
             }
-            
+ 
             kafkaTemplate.send(producerRecord).get(5, TimeUnit.SECONDS);
 
             event.setStatus(OutboxStatus.SENT);
             event.setProcessedAt(Instant.now());
-            
+ 
             log.info("Published outbox event {} to topic {}", event.getId(), topic);
-
+ 
         } catch (InterruptedException e) {
-
-            Thread.currentThread().interrupt();  // IMPORTANT: restore interrupt status
+ 
+            Thread.currentThread().interrupt(); // IMPORTANT: restore interrupt status
 
             log.error("Interrupted while publishing outbox event {}", event.getId(), e);
             markFailed(event);
-
+ 
+            log.error("Interrupted while publishing outbox event {}", event.getId(), e);
+ 
         } catch (TimeoutException e) {
             log.error("Timeout publishing outbox event {}", event.getId(), e);
             markFailed(event);
-
-        } catch (ExecutionException | RuntimeException e) {        	
+ 
+        } catch (ExecutionException | RuntimeException e) {
             log.error("Failed to publish outbox event {}", event.getId(), e);
             markFailed(event);
-            
+ 
         } finally {
             MDC.remove(Correlation.MDC_KEY); // clean up scheduler thread MDC
         }
     }
     
-    private void markFailed(OutboxEvent event) {
+    private void markFailed(OutboxEventEntity event) {
+    	
         event.setRetryCount(event.getRetryCount() + 1);
         event.setProcessedAt(Instant.now());
         
 
-        if (event.getRetryCount() >= OutboxEvent.MAX_RETRIES) {
+        if (event.getRetryCount() >= OutboxEventEntity.MAX_RETRIES) {
             event.setStatus(OutboxStatus.DEAD);
             log.error("Outbox event {} permanently failed after {} retries",
-                    event.getId(), OutboxEvent.MAX_RETRIES);
+                    event.getId(), OutboxEventEntity.MAX_RETRIES);
         } else {
             event.setStatus(OutboxStatus.FAILED);
             log.warn("Outbox event {} failed, retry {}/{}",
-                    event.getId(), event.getRetryCount(), OutboxEvent.MAX_RETRIES);
+                    event.getId(), event.getRetryCount(), OutboxEventEntity.MAX_RETRIES);
         }
     }
     
     private Object deserializePayload(String payload, String eventType) {
         Class<?> clazz = switch (eventType) {
-            case "TicketCreatedEvent" -> TicketCreatedEvent.class;
+            case "TicketOrchestratedEvent" -> TicketOrchestratedEvent.class;
             default -> throw new OutboxEventException("Unknown event type: " + eventType);
         };
         try {
@@ -142,7 +148,7 @@ public class OutboxEventPublisher {
     private String mapTopic(String eventType) {
 
         return switch (eventType) {
-            case "TicketCreatedEvent" -> KafkaTopics.TICKET_CREATED;
+            case "TicketOrchestratedEvent" -> KafkaTopics.TICKET_ORCHESTRATED;
             default -> throw new OutboxEventException("Unknown event type: " + eventType);
         };
     }

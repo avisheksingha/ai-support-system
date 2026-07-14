@@ -77,6 +77,9 @@ public class TicketService {
                 log.warn("Invalid user ID format: {}", userId);
             }
         }
+        
+        // AI starts immediately after creation
+        ticket.transitionTo(TicketStatus.ANALYZING);
 
         ticket = ticketRepository.save(ticket);
 
@@ -269,20 +272,54 @@ public class TicketService {
     
     @Transactional
     public void applyOrchestratedResult(TicketOrchestratedEvent event) {
+    	
         Ticket ticket = ticketRepository.findById(event.ticketId())
                 .orElseThrow(() -> new TicketNotFoundException(TICKET_NOT_FOUND_MSG + event.ticketId()));
         
+        // At-least-once delivery protection
         if (isStatusAtOrBeyondAssigned(ticket.getStatus())) {
             log.info("Ticket {} already at status {}, skipping orchestration event",
-                    ticket.getTicketNumber(), ticket.getStatus());
+                    ticket.getTicketNumber(),
+                    ticket.getStatus());
             return;
         }
 
-        applyAnalysis(ticket, event.analysis());
-        applyRouting(ticket, event.routing());
-        applyKnowledge(ticket, event.knowledge());
+        log.info(
+                "Applying orchestrated result for ticket {} (workflowExecutionId={}, correlationId={})",
+                ticket.getTicketNumber(),
+                event.metadata().workflowExecutionId(),
+                event.metadata().correlationId());
+        
+        // -------------------------
+        // AI Analysis
+        // -------------------------
+        if (event.analysis() != null) {
+            applyAnalysis(ticket, event.analysis());
+            ticket.transitionTo(TicketStatus.ANALYZED);
+        }
 
-        ticket.transitionTo(event.ticketStatus());
+        // -------------------------
+        // Routing
+        // -------------------------        
+        if (event.routing() != null) {
+            applyRouting(ticket, event.routing());
+            ticket.transitionTo(TicketStatus.ASSIGNED);
+        }
+
+        // -------------------------
+        // Knowledge
+        // -------------------------
+        if (event.knowledge() != null) {
+            applyKnowledge(ticket, event.knowledge());
+        }
+
+        // Hibernate dirty checking will persist changes automatically
+        log.info(
+                "Ticket {} successfully updated. Final status={}, team={}, priority={}",
+                ticket.getTicketNumber(),
+                ticket.getStatus(),
+                ticket.getAssignedTo(),
+                ticket.getPriority());
     }
 
     private void applyAnalysis(Ticket ticket, AnalysisResult analysis) {
@@ -298,10 +335,17 @@ public class TicketService {
         if (routing.priority() != null) ticket.setPriority(routing.priority());
         if (routing.slaHours() != null) ticket.setSlaHours(routing.slaHours());
     }
-
+    
     private void applyKnowledge(Ticket ticket, KnowledgeContext knowledge) {
-        if (knowledge == null) return;
-        if (knowledge.knowledgeSummary() != null) ticket.setRagResponse(knowledge.knowledgeSummary());
+
+        if (knowledge == null) {
+            return;
+        }
+
+        if (knowledge.knowledgeSummary() != null) {
+            ticket.setRagResponse(knowledge.knowledgeSummary());
+            ticket.setRagGeneratedAt(Instant.now());
+        }
     }
 
     /**
