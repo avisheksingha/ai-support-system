@@ -31,54 +31,49 @@ public class JsonSchemaValidationGuardrail implements OutputGuardrail {
 
         String rawContent = response.getContent();
         if (rawContent == null || rawContent.isEmpty()) {
-            return GuardrailResult.<AgentResponse>builder()
-                    .status(GuardrailResult.Status.BLOCK)
-                    .payload(response)
-                    .reason("JsonSchemaValidationGuardrail: Output is empty.")
-                    .build();
+            return block(response, "JsonSchemaValidationGuardrail: Output is empty.");
         }
 
         try {
-            // Check valid JSON
-            JsonNode jsonNode = objectMapper.readTree(rawContent);
+            // 1. Strip markdown code blocks if the LLM added them
+            String cleanJson = stripMarkdown(rawContent);
             
-            // Check version if present (simple check)
+            // 2. Check valid JSON
+            JsonNode jsonNode = objectMapper.readTree(cleanJson);
+            
+            // 3. Check version if present
             if (jsonNode.has("version")) {
                 String version = jsonNode.get("version").asText();
                 if (!"1.0".equals(version) && !"1.1".equals(version)) {
-                    return GuardrailResult.<AgentResponse>builder()
-                            .status(GuardrailResult.Status.BLOCK)
-                            .payload(response)
-                            .reason("json-schema-guardrail:1.0: Unsupported schema version: " + version)
-                            .build();
+                    return block(response, "json-schema-guardrail:1.0: Unsupported schema version: " + version);
                 }
             }
 
-            // Check responseType
+            // 4. Check responseType
             if (jsonNode.has("responseType")) {
                 String responseType = jsonNode.get("responseType").asText();
                 if (!isValidResponseType(responseType)) {
-                    return GuardrailResult.<AgentResponse>builder()
-                            .status(GuardrailResult.Status.BLOCK)
-                            .payload(response)
-                            .reason("json-schema-guardrail:1.0: Invalid responseType: " + responseType)
-                            .build();
+                    return block(response, "json-schema-guardrail:1.0: Invalid responseType: " + responseType);
                 }
             }
 
-            // In a real enterprise system, we would validate against a strict JSON Schema definition here.
+            // If we reach here, it is valid JSON
             return GuardrailResult.<AgentResponse>builder()
                     .status(GuardrailResult.Status.ALLOW)
                     .payload(response)
                     .build();
 
         } catch (Exception e) {
-            return GuardrailResult.<AgentResponse>builder()
-                    .status(GuardrailResult.Status.BLOCK)
-                    .payload(response)
-                    .reason("JsonSchemaValidationGuardrail: Output is not valid JSON. Error: " + e.getMessage())
-                    .build();
+        	return block(response, "JsonSchemaValidationGuardrail: Output is not valid JSON. Error: " + e.getMessage());
         }
+    }
+
+    private GuardrailResult<AgentResponse> block(AgentResponse response, String reason) {
+        return GuardrailResult.<AgentResponse>builder()
+                .status(GuardrailResult.Status.BLOCK)
+                .payload(response)
+                .reason(reason)
+                .build();
     }
 
     private boolean isValidResponseType(String type) {
@@ -88,5 +83,19 @@ public class JsonSchemaValidationGuardrail implements OutputGuardrail {
         } catch (IllegalArgumentException e) {
             return false;
         }
+    }
+
+    // Helper to remove ```json ... ``` wrappers
+    private String stripMarkdown(String content) {
+        String trimmed = content.trim();
+        if (trimmed.startsWith("```json")) {
+            trimmed = trimmed.substring(7);
+        } else if (trimmed.startsWith("```")) {
+            trimmed = trimmed.substring(3);
+        }
+        if (trimmed.endsWith("```")) {
+            trimmed = trimmed.substring(0, trimmed.length() - 3);
+        }
+        return trimmed.trim();
     }
 }

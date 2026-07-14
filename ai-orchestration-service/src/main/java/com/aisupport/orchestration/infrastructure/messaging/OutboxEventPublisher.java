@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.aisupport.orchestration.infrastructure.persistence.entity.OutboxEventEntity;
 import com.aisupport.orchestration.infrastructure.persistence.repository.OutboxEventRepository;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,7 @@ public class OutboxEventPublisher {
 
     private final OutboxEventRepository repository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final ObjectMapper objectMapper;
 
     @Scheduled(fixedDelayString = "${governance.outbox.poll-rate:5000}")
     @Transactional
@@ -39,8 +42,11 @@ public class OutboxEventPublisher {
                     topic = topic.substring(0, topic.length() - 5);
                 }
                 
-                // Assuming payload is a JSON string of the event
-                kafkaTemplate.send(topic, event.getAggregateId(), event.getPayload()).get();
+                // 1. Parse the JSON string from the DB into a JsonNode object
+                JsonNode payloadNode = objectMapper.readTree(event.getPayload());
+                
+                // 2. Send the JsonNode to Kafka. JsonSerializer will handle this perfectly without escaping quotes!
+                kafkaTemplate.send(topic, event.getAggregateId(), payloadNode).get();
                 
                 // If successful, remove from outbox
                 repository.delete(event);

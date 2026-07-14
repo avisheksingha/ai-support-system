@@ -21,6 +21,7 @@ These requests are intended for testing the complete AI Support pipeline:
 ```
 
 Expected:
+
 - Intent: LOGIN
 - Priority: MEDIUM
 - Knowledge: Login Troubleshooting
@@ -38,6 +39,7 @@ Expected:
 ```
 
 Expected:
+
 - Intent: PAYMENT
 - Priority: HIGH
 - Knowledge: Payment Issues
@@ -55,6 +57,7 @@ Expected:
 ```
 
 Expected:
+
 - Intent: REFUND
 - Priority: MEDIUM
 - Knowledge: Refund Policy
@@ -72,6 +75,7 @@ Expected:
 ```
 
 Expected:
+
 - Intent: SECURITY
 - Priority: CRITICAL
 - Knowledge: Account Security
@@ -89,6 +93,7 @@ Expected:
 ```
 
 Expected:
+
 - Intent: OUTAGE
 - Priority: HIGH
 - Knowledge: Service Outage Information
@@ -106,6 +111,7 @@ Expected:
 ```
 
 Expected:
+
 - Intent: APPLICATION
 - Priority: HIGH
 - Knowledge: App Crash Troubleshooting
@@ -123,6 +129,7 @@ Expected:
 ```
 
 Expected:
+
 - Intent: API
 - Priority: MEDIUM
 - Knowledge: API Rate Limiting
@@ -140,6 +147,7 @@ Expected:
 ```
 
 Expected:
+
 - Intent: SUBSCRIPTION
 - Priority: LOW
 - Knowledge: Subscription Upgrades and Downgrades
@@ -157,6 +165,7 @@ Expected:
 ```
 
 Expected:
+
 - Intent: GDPR
 - Priority: MEDIUM
 - Knowledge: Data Export and GDPR Compliance
@@ -174,6 +183,7 @@ Expected:
 ```
 
 Expected:
+
 - Intent: ESCALATION
 - Priority: HIGH
 - Knowledge: Ticket Escalation Process

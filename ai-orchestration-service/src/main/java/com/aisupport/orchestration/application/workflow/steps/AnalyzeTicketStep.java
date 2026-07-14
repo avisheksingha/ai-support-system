@@ -16,6 +16,8 @@ import com.aisupport.orchestration.application.policy.PolicyViolationException;
 import com.aisupport.orchestration.domain.model.Result;
 import com.aisupport.orchestration.domain.workflow.WorkflowContext;
 import com.aisupport.orchestration.domain.workflow.WorkflowStep;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -83,12 +85,23 @@ public class AnalyzeTicketStep implements WorkflowStep {
                 // Parse intent, urgency, category if available
                 String content = session.getFinalResponse().getContent();
                 context.putAttribute("agentAnalysis", content);
-                AnalysisResult analysis = new AnalysisResult(
-                    "Support", // placeholder intent
-                    "Neutral", // placeholder sentiment
-                    "Medium"   // placeholder urgency
-                );
-                context.putResource(AnalysisResult.class, analysis);
+                
+                try {
+                    // Parse the LLM JSON response
+                    ObjectMapper mapper = new ObjectMapper();
+                    JsonNode node = mapper.readTree(content);
+                    
+                    AnalysisResult analysis = new AnalysisResult(
+                        node.has("intent") ? node.get("intent").asText() : "Support",
+                        node.has("sentiment") ? node.get("sentiment").asText() : "Neutral",
+                        node.has("urgency") ? node.get("urgency").asText() : "Medium"
+                    );
+                    context.putResource(AnalysisResult.class, analysis);
+                } catch (Exception e) {
+                    log.warn("Failed to parse LLM JSON response, using defaults.");
+                    AnalysisResult analysis = new AnalysisResult("Support", "Neutral", "Medium");
+                    context.putResource(AnalysisResult.class, analysis);
+                }
             }
         } else {
             context.putAttribute(ATTR_ANALYZE_RESULT, "FAILED");
