@@ -7,6 +7,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.aisupport.common.enums.OutboxStatus;
 import com.aisupport.orchestration.infrastructure.persistence.repository.OutboxEventRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class OutboxCleanupJob {
 
         Instant cutoff = Instant.now().minus(7, ChronoUnit.DAYS);
 
-        int deleted = repository.deleteSentEventsOlderThan(cutoff);
+        int deleted = repository.deleteByStatusAndProcessedAtBefore(OutboxStatus.SENT, cutoff);
 
         if (deleted > 0) {
             log.info("Deleted {} old outbox events", deleted);

@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.aisupport.common.enums.OutboxStatus;
 import com.aisupport.orchestration.infrastructure.persistence.entity.OutboxEventEntity;
@@ -18,15 +18,9 @@ public interface OutboxEventRepository extends JpaRepository<OutboxEventEntity, 
 
     List<OutboxEventEntity> findByStatusAndRetryCountLessThan(
     		OutboxStatus status, int maxRetries
-    );
-    
+    );@Transactional
     @Modifying
-    @Query("""
-    DELETE FROM OutboxEventEntity e
-    WHERE e.status = OutboxStatus.SENT
-    AND e.publishedAt < :cutoff
-    """)
-	int deleteSentEventsOlderThan(Instant cutoff);
+    int deleteByStatusAndProcessedAtBefore(OutboxStatus status, Instant cutoff);
     
     List<OutboxEventEntity> findByAggregateTypeOrderByCreatedAtAsc(String aggregateType);
 }
