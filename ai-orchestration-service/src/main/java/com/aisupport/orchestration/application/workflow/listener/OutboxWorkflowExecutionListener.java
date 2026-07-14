@@ -79,6 +79,7 @@ public class OutboxWorkflowExecutionListener implements WorkflowExecutionListene
                     .id(metadata.eventId())
                     .aggregateType("Ticket")
                     .aggregateId(String.valueOf(context.getTicketId()))
+                    .correlationId(context.getCorrelationId())
                     .eventType("TicketOrchestratedEvent")
                     .payload(objectMapper.writeValueAsString(event))
                     .createdAt(metadata.generatedAt())
