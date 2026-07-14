@@ -25,14 +25,15 @@ class WorkflowMessagingIT extends AbstractIntegrationTest {
     @Test
     void testOutboundEventPublished() {
         // Given
-        String ticketId = UUID.randomUUID().toString();
+        String ticketNumber = UUID.randomUUID().toString();
+        Long ticketId = 100L;
         TicketCreatedEvent event = new TicketCreatedEvent();
-        event.setTicketId(100L); event.setTicketNumber(ticketId);
+        event.setTicketId(ticketId); event.setTicketNumber(ticketNumber);
         event.setSubject("Messaging Test");
         event.setMessage("Verify outbound kafka event");
 
         // When
-        kafkaTemplate.send("ticket-created", ticketId, event);
+        kafkaTemplate.send("ticket-created", ticketNumber, event);
 
         // Then
         // We wait for the outbound event (would check a local test consumer queue)

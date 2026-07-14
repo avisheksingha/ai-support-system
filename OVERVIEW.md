@@ -62,7 +62,7 @@ graph TD
     RAG -->|Calls API| ExternalAI
     RAG <-->|Vector Search| PGV[(PostgreSQL + pgvector)]
     
-    ORCH -->|Publishes Workflow Events| Kafka
+    ORCH -->|Publishes TicketOrchestratedEvent| Kafka
 ```
 
 ### 2. Sequence Diagram: Ticket Creation & AI Routing
@@ -105,5 +105,7 @@ sequenceDiagram
     end
     
     OrchSvc->>TicketSvc: PATCH /api/v1/tickets/{id}/assign (Apply Updates)
-    OrchSvc->>Kafka: Publish "WorkflowCompletedEvent"
+    OrchSvc->>Kafka: Publish "TicketOrchestratedEvent"
+    Kafka-->>TicketSvc: Consume "TicketOrchestratedEvent"
+    TicketSvc->>TicketSvc: Apply AI analysis, routing decision, and knowledge context
 ```

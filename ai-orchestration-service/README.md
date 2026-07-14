@@ -31,11 +31,12 @@ The AI Orchestration Service is the central workflow runtime for the AI Support 
 
 ## Events Produced
 
-- `TicketAnalyzedEvent` (or equivalent workflow completion events): Emitted when a workflow successfully finishes processing a ticket.
+- `TicketOrchestratedEvent`: Emitted when a workflow successfully finishes processing a ticket. The `ticket-service` consumes this event to apply the final AI analysis, routing decision, and knowledge context.
 
 ## Internal Service Clients
 
 The Orchestrator utilizes synchronous REST calls (often abstracted as AI Tools) to consume the capabilities of other microservices:
+
 - **AI Analysis Service**: Called to perform sentiment, urgency, and intent extraction.
 - **Routing Service**: Called to evaluate routing rules based on the gathered context.
 - **RAG Service**: Called to fetch contextual knowledge for the agent.

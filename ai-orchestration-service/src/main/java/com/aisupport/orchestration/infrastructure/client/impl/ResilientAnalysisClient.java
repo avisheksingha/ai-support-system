@@ -30,7 +30,9 @@ public class ResilientAnalysisClient implements AnalysisClient {
     }
 
     public Result<Object> analyzeFallback(Long ticketId, String content, Throwable t) {
-        log.warn("Resilience fallback triggered for analysis on ticketId={}: {}", ticketId, t.getMessage());
+        int contentLength = content == null ? 0 : content.length();
+        log.warn("Resilience fallback triggered for analysis on ticketId={}, contentLength={}: {}",
+                ticketId, contentLength, t.getMessage());
         throw new AnalysisUnavailableException("Analysis Service Unavailable (Resilience Fallback)", t);
     }
 }

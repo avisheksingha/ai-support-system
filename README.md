@@ -389,7 +389,7 @@ curl "http://localhost:8080/api/v1/tickets/{ticketId}"
 4. The `ai-orchestration-service` consumes the event and starts a workflow.
 5. The orchestrator composes the `ai-analysis-service` (via synchronous REST tools) for sentiment/urgency, and the `rag-service` for knowledge retrieval.
 6. Based on the analysis, it coordinates with the `routing-service` to assign the ticket to the appropriate queue.
-7. A `TicketAnalyzedEvent` (or similar business event) is published asynchronously upon workflow completion.
+7. A `TicketOrchestratedEvent` is published asynchronously upon workflow completion, carrying the final analysis, routing decision, and knowledge context back to the `ticket-service`.
 8. Correlation IDs enable end-to-end request tracing across all services.
 
 ### Processing Flow

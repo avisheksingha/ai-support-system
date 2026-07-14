@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { workspaceApi } from "@/features/workspace/api/workspaceApi";
-import type { OperationsDashboardResponse, TimelinePageResponse } from "@/shared/types/workspace";
 
 export const observabilityKeys = {
   all: ["observability"] as const,

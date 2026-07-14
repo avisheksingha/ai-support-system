@@ -25,7 +25,7 @@ export function TicketTimeline({ events }: TicketTimelineProps) {
             ▼ {stage}
           </div>
           
-          {stageEvents.map((event, index) => (
+          {stageEvents.map((event) => (
             <div key={event.eventId} className="flex flex-col pl-4 border-l-2 border-border/60 ml-2 relative">
               {/* Timeline dot */}
               <div className={`absolute -left-[5px] top-1.5 w-2 h-2 rounded-full ${getSeverityColor(event.severity)}`} />

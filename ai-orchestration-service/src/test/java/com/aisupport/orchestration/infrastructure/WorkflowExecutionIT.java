@@ -28,19 +28,21 @@ class WorkflowExecutionIT extends AbstractIntegrationTest {
     @Test
     void testWorkflowExecutionCompletesWithMockTools() {
         // Given
-        String ticketId = UUID.randomUUID().toString();
+        String ticketNumber = UUID.randomUUID().toString();
+        Long ticketId = 100L;
         TicketCreatedEvent event = new TicketCreatedEvent();
-        event.setTicketId(100L); event.setTicketNumber(ticketId);
+        event.setTicketId(ticketId); event.setTicketNumber(ticketNumber);
         event.setSubject("Test Workflow Execution");
         event.setMessage("Verify agent and tool calls");
 
         // When
-        kafkaTemplate.send("ticket-created", ticketId, event);
+        kafkaTemplate.send("ticket-created", ticketNumber, event);
 
         // Then - Wait for the workflow to reach COMPLETED state
+        String expectedCorrelationId = "ticket-" + ticketId;
         await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
             WorkflowExecutionEntity execution = workflowExecutionRepository.findAll().stream()
-                    .filter(e -> ticketId.equals(e.getCorrelationId()))
+                    .filter(e -> expectedCorrelationId.equals(e.getCorrelationId()))
                     .findFirst()
                     .orElse(null);
             

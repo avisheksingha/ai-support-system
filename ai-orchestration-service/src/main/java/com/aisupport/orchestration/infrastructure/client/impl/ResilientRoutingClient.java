@@ -30,7 +30,9 @@ public class ResilientRoutingClient implements RoutingClient {
     }
 
     public Result<Object> routeFallback(Long ticketId, Object analysisResult, Throwable t) {
-        log.warn("Resilience fallback triggered for routing on ticketId={}: {}", ticketId, t.getMessage());
+        String analysisResultType = analysisResult == null ? "null" : analysisResult.getClass().getSimpleName();
+        log.warn("Resilience fallback triggered for routing on ticketId={}, analysisResultType={}: {}",
+                ticketId, analysisResultType, t.getMessage());
         throw new RoutingUnavailableException("Routing Service Unavailable (Resilience Fallback)", t);
     }
 }

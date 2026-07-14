@@ -3,7 +3,6 @@ import type {
   AnalysisModel, 
   KnowledgeModel, 
   RoutingModel,
-  TimelineEvent,
   TimelinePageResponse,
   OperationsDashboardResponse
 } from "@/shared/types/workspace";

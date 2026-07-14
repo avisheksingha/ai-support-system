@@ -29,14 +29,16 @@ class WorkflowInitializationIT extends AbstractIntegrationTest {
     @Test
     void testWorkflowInitializationOnTicketCreatedEvent() {
         // Given
-        String ticketId = UUID.randomUUID().toString();
+        String ticketNumber = UUID.randomUUID().toString();
+        Long ticketId = 100L;
         TicketCreatedEvent event = new TicketCreatedEvent();
-        event.setTicketId(100L); event.setTicketNumber(ticketId);
+        event.setTicketId(ticketId); 
+        event.setTicketNumber(ticketNumber);
         event.setSubject("Test Ticket for Initialization");
         event.setMessage("Need help with initialization");
 
         // When
-        kafkaTemplate.send("ticket-created", ticketId, event);
+        kafkaTemplate.send("ticket-created", ticketNumber, event);
 
         // Then - Wait for the orchestration service to pick it up and initialize the workflow
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
@@ -44,14 +46,15 @@ class WorkflowInitializationIT extends AbstractIntegrationTest {
             List<WorkflowExecutionEntity> executions = workflowExecutionRepository.findAll();
             assertThat(executions).isNotEmpty();
             
+            String expectedCorrelationId = "ticket-" + ticketId;
             WorkflowExecutionEntity execution = executions.stream()
-                    .filter(e -> ticketId.equals(e.getCorrelationId()))
+                    .filter(e -> expectedCorrelationId.equals(e.getCorrelationId()))
                     .findFirst()
                     .orElse(null);
             
             assertThat(execution).isNotNull();
-            assertThat(execution.getTicketId()).isEqualTo(100L);
-            assertThat(execution.getCorrelationId()).isEqualTo(ticketId);
+            assertThat(execution.getTicketId()).isEqualTo(ticketId);
+            assertThat(execution.getCorrelationId()).isEqualTo(expectedCorrelationId);
             assertThat(execution.getState()).isIn(
                     WorkflowState.CREATED,
                     WorkflowState.RUNNING,

@@ -1,12 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOperationsOverview } from "../hooks/useObservability";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Activity, ShieldAlert, Cpu, Hammer, HeartPulse, Search, Info } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,

@@ -32,9 +32,7 @@ public class MockGithubMcpClient implements McpClient {
     @TimeLimiter(name = "github-mcp")
     @Timed(value = "mcp.discovery.latency", description = "Time taken to discover MCP tools")
     public CompletableFuture<List<McpToolMetadata>> discoverTools() {
-        return CompletableFuture.supplyAsync(() -> {
-            
-            return List.of(
+        return CompletableFuture.supplyAsync(() -> List.of(
                 McpToolMetadata.builder()
                     .name("github.searchRepository")
                     .description("Searches a GitHub repository for code or text")
@@ -75,8 +73,8 @@ public class MockGithubMcpClient implements McpClient {
                         )
                     ))
                     .build()
-            );
-        });
+            )
+        );
     }
 
     @Override

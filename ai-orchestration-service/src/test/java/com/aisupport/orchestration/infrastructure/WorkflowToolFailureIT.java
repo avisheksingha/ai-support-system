@@ -36,18 +36,20 @@ class WorkflowToolFailureIT extends AbstractIntegrationTest {
     @Test
     void testWorkflowHandlesToolTimeoutGracefully() {
         // Given
-        String ticketId = UUID.randomUUID().toString();
+        String ticketNumber = UUID.randomUUID().toString();
+        Long ticketId = 100L;
         TicketCreatedEvent event = new TicketCreatedEvent();
-        event.setTicketId(100L); event.setTicketNumber(ticketId);
+        event.setTicketId(ticketId); event.setTicketNumber(ticketNumber);
         event.setSubject("Timeout Test");
 
         // When
-        kafkaTemplate.send("ticket-created", ticketId, event);
+        kafkaTemplate.send("ticket-created", ticketNumber, event);
 
         // Then - We want to see it either complete without that tool, or fail gracefully into a FAILED state
+        String expectedCorrelationId = "ticket-" + ticketId;
         await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
             WorkflowExecutionEntity execution = workflowExecutionRepository.findAll().stream()
-                    .filter(e -> ticketId.equals(e.getCorrelationId()))
+                    .filter(e -> expectedCorrelationId.equals(e.getCorrelationId()))
                     .findFirst()
                     .orElse(null);
             

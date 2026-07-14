@@ -37,19 +37,21 @@ class WorkflowPersistenceIT extends AbstractIntegrationTest {
     @Test
     void testFullPersistenceLifecycle() {
         // Given
-        String ticketId = UUID.randomUUID().toString();
+        String ticketNumber = UUID.randomUUID().toString();
+        Long ticketId = 100L;
         TicketCreatedEvent event = new TicketCreatedEvent();
-        event.setTicketId(100L); event.setTicketNumber(ticketId);
+        event.setTicketId(ticketId); event.setTicketNumber(ticketNumber);
         event.setSubject("Persistence Test");
         event.setMessage("Verify all entities are saved");
 
         // When
-        kafkaTemplate.send("ticket-created", ticketId, event);
+        kafkaTemplate.send("ticket-created", ticketNumber, event);
 
         // Then - Wait for workflow completion and verify ALL persistence layers
+        String expectedCorrelationId = "ticket-" + ticketId;
         await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
             WorkflowExecutionEntity execution = workflowExecutionRepository.findAll().stream()
-                    .filter(e -> ticketId.equals(e.getCorrelationId()))
+                    .filter(e -> expectedCorrelationId.equals(e.getCorrelationId()))
                     .findFirst()
                     .orElse(null);
             

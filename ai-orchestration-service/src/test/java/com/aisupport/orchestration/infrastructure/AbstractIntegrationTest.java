@@ -46,6 +46,13 @@ public abstract class AbstractIntegrationTest {
         registry.add("spring.kafka.bootstrap-servers", kafka::getBootstrapServers);
         registry.add("spring.kafka.consumer.auto-offset-reset", () -> "earliest");
         
+        // Kafka serializers - use JSON for object serialization
+        registry.add("spring.kafka.producer.key-serializer", () -> "org.apache.kafka.common.serialization.StringSerializer");
+        registry.add("spring.kafka.producer.value-serializer", () -> "org.springframework.kafka.support.serializer.JsonSerializer");
+        registry.add("spring.kafka.consumer.key-deserializer", () -> "org.apache.kafka.common.serialization.StringDeserializer");
+        registry.add("spring.kafka.consumer.value-deserializer", () -> "org.springframework.kafka.support.serializer.JsonDeserializer");
+        registry.add("spring.kafka.consumer.properties.spring.json.trusted.packages", () -> "*");
+        
         // Disable real providers by forcing mock
         registry.add("mcp.github.mode", () -> "mock");
         registry.add("mcp.filesystem.mode", () -> "mock");

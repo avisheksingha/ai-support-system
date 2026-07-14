@@ -30,19 +30,21 @@ class AiOrchestrationEndToEndIT extends AbstractIntegrationTest {
     @Test
     void testFullAiOrchestrationPipeline() {
         // Given
-        String ticketId = UUID.randomUUID().toString();
+        String ticketNumber = UUID.randomUUID().toString();
+        Long ticketId = 100L;
         TicketCreatedEvent event = new TicketCreatedEvent();
-        event.setTicketId(100L); event.setTicketNumber(ticketId);
+        event.setTicketId(ticketId); event.setTicketNumber(ticketNumber);
         event.setSubject("End-to-End Orchestration Test");
         event.setMessage("Test full AI execution cycle");
 
         // When
-        kafkaTemplate.send("ticket-created", ticketId, event);
+        kafkaTemplate.send("ticket-created", ticketNumber, event);
 
         // Then
+        String expectedCorrelationId = "ticket-" + ticketId;
         await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
             WorkflowExecutionEntity execution = workflowExecutionRepository.findAll().stream()
-                    .filter(e -> ticketId.equals(e.getCorrelationId()))
+                    .filter(e -> expectedCorrelationId.equals(e.getCorrelationId()))
                     .findFirst()
                     .orElse(null);
             
