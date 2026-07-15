@@ -205,9 +205,9 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
               messages.map((msg: any) => {
                 const isAgent = msg.type === 'AGENT_MESSAGE' || msg.isInternal;
                 const isSystem = msg.senderName === 'System' || msg.type === 'SYSTEM_MESSAGE';
-                const avatarText = isAgent ? 'AG' : isSystem ? '⚙️' : (msg.senderName ? msg.senderName.charAt(0) : ticket.customerName.charAt(0));
-                const badgeText = msg.type ? msg.type.replace('_MESSAGE', '') : 'CUSTOMER';
-                const displayName = isAgent ? (msg.senderName || 'Agent') : isSystem ? 'System' : ticket.customerName;
+                const avatarText = isAgent ? 'AG' : isSystem ? '⚙️' : (ticket.customerName?.charAt(0)?.toUpperCase() || 'C');
+                const badgeText = isAgent ? 'AGENT' : isSystem ? 'SYSTEM' : 'CUSTOMER';
+                const displayName = isAgent ? 'You' : isSystem ? 'System' : ticket.customerName;
 
                 return (
                   <div key={msg.id} className={`flex gap-4 ${isAgent ? 'flex-row-reverse' : ''}`}>

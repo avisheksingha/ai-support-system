@@ -50,7 +50,8 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             "/ticket-docs/**",
             "/analysis-docs/**",
             "/routing-docs/**",
-            "/rag-docs/**"
+            "/rag-docs/**",
+            "/ws/**"
     );
 
     /**

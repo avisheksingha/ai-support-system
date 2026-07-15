@@ -19,9 +19,9 @@ export function CustomerTicketDetailPage() {
   const queryClient = useQueryClient();
 
   React.useEffect(() => {
-    if (!ticket || !ticket.id || !ticketNumber) return;
+    if (!ticketNumber) return;
     
-    const topic = `/topic/tickets.${ticket.id}`;
+    const topic = `/topic/tickets.${ticketNumber}`;
     
     wsClient.subscribe(topic, (event) => {
       console.log("Customer Portal received WebSocket event:", event);
@@ -33,7 +33,7 @@ export function CustomerTicketDetailPage() {
     return () => {
       wsClient.unsubscribe(topic);
     };
-  }, [ticket?.id, ticketNumber, queryClient]);
+  }, [ticketNumber, queryClient]);
 
   const handleSendReply = () => {
     if (!replyText.trim()) return;
@@ -116,15 +116,14 @@ export function CustomerTicketDetailPage() {
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
               <div className="px-5 py-4 border-b border-border bg-card flex items-center gap-3">
-                <div className="h-8 w-8 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-600 font-medium border border-blue-500/20">
+                <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs border border-blue-500/20">
                   {ticket.customerName?.charAt(0)?.toUpperCase() || "U"}
                 </div>
                 <div>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-sm font-medium text-foreground">{ticket.customerName}</span>
-                    <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider bg-muted px-1.5 py-0.5 rounded">Customer</span>
+                    <span className="text-sm font-medium text-foreground">You</span>
+                    <span className="text-[10px] text-muted-foreground">{formatTimeAgo(ticket.createdAt)}</span>
                   </div>
-                  <div className="text-xs text-muted-foreground mt-0.5">{formatTimeAgo(ticket.createdAt)}</div>
                 </div>
               </div>
               <div className="p-5 text-sm text-foreground whitespace-pre-wrap leading-relaxed">
@@ -147,7 +146,7 @@ export function CustomerTicketDetailPage() {
                   {messages.map((msg: any) => (
                     <div key={msg.id} className={`flex gap-3 ${msg.type === 'CUSTOMER_MESSAGE' ? 'flex-row-reverse' : ''}`}>
                       <div className={`h-8 w-8 shrink-0 rounded-full flex items-center justify-center font-bold text-xs shadow-sm ring-2 ${msg.type === 'CUSTOMER_MESSAGE' ? 'bg-blue-600 text-white ring-blue-50' : msg.type === 'SYSTEM_MESSAGE' ? 'bg-slate-800 text-white ring-slate-100' : 'bg-cyan-600 text-white ring-cyan-50'}`}>
-                        {msg.type === 'CUSTOMER_MESSAGE' ? ticket.customerName?.charAt(0)?.toUpperCase() : msg.type === 'SYSTEM_MESSAGE' ? '⚙️' : 'AG'}
+                        {msg.type === 'CUSTOMER_MESSAGE' ? (ticket.customerName?.charAt(0)?.toUpperCase() || 'M') : msg.type === 'SYSTEM_MESSAGE' ? '⚙️' : 'AG'}
                       </div>
                       <div className={`flex-1 space-y-1.5 flex flex-col ${msg.type === 'CUSTOMER_MESSAGE' ? 'items-end' : ''}`}>
                         <div className={`flex items-baseline gap-2 ${msg.type === 'CUSTOMER_MESSAGE' ? 'flex-row-reverse' : ''}`}>

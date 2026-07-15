@@ -5,13 +5,13 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script>window.global = window;</script>
+  <!-- global polyfill removed: no longer needed after switching from SockJS to native WebSocket -->
   <!-- 
       NOTE: This CSP is for local development convenience. 
       In production, serve CSP headers from the Gateway or reverse proxy.
     -->
   <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; connect-src 'self' http://localhost:*; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:;" />
+    content="default-src 'self'; connect-src 'self' http://localhost:* ws://localhost:*; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:;" />
   <title>AI Support Dashboard</title>
 </head>
 

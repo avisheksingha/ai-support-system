@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.aisupport.common.enums.TicketPriority;
 import com.aisupport.common.enums.TicketStatus;
+import com.aisupport.common.enums.UserRole;
 import com.aisupport.common.event.AnalysisResult;
 import com.aisupport.common.event.DomainEvent;
 import com.aisupport.common.event.EventType;
@@ -188,7 +189,7 @@ public class TicketService {
         if (request.isInternal()) {
             message.setType("INTERNAL_NOTE");
             eventType = EventType.AGENT_REPLY_ADDED;
-        } else if ("AGENT".equals(userRole) || "ADMIN".equals(userRole)) {
+        } else if (UserRole.AGENT.name().equals(userRole) || UserRole.ADMIN.name().equals(userRole)) {
             message.setType("AGENT_MESSAGE");
             eventType = EventType.AGENT_REPLY_ADDED;
             
@@ -216,7 +217,7 @@ public class TicketService {
                 .build();
                 
         outboxEventService.publishEvent(AGGREGATE_TYPE, ticket.getId().toString(), eventType, event);
-        webSocketNotificationService.broadcastEvent(event);
+        webSocketNotificationService.broadcastEvent(event, ticketNumber);
         
         return response;
     }

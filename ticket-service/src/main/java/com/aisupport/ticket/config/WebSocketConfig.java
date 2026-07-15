@@ -19,8 +19,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
+        // Use native WebSocket (no SockJS). All modern browsers support this.
+        // SockJS is avoided because it adds HTTP polling complexity, CORS issues,
+        // and gateway routing problems with no real benefit in modern environments.
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("*") // In production, restrict to frontend domain
-                .withSockJS();
+            .setAllowedOriginPatterns("*");
     }
 }

@@ -1,5 +1,4 @@
 import { Client } from "@stomp/stompjs";
-import SockJS from "sockjs-client";
 
 interface DomainEvent<T> {
   eventId: string;
@@ -15,23 +14,32 @@ interface DomainEvent<T> {
 export class WebSocketClient {
   private client: Client;
   private subscriptions: Map<string, any> = new Map();
+  private callbacks: Map<string, (event: DomainEvent<any>) => void> = new Map();
 
-  constructor(brokerUrl: string = "http://localhost:8080/ws") {
+  constructor(brokerUrl: string = "ws://localhost:8080/ws") {
     this.client = new Client({
-      // STOMP over SockJS
-      webSocketFactory: () => new SockJS(brokerUrl),
+      // Use native WebSocket (no SockJS needed)
+      brokerURL: brokerUrl,
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
     });
 
     this.client.onConnect = () => {
-      console.log("Connected to STOMP Broker");
+      console.log("Connected to STOMP Broker via native WebSocket");
+      // Re-subscribe all active subscriptions on (re)connect
+      this.callbacks.forEach((callback, topic) => {
+        this.performSubscribe(topic, callback);
+      });
     };
 
     this.client.onStompError = (frame) => {
       console.error("Broker reported error: " + frame.headers["message"]);
       console.error("Additional details: " + frame.body);
+    };
+
+    this.client.onWebSocketClose = () => {
+      console.log("WebSocket connection closed. Will auto-reconnect...");
     };
 
     this.client.activate();
@@ -41,20 +49,25 @@ export class WebSocketClient {
     topic: string,
     callback: (event: DomainEvent<T>) => void
   ) {
-    if (!this.client.connected) {
-      // If not connected yet, we wait until it is connected
-      this.client.onConnect = () => {
-        this.performSubscribe(topic, callback);
-      };
-    } else {
+    // Store the callback so it can be (re)subscribed on connect/reconnect
+    this.callbacks.set(topic, callback as (event: DomainEvent<any>) => void);
+
+    if (this.client.connected) {
       this.performSubscribe(topic, callback);
     }
+    // If not connected yet, onConnect will pick it up from this.callbacks
   }
 
   private performSubscribe<T>(
     topic: string,
     callback: (event: DomainEvent<T>) => void
   ) {
+    // Unsubscribe existing subscription to this topic if any
+    const existing = this.subscriptions.get(topic);
+    if (existing) {
+      existing.unsubscribe();
+    }
+
     const subscription = this.client.subscribe(topic, (message) => {
       if (message.body) {
         const event = JSON.parse(message.body) as DomainEvent<T>;
@@ -62,6 +75,7 @@ export class WebSocketClient {
       }
     });
     this.subscriptions.set(topic, subscription);
+    console.log(`Subscribed to STOMP topic: ${topic}`);
   }
 
   public unsubscribe(topic: string) {
@@ -70,6 +84,7 @@ export class WebSocketClient {
       subscription.unsubscribe();
       this.subscriptions.delete(topic);
     }
+    this.callbacks.delete(topic);
   }
 
   public disconnect() {

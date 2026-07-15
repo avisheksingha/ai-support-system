@@ -46,6 +46,13 @@ public class GatewayRoutingConfig {
                 .uri(ragServiceUrl))
             .route("ai-orchestration-service-route", r -> r.path("/api/v1/orchestration/**")
                 .uri(orchestrationServiceUrl))
+
+            // WebSocket route (STOMP over SockJS)
+            .route("ticket-service-ws", r -> r.path("/ws/**")
+                .filters(f -> f.dedupeResponseHeader(
+                    "Access-Control-Allow-Origin Access-Control-Allow-Credentials Access-Control-Allow-Methods Access-Control-Allow-Headers",
+                    "RETAIN_FIRST"))
+                .uri(ticketServiceUrl))
             
             // Swagger Proxy Routes (No escaping needed here!)
             .route("auth-docs", r -> r.path("/auth-docs/**")

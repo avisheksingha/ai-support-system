@@ -20,4 +20,15 @@ public class WebSocketNotificationService {
         log.info("Broadcasting event {} to topic {}", event.getEventType(), topic);
         messagingTemplate.convertAndSend(topic, event);
     }
+
+    /**
+     * Broadcasts a domain event to a ticket-number-based topic.
+     * Both agent and customer UIs subscribe using the ticket number,
+     * so this method ensures real-time delivery to both parties.
+     */
+    public void broadcastEvent(DomainEvent<?> event, String ticketNumber) {
+        String topic = "/topic/tickets." + ticketNumber;
+        log.info("Broadcasting event {} to topic {}", event.getEventType(), topic);
+        messagingTemplate.convertAndSend(topic, event);
+    }
 }
