@@ -14,12 +14,11 @@ import { Button } from "@/components/ui/button";
 import { 
   Dialog, 
   DialogContent, 
-  DialogHeader, 
   DialogTitle,
   DialogFooter
 } from "@/components/ui/dialog";
-import { Loader2, ShieldAlert, FileText, Activity, AlertCircle, Fingerprint, ExternalLink, ShieldCheck } from "lucide-react";
-import { ApprovalRequest } from "@/shared/types/workspace";
+import { Loader2, ShieldAlert, Activity, AlertCircle, Fingerprint, ExternalLink, ShieldCheck } from "lucide-react";
+import type { ApprovalRequest } from "@/shared/types/workspace";
 
 export function ApprovalQueue() {
   const { data: requests, isLoading } = useApprovalQueue();

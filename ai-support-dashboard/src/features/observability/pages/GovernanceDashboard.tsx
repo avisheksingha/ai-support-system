@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShieldAlert, Activity, AlertOctagon, CheckSquare, List } from "lucide-react";
+import { Activity, AlertOctagon, CheckSquare, List } from "lucide-react";
 import { GovernanceOverview } from "../components/GovernanceOverview";
 import { ApprovalQueue } from "../components/ApprovalQueue";
 import { BlockedRequests } from "../components/BlockedRequests";
