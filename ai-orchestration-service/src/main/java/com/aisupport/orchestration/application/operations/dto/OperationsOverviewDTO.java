@@ -2,17 +2,30 @@ package com.aisupport.orchestration.application.operations.dto;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
+@Schema(description = "Aggregated operations and orchestration metrics")
 public class OperationsOverviewDTO {
+    @Schema(description = "Runtime execution metrics")
     private RuntimeMetrics runtime;
+    
+    @Schema(description = "AI and LLM token metrics")
     private AiMetrics ai;
+    
+    @Schema(description = "Governance and policy metrics")
     private GovernanceMetrics governance;
+    
+    @Schema(description = "Tool execution metrics")
     private List<ProviderMetrics> tools;
+    
+    @Schema(description = "System health metrics")
     private HealthMetrics health;
+    
+    @Schema(description = "System deployment information")
     private SystemInfo systemInfo;
 
     @Data

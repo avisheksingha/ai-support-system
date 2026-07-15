@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.aisupport.orchestration.application.agent.AgentResponse;
 import com.aisupport.orchestration.application.agent.AgentSession;
+import com.aisupport.orchestration.domain.workflow.WorkflowContext;
 import com.aisupport.orchestration.infrastructure.persistence.entity.AiExecutionRecordEntity;
 import com.aisupport.orchestration.infrastructure.persistence.repository.AiExecutionRecordRepository;
 
@@ -24,7 +25,7 @@ public class AiAuditService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void recordExecution(AgentSession session, String correlationId, String workflowVersion) {
-        log.info("Recording AI Execution for session: {}", session.getSessionId());
+        log.info("Agent Execution Recorded - correlationId={}, modelId={}", correlationId, session.getInitialRequest().getModelProfile().getId());
 
         String tools = session.getToolInvocations().stream()
                 .map(AgentResponse.ToolCallRequest::getToolName)
@@ -33,10 +34,12 @@ public class AiAuditService {
 
         AiExecutionRecordEntity entity = AiExecutionRecordEntity.builder()
                 .id(session.getSessionId())
+                .recordType("AGENT")
                 .correlationId(correlationId)
                 .workflowVersion(workflowVersion)
-                .definitionVersion("v1.0") // Should come from execution context, static for now
-                .agentVersion("v1.0")
+                .definitionVersion("1.0") // Intentional V1 placeholder: Should come from execution context
+                .agentVersion("1.0") // Intentional V1 placeholder: agent version static for now
+                .serviceVersion("1.0.0") // Build version
                 .promptHash(String.valueOf(session.getInitialRequest().getSystemPrompt().hashCode()))
                 .modelId(session.getInitialRequest().getModelProfile().getId())
                 .promptTokens(session.getTotalUsage() != null ? session.getTotalUsage().getPromptTokens() : 0)
@@ -64,15 +67,16 @@ public class AiAuditService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void recordWorkflowExecution(Long ticketId, String workflowExecutionId, String correlationId, String outcome, long durationMs, String serviceVersion) {
-        log.info("Recording Orchestration Workflow Execution for ticketId={}, executionId={}, correlationId={}", ticketId, workflowExecutionId, correlationId);
+    public void recordWorkflowExecution(WorkflowContext context, String outcome, String serviceVersion) {
+        log.info("Workflow Audit Recorded - executionId={}", context.getExecutionId());
 
         AiExecutionRecordEntity entity = AiExecutionRecordEntity.builder()
-                .ticketId(ticketId)
-                .workflowExecutionId(workflowExecutionId)
-                .correlationId(correlationId)
+                .recordType("WORKFLOW")
+                .ticketId(context.getTicketId())
+                .workflowExecutionId(context.getExecutionId())
+                .correlationId(context.getCorrelationId())
                 .outcome(outcome)
-                .workflowDurationMs(durationMs)
+                .workflowDurationMs(context.getExecutionDuration())
                 .serviceVersion(serviceVersion)
                 .executedAt(Instant.now())
                 .build();

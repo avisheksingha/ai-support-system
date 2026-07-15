@@ -26,8 +26,23 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class PromptBuilderImpl implements PromptBuilder {
 
-    @Value("classpath:prompts/analyze.st")
+    @Value("${orchestration.prompt.analyze.path:classpath:prompts/analyze.st}")
     private Resource analyzeTemplate;
+
+    @Value("${spring.ai.google.genai.chat.model:gemini-3.5-flash}")
+    private String chatModel;
+    
+    @Value("${chat.provider:google-genai}")
+    private String chatProvider;
+
+    @Value("${spring.ai.google.genai.chat.temperature:0.5}")
+    private Double chatTemperature;
+
+    @Value("${spring.ai.google.genai.chat.max-output-tokens:8192}")
+    private Integer chatMaxOutputTokens;
+
+    @Value("${chat.max-context-tokens:1048576}")
+    private Integer chatMaxContextTokens;
 
     private final PromptRenderer promptRenderer;
 
@@ -44,12 +59,12 @@ public class PromptBuilderImpl implements PromptBuilder {
         KnowledgeContext knowledge = context.getResource(KnowledgeContext.class);
         
         ModelProfile modelProfile = ModelProfile.builder()
-                .id("gemini-2.5-flash")
-                .provider("google")
-                .name("gemini-2.5-flash")
-                .maxContextTokens(1048576)
-                .maxOutputTokens(8192)
-                .defaultTemperature(0.7)
+                .id(chatModel)
+                .provider(chatProvider)
+                .name(chatModel)
+                .maxContextTokens(chatMaxContextTokens)
+                .maxOutputTokens(chatMaxOutputTokens)
+                .defaultTemperature(chatTemperature)
                 .supportsToolCalling(true)
                 .supportsStreaming(true)
                 .supportsVision(true)
@@ -61,7 +76,7 @@ public class PromptBuilderImpl implements PromptBuilder {
         String userPrompt = "Analyze the current state of this ticket.\nSubject: " + subject + "\nMessage: " + message;
 
         return AgentRequest.builder()
-                .promptVersion("v1.0.0")
+                .promptVersion("1.0")
                 .systemPrompt(systemPrompt)
                 .userPrompt(userPrompt)
                 .conversation(conversation)

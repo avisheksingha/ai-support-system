@@ -10,15 +10,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.aisupport.auth.config.JwtConfig;
 import com.aisupport.auth.dto.LoginRequest;
 import com.aisupport.auth.dto.RegisterRequest;
 import com.aisupport.auth.entity.User;
 import com.aisupport.auth.exception.AuthException;
+import com.aisupport.auth.mapper.UserMapper;
 import com.aisupport.auth.repository.LoginAuditRepository;
 import com.aisupport.auth.repository.RefreshTokenRepository;
 import com.aisupport.auth.repository.UserRepository;
-import com.aisupport.auth.config.JwtConfig;
-import com.aisupport.auth.mapper.UserMapper;
 
 class AuthServiceTest {
 

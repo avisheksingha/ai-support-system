@@ -23,5 +23,40 @@
     "name": "api.services.rag.url",
     "type": "java.lang.String",
     "description": "A description for 'api.services.rag.url'"
+  },
+  {
+    "name": "orchestration.prompt.analyze.path",
+    "type": "java.lang.String",
+    "description": "A description for 'orchestration.prompt.analyze.path'"
+  },
+  {
+    "name": "orchestration.kafka.enabled",
+    "type": "java.lang.String",
+    "description": "A description for 'orchestration.kafka.enabled'"
+  },
+  {
+    "name": "orchestration.metrics.enabled",
+    "type": "java.lang.String",
+    "description": "A description for 'orchestration.metrics.enabled'"
+  },
+  {
+    "name": "governance.outbox.poll-rate",
+    "type": "java.lang.String",
+    "description": "A description for 'governance.outbox.poll-rate'"
+  },
+  {
+    "name": "governance.outbox.cleanup.cron",
+    "type": "java.lang.String",
+    "description": "A description for 'governance.outbox.cleanup.cron'"
+  },
+  {
+    "name": "chat.provider",
+    "type": "java.lang.String",
+    "description": "A description for 'chat.provider'"
+  },
+  {
+    "name": "chat.max-context-tokens",
+    "type": "java.lang.String",
+    "description": "A description for 'chat.max-context-tokens'"
   }
 ]}

@@ -1,5 +1,6 @@
 package com.aisupport.orchestration.domain.workflow;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +12,7 @@ import lombok.Data;
 @Builder
 public class WorkflowContext {
     private String workflowId;
+    private Integer workflowVersion;
     private String executionId;
     private String correlationId;
     private Long ticketId;
@@ -41,5 +43,9 @@ public class WorkflowContext {
 
     public <T> T getResource(Class<T> type) {
         return type.cast(this.resources.get(type));
+    }
+
+    public long getExecutionDuration() {
+        return Duration.between(startTime, Instant.now()).toMillis();
     }
 }

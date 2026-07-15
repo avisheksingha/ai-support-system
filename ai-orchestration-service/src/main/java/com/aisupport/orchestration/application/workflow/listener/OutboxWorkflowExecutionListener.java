@@ -3,6 +3,7 @@ package com.aisupport.orchestration.application.workflow.listener;
 import java.time.Instant;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +33,9 @@ public class OutboxWorkflowExecutionListener implements WorkflowExecutionListene
 
     private final OutboxEventRepository outboxEventRepository;
     private final ObjectMapper objectMapper;
+    
+    @Value("${info.build.version:1.0.0}")
+    private String serviceVersion;
 
     @Override
     @Transactional
@@ -60,8 +64,8 @@ public class OutboxWorkflowExecutionListener implements WorkflowExecutionListene
                 "1.0",
                 "1.0",
                 "default",
-                "1.0",
-                100L, // Placeholder for processing duration
+                serviceVersion,
+                context.getExecutionDuration(),
                 WorkflowOutcome.SUCCESS,
                 Instant.now()
             );
@@ -86,7 +90,7 @@ public class OutboxWorkflowExecutionListener implements WorkflowExecutionListene
                     .build();
 
             outboxEventRepository.save(entity);
-            log.info("Saved outbox event {} for ticket {}", "TicketOrchestratedEvent", context.getTicketId());
+            log.info("Outbox Saved - ticketId={}", context.getTicketId());
         } catch (Exception e) {
             log.error("Failed to save outbox event for execution {}", context.getExecutionId(), e);
         }

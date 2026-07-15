@@ -10,6 +10,7 @@ import com.aisupport.orchestration.application.timeline.TimelineService;
 import com.aisupport.orchestration.application.timeline.dto.TimelinePageResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,7 @@ public class WorkflowExplorerController {
 
     @GetMapping("/search")
     @Operation(summary = "Search workflow executions", description = "Search and drill down into specific workflow executions and their timelines")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved workflow executions")
     public ResponseEntity<TimelinePageResponse> searchWorkflows(
             @RequestParam(required = false) Long ticketId,
             @RequestParam(required = false) String correlationId,

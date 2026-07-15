@@ -12,8 +12,8 @@ import org.springframework.http.ResponseEntity;
 
 import com.aisupport.auth.dto.UpdateUserRoleRequest;
 import com.aisupport.auth.dto.UserResponse;
-import com.aisupport.common.enums.UserRole;
 import com.aisupport.auth.service.UserManagementService;
+import com.aisupport.common.enums.UserRole;
 
 class AdminControllerTest {
 

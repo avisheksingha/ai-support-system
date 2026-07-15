@@ -13,6 +13,7 @@ import com.aisupport.orchestration.application.operations.MetricsQueryService;
 import com.aisupport.orchestration.application.operations.dto.OperationsDashboardResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,7 @@ public class OperationsDashboardController {
 
     @GetMapping("/overview")
     @Operation(summary = "Get operations dashboard overview", description = "Returns aggregated AI orchestration metrics and recent executions")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved operations overview")
     public ResponseEntity<OperationsDashboardResponse> getDashboardOverview(
             @RequestParam(required = false) Instant from,
             @RequestParam(required = false) Instant to,

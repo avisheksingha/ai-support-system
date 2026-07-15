@@ -101,8 +101,6 @@ public class OutboxEventPublisher {
             log.error("Interrupted while publishing outbox event {}", event.getId(), e);
             markFailed(event);
  
-            log.error("Interrupted while publishing outbox event {}", event.getId(), e);
- 
         } catch (TimeoutException e) {
             log.error("Timeout publishing outbox event {}", event.getId(), e);
             markFailed(event);

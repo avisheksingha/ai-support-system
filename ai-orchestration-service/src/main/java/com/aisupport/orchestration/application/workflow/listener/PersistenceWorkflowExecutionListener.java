@@ -48,10 +48,26 @@ public class PersistenceWorkflowExecutionListener implements WorkflowExecutionLi
     public void afterWorkflow(WorkflowContext context) {
         executionRepository.findById(context.getExecutionId()).ifPresent(entity -> {
             entity.setState(WorkflowState.COMPLETED);
+            entity.setCurrentStep("COMPLETED");
             entity.setCompletedAt(Instant.now());
             entity.setUpdatedAt(Instant.now());
             entity.setAttributes(new HashMap<>(context.getAttributes()));
             executionRepository.save(entity);
+        });
+    }
+
+    @Override
+    @Transactional
+    public void beforeStep(WorkflowContext context, WorkflowStep step) {
+        executionRepository.findById(context.getExecutionId()).ifPresent(execution -> {
+            WorkflowCheckpointEntity checkpoint = WorkflowCheckpointEntity.builder()
+                    .execution(execution)
+                    .stepName(step.getName())
+                    .stateSnapshot(WorkflowState.RUNNING)
+                    .attributesSnapshot(new HashMap<>(context.getAttributes()))
+                    .createdAt(Instant.now())
+                    .build();
+            checkpointRepository.save(checkpoint);
         });
     }
 
@@ -66,7 +82,7 @@ public class PersistenceWorkflowExecutionListener implements WorkflowExecutionLi
             WorkflowCheckpointEntity checkpoint = WorkflowCheckpointEntity.builder()
                     .execution(execution)
                     .stepName(step.getName())
-                    .stateSnapshot(WorkflowState.RUNNING)
+                    .stateSnapshot(WorkflowState.COMPLETED)
                     .attributesSnapshot(new HashMap<>(context.getAttributes()))
                     .createdAt(Instant.now())
                     .build();
@@ -81,6 +97,15 @@ public class PersistenceWorkflowExecutionListener implements WorkflowExecutionLi
             entity.setState(WorkflowState.FAILED);
             entity.setUpdatedAt(Instant.now());
             executionRepository.save(entity);
+
+            WorkflowCheckpointEntity checkpoint = WorkflowCheckpointEntity.builder()
+                    .execution(entity)
+                    .stepName("FAILURE")
+                    .stateSnapshot(WorkflowState.FAILED)
+                    .attributesSnapshot(new HashMap<>(context.getAttributes()))
+                    .createdAt(Instant.now())
+                    .build();
+            checkpointRepository.save(checkpoint);
         });
     }
 }

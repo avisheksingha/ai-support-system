@@ -2,17 +2,17 @@ package com.aisupport.auth.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.aisupport.auth.dto.UserResponse;
 import com.aisupport.auth.entity.User;
-import com.aisupport.common.enums.UserRole;
 import com.aisupport.auth.exception.AuthException;
 import com.aisupport.auth.mapper.UserMapper;
-import com.aisupport.auth.repository.UserRepository;
 import com.aisupport.auth.repository.RefreshTokenRepository;
-import org.springframework.http.HttpStatus;
+import com.aisupport.auth.repository.UserRepository;
+import com.aisupport.common.enums.UserRole;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

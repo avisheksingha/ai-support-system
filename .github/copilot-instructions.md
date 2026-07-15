@@ -129,7 +129,7 @@ This repository is a Spring Boot 4.1.0 microservices platform for AI-powered tic
 - External client entry point is gateway on port `8080`.
 
 ### AI & RAG
-- AI analysis uses pluggable providers (`chat.provider=gemini|openai`) via `ChatProvider`.
+- AI analysis uses pluggable providers (`chat.provider=google-genai|openai`) via `ChatProvider`.
 - RAG uses `QuestionAnswerAdvisor` + PGVector via Spring AI vector store.
 - Model names and provider values come from config properties, not hardcoded literals.
 

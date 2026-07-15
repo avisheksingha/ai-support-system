@@ -3,9 +3,12 @@ package com.aisupport.orchestration.application.workflow.impl;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
+import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
+import com.aisupport.common.constant.Correlation;
 import com.aisupport.orchestration.application.workflow.WorkflowEngine;
 import com.aisupport.orchestration.application.workflow.WorkflowExecutionListener;
 import com.aisupport.orchestration.application.workflow.WorkflowExecutionResult;
@@ -93,6 +96,15 @@ public class WorkflowEngineImpl implements WorkflowEngine {
     }
 
     private WorkflowExecutionResult executeInternal(String workflowId, WorkflowContext context, String skipUpToStep) {
+        context.setWorkflowId(workflowId);
+        if (context.getExecutionId() == null) {
+            context.setExecutionId(UUID.randomUUID().toString());
+        }
+        if (context.getCorrelationId() == null) {
+            String mdcCorrelationId = MDC.get(Correlation.MDC_KEY);
+            context.setCorrelationId(mdcCorrelationId != null ? mdcCorrelationId : UUID.randomUUID().toString());
+        }
+
         Instant start = Instant.now();
         
         WorkflowDefinition definition = workflowFactory.create(workflowId);
@@ -106,6 +118,8 @@ public class WorkflowEngineImpl implements WorkflowEngine {
                     .duration(Duration.between(start, Instant.now()))
                     .build();
         }
+
+        context.setWorkflowVersion(definition.getVersion());
 
         if (skipUpToStep == null) {
             dispatchBeforeWorkflow(context);

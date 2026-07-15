@@ -1,9 +1,7 @@
 package com.aisupport.orchestration.application.workflow.listener;
 
-import java.time.Duration;
-import java.time.Instant;
-
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import com.aisupport.orchestration.application.compliance.AiAuditService;
@@ -15,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Order(35)
 @RequiredArgsConstructor
 @Slf4j
 public class AuditWorkflowExecutionListener implements WorkflowExecutionListener {
@@ -31,15 +30,7 @@ public class AuditWorkflowExecutionListener implements WorkflowExecutionListener
 
     @Override
     public void afterWorkflow(WorkflowContext context) {
-        long durationMs = Duration.between(context.getStartTime(), Instant.now()).toMillis();
-        auditService.recordWorkflowExecution(
-            context.getTicketId(),
-            context.getWorkflowId(),
-            context.getCorrelationId(),
-            "SUCCESS",
-            durationMs,
-            serviceVersion
-        );
+        auditService.recordWorkflowExecution(context, "SUCCESS", serviceVersion);
     }
 
     @Override
@@ -54,14 +45,6 @@ public class AuditWorkflowExecutionListener implements WorkflowExecutionListener
 
     @Override
     public void onFailure(WorkflowContext context, Throwable error) {
-        long durationMs = Duration.between(context.getStartTime(), Instant.now()).toMillis();
-        auditService.recordWorkflowExecution(
-            context.getTicketId(),
-            context.getWorkflowId(),
-            context.getCorrelationId(),
-            "FAILED",
-            durationMs,
-            serviceVersion
-        );
+        auditService.recordWorkflowExecution(context, "FAILED", serviceVersion);
     }
 }

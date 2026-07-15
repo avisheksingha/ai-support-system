@@ -15,26 +15,26 @@ import lombok.extern.slf4j.Slf4j;
 public class LoggingWorkflowExecutionListener implements WorkflowExecutionListener {
     @Override
     public void beforeWorkflow(WorkflowContext context) {
-        log.info("Workflow starting: executionId={}", context.getExecutionId());
+        log.info("Workflow Started - executionId={}, workflowId={}", context.getExecutionId(), context.getWorkflowId());
     }
 
     @Override
     public void afterWorkflow(WorkflowContext context) {
-        log.info("Workflow completed: executionId={}", context.getExecutionId());
+        log.info("Workflow Completed - executionId={}", context.getExecutionId());
     }
 
     @Override
     public void beforeStep(WorkflowContext context, WorkflowStep step) {
-        log.info("Step starting: executionId={}, step={}", context.getExecutionId(), step.getName());
+        log.info("Workflow Step Started - step={}", step.getName());
     }
 
     @Override
     public void afterStep(WorkflowContext context, WorkflowStep step) {
-        log.info("Step completed: executionId={}, step={}", context.getExecutionId(), step.getName());
+        log.info("Workflow Step Completed - step={}", step.getName());
     }
 
     @Override
     public void onFailure(WorkflowContext context, Throwable error) {
-        log.error("Workflow failed: executionId={}, error={}", context.getExecutionId(), error.getMessage());
+        log.error("Workflow Failed - executionId={}, error={}", context.getExecutionId(), error.getMessage());
     }
 }

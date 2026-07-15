@@ -11,9 +11,9 @@ import com.aisupport.analysis.dto.ParsedAnalysis;
 import com.aisupport.analysis.entity.AnalysisResult;
 import com.aisupport.analysis.outbox.OutboxEventService;
 import com.aisupport.analysis.repository.AnalysisResultRepository;
+import com.aisupport.common.dto.AnalysisResultDTO;
 import com.aisupport.common.event.TicketAnalyzedEvent;
 import com.aisupport.common.event.TicketCreatedEvent;
-import com.aisupport.common.dto.AnalysisResultDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;

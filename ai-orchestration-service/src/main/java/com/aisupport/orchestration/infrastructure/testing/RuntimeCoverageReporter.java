@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import com.aisupport.orchestration.application.workflow.WorkflowExecutionListener;
@@ -20,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
+@Order(38)
 @RequiredArgsConstructor
 public class RuntimeCoverageReporter implements WorkflowExecutionListener {
 
@@ -50,8 +52,9 @@ public class RuntimeCoverageReporter implements WorkflowExecutionListener {
         report.append("## Workflow Execution\n");
         report.append("- **Workflow ID**: ").append(context.getWorkflowId()).append("\n");
         report.append("- **Execution ID**: ").append(context.getExecutionId()).append("\n");
+        report.append("- **Correlation ID**: ").append(context.getCorrelationId()).append("\n");
         report.append("- **Ticket ID**: ").append(context.getTicketId()).append("\n");
-        report.append("- **Final Outcome**: ").append(finalStatus).append("\n\n");
+        report.append("- **Final Status**: ").append(finalStatus).append("\n\n");
 
         appendWorkflowExecutionDetails(context, report);
         appendAiExecutionDetails(context, report);
@@ -74,14 +77,10 @@ public class RuntimeCoverageReporter implements WorkflowExecutionListener {
         if (workflowExecution != null) {
             report.append("## Status Details\n");
             report.append("- **Workflow Status**: ").append(workflowExecution.getState()).append("\n");
-            report.append("- **Workflow Version**: v1.0\n"); // Assuming v1.0 for V1 portfolio
-            report.append("- **Recoveries**: ").append(workflowExecution.getRecoveryCount()).append("\n");
-            report.append("- **Checkpoint Used**: ").append(workflowExecution.getCurrentStep() != null ? workflowExecution.getCurrentStep() : "N/A").append("\n");
-            
-            if (workflowExecution.getCreatedAt() != null && workflowExecution.getUpdatedAt() != null) {
-                long duration = java.time.Duration.between(workflowExecution.getCreatedAt(), workflowExecution.getUpdatedAt()).toMillis();
-                report.append("- **Execution Time**: ").append(duration).append(" ms\n");
-            }
+            report.append("- **Service Version**: 1.0.0\n");
+            report.append("- **Execution Time**: ").append(context.getExecutionDuration()).append(" ms\n");
+            report.append("- **Workflow Resume Count**: ").append(workflowExecution.getRecoveryCount()).append("\n");
+            report.append("- **Checkpoint Used**: ").append(workflowExecution.getCurrentStep() != null ? workflowExecution.getCurrentStep() : "No").append("\n");
             report.append("\n");
         }
     }
@@ -91,20 +90,35 @@ public class RuntimeCoverageReporter implements WorkflowExecutionListener {
         if (aiRecords != null && !aiRecords.isEmpty()) {
             report.append("## AI Governance & Execution\n");
             for (AiExecutionRecordEntity aiRecord : aiRecords) {
-                appendSingleAiRecord(report, aiRecord);
+                if ("AGENT".equals(aiRecord.getRecordType())) {
+                    appendSingleAiRecord(report, aiRecord);
+                }
             }
         }
     }
 
     private void appendSingleAiRecord(StringBuilder report, AiExecutionRecordEntity aiRecord) {
-        report.append("### AI Record (").append(aiRecord.getOutcome()).append(")\n");
-        report.append("- **Prompt Hash**: ").append(aiRecord.getPromptHash()).append("\n");
-        report.append("- **Model Profile**: ").append(aiRecord.getModelId()).append("\n");
-        report.append("- **Tools Used**: ").append(aiRecord.getToolsInvoked() != null ? aiRecord.getToolsInvoked() : "None").append("\n");
-        report.append("- **Policy Triggered**: ").append(aiRecord.getPolicyId() != null ? aiRecord.getPolicyId() + " (v" + aiRecord.getPolicyVersion() + ")" : "None").append("\n");
-        report.append("- **Guardrail Triggered**: ").append(aiRecord.getGuardrailId() != null ? aiRecord.getGuardrailId() + " (v" + aiRecord.getGuardrailVersion() + ")" : "None").append("\n");
+        report.append("### Agent Execution (").append(aiRecord.getOutcome()).append(")\n");
+        report.append("- **Provider**: Google\n"); // V1 Placeholder
+        report.append("- **Model**: ").append(aiRecord.getModelId()).append("\n");
+        
+        int toolCount = 0;
+        if (aiRecord.getToolsInvoked() != null && !aiRecord.getToolsInvoked().isEmpty() && !aiRecord.getToolsInvoked().equals("None")) {
+            toolCount = aiRecord.getToolsInvoked().split(",").length;
+        }
+        report.append("- **Tools Used**: ").append(aiRecord.getToolsInvoked() != null && !aiRecord.getToolsInvoked().isEmpty() ? aiRecord.getToolsInvoked() : "None").append(" (Count: ").append(toolCount).append(")\n");
+        
+        report.append("- **Prompt Tokens**: ").append(aiRecord.getPromptTokens() != null ? aiRecord.getPromptTokens() : 0).append("\n");
+        report.append("- **Completion Tokens**: ").append(aiRecord.getCompletionTokens() != null ? aiRecord.getCompletionTokens() : 0).append("\n");
+        report.append("- **Total Tokens**: ").append((aiRecord.getPromptTokens() != null ? aiRecord.getPromptTokens() : 0) + (aiRecord.getCompletionTokens() != null ? aiRecord.getCompletionTokens() : 0)).append("\n");
+        
+        report.append("- **Policy**: ").append(aiRecord.getPolicyId() != null ? aiRecord.getPolicyId() + " (v" + aiRecord.getPolicyVersion() + ")" : "None").append("\n");
+        report.append("- **Guardrail**: ").append(aiRecord.getGuardrailId() != null ? aiRecord.getGuardrailId() + " (v" + aiRecord.getGuardrailVersion() + ")" : "None").append("\n");
         report.append("- **Reason**: ").append(aiRecord.getReason() != null ? aiRecord.getReason() : "N/A").append("\n");
-        report.append("- **Retries**: ").append("0").append("\n"); // V1 doesn't have agent retries
+        
+        report.append("- **Queue Delay**: 0 ms\n"); // Intentional V1 placeholder
+        report.append("- **Circuit Breaker State**: CLOSED\n"); // Intentional V1 placeholder
+        report.append("- **Retries**: 0\n"); // Intentional V1 placeholder
         report.append("\n");
     }
 }

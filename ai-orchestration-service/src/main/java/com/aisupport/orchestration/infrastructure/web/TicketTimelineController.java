@@ -11,6 +11,7 @@ import com.aisupport.orchestration.application.timeline.TimelineService;
 import com.aisupport.orchestration.application.timeline.dto.TimelinePageResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ public class TicketTimelineController {
 
     @GetMapping("/{ticketId}/timeline")
     @Operation(summary = "Get ticket timeline", description = "Retrieves the orchestration timeline for a specific ticket")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved ticket timeline")
     public ResponseEntity<TimelinePageResponse> getTicketTimeline(
             @PathVariable Long ticketId,
             @RequestParam(defaultValue = "0") int page,

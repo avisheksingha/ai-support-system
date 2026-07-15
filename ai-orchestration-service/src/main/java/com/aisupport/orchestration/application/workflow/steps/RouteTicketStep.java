@@ -7,6 +7,9 @@ import com.aisupport.common.event.RoutingDecision;
 import com.aisupport.orchestration.domain.workflow.WorkflowContext;
 import com.aisupport.orchestration.domain.workflow.WorkflowStep;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Component
 public class RouteTicketStep implements WorkflowStep {
     @Override
@@ -23,5 +26,6 @@ public class RouteTicketStep implements WorkflowStep {
             24
         );
         context.putResource(RoutingDecision.class, routing);
+        log.info("Routing Decision Team={} Priority={}", routing.assignToTeam(), routing.priority());
     }
 }

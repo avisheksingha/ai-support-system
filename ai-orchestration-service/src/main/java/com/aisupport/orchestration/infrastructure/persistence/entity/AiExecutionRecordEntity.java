@@ -24,6 +24,9 @@ public class AiExecutionRecordEntity {
     @Builder.Default
     private String id = UUID.randomUUID().toString();
     
+    @Column(name = "record_type")
+    private String recordType; // AGENT or WORKFLOW
+    
     @Column(name = "correlation_id")
     private String correlationId;
     

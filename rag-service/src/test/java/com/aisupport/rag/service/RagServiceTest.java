@@ -55,7 +55,7 @@ class RagServiceTest {
                 outboxEventService,
                 ragSystemPromptTemplate
         );
-        ReflectionTestUtils.setField(ragService, "chatModel", "gemini-2.5-flash");
+        ReflectionTestUtils.setField(ragService, "chatModel", "gemini-3.5-flash");
     }
 
     @Test
@@ -75,14 +75,14 @@ class RagServiceTest {
         ArgumentCaptor<RagResponse> responseCaptor = ArgumentCaptor.forClass(RagResponse.class);
         verify(ragResponseRepository).save(responseCaptor.capture());
         assertThat(responseCaptor.getValue().getTicketId()).isEqualTo(7L);
-        assertThat(responseCaptor.getValue().getModel()).isEqualTo("gemini-2.5-flash");
+        assertThat(responseCaptor.getValue().getModel()).isEqualTo("gemini-3.5-flash");
         assertThat(responseCaptor.getValue().getKnowledgeFound()).isTrue();
 
         ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
         verify(outboxEventService).publishEvent(anyString(), anyString(), anyString(), eventCaptor.capture());
         TicketRagResponseEvent event = (TicketRagResponseEvent) eventCaptor.getValue();
         assertThat(event.getTicketId()).isEqualTo(7L);
-        assertThat(event.getModel()).isEqualTo("gemini-2.5-flash");
+        assertThat(event.getModel()).isEqualTo("gemini-3.5-flash");
         assertThat(event.getResponse()).isEqualTo("Suggested response");
     }
 
