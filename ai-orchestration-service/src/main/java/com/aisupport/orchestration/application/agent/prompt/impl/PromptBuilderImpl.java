@@ -29,7 +29,7 @@ public class PromptBuilderImpl implements PromptBuilder {
     @Value("${orchestration.prompt.analyze.path:classpath:prompts/analyze.st}")
     private Resource analyzeTemplate;
 
-    @Value("${spring.ai.google.genai.chat.model:gemini-3.5-flash}")
+    @Value("${spring.ai.google.genai.chat.model:gemini-2.5-flash}")
     private String chatModel;
     
     @Value("${chat.provider:google-genai}")
