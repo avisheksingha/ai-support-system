@@ -16,4 +16,17 @@ export const customerTicketApi = {
     const response = await apiClient.post<TicketModel>("/tickets", request);
     return response.data;
   },
+
+  getMessages: async (ticketNumber: string) => {
+    const response = await apiClient.get(`/tickets/my/${ticketNumber}/messages`);
+    return response.data;
+  },
+
+  addMessage: async ({ ticketNumber, content }: { ticketNumber: string; content: string }) => {
+    const response = await apiClient.post(`/tickets/my/${ticketNumber}/messages`, {
+      content,
+      isInternal: false,
+    });
+    return response.data;
+  },
 };

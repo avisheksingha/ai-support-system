@@ -3,6 +3,8 @@ package com.aisupport.rag.outbox;
 import java.time.Instant;
 import java.util.UUID;
 
+import com.aisupport.common.event.EventType;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -22,7 +24,8 @@ import lombok.Setter;
 	name = "outbox_events",
 	indexes = {
 	    @Index(name = "idx_outbox_status", columnList = "status"),
-	    @Index(name = "idx_outbox_aggregate", columnList = "aggregate_type, aggregate_id")
+	    @Index(name = "idx_outbox_aggregate", columnList = "aggregate_type, aggregate_id"),
+        @Index(name = "idx_outbox_created_at", columnList = "created_at")
 	}
 )
 @Getter
@@ -46,8 +49,9 @@ public class OutboxEvent {
     @Column(name = "aggregate_id", nullable = false)
     private String aggregateId;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "event_type", nullable = false)
-    private String eventType;
+    private EventType eventType;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String payload;

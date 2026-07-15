@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.chat.client.ChatClient;
@@ -21,6 +22,7 @@ import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvi
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.aisupport.common.event.EventType;
 import com.aisupport.common.event.TicketRagResponseEvent;
 import com.aisupport.rag.entity.RagResponse;
 import com.aisupport.rag.exception.RagGenerationException;
@@ -79,7 +81,7 @@ class RagServiceTest {
         assertThat(responseCaptor.getValue().getKnowledgeFound()).isTrue();
 
         ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-        verify(outboxEventService).publishEvent(anyString(), anyString(), anyString(), eventCaptor.capture());
+        verify(outboxEventService).publishEvent(anyString(), anyString(), ArgumentMatchers.any(com.aisupport.common.event.EventType.class), eventCaptor.capture());
         TicketRagResponseEvent event = (TicketRagResponseEvent) eventCaptor.getValue();
         assertThat(event.getTicketId()).isEqualTo(7L);
         assertThat(event.getModel()).isEqualTo("gemini-2.5-flash");
@@ -121,6 +123,6 @@ class RagServiceTest {
                 .hasMessageContaining("ticketId: 8");
 
         verify(ragResponseRepository, never()).save(any());
-        verify(outboxEventService, never()).publishEvent(anyString(), anyString(), anyString(), any());
+        verify(outboxEventService, never()).publishEvent(anyString(), anyString(), ArgumentMatchers.any(EventType.class), any());
     }
 }

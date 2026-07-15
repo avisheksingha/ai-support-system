@@ -1,15 +1,46 @@
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useCustomerTicket } from "../hooks/useCustomerTickets";
+import { useCustomerTicket, useCustomerMessages, useCustomerAddMessage, customerKeys } from "../hooks/useCustomerTickets";
 import { formatTimeAgo, parseDate, formatTime } from "@/shared/utils/date";
 import { format } from "date-fns";
 import { Loader2, MessageSquare, Paperclip, CheckCircle2, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { TicketModel } from "@/shared/types/ticket";
+import { wsClient } from "@/lib/websocket";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function CustomerTicketDetailPage() {
   const { ticketNumber } = useParams<{ ticketNumber: string }>();
   const navigate = useNavigate();
   const { data: ticket, isLoading, isError } = useCustomerTicket(ticketNumber || "");
+  const { data: messages, isLoading: isMessagesLoading } = useCustomerMessages(ticketNumber);
+  const { mutate: addMessage, isPending: isSendingMessage } = useCustomerAddMessage();
+  const [replyText, setReplyText] = useState("");
+  const queryClient = useQueryClient();
+
+  React.useEffect(() => {
+    if (!ticket || !ticket.id || !ticketNumber) return;
+    
+    const topic = `/topic/tickets.${ticket.id}`;
+    
+    wsClient.subscribe(topic, (event) => {
+      console.log("Customer Portal received WebSocket event:", event);
+      if (event.eventType === "AGENT_REPLY_ADDED" || event.eventType === "CUSTOMER_REPLY_ADDED" || event.eventType === "MESSAGE_ADDED") {
+          queryClient.invalidateQueries({ queryKey: [...customerKeys.all, "messages", ticketNumber] });
+      }
+    });
+
+    return () => {
+      wsClient.unsubscribe(topic);
+    };
+  }, [ticket?.id, ticketNumber, queryClient]);
+
+  const handleSendReply = () => {
+    if (!replyText.trim()) return;
+    addMessage({ ticketNumber: ticket!.ticketNumber, content: replyText }, {
+      onSuccess: () => setReplyText("")
+    });
+  };
 
   if (isLoading) {
     return (
@@ -106,11 +137,65 @@ export function CustomerTicketDetailPage() {
               <span>Communication History</span>
             </div>
             
-            <div className="text-center p-10 border border-dashed border-border rounded-xl bg-card shadow-sm">
-              <h3 className="text-sm font-medium text-foreground mb-2">No replies yet.</h3>
-              <p className="text-[13px] text-muted-foreground leading-relaxed">
-                Our support team will respond here.<br/>You'll receive an email notification when there's an update.
-              </p>
+            <div className="space-y-6">
+              {isMessagesLoading ? (
+                <div className="text-center p-10 border border-dashed border-border rounded-xl bg-card shadow-sm animate-pulse">
+                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Loading messages...</h3>
+                </div>
+              ) : messages && messages.length > 0 ? (
+                <div className="space-y-4">
+                  {messages.map((msg: any) => (
+                    <div key={msg.id} className={`flex gap-3 ${msg.type === 'CUSTOMER_MESSAGE' ? 'flex-row-reverse' : ''}`}>
+                      <div className={`h-8 w-8 shrink-0 rounded-full flex items-center justify-center font-bold text-xs shadow-sm ring-2 ${msg.type === 'CUSTOMER_MESSAGE' ? 'bg-blue-600 text-white ring-blue-50' : msg.type === 'SYSTEM_MESSAGE' ? 'bg-slate-800 text-white ring-slate-100' : 'bg-cyan-600 text-white ring-cyan-50'}`}>
+                        {msg.type === 'CUSTOMER_MESSAGE' ? ticket.customerName?.charAt(0)?.toUpperCase() : msg.type === 'SYSTEM_MESSAGE' ? '⚙️' : 'AG'}
+                      </div>
+                      <div className={`flex-1 space-y-1.5 flex flex-col ${msg.type === 'CUSTOMER_MESSAGE' ? 'items-end' : ''}`}>
+                        <div className={`flex items-baseline gap-2 ${msg.type === 'CUSTOMER_MESSAGE' ? 'flex-row-reverse' : ''}`}>
+                          <span className="text-sm font-medium text-foreground">
+                            {msg.type === 'CUSTOMER_MESSAGE' ? 'Me' : msg.type === 'SYSTEM_MESSAGE' ? 'System' : 'Support Agent'}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground">{formatTimeAgo(msg.createdAt)}</span>
+                        </div>
+                        <div className={`border p-4 text-sm text-foreground whitespace-pre-wrap leading-relaxed shadow-sm relative ${msg.type === 'CUSTOMER_MESSAGE' ? 'bg-blue-50/50 border-blue-100 rounded-2xl rounded-tr-sm text-right dark:bg-blue-900/20 dark:border-blue-800' : 'bg-card border-border rounded-2xl rounded-tl-sm'}`}>
+                          {msg.content}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center p-10 border border-dashed border-border rounded-xl bg-card shadow-sm">
+                  <h3 className="text-sm font-medium text-foreground mb-2">No replies yet.</h3>
+                  <p className="text-[13px] text-muted-foreground leading-relaxed">
+                    Our support team will respond here.<br/>You'll receive an email notification when there's an update.
+                  </p>
+                </div>
+              )}
+              
+              {/* Message Input Box */}
+              <div className="mt-4 bg-card border border-border rounded-xl p-4 shadow-sm flex gap-3">
+                 <div className="h-8 w-8 shrink-0 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-sm ring-2 ring-blue-50">
+                   {ticket.customerName?.charAt(0)?.toUpperCase() || "U"}
+                 </div>
+                 <div className="flex-1 flex flex-col gap-2">
+                   <textarea 
+                     className="w-full border border-border bg-background rounded-lg p-3 text-sm min-h-[100px] focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-y" 
+                     placeholder="Add a reply..."
+                     value={replyText}
+                     onChange={e => setReplyText(e.target.value)}
+                   ></textarea>
+                   <div className="flex justify-end mt-1">
+                      <Button 
+                        size="sm"
+                        onClick={handleSendReply}
+                        disabled={isSendingMessage || !replyText.trim()}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        {isSendingMessage ? 'Sending...' : 'Send Reply'}
+                      </Button>
+                   </div>
+                 </div>
+              </div>
             </div>
           </div>
           

@@ -93,7 +93,7 @@ class WorkflowRecoveryIT extends AbstractIntegrationTest {
                     .filter(e -> e.getAggregateId().equals(ticketId.toString()))
                     .toList();
             assertThat(outboxEvents).hasSize(1);
-            assertThat(outboxEvents.get(0).getEventType()).isEqualTo("TicketOrchestratedEvent");
+            assertThat(outboxEvents.get(0).getEventType()).isEqualTo(com.aisupport.common.event.EventType.TICKET_ORCHESTRATED);
         });
 
         // When the publisher runs

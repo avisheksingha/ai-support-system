@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.aisupport.common.enums.TicketPriority;
+import com.aisupport.common.event.EventType;
 import com.aisupport.common.event.TicketAnalyzedEvent;
 import com.aisupport.common.event.TicketRoutedEvent;
 import com.aisupport.routing.dto.RoutingResponse;
@@ -62,7 +63,7 @@ public class RoutingService {
         outboxService.publishEvent(
                 "TICKET",
                 ticketId.toString(),
-                "TicketRoutedEvent",
+                EventType.TICKET_ROUTED,
                 routedEvent
         );
 

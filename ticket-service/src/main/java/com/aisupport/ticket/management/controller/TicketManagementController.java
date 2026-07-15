@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -170,15 +171,14 @@ public class TicketManagementController {
     @PostMapping("/{ticketNumber}/messages")
     public ResponseEntity<MessageResponse> addMessage(
         @Parameter(description = "Unique ticket number") @PathVariable String ticketNumber,
-        @Valid @RequestBody MessageRequest request) {
+        @Valid @RequestBody MessageRequest request,
+        @RequestHeader(value = "X-User-Role", required = true) String userRole,
+        @RequestHeader(value = "X-User-Email", required = false) String userEmail) {
         
         log.info("Management adding message to ticket: {}", ticketNumber);
         
-        // For V1, assume user is AGENT. In real app, extract role from SecurityContext
-        String userRole = "AGENT"; 
-        
         return ResponseEntity.ok(
-                ticketService.addMessage(ticketNumber, request, userRole)
+                ticketService.addMessage(ticketNumber, request, userRole, userEmail)
         );
     }
 }

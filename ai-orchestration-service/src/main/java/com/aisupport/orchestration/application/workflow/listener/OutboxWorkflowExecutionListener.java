@@ -12,6 +12,7 @@ import com.aisupport.common.enums.TicketStatus;
 import com.aisupport.common.enums.WorkflowOutcome;
 import com.aisupport.common.event.AnalysisResult;
 import com.aisupport.common.event.EventMetadata;
+import com.aisupport.common.event.EventType;
 import com.aisupport.common.event.KnowledgeContext;
 import com.aisupport.common.event.RoutingDecision;
 import com.aisupport.common.event.TicketOrchestratedEvent;
@@ -84,7 +85,7 @@ public class OutboxWorkflowExecutionListener implements WorkflowExecutionListene
                     .aggregateType("Ticket")
                     .aggregateId(String.valueOf(context.getTicketId()))
                     .correlationId(context.getCorrelationId())
-                    .eventType("TicketOrchestratedEvent")
+                    .eventType(EventType.TICKET_ORCHESTRATED)
                     .payload(objectMapper.writeValueAsString(event))
                     .createdAt(metadata.generatedAt())
                     .build();

@@ -3,6 +3,8 @@ package com.aisupport.analysis.outbox;
 import java.time.Instant;
 import java.util.UUID;
 
+import com.aisupport.common.event.EventType;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -44,8 +46,9 @@ public class OutboxEvent {
     @Column(nullable = false)
     private String aggregateId;
 
-    @Column(nullable = false)
-    private String eventType;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "event_type", nullable = false)
+    private EventType eventType;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String payload;

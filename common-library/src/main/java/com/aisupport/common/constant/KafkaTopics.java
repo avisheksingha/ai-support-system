@@ -8,4 +8,5 @@ public final class KafkaTopics {
     public static final String TICKET_ROUTED   = "ticket-routed";
     public static final String TICKET_RAG_RESPONSE = "ticket-rag-response";
     public static final String TICKET_ORCHESTRATED = "ticket-orchestrated";
+    public static final String TICKET_UPDATED = "ticket-updated";
 }

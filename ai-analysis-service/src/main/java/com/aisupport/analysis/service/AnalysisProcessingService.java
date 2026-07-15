@@ -86,7 +86,7 @@ public class AnalysisProcessingService {
         outboxService.publishEvent(
         		"TICKET",
                 ticketId.toString(),
-                "TicketAnalyzedEvent",
+                com.aisupport.common.event.EventType.TICKET_ANALYZED,
                 analyzedEvent
         );
     }

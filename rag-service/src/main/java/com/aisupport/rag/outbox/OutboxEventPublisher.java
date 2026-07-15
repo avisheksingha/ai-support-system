@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.aisupport.common.constant.Correlation;
 import com.aisupport.common.constant.HttpHeaders;
 import com.aisupport.common.constant.KafkaTopics;
+import com.aisupport.common.event.EventType;
 import com.aisupport.common.event.TicketAnalyzedEvent;
 import com.aisupport.common.event.TicketRagResponseEvent;
 import com.aisupport.common.exception.OutboxEventException;
@@ -86,9 +87,6 @@ public class OutboxEventPublisher {
             
             kafkaTemplate.send(producerRecord).get(5, TimeUnit.SECONDS);
 
-            /*kafkaTemplate.send(topic, event.getAggregateId(), payloadObject)
-            	.get(5, TimeUnit.SECONDS); // IMPORTANT → ensures Kafka ack before marking SENT */
-
             event.setStatus(OutboxEvent.Status.SENT);
             event.setProcessedAt(Instant.now());
             
@@ -129,10 +127,10 @@ public class OutboxEventPublisher {
         }
     }
     
-    private Object deserializePayload(String payload, String eventType) {
+    private Object deserializePayload(String payload, EventType eventType) {
         Class<?> clazz = switch (eventType) {
-        	case "TicketAnalyzedEvent"   -> TicketAnalyzedEvent.class;
-        	case "TicketRagResponseEvent" -> TicketRagResponseEvent.class; // Newly added
+        	case TICKET_ANALYZED   -> TicketAnalyzedEvent.class;
+        	case TICKET_RAG_RESPONSE_GENERATED -> TicketRagResponseEvent.class;
             default -> throw new OutboxEventException("Unknown event type: " + eventType);
         };
         try {
@@ -142,11 +140,10 @@ public class OutboxEventPublisher {
         }
     }
 
-    private String mapTopic(String eventType) {
-
+    private String mapTopic(EventType eventType) {
         return switch (eventType) {
-            case "TicketAnalyzedEvent" -> KafkaTopics.TICKET_ANALYZED;
-            case "TicketRagResponseEvent" -> KafkaTopics.TICKET_RAG_RESPONSE; // Newly added
+            case TICKET_ANALYZED -> KafkaTopics.TICKET_ANALYZED;
+            case TICKET_RAG_RESPONSE_GENERATED -> KafkaTopics.TICKET_RAG_RESPONSE;
             default -> throw new OutboxEventException("Unknown event type: " + eventType);
         };
     }

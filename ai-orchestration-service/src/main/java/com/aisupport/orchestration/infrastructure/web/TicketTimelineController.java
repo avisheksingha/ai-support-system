@@ -1,20 +1,23 @@
 package com.aisupport.orchestration.infrastructure.web;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.aisupport.orchestration.application.timeline.TimelineService;
-import com.aisupport.orchestration.application.timeline.dto.TimelinePageResponse;
-import com.aisupport.orchestration.application.timeline.dto.AIInsightResponse;
 import com.aisupport.orchestration.application.timeline.dto.AIActionRequest;
 import com.aisupport.orchestration.application.timeline.dto.AIActionResponse;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import java.util.List;
+import com.aisupport.orchestration.application.timeline.dto.AIInsightResponse;
+import com.aisupport.orchestration.application.timeline.dto.TimelinePageResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -59,7 +62,7 @@ public class TicketTimelineController {
                 .confidenceScore(0.92)
                 .keywords(List.of("subscription", "upgrade", "charge", "error"))
                 .suggestedCategory("Billing & Subscriptions")
-                .analyzedAt(java.time.Instant.now().toString())
+                .analyzedAt(Instant.now().toString())
                 .build();
                 
         return ResponseEntity.ok(mockResponse);
@@ -77,7 +80,7 @@ public class TicketTimelineController {
         AIActionResponse response = AIActionResponse.builder()
                 .status("ACCEPTED")
                 .message("Action " + request.getActionType() + " queued for execution")
-                .workflowExecutionId(java.util.UUID.randomUUID().toString())
+                .workflowExecutionId(UUID.randomUUID().toString())
                 .build();
                 
         return ResponseEntity.accepted().body(response);

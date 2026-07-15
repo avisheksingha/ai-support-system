@@ -20,6 +20,7 @@ import com.aisupport.common.constant.Correlation;
 import com.aisupport.common.constant.HttpHeaders;
 import com.aisupport.common.constant.KafkaTopics;
 import com.aisupport.common.enums.OutboxStatus;
+import com.aisupport.common.event.EventType;
 import com.aisupport.common.event.TicketOrchestratedEvent;
 import com.aisupport.common.exception.OutboxEventException;
 import com.aisupport.orchestration.infrastructure.persistence.entity.OutboxEventEntity;
@@ -131,9 +132,9 @@ public class OutboxEventPublisher {
         }
     }
     
-    private Object deserializePayload(String payload, String eventType) {
+    private Object deserializePayload(String payload, EventType eventType) {
         Class<?> clazz = switch (eventType) {
-            case "TicketOrchestratedEvent" -> TicketOrchestratedEvent.class;
+            case TICKET_ORCHESTRATED -> TicketOrchestratedEvent.class;
             default -> throw new OutboxEventException("Unknown event type: " + eventType);
         };
         try {
@@ -143,10 +144,10 @@ public class OutboxEventPublisher {
         }
     }
 
-    private String mapTopic(String eventType) {
+    private String mapTopic(EventType eventType) {
 
         return switch (eventType) {
-            case "TicketOrchestratedEvent" -> KafkaTopics.TICKET_ORCHESTRATED;
+            case TICKET_ORCHESTRATED -> KafkaTopics.TICKET_ORCHESTRATED;
             default -> throw new OutboxEventException("Unknown event type: " + eventType);
         };
     }

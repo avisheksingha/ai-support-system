@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.aisupport.ticket.dto.MessageRequest;
+import com.aisupport.ticket.dto.MessageResponse;
 import com.aisupport.ticket.dto.TicketRequest;
 import com.aisupport.ticket.dto.TicketResponse;
 import com.aisupport.ticket.service.TicketService;
@@ -73,5 +75,39 @@ public class CustomerTicketController {
             @Parameter(hidden = true) @RequestHeader(value = "X-User-Email", required = true) String userEmail) {
         log.info("Customer [{}] requested ticket [{}]", userEmail, ticketNumber);
         return ResponseEntity.ok(ticketService.getCustomerTicketByNumber(ticketNumber, userEmail));
+    }
+    
+    @Operation(
+        summary = "Get ticket messages",
+        description = "Retrieves all public messages for a specific ticket if owned by customer"
+    )
+    @PreAuthorize("hasRole('CUSTOMER')")
+    @GetMapping("/my/{ticketNumber}/messages")
+    public ResponseEntity<List<MessageResponse>> getMyTicketMessages(
+            @Parameter(description = "Unique ticket number") @PathVariable String ticketNumber,
+            @Parameter(hidden = true) @RequestHeader(value = "X-User-Email", required = true) String userEmail) {
+        log.info("Customer [{}] requested messages for ticket [{}]", userEmail, ticketNumber);
+        return ResponseEntity.ok(ticketService.getCustomerTicketMessages(ticketNumber, userEmail));
+    }
+    
+    @Operation(
+        summary = "Add a new message",
+        description = "Adds a new message to a ticket if owned by customer"
+    )
+    @PreAuthorize("hasRole('CUSTOMER')")
+    @PostMapping("/my/{ticketNumber}/messages")
+    public ResponseEntity<MessageResponse> addMyTicketMessage(
+            @Parameter(description = "Unique ticket number") @PathVariable String ticketNumber,
+            @Parameter(hidden = true) @RequestHeader(value = "X-User-Email", required = true) String userEmail,
+            @Valid @RequestBody MessageRequest request) {
+        log.info("Customer [{}] adding message to ticket [{}]", userEmail, ticketNumber);
+        
+        // Validate ownership
+        ticketService.getCustomerTicketByNumber(ticketNumber, userEmail);
+        
+        // Force internal to false for customers
+        request.setInternal(false);
+        
+        return ResponseEntity.ok(ticketService.addMessage(ticketNumber, request, "CUSTOMER", userEmail));
     }
 }

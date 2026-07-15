@@ -56,3 +56,28 @@ export const useCreateTicket = () => {
     }
   });
 };
+
+export const useCustomerMessages = (ticketNumber: string | undefined) => {
+  return useQuery({
+    queryKey: [...customerKeys.all, "messages", ticketNumber],
+    queryFn: () => customerTicketApi.getMessages(ticketNumber!),
+    enabled: !!ticketNumber,
+  });
+};
+
+export const useCustomerAddMessage = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: customerTicketApi.addMessage,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: [...customerKeys.all, "messages", variables.ticketNumber],
+      });
+      toast.success("Reply sent");
+    },
+    onError: () => {
+      toast.error("Failed to send reply");
+    }
+  });
+};

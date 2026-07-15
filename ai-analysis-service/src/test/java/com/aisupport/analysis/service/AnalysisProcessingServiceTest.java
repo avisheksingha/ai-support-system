@@ -58,7 +58,7 @@ class AnalysisProcessingServiceTest {
 
         verify(chatProvider, never()).analyzeTicket(anyString(), anyString());
         verify(repository, never()).save(any(AnalysisResult.class));
-        verify(outboxEventService, never()).publishEvent(anyString(), anyString(), anyString(), any());
+        verify(outboxEventService, never()).publishEvent(anyString(), anyString(), org.mockito.ArgumentMatchers.any(com.aisupport.common.event.EventType.class), any());
     }
 
     @Test
@@ -98,7 +98,7 @@ class AnalysisProcessingServiceTest {
         verify(outboxEventService).publishEvent(
                 anyString(),
                 anyString(),
-                anyString(),
+                org.mockito.ArgumentMatchers.any(com.aisupport.common.event.EventType.class),
                 eventCaptor.capture()
         );
         TicketAnalyzedEvent published = (TicketAnalyzedEvent) eventCaptor.getValue();

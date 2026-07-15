@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import { useTicket, useAnalysis, useRouting, useTimeline, useUpdateTicketStatus } from "../hooks/useWorkspace";
+import { useTicket, useAnalysis, useRouting, useTimeline, useUpdateTicketStatus, useMessages, useAddMessage } from "../hooks/useWorkspace";
 import { Check } from "lucide-react";
 import { TicketTimeline } from "./TicketTimeline";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +30,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
   const [searchParams] = useSearchParams();
   const showDiagnostics = searchParams.get("diagnostics") === "true";
   const { user } = useAuth();
+  const [replyText, setReplyText] = React.useState("");
   const isAdmin = user?.role === "ADMIN";
   const isDiagnosticsActive = showDiagnostics && isAdmin;
   
@@ -37,6 +38,15 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
   const { data: analysis, isLoading: isAnalysisLoading } = useAnalysis(ticket?.id);
   const { data: routing, isLoading: isRoutingLoading } = useRouting(ticket?.id);
   const { data: timeline, isLoading: isTimelineLoading } = useTimeline(ticket?.id);
+  const { data: messages, isLoading: isMessagesLoading } = useMessages(ticket?.ticketNumber);
+  const { mutate: addMessage, isPending: isSendingMessage } = useAddMessage();
+
+  const handleSendReply = () => {
+    if (!replyText.trim()) return;
+    addMessage({ ticketNumber: ticket!.ticketNumber, content: replyText, isInternal: false }, {
+      onSuccess: () => setReplyText("")
+    });
+  };
 
   if (isTicketLoading) {
     return (
@@ -183,43 +193,48 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
         <div className="mt-4">
           <h2 className="text-[11px] font-bold text-slate-500 mb-4 uppercase tracking-widest px-1">Conversation</h2>
           
-          <div className="space-y-6 bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-            {/* Customer Message Bubble */}
-            <div className="flex gap-4">
-              <div className="h-10 w-10 shrink-0 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-sm ring-4 ring-blue-50">
-                {ticket.customerName.charAt(0)}
+          <div className="space-y-6 bg-white rounded-xl p-6 border border-slate-200 shadow-sm flex flex-col">
+            
+            {/* Real Messages Map */}
+            {isMessagesLoading ? (
+              <div className="space-y-4">
+                <Skeleton className="h-16 w-full rounded-xl bg-slate-100" />
+                <Skeleton className="h-16 w-3/4 self-end rounded-xl bg-slate-100" />
               </div>
-              <div className="flex-1 space-y-1.5">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-sm font-bold text-slate-900">{ticket.customerName}</span>
-                  <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded-full">Customer</span>
-                  <span className="text-[10px] text-slate-400 font-medium ml-2">{formatTimeAgo(ticket.createdAt)}</span>
-                </div>
-                <div className="bg-slate-50 border border-slate-100 rounded-2xl rounded-tl-sm p-4 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed shadow-sm relative">
-                  {ticket.message}
-                </div>
-              </div>
-            </div>
+            ) : messages && messages.length > 0 ? (
+              messages.map((msg: any) => {
+                const isAgent = msg.type === 'AGENT_MESSAGE' || msg.isInternal;
+                const isSystem = msg.senderName === 'System' || msg.type === 'SYSTEM_MESSAGE';
+                const avatarText = isAgent ? 'AG' : isSystem ? '⚙️' : (msg.senderName ? msg.senderName.charAt(0) : ticket.customerName.charAt(0));
+                const badgeText = msg.type ? msg.type.replace('_MESSAGE', '') : 'CUSTOMER';
+                const displayName = isAgent ? (msg.senderName || 'Agent') : isSystem ? 'System' : ticket.customerName;
 
-            {/* Mock Agent Reply to show distinction */}
-            <div className="flex gap-4 flex-row-reverse">
-              <div className="h-10 w-10 shrink-0 rounded-full bg-cyan-600 text-white flex items-center justify-center font-bold text-sm shadow-sm ring-4 ring-cyan-50">
-                JH
-              </div>
-              <div className="flex-1 space-y-1.5 flex flex-col items-end">
-                <div className="flex items-baseline gap-2 flex-row-reverse">
-                  <span className="text-sm font-bold text-slate-900">Jess Hesslop</span>
-                  <span className="text-[9px] font-bold text-cyan-700 uppercase tracking-widest bg-cyan-50 border border-cyan-100 px-2 py-0.5 rounded-full">Agent</span>
-                  <span className="text-[10px] text-slate-400 font-medium mr-2">1 hour ago</span>
-                </div>
-                <div className="bg-cyan-50/50 border border-cyan-100 rounded-2xl rounded-tr-sm p-4 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed shadow-sm text-right">
-                  I'm looking into this for you right now. Could you confirm if you're seeing any specific error code?
-                </div>
-              </div>
-            </div>
+                return (
+                  <div key={msg.id} className={`flex gap-4 ${isAgent ? 'flex-row-reverse' : ''}`}>
+                    <div className={`h-10 w-10 shrink-0 rounded-full flex items-center justify-center font-bold text-sm shadow-sm ring-4 ${isAgent ? 'bg-cyan-600 text-white ring-cyan-50' : isSystem ? 'bg-slate-800 text-white ring-slate-100' : 'bg-blue-600 text-white ring-blue-50'}`}>
+                      {avatarText}
+                    </div>
+                    <div className={`flex-1 space-y-1.5 flex flex-col ${isAgent ? 'items-end' : ''}`}>
+                      <div className={`flex items-baseline gap-2 ${isAgent ? 'flex-row-reverse' : ''}`}>
+                        <span className="text-sm font-bold text-slate-900">{displayName}</span>
+                        <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${isAgent ? 'text-cyan-700 bg-cyan-50 border border-cyan-100' : 'text-slate-500 bg-slate-100'}`}>
+                          {badgeText}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-medium mx-2">{formatTimeAgo(msg.createdAt)}</span>
+                      </div>
+                      <div className={`border p-4 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed shadow-sm relative ${isAgent ? 'bg-cyan-50/50 border-cyan-100 rounded-2xl rounded-tr-sm text-right' : 'bg-slate-50 border-slate-100 rounded-2xl rounded-tl-sm'}`}>
+                        {msg.content}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="text-center text-slate-400 text-sm py-4 italic">No messages yet.</div>
+            )}
 
             {/* AI Suggested Reply (Mocked for visual demonstration of feature) */}
-            <div className="flex gap-4">
+            <div className="flex gap-4 mt-6 pt-6 border-t border-slate-100">
               <div className="h-10 w-10 shrink-0 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-sm shadow-sm ring-4 ring-indigo-50 mt-1">
                 ✨
               </div>
@@ -238,17 +253,11 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
                     I understand you need assistance with your request. Based on our policies, I can help you resolve this right away. Let me know if you would like me to proceed with the necessary steps on your account.
                   </div>
                   <div className="mt-4 flex flex-wrap gap-2 w-full">
-                    <button className="text-[11px] px-4 py-2 bg-indigo-600 shadow-sm border border-transparent rounded-md text-white hover:bg-indigo-700 transition-all font-semibold flex items-center gap-1.5">
+                    <button className="text-[11px] px-4 py-2 bg-indigo-600 shadow-sm border border-transparent rounded-md text-white hover:bg-indigo-700 transition-all font-semibold flex items-center gap-1.5" onClick={() => setReplyText("Hi " + ticket.customerName.split(' ')[0] + ",\n\nI understand you need assistance with your request. Based on our policies, I can help you resolve this right away. Let me know if you would like me to proceed with the necessary steps on your account.")}>
                       <Check className="w-3.5 h-3.5" /> Use Reply
                     </button>
                     <button className="text-[11px] px-4 py-2 bg-white shadow-sm border border-slate-200 rounded-md text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all font-semibold flex items-center gap-1.5">
-                      Edit
-                    </button>
-                    <button className="text-[11px] px-4 py-2 bg-white shadow-sm border border-slate-200 rounded-md text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all font-semibold flex items-center gap-1.5">
                       Regenerate
-                    </button>
-                    <button className="text-[11px] px-4 py-2 bg-white shadow-sm border border-slate-200 rounded-md text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all font-semibold flex items-center gap-1.5">
-                      View Knowledge
                     </button>
                     <div className="flex-1"></div>
                     <button className="text-[11px] px-4 py-2 bg-white shadow-sm border border-slate-200 rounded-md text-rose-600 hover:bg-rose-50 transition-all font-semibold flex items-center gap-1.5">
@@ -258,6 +267,38 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
                 </div>
               </div>
             </div>
+            
+            {/* Message Input Box */}
+            <div className="mt-6 pt-6 border-t border-slate-100 flex gap-4">
+               <div className="h-10 w-10 shrink-0 rounded-full bg-cyan-600 text-white flex items-center justify-center font-bold text-sm shadow-sm ring-4 ring-cyan-50">
+                 AG
+               </div>
+               <div className="flex-1 flex flex-col gap-2">
+                 <textarea 
+                   className="w-full border border-slate-200 rounded-lg p-3 text-sm min-h-[100px] focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-y" 
+                   placeholder="Type your reply to the customer..."
+                   value={replyText}
+                   onChange={e => setReplyText(e.target.value)}
+                 ></textarea>
+                 <div className="flex justify-end gap-2">
+                    <button 
+                      className="px-4 py-2 bg-slate-100 text-slate-700 font-semibold text-xs rounded-md hover:bg-slate-200 transition-colors"
+                      onClick={() => addMessage({ ticketNumber: ticket.ticketNumber, content: replyText, isInternal: true }, { onSuccess: () => setReplyText("") })}
+                      disabled={isSendingMessage || !replyText.trim()}
+                    >
+                      Add Internal Note
+                    </button>
+                    <button 
+                      className="px-6 py-2 bg-blue-600 text-white font-semibold text-xs rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+                      onClick={handleSendReply}
+                      disabled={isSendingMessage || !replyText.trim()}
+                    >
+                      {isSendingMessage ? 'Sending...' : 'Send Reply'}
+                    </button>
+                 </div>
+               </div>
+            </div>
+
           </div>
         </div>
 

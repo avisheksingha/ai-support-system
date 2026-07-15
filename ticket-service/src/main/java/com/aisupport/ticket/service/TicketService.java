@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.aisupport.common.enums.TicketPriority;
 import com.aisupport.common.enums.TicketStatus;
 import com.aisupport.common.event.AnalysisResult;
+import com.aisupport.common.event.DomainEvent;
+import com.aisupport.common.event.EventType;
 import com.aisupport.common.event.KnowledgeContext;
 import com.aisupport.common.event.RoutingDecision;
 import com.aisupport.common.event.TicketCreatedEvent;
@@ -44,6 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 public class TicketService {
 
     private static final String TICKET_NOT_FOUND_MSG = "Ticket not found: ";
+    private static final String AGGREGATE_TYPE = "TICKET";
 
     private final TicketRepository ticketRepository;
     private final TicketMapper ticketMapper;
@@ -102,9 +105,9 @@ public class TicketService {
                 .build();
 
         outboxEventService.publishEvent(
-                "TICKET",
+        		AGGREGATE_TYPE,
                 ticket.getId().toString(),
-                "TicketCreatedEvent",
+                EventType.TICKET_CREATED,
                 event
         );
 
@@ -143,46 +146,76 @@ public class TicketService {
     }
     
     /**
+     * Fetches all public messages for a specific ticket if owned by customer.
+     */
+    @Transactional(readOnly = true)
+    public List<MessageResponse> getCustomerTicketMessages(String ticketNumber, String customerEmail) {
+        Ticket ticket = ticketRepository.findByTicketNumberAndCustomerEmail(ticketNumber, customerEmail)
+                .orElseThrow(() -> new TicketNotFoundException("Ticket not found or access denied: " + ticketNumber));
+                
+        return messageRepository.findByTicketIdOrderByCreatedAtAsc(ticket.getId())
+                .stream()
+                .filter(msg -> !msg.isInternal())
+                .map(messageMapper::toResponse)
+                .toList();
+    }
+    
+    /**
      * Adds a new message to a ticket.
      */
     @Transactional
-    public MessageResponse addMessage(String ticketNumber, MessageRequest request, String userRole) {
+    public MessageResponse addMessage(String ticketNumber, MessageRequest request, String userRole, String userEmail) {
         Ticket ticket = ticketRepository.findByTicketNumber(ticketNumber)
                 .orElseThrow(() -> new TicketNotFoundException(TICKET_NOT_FOUND_MSG + ticketNumber));
                 
         Message message = messageMapper.toEntity(request);
         message.setTicket(ticket);
+        message.setInternal(request.isInternal());
+        
+        if (userEmail != null) {
+            message.setSenderId(userEmail);
+            String name = userEmail.contains("@") ? userEmail.substring(0, userEmail.indexOf('@')) : userEmail;
+            // capitalize first letter
+            name = name.substring(0, 1).toUpperCase() + name.substring(1);
+            message.setSenderName(name);
+        } else {
+            message.setSenderName("System");
+        }
+        
+        EventType eventType;
         
         // Determine type based on role/request
         if (request.isInternal()) {
             message.setType("INTERNAL_NOTE");
+            eventType = EventType.AGENT_REPLY_ADDED;
         } else if ("AGENT".equals(userRole) || "ADMIN".equals(userRole)) {
             message.setType("AGENT_MESSAGE");
-            // If ticket is WAITING_FOR_CUSTOMER or similar, maybe update status?
-            // For now, let's keep status simple
+            eventType = EventType.AGENT_REPLY_ADDED;
+            
             if (ticket.getStatus() == TicketStatus.ASSIGNED) {
-                ticket.transitionTo(TicketStatus.IN_PROGRESS); // Just an example
+                ticket.transitionTo(TicketStatus.IN_PROGRESS); 
             }
         } else {
             message.setType("CUSTOMER_MESSAGE");
+            eventType = EventType.CUSTOMER_REPLY_ADDED;
         }
         
         message = messageRepository.save(message);
         
         MessageResponse response = messageMapper.toResponse(message);
         
-        com.aisupport.common.event.DomainEvent<MessageResponse> event = com.aisupport.common.event.DomainEvent.<MessageResponse>builder()
-                .eventId(java.util.UUID.randomUUID().toString())
-                .eventType(com.aisupport.common.event.EventType.MESSAGE_ADDED)
-                .entityType("TICKET")
+        DomainEvent<MessageResponse> event = DomainEvent.<MessageResponse>builder()
+                .eventId(UUID.randomUUID().toString())
+                .eventType(eventType)
+                .entityType(AGGREGATE_TYPE)
                 .entityId(ticket.getId().toString())
-                .correlationId(java.util.UUID.randomUUID().toString())
+                .correlationId(UUID.randomUUID().toString())
                 .sourceService("ticket-service")
-                .timestamp(java.time.Instant.now())
+                .timestamp(Instant.now())
                 .payload(response)
                 .build();
                 
-        outboxEventService.publishEvent("TICKET", ticket.getId().toString(), "MESSAGE_ADDED", event);
+        outboxEventService.publishEvent(AGGREGATE_TYPE, ticket.getId().toString(), eventType, event);
         webSocketNotificationService.broadcastEvent(event);
         
         return response;

@@ -20,6 +20,8 @@ import com.aisupport.common.constant.Correlation;
 import com.aisupport.common.constant.HttpHeaders;
 import com.aisupport.common.constant.KafkaTopics;
 import com.aisupport.common.enums.OutboxStatus;
+import com.aisupport.common.event.DomainEvent;
+import com.aisupport.common.event.EventType;
 import com.aisupport.common.event.TicketCreatedEvent;
 import com.aisupport.common.exception.OutboxEventException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -127,9 +129,10 @@ public class OutboxEventPublisher {
         }
     }
     
-    private Object deserializePayload(String payload, String eventType) {
+    private Object deserializePayload(String payload, EventType eventType) {
         Class<?> clazz = switch (eventType) {
-            case "TicketCreatedEvent" -> TicketCreatedEvent.class;
+            case TICKET_CREATED -> TicketCreatedEvent.class;
+            case CUSTOMER_REPLY_ADDED, AGENT_REPLY_ADDED -> DomainEvent.class;
             default -> throw new OutboxEventException("Unknown event type: " + eventType);
         };
         try {
@@ -139,10 +142,10 @@ public class OutboxEventPublisher {
         }
     }
 
-    private String mapTopic(String eventType) {
-
+    private String mapTopic(EventType eventType) {
         return switch (eventType) {
-            case "TicketCreatedEvent" -> KafkaTopics.TICKET_CREATED;
+            case TICKET_CREATED -> KafkaTopics.TICKET_CREATED;
+            case CUSTOMER_REPLY_ADDED, AGENT_REPLY_ADDED -> KafkaTopics.TICKET_UPDATED;
             default -> throw new OutboxEventException("Unknown event type: " + eventType);
         };
     }

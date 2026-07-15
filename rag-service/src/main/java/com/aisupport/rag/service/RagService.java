@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.aisupport.common.event.EventType;
 import com.aisupport.common.event.TicketRagResponseEvent;
 import com.aisupport.rag.entity.RagResponse;
 import com.aisupport.rag.exception.RagGenerationException;
@@ -103,7 +104,7 @@ public class RagService {
         outboxEventService.publishEvent(
                 "TICKET",
                 ticketId.toString(),
-                "TicketRagResponseEvent",
+                EventType.TICKET_RAG_RESPONSE_GENERATED,
                 event
         );
 

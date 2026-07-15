@@ -22,6 +22,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 
 import com.aisupport.common.enums.OutboxStatus;
+import com.aisupport.common.event.EventType;
 import com.aisupport.common.event.TicketCreatedEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,7 +52,7 @@ class OutboxEventPublisherTest {
                 .id("evt-1")
                 .aggregateType("TICKET")
                 .aggregateId("42")
-                .eventType("TicketCreatedEvent")
+                .eventType(EventType.TICKET_CREATED)
                 .payload("{\"ticketId\":42}")
                 .status(OutboxStatus.FAILED)
                 .retryCount(1)

@@ -9,10 +9,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.aisupport.common.enums.TicketPriority;
+import com.aisupport.common.event.EventType;
 import com.aisupport.common.event.TicketAnalyzedEvent;
 import com.aisupport.common.event.TicketRoutedEvent;
 import com.aisupport.routing.entity.RoutingRule;
@@ -55,7 +57,7 @@ class RoutingServiceTest {
         verify(outboxEventService).publishEvent(
                 anyString(),
                 anyString(),
-                anyString(),
+                ArgumentMatchers.any(EventType.class),
                 payloadCaptor.capture()
         );
 
@@ -82,7 +84,7 @@ class RoutingServiceTest {
         verify(outboxEventService).publishEvent(
                 anyString(),
                 anyString(),
-                anyString(),
+                ArgumentMatchers.any(EventType.class),
                 payloadCaptor.capture()
         );
 

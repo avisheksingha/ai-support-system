@@ -21,10 +21,12 @@ export function TicketWorkspace() {
     wsClient.subscribe(topic, (event) => {
       console.log("Received WebSocket event:", event);
       // Invalidate relevant queries based on the event
-      queryClient.invalidateQueries({ queryKey: ["ticket", selectedTicket] });
-      queryClient.invalidateQueries({ queryKey: ["ticket-messages", selectedTicket] });
+      if (event.eventType === "CUSTOMER_REPLY_ADDED" || event.eventType === "AGENT_REPLY_ADDED" || event.eventType === "MESSAGE_ADDED") {
+          queryClient.invalidateQueries({ queryKey: ["ticket", selectedTicket] });
+          queryClient.invalidateQueries({ queryKey: ["ticket-messages", selectedTicket] });
+      }
       
-      if (event.eventType === "AI_ANALYSIS_COMPLETED") {
+      if (event.eventType === "TICKET_ANALYZED") {
          queryClient.invalidateQueries({ queryKey: ["ticket-insights", selectedTicket] });
       }
     });
