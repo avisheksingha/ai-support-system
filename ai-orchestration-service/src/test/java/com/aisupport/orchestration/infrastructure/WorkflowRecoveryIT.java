@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Import;
 
+import com.aisupport.common.enums.OutboxStatus;
 import com.aisupport.orchestration.application.workflow.WorkflowEngine;
 import com.aisupport.orchestration.application.workflow.WorkflowExecutionResult;
 import com.aisupport.orchestration.application.workflow.WorkflowStatus;
@@ -98,11 +99,13 @@ class WorkflowRecoveryIT extends AbstractIntegrationTest {
         // When the publisher runs
         outboxEventPublisher.publishEvents();
 
-        // Then the outbox event should be published and deleted for this ticket
-        List<OutboxEventEntity> remainingEvents = outboxEventRepository.findAll().stream()
+        // Then the outbox event should be published and marked as SENT
+        List<OutboxEventEntity> publishedEvents = outboxEventRepository.findAll().stream()
                 .filter(e -> e.getAggregateId().equals(ticketId.toString()))
                 .toList();
-        assertThat(remainingEvents).isEmpty();
+        assertThat(publishedEvents).hasSize(1);
+        assertThat(publishedEvents.get(0).getStatus()).isEqualTo(OutboxStatus.SENT);
+        assertThat(publishedEvents.get(0).getProcessedAt()).isNotNull();
     }
 }
 

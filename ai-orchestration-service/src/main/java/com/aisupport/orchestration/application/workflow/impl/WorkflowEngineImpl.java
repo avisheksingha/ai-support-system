@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
@@ -40,22 +41,22 @@ public class WorkflowEngineImpl implements WorkflowEngine {
     @Override
     public WorkflowExecutionResult resume(String executionId) {
         log.info("Resuming execution: {}", executionId);
-        
-        WorkflowExecutionEntity execution = 
+
+        WorkflowExecutionEntity execution =
             executionRepository.findById(executionId).orElseThrow(() -> new IllegalArgumentException("Execution not found: " + executionId));
-            
-        if (!WorkflowState.FAILED.equals(execution.getState()) && 
+
+        if (!WorkflowState.FAILED.equals(execution.getState()) &&
             !WorkflowState.CREATED.equals(execution.getState())) {
             throw new IllegalStateException("Can only resume FAILED or CREATED executions. Current state: " + execution.getState());
         }
 
-        List<WorkflowCheckpointEntity> checkpoints = 
+        List<WorkflowCheckpointEntity> checkpoints =
             checkpointRepository.findByExecutionIdOrderByCreatedAtDesc(executionId);
-            
+
         WorkflowCheckpointEntity lastCheckpoint = checkpoints.isEmpty() ? null : checkpoints.get(0);
 
         String lastCompletedStep = lastCheckpoint != null ? lastCheckpoint.getStepName() : null;
-        
+
         WorkflowContext context = WorkflowContext.builder()
                 .workflowId(execution.getDefinitionId())
                 .executionId(executionId)
@@ -63,14 +64,13 @@ public class WorkflowEngineImpl implements WorkflowEngine {
                 .ticketId(execution.getTicketId())
                 .conversationId(execution.getConversationId())
                 .build();
-                
+
         if (lastCheckpoint != null && lastCheckpoint.getAttributesSnapshot() != null) {
             lastCheckpoint.getAttributesSnapshot().forEach(context::putAttribute);
         } else if (execution.getAttributes() != null) {
             execution.getAttributes().forEach(context::putAttribute);
         }
-        
-        // Increment recovery count
+
         execution.setRecoveryCount(execution.getRecoveryCount() + 1);
         executionRepository.save(execution);
 
@@ -80,10 +80,10 @@ public class WorkflowEngineImpl implements WorkflowEngine {
     @Override
     public WorkflowExecutionResult execute(String workflowId, WorkflowContext context) {
         log.info("Starting execution of workflow: {} for correlationId: {}", workflowId, context.getCorrelationId());
-        
+
         if (executionRepository.existsByCorrelationIdAndDefinitionIdAndVersion(
                 context.getCorrelationId(), workflowId, 1)) { // Assume v1
-            log.warn("Idempotency check failed. Workflow {} for correlationId {} already processed.", 
+            log.warn("Idempotency check failed. Workflow {} for correlationId {} already processed.",
                      workflowId, context.getCorrelationId());
             return WorkflowExecutionResult.builder()
                     .workflowId(workflowId)
@@ -96,6 +96,35 @@ public class WorkflowEngineImpl implements WorkflowEngine {
     }
 
     private WorkflowExecutionResult executeInternal(String workflowId, WorkflowContext context, String skipUpToStep) {
+        initializeContext(workflowId, context);
+
+        Instant start = Instant.now();
+
+        WorkflowDefinition definition = workflowFactory.create(workflowId);
+        if (definition == null) {
+            log.error("Workflow definition not found for id: {}", workflowId);
+            return buildResult(workflowId, context, WorkflowStatus.FAILED, "Definition not found", 0, start);
+        }
+
+        context.setWorkflowVersion(definition.getVersion());
+
+        if (skipUpToStep == null) {
+            dispatchBeforeWorkflow(context);
+        }
+
+        AtomicInteger stepsExecuted = new AtomicInteger(0);
+        try {
+            runSteps(definition, context, skipUpToStep, stepsExecuted);
+            dispatchAfterWorkflow(context);
+            return buildResult(workflowId, context, WorkflowStatus.SUCCESS, null, stepsExecuted.get(), start);
+        } catch (Exception e) {
+            log.error("Workflow {} failed", workflowId, e);
+            dispatchOnFailure(context, e);
+            return buildResult(workflowId, context, WorkflowStatus.FAILED, e.getMessage(), stepsExecuted.get(), start);
+        }
+    }
+
+    private void initializeContext(String workflowId, WorkflowContext context) {
         context.setWorkflowId(workflowId);
         if (context.getExecutionId() == null) {
             context.setExecutionId(UUID.randomUUID().toString());
@@ -104,69 +133,38 @@ public class WorkflowEngineImpl implements WorkflowEngine {
             String mdcCorrelationId = MDC.get(Correlation.MDC_KEY);
             context.setCorrelationId(mdcCorrelationId != null ? mdcCorrelationId : UUID.randomUUID().toString());
         }
+    }
 
-        Instant start = Instant.now();
-        
-        WorkflowDefinition definition = workflowFactory.create(workflowId);
-        if (definition == null) {
-            log.error("Workflow definition not found for id: {}", workflowId);
-            return WorkflowExecutionResult.builder()
-                    .workflowId(workflowId)
-                    .executionId(context.getExecutionId())
-                    .status(WorkflowStatus.FAILED)
-                    .error("Definition not found")
-                    .duration(Duration.between(start, Instant.now()))
-                    .build();
-        }
-
-        context.setWorkflowVersion(definition.getVersion());
-
-        if (skipUpToStep == null) {
-            dispatchBeforeWorkflow(context);
-        }
-        
-        int stepsExecuted = 0;
+    private void runSteps(WorkflowDefinition definition, WorkflowContext context, String skipUpToStep, AtomicInteger stepsExecuted) {
         boolean skip = skipUpToStep != null;
-        
-        try {
-            for (WorkflowStep step : definition.getSteps()) {
-                if (skip) {
-                    if (step.getName().equals(skipUpToStep)) {
-                        skip = false; // We found the last completed step, start executing the NEXT step
-                    }
-                    continue;
-                }
-                
-                if (step.supports(context)) {
-                    dispatchBeforeStep(context, step);
-                    stepExecutor.executeStep(step, context);
-                    dispatchAfterStep(context, step);
-                    stepsExecuted++;
-                } else {
-                    log.debug("Step {} skipped as it does not support current context", step.getName());
-                }
+
+        for (WorkflowStep step : definition.getSteps()) {
+            if (skip) {
+                skip = !step.getName().equals(skipUpToStep); // stop skipping once we pass the last completed step
+                continue;
             }
-            dispatchAfterWorkflow(context);
-            
-            return WorkflowExecutionResult.builder()
-                    .workflowId(workflowId)
-                    .executionId(context.getExecutionId())
-                    .status(WorkflowStatus.SUCCESS)
-                    .stepsExecuted(stepsExecuted)
-                    .duration(Duration.between(start, Instant.now()))
-                    .build();
-        } catch (Exception e) {
-            log.error("Workflow {} failed", workflowId, e);
-            dispatchOnFailure(context, e);
-            return WorkflowExecutionResult.builder()
-                    .workflowId(workflowId)
-                    .executionId(context.getExecutionId())
-                    .status(WorkflowStatus.FAILED)
-                    .error(e.getMessage())
-                    .stepsExecuted(stepsExecuted)
-                    .duration(Duration.between(start, Instant.now()))
-                    .build();
+
+            if (step.supports(context)) {
+                dispatchBeforeStep(context, step);
+                stepExecutor.executeStep(step, context);
+                dispatchAfterStep(context, step);
+                stepsExecuted.incrementAndGet();
+            } else {
+                log.debug("Step {} skipped as it does not support current context", step.getName());
+            }
         }
+    }
+
+    private WorkflowExecutionResult buildResult(String workflowId, WorkflowContext context, WorkflowStatus status,
+                                                 String error, int stepsExecuted, Instant start) {
+        return WorkflowExecutionResult.builder()
+                .workflowId(workflowId)
+                .executionId(context.getExecutionId())
+                .status(status)
+                .error(error)
+                .stepsExecuted(stepsExecuted)
+                .duration(Duration.between(start, Instant.now()))
+                .build();
     }
 
     private void dispatchBeforeWorkflow(WorkflowContext context) {
