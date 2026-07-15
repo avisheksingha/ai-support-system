@@ -58,6 +58,45 @@ export const useRouting = (ticketId?: number) => {
   });
 };
 
+export const useMessages = (ticketNumber?: string) => {
+  return useQuery({
+    queryKey: ticketNumber ? ["ticket-messages", ticketNumber] : [],
+    queryFn: () => workspaceApi.getMessages(ticketNumber!),
+    enabled: !!ticketNumber,
+    retry: 2,
+  });
+};
+
+export const useAddMessage = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ ticketNumber, content, isInternal }: { ticketNumber: string, content: string, isInternal: boolean }) => 
+      workspaceApi.addMessage(ticketNumber, content, isInternal),
+    onSuccess: (newMessage, { ticketNumber }) => {
+      queryClient.invalidateQueries({ queryKey: ["ticket-messages", ticketNumber] });
+      toast.success(newMessage.isInternal ? "Internal note added" : "Reply sent");
+    },
+    onError: (error: any) => {
+      toast.error("Failed to send message", {
+        description: error?.response?.data?.message || "An error occurred"
+      });
+    }
+  });
+};
+
+export const useTriggerAction = () => {
+  return useMutation({
+    mutationFn: ({ ticketId, actionType, instructions }: { ticketId: number, actionType: string, instructions?: string }) => 
+      workspaceApi.triggerAction(ticketId, actionType, instructions),
+    onSuccess: (_, { actionType }) => {
+      toast.success(`Action Triggered`, {
+        description: `${actionType} has been successfully submitted.`
+      });
+    }
+  });
+};
+
 export const useTimeline = (ticketId?: number) => {
   return useQuery({
     queryKey: ticketId ? workspaceKeys.timeline(ticketId) : [],

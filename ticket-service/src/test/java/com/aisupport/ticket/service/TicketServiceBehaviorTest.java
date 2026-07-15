@@ -28,8 +28,19 @@ class TicketServiceBehaviorTest {
     void setUp() {
         ticketRepository = mock(TicketRepository.class);
         TicketMapper ticketMapper = mock(TicketMapper.class);
+        com.aisupport.ticket.repository.MessageRepository messageRepository = mock(com.aisupport.ticket.repository.MessageRepository.class);
+        com.aisupport.ticket.mapper.MessageMapper messageMapper = mock(com.aisupport.ticket.mapper.MessageMapper.class);
         OutboxEventService outboxEventService = mock(OutboxEventService.class);
-        ticketService = new TicketService(ticketRepository, ticketMapper, outboxEventService);
+        com.aisupport.ticket.notification.WebSocketNotificationService wsService = mock(com.aisupport.ticket.notification.WebSocketNotificationService.class);
+        
+        ticketService = new TicketService(
+                ticketRepository, 
+                ticketMapper, 
+                messageRepository, 
+                messageMapper, 
+                outboxEventService, 
+                wsService
+        );
     }
 
     @Test

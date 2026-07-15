@@ -45,20 +45,33 @@ export const workspaceApi = {
     return response.data;
   },
 
-  // Analysis Service
+  // Analysis Service (now calling Real Backend API)
   getAnalysis: async (ticketId: number): Promise<AnalysisModel> => {
-    // Phase 1 Mock Data
-    return {
-      id: 101,
-      ticketId,
-      intent: "BILLING_ISSUE",
-      sentiment: "FRUSTRATED",
-      urgency: "HIGH",
-      confidenceScore: 0.92,
-      keywords: ["subscription", "upgrade", "charge", "error"],
-      suggestedCategory: "Billing & Subscriptions",
-      analyzedAt: new Date().toISOString()
-    };
+    const response = await apiClient.get<AnalysisModel>(`/orchestration/tickets/${ticketId}/insights`);
+    return response.data;
+  },
+  
+  // Trigger AI Action
+  triggerAction: async (ticketId: number, actionType: string, instructions?: string): Promise<any> => {
+    const response = await apiClient.post(`/orchestration/tickets/${ticketId}/actions`, {
+      actionType,
+      instructions
+    });
+    return response.data;
+  },
+
+  // Ticket Messaging
+  getMessages: async (ticketNumber: string): Promise<any[]> => {
+    const response = await apiClient.get(`/tickets/${ticketNumber}/messages`);
+    return response.data;
+  },
+  
+  addMessage: async (ticketNumber: string, content: string, isInternal: boolean): Promise<any> => {
+    const response = await apiClient.post(`/tickets/${ticketNumber}/messages`, {
+      content,
+      isInternal
+    });
+    return response.data;
   },
 
   // Unmocked Knowledge Service (reads from TicketModel)

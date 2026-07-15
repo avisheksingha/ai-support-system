@@ -1,9 +1,38 @@
 import { useState } from "react";
 import { TicketList } from "../components/TicketList";
 import { TicketDetailView } from "../components/TicketDetailView";
+import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { wsClient } from "@/lib/websocket";
 
 export function TicketWorkspace() {
   const [selectedTicket, setSelectedTicket] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!selectedTicket) return;
+
+    // Use a generic wildcard or specific ticket subscription
+    // Assuming backend publishes to /topic/tickets.{ticketId}
+    // We only have ticketNumber on the frontend for now, let's assume the topic uses ticketNumber
+    // (In a real scenario, we'd ensure ticketId vs ticketNumber matches)
+    const topic = `/topic/tickets.${selectedTicket}`;
+    
+    wsClient.subscribe(topic, (event) => {
+      console.log("Received WebSocket event:", event);
+      // Invalidate relevant queries based on the event
+      queryClient.invalidateQueries({ queryKey: ["ticket", selectedTicket] });
+      queryClient.invalidateQueries({ queryKey: ["ticket-messages", selectedTicket] });
+      
+      if (event.eventType === "AI_ANALYSIS_COMPLETED") {
+         queryClient.invalidateQueries({ queryKey: ["ticket-insights", selectedTicket] });
+      }
+    });
+
+    return () => {
+      wsClient.unsubscribe(topic);
+    };
+  }, [selectedTicket, queryClient]);
 
   return (
     <div className="flex h-full w-full bg-[#F8FAFC] overflow-hidden text-slate-800">

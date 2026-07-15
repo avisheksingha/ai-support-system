@@ -17,13 +17,19 @@ import com.aisupport.common.event.TicketCreatedEvent;
 import com.aisupport.common.event.TicketOrchestratedEvent;
 import com.aisupport.common.event.TicketRagResponseEvent;
 import com.aisupport.common.event.TicketRoutedEvent;
+import com.aisupport.ticket.dto.MessageRequest;
+import com.aisupport.ticket.dto.MessageResponse;
 import com.aisupport.ticket.dto.TicketRequest;
 import com.aisupport.ticket.dto.TicketResponse;
+import com.aisupport.ticket.entity.Message;
 import com.aisupport.ticket.entity.Ticket;
 import com.aisupport.ticket.exception.InvalidTicketInputException;
 import com.aisupport.ticket.exception.TicketNotFoundException;
+import com.aisupport.ticket.mapper.MessageMapper;
 import com.aisupport.ticket.mapper.TicketMapper;
+import com.aisupport.ticket.notification.WebSocketNotificationService;
 import com.aisupport.ticket.outbox.OutboxEventService;
+import com.aisupport.ticket.repository.MessageRepository;
 import com.aisupport.ticket.repository.TicketRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -41,7 +47,10 @@ public class TicketService {
 
     private final TicketRepository ticketRepository;
     private final TicketMapper ticketMapper;
+    private final MessageRepository messageRepository;
+    private final MessageMapper messageMapper;
     private final OutboxEventService outboxEventService;
+    private final WebSocketNotificationService webSocketNotificationService;
 
     /**
      * Creates a new ticket and stores a corresponding {@code TicketCreatedEvent}
@@ -117,6 +126,66 @@ public class TicketService {
                 .orElseThrow(() -> new TicketNotFoundException(
                         TICKET_NOT_FOUND_MSG + ticketNumber));
         return ticketMapper.toResponse(ticket);
+    }
+
+    /**
+     * Fetches all messages for a specific ticket.
+     */
+    @Transactional(readOnly = true)
+    public List<MessageResponse> getTicketMessages(String ticketNumber) {
+        Ticket ticket = ticketRepository.findByTicketNumber(ticketNumber)
+                .orElseThrow(() -> new TicketNotFoundException(TICKET_NOT_FOUND_MSG + ticketNumber));
+                
+        return messageRepository.findByTicketIdOrderByCreatedAtAsc(ticket.getId())
+                .stream()
+                .map(messageMapper::toResponse)
+                .toList();
+    }
+    
+    /**
+     * Adds a new message to a ticket.
+     */
+    @Transactional
+    public MessageResponse addMessage(String ticketNumber, MessageRequest request, String userRole) {
+        Ticket ticket = ticketRepository.findByTicketNumber(ticketNumber)
+                .orElseThrow(() -> new TicketNotFoundException(TICKET_NOT_FOUND_MSG + ticketNumber));
+                
+        Message message = messageMapper.toEntity(request);
+        message.setTicket(ticket);
+        
+        // Determine type based on role/request
+        if (request.isInternal()) {
+            message.setType("INTERNAL_NOTE");
+        } else if ("AGENT".equals(userRole) || "ADMIN".equals(userRole)) {
+            message.setType("AGENT_MESSAGE");
+            // If ticket is WAITING_FOR_CUSTOMER or similar, maybe update status?
+            // For now, let's keep status simple
+            if (ticket.getStatus() == TicketStatus.ASSIGNED) {
+                ticket.transitionTo(TicketStatus.IN_PROGRESS); // Just an example
+            }
+        } else {
+            message.setType("CUSTOMER_MESSAGE");
+        }
+        
+        message = messageRepository.save(message);
+        
+        MessageResponse response = messageMapper.toResponse(message);
+        
+        com.aisupport.common.event.DomainEvent<MessageResponse> event = com.aisupport.common.event.DomainEvent.<MessageResponse>builder()
+                .eventId(java.util.UUID.randomUUID().toString())
+                .eventType(com.aisupport.common.event.EventType.MESSAGE_ADDED)
+                .entityType("TICKET")
+                .entityId(ticket.getId().toString())
+                .correlationId(java.util.UUID.randomUUID().toString())
+                .sourceService("ticket-service")
+                .timestamp(java.time.Instant.now())
+                .payload(response)
+                .build();
+                
+        outboxEventService.publishEvent("TICKET", ticket.getId().toString(), "MESSAGE_ADDED", event);
+        webSocketNotificationService.broadcastEvent(event);
+        
+        return response;
     }
 
     /**

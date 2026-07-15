@@ -8,16 +8,21 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.aisupport.ticket.dto.MessageRequest;
+import com.aisupport.ticket.dto.MessageResponse;
 import com.aisupport.ticket.dto.TicketResponse;
 import com.aisupport.ticket.service.TicketService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -138,6 +143,42 @@ public class TicketManagementController {
         
         return ResponseEntity.ok(
                 ticketService.updateTicketPriority(ticketNumber, priority, slaHours)
+        );
+    }
+    
+    @Operation(
+        summary = "Get ticket messages",
+        description = "Retrieves all messages for a specific ticket"
+    )
+    @PreAuthorize("hasAnyRole('AGENT', 'ADMIN')")
+    @GetMapping("/{ticketNumber}/messages")
+    public ResponseEntity<List<MessageResponse>> getMessages(
+        @Parameter(description = "Unique ticket number") @PathVariable String ticketNumber) {
+        
+        log.info("Management requested messages for ticket: {}", ticketNumber);
+        
+        return ResponseEntity.ok(
+                ticketService.getTicketMessages(ticketNumber)
+        );
+    }
+    
+    @Operation(
+        summary = "Add a new message",
+        description = "Adds a new message (reply or internal note) to a ticket"
+    )
+    @PreAuthorize("hasAnyRole('AGENT', 'ADMIN')")
+    @PostMapping("/{ticketNumber}/messages")
+    public ResponseEntity<MessageResponse> addMessage(
+        @Parameter(description = "Unique ticket number") @PathVariable String ticketNumber,
+        @Valid @RequestBody MessageRequest request) {
+        
+        log.info("Management adding message to ticket: {}", ticketNumber);
+        
+        // For V1, assume user is AGENT. In real app, extract role from SecurityContext
+        String userRole = "AGENT"; 
+        
+        return ResponseEntity.ok(
+                ticketService.addMessage(ticketNumber, request, userRole)
         );
     }
 }
