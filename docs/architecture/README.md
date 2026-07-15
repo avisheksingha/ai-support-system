@@ -16,3 +16,4 @@ The architecture is currently frozen at **Version 1.0**. Future enhancements sho
 8. [Event Lifecycle](08-event-lifecycle.md)
 9. [Observability](09-observability.md)
 10. [Extension Guide](10-extension-guide.md)
+11. [V1 Business Workflow & Integration Baseline](11-business-workflow-and-integration.md)

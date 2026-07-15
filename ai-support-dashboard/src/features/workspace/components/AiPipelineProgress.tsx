@@ -18,10 +18,10 @@ export function AiPipelineProgress({ ticket }: AiPipelineProgressProps) {
       case "NEW": return 0;
       case "ANALYZING": return 1;
       case "ANALYZED": return 3; // Finished Analysis and Knowledge
-      case "ASSIGNED": 
-      case "IN_PROGRESS":
-      case "RESOLVED":
-      case "CLOSED": return 5;
+      case "ASSIGNED": return 5;
+      case "IN_PROGRESS": return 5;
+      case "RESOLVED": 
+      case "CLOSED": return 6;
       default: return 0;
     }
   };
@@ -30,10 +30,11 @@ export function AiPipelineProgress({ ticket }: AiPipelineProgressProps) {
 
   const steps = [
     { label: "Customer", idx: 1 },
-    { label: "Analysis", idx: 2 },
+    { label: "AI Analysis", idx: 2 },
     { label: "Knowledge", idx: 3 },
     { label: "Routing", idx: 4 },
     { label: "Assigned", idx: 5 },
+    { label: "Resolution", idx: 6 },
   ];
 
   return (

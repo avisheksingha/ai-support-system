@@ -1,5 +1,6 @@
 import React, { Suspense } from "react";
 import { useTicket, useAnalysis, useRouting, useTimeline, useUpdateTicketStatus } from "../hooks/useWorkspace";
+import { Check } from "lucide-react";
 import { TicketTimeline } from "./TicketTimeline";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -59,7 +60,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 flex flex-col xl:flex-row gap-6 lg:gap-8 items-start">
+    <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 flex flex-col xl:flex-row gap-6 lg:gap-8 items-start bg-[#F8FAFC]">
       {/* Primary Column: Conversation & Actions */}
       <div className="flex-1 min-w-0 flex flex-col gap-6">
         
@@ -75,38 +76,40 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
           </ErrorBoundary>
         )}
 
-        <div className="bg-card shadow-sm border-0 ring-1 ring-border/50 rounded-lg p-5 mb-2">
-          <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-            <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-semibold text-foreground leading-snug mb-1 break-words">{ticket.subject}</h1>
-              <div className="mb-4">
-                <span className="text-muted-foreground font-mono text-[11px] uppercase tracking-wider">{ticket.ticketNumber}</span>
+        <div className="bg-white shadow-sm border border-slate-200 rounded-xl p-6 mb-2 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+          <div className="flex flex-col gap-6">
+            <div className="w-full">
+              <div className="mb-3 flex flex-wrap items-center gap-3">
+                <span className="text-slate-500 font-mono text-[11px] font-bold uppercase tracking-widest bg-slate-100 px-2 py-1 rounded">{ticket.ticketNumber}</span>
+                <span className="text-xs text-slate-400 font-medium">Created {formatTimeAgo(ticket.createdAt)}</span>
               </div>
+              <h1 className="text-2xl font-bold text-slate-900 leading-tight mb-5 break-words">{ticket.subject}</h1>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-6 text-[13px] text-foreground/80 max-w-xl">
+              <div className="flex flex-wrap items-center gap-y-3 gap-x-6 text-sm text-slate-600">
                 <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground w-4 text-center">👤</span> {ticket.customerName}
+                  <div className="w-6 h-6 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-[10px]">👤</div>
+                  <span className="font-medium text-slate-800">{ticket.customerName}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground w-4 text-center">📧</span> {ticket.customerEmail || 'customer@example.com'}
+                  <div className="w-6 h-6 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-[10px]">📧</div>
+                  <span className="truncate max-w-[200px] sm:max-w-none">{ticket.customerEmail || 'customer@example.com'}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground w-4 text-center">🏢</span> Support Department
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground w-4 text-center">🕒</span> Created {formatTimeAgo(ticket.createdAt)}
+                  <div className="w-6 h-6 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-[10px]">🏢</div>
+                  Support Department
                 </div>
               </div>
             </div>
             
-            <div className="flex flex-col items-end gap-3 min-w-[180px]">
-              <div className="flex items-center justify-between w-full text-sm">
-                <span className="text-muted-foreground">Status</span>
+            <div className="w-full grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="bg-slate-50/80 border border-slate-100 rounded-lg p-3 flex flex-col justify-between gap-2">
+                <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Status</span>
                 <Select 
                   value={ticket.status} 
                   onValueChange={(val) => updateStatus({ ticketNumber: ticket.ticketNumber, status: val as TicketStatus })}
                 >
-                  <SelectTrigger className="h-7 text-xs bg-muted text-foreground border-border w-[110px]">
+                  <SelectTrigger className="h-8 text-xs font-semibold bg-white text-slate-800 border-slate-200 w-full shadow-sm">
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -120,68 +123,137 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex items-center justify-between w-full text-sm">
-                <span className="text-muted-foreground">Priority</span>
-                <Badge variant="outline" className={`h-7 px-2 text-[10px] uppercase justify-center w-[110px]
-                  ${ticket.priority === 'CRITICAL' ? 'border-red-500/50 text-red-500 bg-red-500/10' : ''}
-                  ${ticket.priority === 'HIGH' ? 'border-orange-500/50 text-orange-500 bg-orange-500/10' : ''}
-                  ${ticket.priority === 'MEDIUM' ? 'border-yellow-500/50 text-yellow-500 bg-yellow-500/10' : ''}
-                  ${ticket.priority === 'LOW' ? 'border-blue-500/50 text-blue-500 bg-blue-500/10' : ''}
+              <div className="bg-slate-50/80 border border-slate-100 rounded-lg p-3 flex flex-col justify-between gap-2">
+                <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Priority</span>
+                <Badge variant="outline" className={`h-8 px-3 text-[10px] font-bold uppercase justify-center w-full shadow-sm
+                  ${ticket.priority === 'CRITICAL' ? 'border-red-200 text-red-700 bg-red-50' : ''}
+                  ${ticket.priority === 'HIGH' ? 'border-orange-200 text-orange-700 bg-orange-50' : ''}
+                  ${ticket.priority === 'MEDIUM' ? 'border-amber-200 text-amber-700 bg-amber-50' : ''}
+                  ${ticket.priority === 'LOW' ? 'border-blue-200 text-blue-700 bg-blue-50' : ''}
                 `}>
                   {ticket.priority}
                 </Badge>
               </div>
-              <div className="flex items-center justify-between w-full text-sm mt-1 pt-2 border-t border-border/50">
-                <span className="text-muted-foreground">SLA</span>
-                <span className="text-xs font-medium text-emerald-600 flex items-center gap-1.5 w-[110px] justify-center">
-                  🟢 4h 15m left
-                </span>
+              <div className="bg-slate-50/80 border border-slate-100 rounded-lg p-3 flex flex-col justify-between gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">SLA</span>
+                  <span className="text-[11px] font-bold text-amber-600 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> 2h 15m left
+                  </span>
+                </div>
+                <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden mt-1">
+                  <div className="h-full bg-amber-500 w-[65%] rounded-full"></div>
+                </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Ticket Lifecycle Visual */}
+        <div className="bg-white shadow-sm border border-slate-200 rounded-xl p-4 mb-2 flex items-center justify-between overflow-x-auto text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          <div className="flex items-center gap-2 text-emerald-600">
+            <div className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center"><Check className="h-2.5 w-2.5" /></div>
+            Submitted
+          </div>
+          <div className="w-8 h-px bg-slate-200"></div>
+          <div className="flex items-center gap-2 text-emerald-600">
+            <div className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center"><Check className="h-2.5 w-2.5" /></div>
+            AI Analyzed
+          </div>
+          <div className="w-8 h-px bg-slate-200"></div>
+          <div className="flex items-center gap-2 text-blue-600">
+            <div className="w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center"><span className="animate-pulse w-1.5 h-1.5 bg-blue-600 rounded-full"></span></div>
+            Agent Assigned
+          </div>
+          <div className="w-8 h-px bg-slate-200"></div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-full bg-slate-100"></div>
+            Working
+          </div>
+          <div className="w-8 h-px bg-slate-200"></div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-full bg-slate-100"></div>
+            Resolved
           </div>
         </div>
 
         <AiPipelineProgress ticket={ticket} />
 
         {/* Conversation */}
-        <div className="mt-2">
-          <h2 className="text-[11px] font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Conversation</h2>
+        <div className="mt-4">
+          <h2 className="text-[11px] font-bold text-slate-500 mb-4 uppercase tracking-widest px-1">Conversation</h2>
           
-          <div className="space-y-6 bg-card/50 rounded-xl p-4 md:p-6 border border-border/50">
+          <div className="space-y-6 bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
             {/* Customer Message Bubble */}
             <div className="flex gap-4">
-              <div className="h-8 w-8 shrink-0 rounded-full bg-[#0C66E4]/10 text-[#0C66E4] flex items-center justify-center font-bold text-xs">
+              <div className="h-10 w-10 shrink-0 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-sm ring-4 ring-blue-50">
                 {ticket.customerName.charAt(0)}
               </div>
-              <div className="flex-1 space-y-1">
+              <div className="flex-1 space-y-1.5">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-sm font-medium text-foreground">{ticket.customerName}</span>
-                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider bg-muted px-1.5 py-0.5 rounded">Customer</span>
-                  <span className="text-[10px] text-muted-foreground">{formatTimeAgo(ticket.createdAt)}</span>
+                  <span className="text-sm font-bold text-slate-900">{ticket.customerName}</span>
+                  <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded-full">Customer</span>
+                  <span className="text-[10px] text-slate-400 font-medium ml-2">{formatTimeAgo(ticket.createdAt)}</span>
                 </div>
-                <div className="bg-white border border-border/60 rounded-2xl rounded-tl-sm p-4 text-sm text-foreground whitespace-pre-wrap shadow-sm">
+                <div className="bg-slate-50 border border-slate-100 rounded-2xl rounded-tl-sm p-4 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed shadow-sm relative">
                   {ticket.message}
+                </div>
+              </div>
+            </div>
+
+            {/* Mock Agent Reply to show distinction */}
+            <div className="flex gap-4 flex-row-reverse">
+              <div className="h-10 w-10 shrink-0 rounded-full bg-cyan-600 text-white flex items-center justify-center font-bold text-sm shadow-sm ring-4 ring-cyan-50">
+                JH
+              </div>
+              <div className="flex-1 space-y-1.5 flex flex-col items-end">
+                <div className="flex items-baseline gap-2 flex-row-reverse">
+                  <span className="text-sm font-bold text-slate-900">Jess Hesslop</span>
+                  <span className="text-[9px] font-bold text-cyan-700 uppercase tracking-widest bg-cyan-50 border border-cyan-100 px-2 py-0.5 rounded-full">Agent</span>
+                  <span className="text-[10px] text-slate-400 font-medium mr-2">1 hour ago</span>
+                </div>
+                <div className="bg-cyan-50/50 border border-cyan-100 rounded-2xl rounded-tr-sm p-4 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed shadow-sm text-right">
+                  I'm looking into this for you right now. Could you confirm if you're seeing any specific error code?
                 </div>
               </div>
             </div>
 
             {/* AI Suggested Reply (Mocked for visual demonstration of feature) */}
             <div className="flex gap-4">
-              <div className="h-8 w-8 shrink-0 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-xs mt-1">
+              <div className="h-10 w-10 shrink-0 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-sm shadow-sm ring-4 ring-indigo-50 mt-1">
                 ✨
               </div>
-              <div className="flex-1 space-y-1">
+              <div className="flex-1 space-y-1.5">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-sm font-medium text-purple-700">AI Suggested Reply</span>
-                  <span className="text-[10px] text-muted-foreground">Just now</span>
+                  <span className="text-sm font-bold text-indigo-700">Copilot Draft</span>
+                  <span className="text-[10px] text-slate-400 font-medium ml-2">Generated just now</span>
                 </div>
-                <div className="bg-purple-50/50 border border-purple-100/60 rounded-2xl rounded-tl-sm p-4 text-sm text-foreground whitespace-pre-wrap shadow-sm">
-                  <span className="italic text-muted-foreground/70 text-xs block mb-3">Drafting based on retrieved knowledge...</span>
-                  Hi {ticket.customerName.split(' ')[0]},<br/><br/>
-                  I understand you need assistance with your request. Based on our policies, I can help you resolve this right away. Let me know if you would like me to proceed with the necessary steps on your account.
-                  <div className="mt-4 pt-3 border-t border-purple-200/50 flex flex-wrap gap-2">
-                    <button className="text-[11px] px-3 py-1.5 bg-white border border-purple-200 rounded text-purple-700 hover:bg-purple-50 transition-colors font-medium">Use Reply</button>
-                    <button className="text-[11px] px-3 py-1.5 bg-white border border-border rounded text-muted-foreground hover:bg-muted transition-colors font-medium">Regenerate</button>
+                <div className="bg-indigo-50/50 border border-indigo-100 rounded-2xl rounded-tl-sm p-5 text-sm text-slate-800 whitespace-pre-wrap shadow-sm">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="flex h-2 w-2 rounded-full bg-indigo-500"></span>
+                    <span className="italic text-indigo-600/80 font-medium text-xs">Drafted based on matched knowledge article</span>
+                  </div>
+                  <div className="bg-white p-4 rounded-xl border border-indigo-50 shadow-sm leading-relaxed">
+                    Hi {ticket.customerName.split(' ')[0]},<br/><br/>
+                    I understand you need assistance with your request. Based on our policies, I can help you resolve this right away. Let me know if you would like me to proceed with the necessary steps on your account.
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2 w-full">
+                    <button className="text-[11px] px-4 py-2 bg-indigo-600 shadow-sm border border-transparent rounded-md text-white hover:bg-indigo-700 transition-all font-semibold flex items-center gap-1.5">
+                      <Check className="w-3.5 h-3.5" /> Use Reply
+                    </button>
+                    <button className="text-[11px] px-4 py-2 bg-white shadow-sm border border-slate-200 rounded-md text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all font-semibold flex items-center gap-1.5">
+                      Edit
+                    </button>
+                    <button className="text-[11px] px-4 py-2 bg-white shadow-sm border border-slate-200 rounded-md text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all font-semibold flex items-center gap-1.5">
+                      Regenerate
+                    </button>
+                    <button className="text-[11px] px-4 py-2 bg-white shadow-sm border border-slate-200 rounded-md text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all font-semibold flex items-center gap-1.5">
+                      View Knowledge
+                    </button>
+                    <div className="flex-1"></div>
+                    <button className="text-[11px] px-4 py-2 bg-white shadow-sm border border-slate-200 rounded-md text-rose-600 hover:bg-rose-50 transition-all font-semibold flex items-center gap-1.5">
+                      Escalate
+                    </button>
                   </div>
                 </div>
               </div>
@@ -190,18 +262,19 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
         </div>
 
         {/* Activity Feed */}
-        <div className="mt-4">
-          <h2 className="text-[11px] font-semibold text-muted-foreground mb-4 uppercase tracking-wider">Activity Feed</h2>
+        <div className="mt-6 mb-8">
+          <h2 className="text-[11px] font-bold text-slate-500 mb-4 uppercase tracking-widest px-1">Activity Feed</h2>
           {isTimelineLoading ? (
             <div className="space-y-4 ml-4">
-              <Skeleton className="h-10 w-full bg-card" />
-              <Skeleton className="h-10 w-full bg-card" />
-              <Skeleton className="h-10 w-full bg-card" />
+              <Skeleton className="h-10 w-full bg-slate-100 rounded-lg" />
+              <Skeleton className="h-10 w-full bg-slate-100 rounded-lg" />
             </div>
           ) : timeline ? (
-            <TicketTimeline events={timeline} />
+            <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+              <TicketTimeline events={timeline} />
+            </div>
           ) : (
-            <div className="text-sm text-muted-foreground italic ml-4">No activity yet.</div>
+            <div className="text-sm text-slate-500 italic ml-4 bg-white p-4 rounded-xl border border-slate-200">No activity yet.</div>
           )}
         </div>
       </div>

@@ -1,6 +1,5 @@
 import type { TicketPriority } from "../ticket";
 
-
 export interface AnalysisModel {
   id: number;
   ticketId: number;
@@ -147,4 +146,38 @@ export interface WorkflowSummaryDTO {
 export interface OperationsDashboardResponse {
   overview: OperationsOverviewDTO;
   recentExecutions: WorkflowSummaryDTO[];
+}
+
+export interface ApprovalRequest {
+  id: string;
+  workflowId: string;
+  correlationId: string;
+  ticketId: number;
+  intent: string;
+  confidence: number;
+  triggeredPolicy: string;
+  reason: string;
+  recommendedAction: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  createdAt: string;
+}
+
+export interface BlockedRequest {
+  id: string;
+  workflowId: string;
+  ticketId: number;
+  guardrail: string;
+  reason: string;
+  actor: string;
+  blockedAt: string;
+}
+
+export interface AuditLog {
+  id: string;
+  timestamp: string;
+  workflowId: string;
+  policyEvaluated: string;
+  decision: "ALLOWED" | "BLOCKED" | "APPROVAL_REQUIRED";
+  durationMs: number;
+  actor: "AI" | "SYSTEM" | "AGENT";
 }

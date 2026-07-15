@@ -1,7 +1,7 @@
 import { apiClient } from "@/lib/api-client";
-import type { 
-  AnalysisModel, 
-  KnowledgeModel, 
+import type {
+  AnalysisModel,
+  KnowledgeModel,
   RoutingModel,
   TimelinePageResponse,
   OperationsDashboardResponse
@@ -47,15 +47,25 @@ export const workspaceApi = {
 
   // Analysis Service
   getAnalysis: async (ticketId: number): Promise<AnalysisModel> => {
-    const response = await apiClient.get<AnalysisModel>(`/analysis/ticket/${ticketId}`);
-    return response.data;
+    // Phase 1 Mock Data
+    return {
+      id: 101,
+      ticketId,
+      intent: "BILLING_ISSUE",
+      sentiment: "FRUSTRATED",
+      urgency: "HIGH",
+      confidenceScore: 0.92,
+      keywords: ["subscription", "upgrade", "charge", "error"],
+      suggestedCategory: "Billing & Subscriptions",
+      analyzedAt: new Date().toISOString()
+    };
   },
 
   // Unmocked Knowledge Service (reads from TicketModel)
   getKnowledge: async (ticketId: number): Promise<KnowledgeModel> => {
     const response = await apiClient.get<TicketModel>(`/tickets/${ticketId}`);
     const ticket = response.data;
-    
+
     return {
       ticketId,
       query: ticket.subject,

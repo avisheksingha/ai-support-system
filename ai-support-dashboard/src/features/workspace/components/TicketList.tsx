@@ -22,19 +22,20 @@ export function TicketList({ selectedTicket, onSelectTicket }: TicketListProps) 
   ) || [];
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      <div className="shrink-0">
-        <div className="h-16 flex items-center px-5 border-b border-border">
-          <span className="font-bold text-sm tracking-tight text-foreground">
-            Tickets
+    <div className="flex flex-col h-full overflow-hidden bg-white">
+      <div className="shrink-0 bg-slate-50/50">
+        <div className="h-16 flex items-center px-6 border-b border-slate-200">
+          <span className="font-bold text-sm tracking-wide text-slate-800 uppercase flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+            My Queue
           </span>
         </div>
-        <div className="p-4 border-b border-border">
+        <div className="p-4 border-b border-slate-200 bg-white">
           <div className="relative">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
             <Input 
-              placeholder="Search tickets..." 
-              className="pl-9 bg-card border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-[#0C66E4] shadow-sm"
+              placeholder="Search by ID, name, or subject..." 
+              className="pl-9 bg-slate-50/50 border-slate-200 text-slate-800 placeholder:text-slate-400 focus-visible:ring-indigo-500 shadow-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -42,22 +43,23 @@ export function TicketList({ selectedTicket, onSelectTicket }: TicketListProps) 
         </div>
       </div>
       
-      <div className="flex-1 overflow-y-auto p-2 space-y-1">
+      <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-slate-50/30">
         {isLoading && (
-          <div className="flex justify-center p-8 text-muted-foreground">
+          <div className="flex justify-center p-8 text-slate-400">
             <Loader2 className="h-6 w-6 animate-spin" />
           </div>
         )}
         
         {isError && (
-          <div className="text-red-400 p-4 text-sm text-center">
-            Failed to load tickets.
+          <div className="text-red-400 p-4 text-sm text-center font-medium bg-red-50 rounded-lg border border-red-100 mx-2">
+            Failed to load queue.
           </div>
         )}
 
         {!isLoading && filteredTickets.length === 0 && (
-          <div className="text-muted-foreground p-4 text-sm text-center">
-            No tickets found.
+          <div className="text-slate-500 p-8 text-sm text-center border-2 border-dashed border-slate-200 rounded-xl mx-2 mt-4 bg-white">
+            <span className="block text-2xl mb-2">📭</span>
+            No tickets match your search.
           </div>
         )}
 
@@ -65,36 +67,36 @@ export function TicketList({ selectedTicket, onSelectTicket }: TicketListProps) 
           <button
             key={ticket.id}
             onClick={() => onSelectTicket(ticket.ticketNumber)}
-            className={`w-full text-left p-4 rounded-xl border transition-all duration-300 ease-in-out ${
+            className={`w-full text-left p-4 rounded-xl border transition-all duration-200 ease-in-out group ${
               selectedTicket === ticket.ticketNumber
-                ? "bg-blue-500/10 border-blue-500/50 scale-[1.02]"
-                : "bg-card border-transparent hover:bg-card hover:border-border hover:scale-[1.01]"
+                ? "bg-indigo-50 border-indigo-200 ring-1 ring-indigo-500/20 shadow-sm"
+                : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm"
             }`}
           >
-            <div className="mb-1">
-              <span className="text-[10px] font-mono text-muted-foreground">{ticket.ticketNumber}</span>
+            <div className="flex items-center justify-between mb-2">
+              <span className={`text-[10px] font-bold tracking-widest uppercase ${
+                selectedTicket === ticket.ticketNumber ? "text-indigo-600" : "text-slate-500"
+              }`}>{ticket.ticketNumber}</span>
+              <span className="text-[10px] font-medium text-slate-400">{ticket.updatedAt ? formatTimeAgo(ticket.updatedAt) : 'just now'}</span>
             </div>
-            <h3 className="text-base font-semibold text-foreground line-clamp-2 mb-3 leading-tight">
+            <h3 className={`text-sm font-bold line-clamp-2 mb-3 leading-snug ${
+              selectedTicket === ticket.ticketNumber ? "text-indigo-950" : "text-slate-800 group-hover:text-slate-900"
+            }`}>
               {ticket.subject}
             </h3>
             
-            <div className="space-y-1.5 mb-3">
-              <div className="text-xs text-foreground/80 flex items-center gap-2">
-                <span>👤</span> {ticket.customerName || "Customer"}
-              </div>
-              <div className="text-xs text-foreground/80 flex items-center gap-2">
-                <span>👨</span> {ticket.assignedTo ? `Assigned: ${ticket.assignedTo}` : "Unassigned"}
-              </div>
-              <div className="text-[11px] text-muted-foreground flex items-center gap-2">
-                <span>🕒</span> Updated {ticket.updatedAt ? formatTimeAgo(ticket.updatedAt) : 'just now'}
+            <div className="space-y-1.5 mb-4">
+              <div className="text-[11px] text-slate-600 font-medium flex items-center gap-2">
+                <div className="w-4 h-4 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[8px]">👤</div> 
+                <span className="truncate">{ticket.customerName || "Customer"}</span>
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2 items-center mt-3 pt-3 border-t border-border/50">
-              <Badge variant="outline" className={`text-[10px] uppercase ${getPriorityColor(ticket.priority)}`}>
+            <div className="flex flex-wrap gap-2 items-center">
+              <Badge variant="outline" className={`text-[9px] uppercase px-1.5 py-0 shadow-none font-bold ${getPriorityColor(ticket.priority)}`}>
                 {ticket.priority}
               </Badge>
-              <Badge variant="outline" className={`text-[10px] uppercase ${getStatusColor(ticket.status)}`}>
+              <Badge variant="outline" className={`text-[9px] uppercase px-1.5 py-0 shadow-none font-bold ${getStatusColor(ticket.status)}`}>
                 {ticket.status}
               </Badge>
             </div>
@@ -107,23 +109,23 @@ export function TicketList({ selectedTicket, onSelectTicket }: TicketListProps) 
 
 function getPriorityColor(priority: string) {
   switch (priority) {
-    case "CRITICAL": return "text-red-600 border-red-200 bg-red-50";
-    case "HIGH": return "text-orange-600 border-orange-200 bg-orange-50";
-    case "MEDIUM": return "text-yellow-600 border-yellow-200 bg-yellow-50";
-    case "LOW": return "text-blue-600 border-blue-200 bg-blue-50";
-    default: return "text-muted-foreground border-border";
+    case "CRITICAL": return "text-red-700 border-red-200 bg-red-50";
+    case "HIGH": return "text-orange-700 border-orange-200 bg-orange-50";
+    case "MEDIUM": return "text-amber-700 border-amber-200 bg-amber-50";
+    case "LOW": return "text-blue-700 border-blue-200 bg-blue-50";
+    default: return "text-slate-500 border-slate-200 bg-slate-50";
   }
 }
 
 function getStatusColor(status: string) {
   switch (status) {
-    case "NEW": return "text-blue-600 border-blue-200 bg-blue-50";
+    case "NEW": return "text-blue-700 border-blue-200 bg-blue-50";
     case "ANALYZING":
-    case "ANALYZED": return "text-purple-600 border-purple-200 bg-purple-50";
-    case "ASSIGNED": return "text-emerald-600 border-emerald-200 bg-emerald-50";
-    case "IN_PROGRESS": return "text-cyan-600 border-cyan-200 bg-cyan-50";
-    case "RESOLVED": return "text-green-600 border-green-200 bg-green-50";
-    case "CLOSED": return "text-gray-600 border-gray-200 bg-gray-50";
-    default: return "text-muted-foreground border-border";
+    case "ANALYZED": return "text-purple-700 border-purple-200 bg-purple-50";
+    case "ASSIGNED": return "text-indigo-700 border-indigo-200 bg-indigo-50";
+    case "IN_PROGRESS": return "text-cyan-700 border-cyan-200 bg-cyan-50";
+    case "RESOLVED": return "text-emerald-700 border-emerald-200 bg-emerald-50";
+    case "CLOSED": return "text-slate-700 border-slate-200 bg-slate-50";
+    default: return "text-slate-500 border-slate-200 bg-slate-50";
   }
 }
