@@ -19,7 +19,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.aisupport.common.enums.TicketStatus;
-import com.aisupport.ticket.controller.TicketManagementController;
 import com.aisupport.ticket.dto.response.TicketResponse;
 import com.aisupport.ticket.service.TicketService;
 import com.fasterxml.jackson.databind.ObjectMapper;

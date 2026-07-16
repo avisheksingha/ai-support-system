@@ -19,7 +19,6 @@ import org.springframework.ai.chat.prompt.PromptTemplate;
 import com.aisupport.analysis.dto.request.WritingContext;
 import com.aisupport.analysis.dto.request.WritingImproveRequest;
 import com.aisupport.analysis.dto.response.WritingImproveResponse;
-import com.aisupport.analysis.service.WritingAssistantService;
 
 @ExtendWith(MockitoExtension.class)
 class WritingAssistantServiceTest {

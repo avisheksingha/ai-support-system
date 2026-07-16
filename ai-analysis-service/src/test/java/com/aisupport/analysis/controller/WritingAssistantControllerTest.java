@@ -17,7 +17,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import com.aisupport.analysis.controller.WritingAssistantController;
 import com.aisupport.analysis.dto.request.WritingContext;
 import com.aisupport.analysis.dto.request.WritingImproveRequest;
 import com.aisupport.analysis.dto.response.WritingImproveResponse;
