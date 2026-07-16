@@ -37,6 +37,13 @@ export interface RoutingModel {
   executedAt?: string;
 }
 
+export interface WorkspaceAggregationResponse {
+  analysis?: AnalysisModel;
+  knowledge?: KnowledgeModel;
+  routing?: RoutingModel;
+}
+
+
 export type TimelineEventType = "SYSTEM" | "WORKFLOW" | "AI" | "TOOL" | "GOVERNANCE" | "USER" | "STATUS" | "NOTIFICATION";
 
 export interface TimelineEvent {

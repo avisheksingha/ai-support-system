@@ -23,6 +23,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class AnalysisProcessingService {
+	
+	private static final String DEFAULT_SENTIMENT = "NEUTRAL";
 
     private final ChatProvider chatProvider;
     private final AnalysisResultRepository repository;
@@ -56,7 +58,7 @@ public class AnalysisProcessingService {
         AnalysisResult entity = AnalysisResult.builder()
                 .ticketId(ticketId)
                 .intent(normalizedIntent)
-                .sentiment(defaultIfNull(parsed.getSentiment(), "NEUTRAL").toUpperCase())
+                .sentiment(defaultIfNull(parsed.getSentiment(), DEFAULT_SENTIMENT).toUpperCase())
                 .urgency(defaultIfNull(parsed.getUrgency(), "LOW").toUpperCase())
                 .confidenceScore(confidence)
                 .keywords(parsed.getKeywords() != null
@@ -75,7 +77,7 @@ public class AnalysisProcessingService {
                 .ticketId(ticketId)
                 .ticketDescription(event.getMessage())
                 .intent(normalizedIntent)
-                .sentiment(defaultIfNull(parsed.getSentiment(), "NEUTRAL").toUpperCase())
+                .sentiment(defaultIfNull(parsed.getSentiment(), DEFAULT_SENTIMENT).toUpperCase())
                 .urgency(defaultIfNull(parsed.getUrgency(), "LOW").toUpperCase())
                 .confidenceScore(parsed.getConfidenceScore())
                 .keywords(parsed.getKeywords())
@@ -106,7 +108,7 @@ public class AnalysisProcessingService {
         AnalysisResult entity = AnalysisResult.builder()
                 .ticketId(ticketId)
                 .intent(normalizedIntent)
-                .sentiment(defaultIfNull(parsed.getSentiment(), "NEUTRAL").toUpperCase())
+                .sentiment(defaultIfNull(parsed.getSentiment(), DEFAULT_SENTIMENT).toUpperCase())
                 .urgency(defaultIfNull(parsed.getUrgency(), "LOW").toUpperCase())
                 .confidenceScore(confidence)
                 .keywords(parsed.getKeywords() != null

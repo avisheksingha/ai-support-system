@@ -1,13 +1,16 @@
 import { BookOpen, Sparkles, Copy, Check } from "lucide-react";
 import { useState } from "react";
+import type { KnowledgeModel } from "@/shared/types/workspace";
 
 interface RagResponsePanelProps {
-  ragResponse: string;
+  knowledge: KnowledgeModel;
   onUseReply?: (text: string) => void;
 }
 
-export function RagResponsePanel({ ragResponse, onUseReply }: RagResponsePanelProps) {
+export function RagResponsePanel({ knowledge, onUseReply }: RagResponsePanelProps) {
   const [copied, setCopied] = useState(false);
+  
+  const ragResponse = knowledge.generatedReply;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(ragResponse);

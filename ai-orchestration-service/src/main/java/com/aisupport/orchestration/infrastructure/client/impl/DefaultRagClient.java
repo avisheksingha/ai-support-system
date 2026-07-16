@@ -30,11 +30,11 @@ public class DefaultRagClient implements RagClient {
 
     @Override
     @Timed(value = "rag.client.duration", description = "Time taken by RAG Service")
-    public Result<List<Object>> searchKnowledge(String query) {
-        log.info("Calling rag-service internal API for query={}", query);
+    public Result<List<Object>> searchKnowledge(Long ticketId, String query) {
+        log.info("Calling rag-service internal API for ticketId={} query={}", ticketId, query);
         try {
             Map<String, Object> request = Map.of(
-                "ticketId", 0L, // Dummy ID for pure knowledge search, or extract if needed
+                "ticketId", ticketId,
                 "query", query
             );
 
@@ -49,6 +49,20 @@ public class DefaultRagClient implements RagClient {
         } catch (Exception e) {
             log.error("Failed to search knowledge for query={}", query, e);
             throw new RagUnavailableException("RAG Service Unavailable: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Result<Object> getRagResponse(Long ticketId) {
+        try {
+            Object response = restClient.get()
+                    .uri("/api/internal/rag/ticket/" + ticketId)
+                    .retrieve()
+                    .body(Object.class);
+            return Result.success(response);
+        } catch (Exception e) {
+            log.error("Failed to get RAG response for ticketId={}", ticketId, e);
+            return Result.failure("RAG Not Found: " + e.getMessage());
         }
     }
 }

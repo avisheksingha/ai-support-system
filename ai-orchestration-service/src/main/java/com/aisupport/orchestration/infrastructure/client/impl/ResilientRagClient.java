@@ -27,12 +27,24 @@ public class ResilientRagClient implements RagClient {
     @Override
     @CircuitBreaker(name = "rag", fallbackMethod = "searchFallback")
     @Retry(name = "rag", fallbackMethod = "searchFallback")
-    public Result<List<Object>> searchKnowledge(String query) {
-        return defaultRagClient.searchKnowledge(query);
+    public Result<List<Object>> searchKnowledge(Long ticketId, String query) {
+        return defaultRagClient.searchKnowledge(ticketId, query);
     }
 
-    public Result<List<Object>> searchFallback(String query, Throwable t) {
-        log.warn("Resilience fallback triggered for rag search query={}: {}", query, t.getMessage());
+    public Result<List<Object>> searchFallback(Long ticketId, String query, Throwable t) {
+        log.warn("Resilience fallback triggered for rag search ticketId={} query={}: {}", ticketId, query, t.getMessage());
         throw new RagUnavailableException("RAG Service Unavailable (Resilience Fallback)", t);
+    }
+
+    @Override
+    @CircuitBreaker(name = "rag", fallbackMethod = "getRagResponseFallback")
+    @Retry(name = "rag", fallbackMethod = "getRagResponseFallback")
+    public Result<Object> getRagResponse(Long ticketId) {
+        return defaultRagClient.getRagResponse(ticketId);
+    }
+
+    public Result<Object> getRagResponseFallback(Long ticketId, Throwable t) {
+        log.warn("Resilience fallback triggered for get rag response ticketId={}: {}", ticketId, t.getMessage());
+        return Result.failure("RAG Not Found (Resilience Fallback): " + t.getMessage());
     }
 }

@@ -12,8 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.aisupport.orchestration.application.timeline.dto.AIInsightResponse;
 import com.aisupport.orchestration.application.timeline.dto.TimelineEvent;
 import com.aisupport.orchestration.application.timeline.dto.TimelinePageResponse;
+import com.aisupport.orchestration.application.timeline.dto.WorkspaceAggregationResponse;
 import com.aisupport.orchestration.domain.model.Result;
 import com.aisupport.orchestration.infrastructure.client.AnalysisClient;
+import com.aisupport.orchestration.infrastructure.client.RagClient;
+import com.aisupport.orchestration.infrastructure.client.RoutingClient;
 import com.aisupport.orchestration.infrastructure.persistence.entity.AiExecutionRecordEntity;
 import com.aisupport.orchestration.infrastructure.persistence.entity.WorkflowCheckpointEntity;
 import com.aisupport.orchestration.infrastructure.persistence.repository.AiExecutionRecordRepository;
@@ -31,6 +34,8 @@ public class TimelineService {
     private final AiExecutionRecordRepository aiExecutionRecordRepository;
     private final TimelineMapper timelineMapper;
     private final AnalysisClient analysisClient;
+    private final RoutingClient routingClient;
+    private final RagClient ragClient;
 
     @Transactional(readOnly = true)
     public TimelinePageResponse getTimelineForTicket(Long ticketId, int page, int size) {
@@ -126,5 +131,32 @@ public class TimelineService {
         } catch (Exception e) {
             return Optional.empty();
         }
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<WorkspaceAggregationResponse> getWorkspaceData(Long ticketId) {
+        WorkspaceAggregationResponse response = new WorkspaceAggregationResponse();
+
+        // Fetch Analysis
+        Optional<AIInsightResponse> insights = getTicketInsights(ticketId);
+        insights.ifPresent(response::setAnalysis);
+
+        // Fetch RAG
+        Result<Object> ragResult = ragClient.getRagResponse(ticketId);
+        if (ragResult.isSuccess()) {
+            response.setKnowledge(ragResult.getData());
+        }
+
+        // Fetch Routing
+        Result<Object> routingResult = routingClient.getRouting(ticketId);
+        if (routingResult.isSuccess()) {
+            response.setRouting(routingResult.getData());
+        }
+
+        if (response.getAnalysis() == null && response.getKnowledge() == null && response.getRouting() == null) {
+            return Optional.empty();
+        }
+
+        return Optional.of(response);
     }
 }

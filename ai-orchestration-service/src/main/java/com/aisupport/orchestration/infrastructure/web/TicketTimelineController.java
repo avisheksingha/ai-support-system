@@ -16,6 +16,7 @@ import com.aisupport.orchestration.application.timeline.dto.AIActionRequest;
 import com.aisupport.orchestration.application.timeline.dto.AIActionResponse;
 import com.aisupport.orchestration.application.timeline.dto.AIInsightResponse;
 import com.aisupport.orchestration.application.timeline.dto.TimelinePageResponse;
+import com.aisupport.orchestration.application.timeline.dto.WorkspaceAggregationResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -51,6 +52,16 @@ public class TicketTimelineController {
         log.info("Fetching AI insights for ticket: {}", ticketId);
         
         return timelineService.getTicketInsights(ticketId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.noContent().build());
+    }
+    
+    @GetMapping("/{ticketId}/workspace")
+    @Operation(summary = "Get Workspace Aggregation", description = "Retrieves the combined AI analysis, routing, and knowledge data for a ticket")
+    public ResponseEntity<WorkspaceAggregationResponse> getWorkspaceData(@PathVariable Long ticketId) {
+        log.info("Fetching workspace aggregation for ticket: {}", ticketId);
+        
+        return timelineService.getWorkspaceData(ticketId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.noContent().build());
     }

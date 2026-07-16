@@ -12,7 +12,6 @@ import com.aisupport.common.constant.Correlation;
 import com.aisupport.common.constant.HttpHeaders;
 import com.aisupport.common.event.TicketCreatedEvent;
 import com.aisupport.common.exception.TicketEventProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,10 +22,9 @@ import lombok.extern.slf4j.Slf4j;
 public class TicketCreatedConsumer {
 
     private final AnalysisProcessingService processingService;
-    private final ObjectMapper objectMapper;
     
     // @KafkaListener(topics = KafkaTopics.TICKET_CREATED, groupId = KafkaGroups.AI_ANALYSIS)
-    public void consume(ConsumerRecord<String, String> consumerRecord) {
+    public void consume(ConsumerRecord<String, TicketCreatedEvent> consumerRecord) {
     	
     	// Extract correlationId from Kafka header into MDC
     	Header correlationHeader = consumerRecord.headers().lastHeader(HttpHeaders.CORRELATION_ID);
@@ -35,10 +33,7 @@ public class TicketCreatedConsumer {
         }
 
         try {
-        	
-        	String payload = consumerRecord.value(); // extract payload
-        	
-            TicketCreatedEvent event = objectMapper.readValue(payload, TicketCreatedEvent.class);
+        	TicketCreatedEvent event = consumerRecord.value();
 
             log.info("Consumed ticket-created event: ticketId={}", event.getTicketId());
 

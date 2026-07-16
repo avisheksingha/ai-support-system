@@ -1,12 +1,17 @@
 package com.aisupport.rag.controller;
 
+import java.util.Collections;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.aisupport.rag.dto.RagKnowledgeResponse;
 import com.aisupport.rag.dto.internal.RagSearchRequest;
 import com.aisupport.rag.dto.internal.RagSearchResponse;
 import com.aisupport.rag.service.RagService;
@@ -38,5 +43,22 @@ public class InternalRagController {
         return ResponseEntity.ok(RagSearchResponse.builder()
                 .answer(responseText)
                 .build());
+    }
+
+    @GetMapping("/ticket/{ticketId}")
+    public ResponseEntity<RagKnowledgeResponse> getKnowledgeByTicketId(@PathVariable Long ticketId) {
+        log.info("Internal REST request for RAG knowledge. ticketId={}", ticketId);
+        
+        return ragService.getRagResponseForTicket(ticketId)
+                .map(rag -> ResponseEntity.ok(RagKnowledgeResponse.builder()
+                        .ticketId(rag.getTicketId())
+                        .query(rag.getQuery())
+                        .generatedReply(rag.getResponse())
+                        .similarityScore(1.0)
+                        .sourceDocuments(Collections.emptyList())
+                        .modelUsed(rag.getModel())
+                        .generatedAt(rag.getCreatedAt())
+                        .build()))
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

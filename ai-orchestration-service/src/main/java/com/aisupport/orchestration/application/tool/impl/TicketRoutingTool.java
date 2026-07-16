@@ -30,13 +30,12 @@ public class TicketRoutingTool implements ToolDefinition {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public ToolResult execute(Object rawInput) {
-        if (!(rawInput instanceof Map)) {
+        if (!(rawInput instanceof Map<?, ?>)) {
             return ToolResult.failure("Input must be a map containing ticketId and analysisResult", 0);
         }
         
-        Map<String, Object> input = (Map<String, Object>) rawInput;
+        Map<?, ?> input = (Map<?, ?>) rawInput;
         Long ticketId = null;
         if (input.get("ticketId") instanceof Number num) {
         	ticketId = num.longValue();

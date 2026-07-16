@@ -42,4 +42,18 @@ public class DefaultRoutingClient implements RoutingClient {
             throw new RoutingUnavailableException("Routing Service Unavailable: " + e.getMessage(), e);
         }
     }
+
+    @Override
+    public Result<Object> getRouting(Long ticketId) {
+        try {
+            Object response = restClient.get()
+                    .uri("/api/internal/routing/ticket/" + ticketId)
+                    .retrieve()
+                    .body(Object.class);
+            return Result.success(response);
+        } catch (Exception e) {
+            log.error("Failed to get routing for ticketId={}", ticketId, e);
+            return Result.failure("Routing Not Found: " + e.getMessage());
+        }
+    }
 }

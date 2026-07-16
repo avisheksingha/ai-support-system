@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import { useTicket, useAnalysis, useRouting, useTimeline, useUpdateTicketStatus, useMessages, useAddMessage } from "../hooks/useWorkspace";
+import { useTicket, useWorkspaceAggregation, useTimeline, useUpdateTicketStatus, useMessages, useAddMessage } from "../hooks/useWorkspace";
 import { Check } from "lucide-react";
 import { TicketTimeline } from "./TicketTimeline";
 import { Badge } from "@/components/ui/badge";
@@ -61,8 +61,10 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
   const isDiagnosticsActive = showDiagnostics && isAdmin;
   
   // We only enable AI/Routing queries if we have the ticket ID
-  const { data: analysis, isLoading: isAnalysisLoading } = useAnalysis(ticket?.id);
-  const { data: routing, isLoading: isRoutingLoading } = useRouting(ticket?.id);
+  const { data: workspaceData, isLoading: isWorkspaceLoading } = useWorkspaceAggregation(ticket?.id, ticket?.status);
+  const analysis = workspaceData?.analysis;
+  const routing = workspaceData?.routing;
+  const knowledge = workspaceData?.knowledge;
   const { data: timeline, isLoading: isTimelineLoading } = useTimeline(ticket?.id);
   const { data: messages, isLoading: isMessagesLoading } = useMessages(ticket?.ticketNumber);
   const { mutate: addMessage, isPending: isSendingMessage } = useAddMessage();
@@ -261,8 +263,8 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
                 <Skeleton className="h-12 w-full rounded-xl bg-slate-100" />
                 <Skeleton className="h-12 w-3/4 self-end rounded-xl bg-slate-100" />
               </div>
-            ) : messages && messages.length > 0 ? (
-              messages.map((msg: any) => {
+            ) : (
+              messages && messages.length > 0 && messages.map((msg: any) => {
                 const isInternalNote = msg.isInternal || msg.internal || msg.type === 'INTERNAL_NOTE';
                 const isAgent = msg.type === 'AGENT_MESSAGE' || isInternalNote;
                 const isSystem = msg.senderName === 'System' || msg.type === 'SYSTEM_MESSAGE';
@@ -288,29 +290,27 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
                   </div>
                 );
               })
-            ) : (
-              <div className="text-center text-slate-400 text-sm py-4 italic">No messages yet.</div>
             )}
 
             {/* Message Input Box */}
-            <div className="mt-4 pt-4 border-t border-slate-100 flex gap-3">
-               <div className="flex-1 flex flex-col gap-2">
+            <div className="mt-2 pt-2 border-t border-slate-100 flex gap-2">
+               <div className="flex-1 flex flex-col gap-1.5">
                  <textarea 
-                   className="w-full border border-slate-200 rounded-lg p-3 text-[13px] min-h-[100px] focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-y" 
+                   className="w-full border border-slate-200 rounded-lg p-2.5 text-[12px] min-h-[80px] focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-y leading-tight" 
                    placeholder="Type your reply to the customer..."
                    value={replyText}
                    onChange={e => setReplyText(e.target.value)}
                  ></textarea>
-                 <div className="flex justify-end gap-2">
+                 <div className="flex justify-end gap-1.5">
                     <button 
-                      className="px-4 py-2 bg-slate-100 text-slate-700 font-semibold text-xs rounded-md hover:bg-slate-200 transition-colors"
+                      className="px-3 py-1.5 bg-slate-100 text-slate-700 font-semibold text-[11px] rounded-md hover:bg-slate-200 transition-colors shadow-sm"
                       onClick={() => addMessage({ ticketNumber: ticket.ticketNumber, content: replyText, isInternal: true }, { onSuccess: () => setReplyText("") })}
                       disabled={isSendingMessage || !replyText.trim()}
                     >
                       Add Internal Note
                     </button>
                     <button 
-                      className="px-6 py-2 bg-blue-600 text-white font-semibold text-xs rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+                      className="px-4 py-1.5 bg-blue-600 text-white font-semibold text-[11px] rounded-md hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50"
                       onClick={handleSendReply}
                       disabled={isSendingMessage || !replyText.trim()}
                     >
@@ -345,7 +345,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
       <div className="w-full xl:w-[360px] shrink-0 flex flex-col gap-6 h-fit">
         
         {/* AI Insights Panel */}
-        {isAnalysisLoading || !analysis ? (
+        {isWorkspaceLoading || !analysis ? (
           <div className="border border-border border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center gap-3">
             <div className="text-2xl animate-bounce">🤖</div>
             <div className="flex flex-col items-center gap-1">
@@ -366,7 +366,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
         )}
 
         {/* Knowledge Panel */}
-        {!ticket.ragResponse ? (
+        {isWorkspaceLoading || !knowledge ? (
           <div className="border border-border border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center gap-3">
             <div className="text-2xl animate-bounce" style={{ animationDelay: '0.2s' }}>📚</div>
             <div className="flex flex-col items-center gap-1">
@@ -381,14 +381,14 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
         ) : (
           <ErrorBoundary FallbackComponent={WorkspaceErrorFallback}>
             <Suspense fallback={<Skeleton className="h-48 w-full bg-card rounded-xl" />}>
-              <RagResponsePanel ragResponse={ticket.ragResponse} onUseReply={setReplyText} />
+              <RagResponsePanel knowledge={knowledge} onUseReply={setReplyText} />
             </Suspense>
           </ErrorBoundary>
         )}
 
 
         {/* Assignment Panel */}
-        {isRoutingLoading || !routing ? (
+        {isWorkspaceLoading || !routing ? (
           <div className="border border-border border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center gap-3">
             <div className="text-2xl animate-bounce" style={{ animationDelay: '0.4s' }}>🧭</div>
             <div className="flex flex-col items-center gap-1">

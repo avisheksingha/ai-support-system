@@ -4,7 +4,8 @@ import type {
   KnowledgeModel,
   RoutingModel,
   TimelinePageResponse,
-  OperationsDashboardResponse
+  OperationsDashboardResponse,
+  WorkspaceAggregationResponse
 } from "@/shared/types/workspace";
 import type {
   TicketModel,
@@ -45,12 +46,18 @@ export const workspaceApi = {
     return response.data;
   },
 
-  // Analysis Service (now calling Real Backend API)
-  getAnalysis: async (ticketId: number): Promise<AnalysisModel> => {
-    const response = await apiClient.get<AnalysisModel>(`/orchestration/tickets/${ticketId}/insights`);
-    return response.data;
+  // Workspace Aggregation (Orchestrator Central Brain)
+  getWorkspaceAggregation: async (ticketId: number): Promise<WorkspaceAggregationResponse | null> => {
+    try {
+      const response = await apiClient.get<WorkspaceAggregationResponse>(`/orchestration/tickets/${ticketId}/workspace`);
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null;
+      }
+      throw error;
+    }
   },
-  
   // Trigger AI Action
   triggerAction: async (ticketId: number, actionType: string, instructions?: string): Promise<any> => {
     const response = await apiClient.post(`/orchestration/tickets/${ticketId}/actions`, {
@@ -74,27 +81,7 @@ export const workspaceApi = {
     return response.data;
   },
 
-  // Unmocked Knowledge Service (reads from TicketModel)
-  getKnowledge: async (ticketId: number): Promise<KnowledgeModel> => {
-    const response = await apiClient.get<TicketModel>(`/tickets/${ticketId}`);
-    const ticket = response.data;
 
-    return {
-      ticketId,
-      query: ticket.subject,
-      generatedReply: ticket.ragResponse || "No knowledge response available yet.",
-      similarityScore: 1.0,
-      sourceDocuments: [], // Sources not currently persisted on ticket entity
-      modelUsed: "AI Orchestrator",
-      generatedAt: ticket.updatedAt
-    };
-  },
-
-  // Routing Service API call (Temporary internal endpoint. Will later be consumed by orchestration-service.)
-  getRouting: async (ticketId: number): Promise<RoutingModel> => {
-    const response = await apiClient.get<RoutingModel>(`/routing/ticket/${ticketId}`);
-    return response.data;
-  },
 
   // Timeline API (Routed to Orchestration Service via Gateway)
   getTimeline: async (ticketId: number, page: number = 0, size: number = 50): Promise<TimelinePageResponse> => {

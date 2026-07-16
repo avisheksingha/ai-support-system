@@ -24,7 +24,7 @@ public class KnowledgeSearchTool implements ToolDefinition {
         return ToolDescriptor.builder()
                 .name("searchKnowledge")
                 .description("Searches the internal knowledge base for relevant articles.")
-                .parameters(Map.of("query", String.class))
+                .parameters(Map.of("ticketId", Long.class, "query", String.class))
                 .returnType(List.class)
                 .version("1.0.0")
                 .build();
@@ -32,14 +32,24 @@ public class KnowledgeSearchTool implements ToolDefinition {
 
     @Override
     public ToolResult execute(Object rawInput) {
-        if (!(rawInput instanceof String)) {
-            return ToolResult.failure("Input must be a string query", 0);
+        if (!(rawInput instanceof Map<?, ?>)) {
+            return ToolResult.failure("Input must be a map containing ticketId and query", 0);
         }
-        String input = (String) rawInput;
+        
+        Map<?, ?> input = (Map<?, ?>) rawInput;
+        Long ticketId = null;
+        if (input.get("ticketId") instanceof Number num) {
+        	ticketId = num.longValue();
+        }
+        String query = (String) input.get("query");
+        
+        if (ticketId == null || query == null) {
+            return ToolResult.failure("Missing required parameters: ticketId, query", 0);
+        }
         
         long start = System.currentTimeMillis();
         try {
-            Result<List<Object>> clientResult = ragClient.searchKnowledge(input);
+            Result<List<Object>> clientResult = ragClient.searchKnowledge(ticketId, query);
             long executionTime = System.currentTimeMillis() - start;
             
             if (clientResult.isSuccess()) {

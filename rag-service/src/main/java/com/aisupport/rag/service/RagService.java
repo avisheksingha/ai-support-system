@@ -2,6 +2,7 @@ package com.aisupport.rag.service;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
@@ -151,6 +152,13 @@ public class RagService {
         log.info("Sync RAG response persisted for ticketId={}", ticketId);
 
         return response;
+	}
+
+	/**
+	 * Retrieves the most recent RAG response for a given ticket.
+	 */
+	public Optional<RagResponse> getRagResponseForTicket(Long ticketId) {
+		return ragResponseRepository.findTopByTicketIdOrderByCreatedAtDesc(ticketId);
 	}
 
 	/**

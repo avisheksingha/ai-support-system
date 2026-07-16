@@ -16,7 +16,6 @@ import com.aisupport.common.constant.KafkaTopics;
 import com.aisupport.common.event.TicketRagResponseEvent;
 import com.aisupport.common.exception.TicketEventProcessingException;
 import com.aisupport.ticket.service.TicketService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,10 +27,9 @@ import lombok.extern.slf4j.Slf4j;
 public class TicketRagResponseConsumer {
 
     private final TicketService ticketService;
-    private final ObjectMapper objectMapper;
 
     @KafkaListener(topics = KafkaTopics.TICKET_RAG_RESPONSE, groupId = KafkaGroups.TICKET)
-    public void consume(ConsumerRecord<String, String> consumerRecord) {
+    public void consume(ConsumerRecord<String, TicketRagResponseEvent> consumerRecord) {
 
     	// Extract correlationId from Kafka header into MDC
         Header correlationHeader = consumerRecord.headers()
@@ -42,10 +40,7 @@ public class TicketRagResponseConsumer {
         }
 
         try {
-            String payload = consumerRecord.value();
-
-            TicketRagResponseEvent event = objectMapper.readValue(
-                    payload, TicketRagResponseEvent.class);
+            TicketRagResponseEvent event = consumerRecord.value();
 
             log.info("Consumed rag-response event: ticketId={}", event.getTicketId());
 

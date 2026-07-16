@@ -166,20 +166,13 @@ export function CustomerTicketDetailPage() {
                     );
                   })}
                 </div>
-              ) : (
-                <div className="text-center p-10 border border-dashed border-border rounded-xl bg-card shadow-sm">
-                  <h3 className="text-sm font-medium text-foreground mb-2">No replies yet.</h3>
-                  <p className="text-[13px] text-muted-foreground leading-relaxed">
-                    Our support team will respond here.<br/>You'll receive an email notification when there's an update.
-                  </p>
-                </div>
               )}
               
               {/* Message Input Box */}
-              <div className="mt-4 pt-4 border-t border-border flex gap-3">
-                 <div className="flex-1 flex flex-col gap-2">
+              <div className="mt-2 pt-2 border-t border-border flex gap-2">
+                 <div className="flex-1 flex flex-col gap-1.5">
                    <textarea 
-                     className="w-full border border-border bg-background rounded-lg p-3 text-sm min-h-[100px] focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-y" 
+                     className="w-full border border-border bg-background rounded-lg p-2.5 text-[12px] min-h-[80px] focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-y leading-tight" 
                      placeholder="Add a reply..."
                      value={replyText}
                      onChange={e => setReplyText(e.target.value)}
@@ -189,7 +182,7 @@ export function CustomerTicketDetailPage() {
                         size="sm"
                         onClick={handleSendReply}
                         disabled={isSendingMessage || !replyText.trim()}
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 text-[11px] h-auto"
                       >
                         {isSendingMessage ? 'Sending...' : 'Send Reply'}
                       </Button>

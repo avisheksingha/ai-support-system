@@ -2,6 +2,8 @@ package com.aisupport.routing.controller;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.aisupport.common.event.TicketAnalyzedEvent;
 import com.aisupport.common.event.TicketRoutedEvent;
+import com.aisupport.routing.dto.RoutingResponse;
 import com.aisupport.routing.service.RoutingService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,5 +34,15 @@ public class InternalRoutingController {
         TicketRoutedEvent response = routingService.routeSync(event);
                 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/ticket/{ticketId}")
+    public ResponseEntity<RoutingResponse> getRoutingByTicketId(@PathVariable Long ticketId) {
+        log.info("Internal REST request to fetch routing for ticketId: {}", ticketId);
+        RoutingResponse result = routingService.getRoutingForTicket(ticketId);
+        if (result == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(result);
     }
 }

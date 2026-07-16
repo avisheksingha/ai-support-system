@@ -16,7 +16,6 @@ import com.aisupport.common.constant.KafkaTopics;
 import com.aisupport.common.event.TicketRoutedEvent;
 import com.aisupport.common.exception.TicketEventProcessingException;
 import com.aisupport.ticket.service.TicketService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,10 +27,9 @@ import lombok.extern.slf4j.Slf4j;
 public class TicketRoutedConsumer {
 
     private final TicketService ticketService;
-    private final ObjectMapper objectMapper;
 
     @KafkaListener(topics = KafkaTopics.TICKET_ROUTED, groupId = KafkaGroups.TICKET)
-    public void consume(ConsumerRecord<String, String> consumerRecord) {
+    public void consume(ConsumerRecord<String, TicketRoutedEvent> consumerRecord) {
     	
     	// Extract correlationId from Kafka header into MDC
     	Header correlationHeader = consumerRecord.headers().lastHeader(HttpHeaders.CORRELATION_ID);
@@ -40,10 +38,7 @@ public class TicketRoutedConsumer {
         }
 
         try {
-        	
-        	String payload = consumerRecord.value(); // extract payload
-        	
-        	TicketRoutedEvent event = objectMapper.readValue(payload, TicketRoutedEvent.class);
+        	TicketRoutedEvent event = consumerRecord.value();
 
             log.info("Consumed ticket-routed event: ticketId={} team={} priority={}",
                     event.getTicketId(),

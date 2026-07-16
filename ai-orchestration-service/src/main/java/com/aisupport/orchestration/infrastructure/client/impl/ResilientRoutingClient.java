@@ -35,4 +35,16 @@ public class ResilientRoutingClient implements RoutingClient {
                 ticketId, analysisResultType, t.getMessage());
         throw new RoutingUnavailableException("Routing Service Unavailable (Resilience Fallback)", t);
     }
+
+    @Override
+    @CircuitBreaker(name = "routing", fallbackMethod = "getRoutingFallback")
+    @Retry(name = "routing", fallbackMethod = "getRoutingFallback")
+    public Result<Object> getRouting(Long ticketId) {
+        return defaultRoutingClient.getRouting(ticketId);
+    }
+
+    public Result<Object> getRoutingFallback(Long ticketId, Throwable t) {
+        log.warn("Resilience fallback triggered for get routing ticketId={}: {}", ticketId, t.getMessage());
+        return Result.failure("Routing Not Found (Resilience Fallback): " + t.getMessage());
+    }
 }

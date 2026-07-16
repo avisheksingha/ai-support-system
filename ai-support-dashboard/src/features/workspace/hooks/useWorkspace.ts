@@ -33,28 +33,22 @@ export const useTicket = (ticketNumber: string) => {
   });
 };
 
-export const useAnalysis = (ticketId?: number) => {
+export const useWorkspaceAggregation = (ticketId?: number, ticketStatus?: TicketStatus) => {
   return useQuery({
-    queryKey: ticketId ? workspaceKeys.analysis(ticketId) : [],
-    queryFn: () => workspaceApi.getAnalysis(ticketId!),
+    queryKey: ticketId ? workspaceKeys.workspaceAggregation(ticketId) : [],
+    queryFn: () => workspaceApi.getWorkspaceAggregation(ticketId!),
     enabled: !!ticketId,
     retry: 2,
     refetchInterval: (query) => {
-      // If we already have the data, we don't need to poll anymore
-      if (query.state.data) return false;
+      // If we already have a complete response, we don't need to poll anymore
+      const data = query.state.data;
+      if (data?.analysis && data?.knowledge && data?.routing) return false;
+      
+      // If the ticket has passed the AI phase, stop polling
+      if (ticketStatus && ["ASSIGNED", "IN_PROGRESS", "RESOLVED", "CLOSED"].includes(ticketStatus)) return false;
+      
       return 5000; // Poll faster for AI results
     }
-  });
-};
-
-
-export const useRouting = (ticketId?: number) => {
-  return useQuery({
-    queryKey: ticketId ? workspaceKeys.routing(ticketId) : [],
-    queryFn: () => workspaceApi.getRouting(ticketId!),
-    enabled: !!ticketId,
-    retry: 2,
-    refetchInterval: (query) => query.state.data ? false : 5000,
   });
 };
 
