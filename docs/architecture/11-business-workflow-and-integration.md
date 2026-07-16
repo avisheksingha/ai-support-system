@@ -61,7 +61,8 @@ We use a hybrid approach to balance reliability and real-time responsiveness.
 - **REST for CRUD**: All mutations (creating tickets, updating status, adding messages) are synchronous REST calls.
 - **WebSocket / STOMP for Real-time Updates**: The frontend subscribes to STOMP topics. When the backend processes a Kafka event, it broadcasts a lightweight notification payload, invalidating the frontend cache.
 
-### Standard WebSocket Event Names:
+### Standard WebSocket Event Names
+
 - `TicketCreated`
 - `TicketAssigned`
 - `TicketUpdated`
@@ -76,17 +77,20 @@ We use a hybrid approach to balance reliability and real-time responsiveness.
 ## 7. Knowledge Article Lifecycle
 
 To support accurate RAG retrieval, Knowledge Articles must follow a strict lifecycle:
+
 - **Draft** → **Published** → **Deprecated** → **Archived**
 
 ## 8. API Mapping (Frontend → Backend)
 
 ### Ticket Management (`/api/v1/tickets`)
+
 - `GET /api/v1/tickets?status=...` - List tickets
 - `GET /api/v1/tickets/{id}` - Get details
 - `PATCH /api/v1/tickets/{id}` - Update status/priority
 - `POST /api/v1/tickets/{id}/messages` - Add message
 
 ### Orchestration & AI (`/api/v1/orchestration`)
+
 - `GET /api/v1/orchestration/tickets/{id}/insights` - Get AI analysis for ticket
 - `POST /api/v1/orchestration/tickets/{id}/actions` - Trigger AI action
 - `GET /api/v1/orchestration/workflows` - List active workflows
@@ -95,6 +99,7 @@ To support accurate RAG retrieval, Knowledge Articles must follow a strict lifec
 - `POST /api/v1/orchestration/workflows/{id}/retry` - Retry workflow
 
 ### Governance (`/api/v1/governance`)
+
 - `GET /api/v1/governance/metrics` - High-level KPIs
 - `GET /api/v1/governance/approvals?status=PENDING` - Review queue
 - `POST /api/v1/governance/approvals/{id}` - Approve/Reject action

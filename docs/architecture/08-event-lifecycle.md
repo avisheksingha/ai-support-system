@@ -13,4 +13,5 @@ The **AI Orchestration Service** is strictly event-driven via Apache Kafka. It h
 - **`ticket-routed`**: Emitted by `routing-service`.
 
 ## The Outbox Pattern
+
 Services do not write to Kafka directly during a JPA transaction. Instead, they write to an `outbox_events` table in the same transaction as the business entity. A background publisher polls the outbox and publishes the messages to Kafka, ensuring *at-least-once* delivery and preventing dual-write inconsistencies.
