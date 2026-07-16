@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useCustomerTicket, useCustomerMessages, useCustomerAddMessage, customerKeys } from "../hooks/useCustomerTickets";
 import { formatTimeAgo, parseDate, formatTime } from "@/shared/utils/date";
 import { format } from "date-fns";
-import { Loader2, MessageSquare, Paperclip, CheckCircle2, ChevronRight } from "lucide-react";
+import { Loader2, Paperclip, CheckCircle2, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { TicketModel } from "@/shared/types/ticket";
 import { wsClient } from "@/lib/websocket";
@@ -145,8 +145,6 @@ export function CustomerTicketDetailPage() {
                   {messages.filter((m: any) => !m.isInternal && !m.internal && m.type !== 'INTERNAL_NOTE').map((msg: any) => {
                     const isCustomer = msg.type === 'CUSTOMER_MESSAGE';
                     const isSystem = msg.type === 'SYSTEM_MESSAGE' || msg.senderName === 'System';
-                    const isAgent = msg.type === 'AGENT_MESSAGE' || (!isCustomer && !isSystem);
-
                     const avatarText = isCustomer ? '👤' : isSystem ? '⚙️' : '🎧';
                     const displayName = isCustomer ? 'Me' : isSystem ? 'System' : (msg.senderName || 'Support Agent');
 

@@ -1,11 +1,11 @@
 import type { TicketModel } from "@/shared/types/ticket";
 import type { AnalysisModel, RoutingModel } from "@/shared/types/workspace";
-import { Check, Loader2, ArrowRight, Bot } from "lucide-react";
+import { Check, Loader2, ArrowRight } from "lucide-react";
 
 interface AiPipelineProgressProps {
   ticket: TicketModel;
-  analysis?: AnalysisModel;
-  routing?: RoutingModel;
+  analysis?: AnalysisModel | undefined;
+  routing?: RoutingModel | undefined;
 }
 
 export function AiPipelineProgress({ ticket, analysis, routing }: AiPipelineProgressProps) {
