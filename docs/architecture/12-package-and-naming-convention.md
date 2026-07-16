@@ -31,84 +31,63 @@ This convention applies to:
 - Avoid generic naming.
 - Every class should be discoverable without opening dozens of folders.
 
-## Standard Top-Level Structure
+## Dual Package Philosophy
 
-Every service must follow this top-level structure:
+The project utilizes a dual package philosophy depending on the complexity and domain of the microservice.
+
+### 1. The Flat Architecture (Standard Microservices)
+For standard domain microservices (e.g., `ticket-service`, `auth-service`, `ai-analysis-service`, `routing-service`, `rag-service`), we strictly follow a flat, simple, and immediately understandable Spring Boot architecture.
+
+**We do NOT introduce `application`, `domain`, or `infrastructure` packages in these services.**
+
+The permitted top-level packages are:
+- `config`: Framework configurations.
+- `controller`: REST APIs.
+- `service`: Business logic.
+- `repository`: Database access.
+- `entity`: JPA models.
+- `dto`: Split strictly into `dto/request` and `dto/response`.
+- `mapper`: Object mapping logic.
+- `consumer` / `producer`: Kafka messaging.
+- `client`: External REST/Feign clients.
+- `outbox`: Shared outbox pattern infrastructure.
+- `exception`: Dedicated exceptions.
+- `filter`: Security or web filters.
+- `llm` / `vector` / `embedding`: Domain-specific integrations (if needed).
+- `util` / `constants`: Shared utilities.
+
+*Only create packages that actually make sense for the service (e.g., no `repository` if no database exists).*
+
+### 2. The Layered Architecture (AI Orchestration Service ONLY)
+Due to its unique role in coordinating complex multi-agent workflows, the `ai-orchestration-service` uses a strict feature-first Hexagonal Architecture structure:
 
 ```text
 src/main/java
-└── com.aisupport.<service>
+└── com.aisupport.orchestration
     ├── config
     ├── application
     ├── domain
     └── infrastructure
 ```
+- `config`: Framework configurations only.
+- `application`: Business orchestration, grouped by feature.
+- `domain`: Pure business concepts decoupled from technical frameworks.
+- `infrastructure`: Technical implementations.
 
-Nothing else should exist at the top level unless absolutely required.
-
-### 1. config
-
-Contains framework configuration only (e.g., SecurityConfig, KafkaConfig, OpenApiConfig, JacksonConfig, BeanConfig, WebSocketConfig).
-
-- No business logic.
-
-### 2. application
-
-Contains business use cases. This is where application orchestration happens.
-
-- Organize by business capability/feature (e.g., ticket, workflow, governance, timeline, operations, customer, notification).
-- Each feature contains: controller, service, dto, mapper, validator (if needed).
-- *Exception*: Controllers may optionally remain in `infrastructure.web` to adhere strictly to Hexagonal Architecture, but standard naming still applies.
-
-### 3. domain
-
-Contains pure business concepts. Domain must NOT depend on Spring, Kafka, JPA, HTTP, Docker, or Infrastructure.
-
-- Contains: model, event, repository (interfaces), exception, state, value objects, business rules.
-
-### 4. infrastructure
-
-Contains all technical implementations.
-
-- Examples: persistence, messaging, client, mcp, notification, websocket, storage.
-- Contains: JPA repositories, Kafka publishers/consumers, REST clients, DB/API implementations.
-
-## Feature-first Organization
-
-Within the Application layer, organize by feature instead of technical artifacts.
-
-**GOOD:**
-
-```text
-application
-├── ticket
-├── customer
-├── governance
-└── workflow
-```
-
-**BAD:**
-
-```text
-application
-├── controller
-├── dto
-├── mapper
-└── service
-```
+---
 
 ## Standard Naming Convention
 
 | Artifact | Convention | Examples | Notes |
 | ---------- | ------------ | ---------- | ------- |
-| Controllers | `<Feature>Controller` | `TicketController`, `WorkflowController` | Avoid vague names |
+| Controllers | `<Feature>Controller` | `CustomerTicketController`, `WorkflowController` | Avoid vague names |
 | Services | `<Feature>Service` | `TicketService`, `WorkflowService` | Avoid vague names |
 | Repositories | `<Entity>Repository` | `TicketRepository`, `WorkflowRepository` | - |
 | DTOs | Explicit Names | `CreateTicketRequest`, `TicketSummaryResponse` | Avoid generic DTO names |
 | Mappers | `<Entity>Mapper` | `TicketMapper`, `WorkflowMapper` | - |
 | Providers | `<Capability>Provider` | `ConversationContextProvider`, `GithubToolProvider` | - |
 | Factories | `<Capability>Factory` | `WorkflowFactory`, `PromptFactory` | - |
-| Managers | `<Resource>Manager` | `TokenBudgetManager`, `ConnectionManager` | Reserve for lifecycle/resource management. Avoid if Service or Engine fits better. |
+| Managers | `<Resource>Manager` | `TokenBudgetManager`, `ConnectionManager` | Reserve for lifecycle/resource management. |
 | Engines | `<Execution>Engine` | `WorkflowEngine`, `PolicyEngine` | Use only for execution engines. |
 | Executors | `<Action>Executor` | `ToolExecutor`, `WorkflowExecutor` | Use only for executing actions. Avoid generic `Executor`. |
 | Exceptions | `<Feature>Exception` | `WorkflowNotFoundException` | Avoid overly generic exception names. |
@@ -125,22 +104,10 @@ application
 - Avoid packages containing only one class unless justified.
 - Avoid `impl`, `internal`, `common`, `misc`, `helper` unless there is a clear architectural reason.
 - Flatten package hierarchies where possible.
-- **Exceptions & Steps**: It is acceptable and encouraged to keep dedicated `exception` and `steps` packages inside feature folders to improve discoverability and prevent mixing business logic with error handling.
+- **Exceptions**: It is acceptable and encouraged to keep dedicated `exception` packages to improve discoverability.
+- **Outbox**: Keep the `outbox` package structurally identical across all services that use it.
 
-## Architecture Rules
+## Architecture Freeze (V1)
 
-- Business logic belongs in: `application`
-- Business concepts belong in: `domain`
-- Framework code belongs in: `infrastructure`
-- Configuration belongs in: `config`
-- Controllers should remain thin.
-- Services coordinate use cases.
-- Domain owns business rules.
-- Infrastructure owns technical details.
-
-## Migration Strategy
-
-- Defined as the official project convention.
-- Applied completely to `ai-orchestration-service` during its cleanup phase.
-- Applies to all new services going forward.
-- Gradually migrate older services only when significant work is already being performed on them.
+**The backend architecture is structurally frozen for V1.** 
+All microservices have been fully standardized to these conventions. Avoid further architectural refactoring or introducing new package hierarchies unless there is a clear architectural justification. New features should follow the established package conventions exactly.

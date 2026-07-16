@@ -4,8 +4,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-import com.aisupport.auth.dto.RegisterRequest;
-import com.aisupport.auth.dto.UserResponse;
+import com.aisupport.auth.dto.request.RegisterRequest;
+import com.aisupport.auth.dto.response.UserResponse;
 import com.aisupport.auth.entity.User;
 
 @Mapper(

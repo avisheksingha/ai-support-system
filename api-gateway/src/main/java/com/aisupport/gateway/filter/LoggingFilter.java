@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 
-import com.aisupport.common.constant.HttpHeaders;
+import com.aisupport.common.constants.HttpHeaders;
 
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;

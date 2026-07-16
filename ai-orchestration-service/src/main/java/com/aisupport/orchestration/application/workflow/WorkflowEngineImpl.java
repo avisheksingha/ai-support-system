@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
-import com.aisupport.common.constant.Correlation;
+import com.aisupport.common.constants.Correlation;
 import com.aisupport.orchestration.domain.state.WorkflowState;
 import com.aisupport.orchestration.domain.workflow.WorkflowContext;
 import com.aisupport.orchestration.domain.workflow.WorkflowDefinition;

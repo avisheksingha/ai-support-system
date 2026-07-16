@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.aisupport.analysis.dto.internal.AnalyzeRequest;
+import com.aisupport.analysis.dto.request.AnalyzeRequest;
 import com.aisupport.analysis.service.AnalysisProcessingService;
 import com.aisupport.analysis.service.AnalysisQueryService;
 import com.aisupport.common.dto.AnalysisResultDTO;

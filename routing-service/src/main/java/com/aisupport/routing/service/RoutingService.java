@@ -7,7 +7,7 @@ import com.aisupport.common.enums.TicketPriority;
 import com.aisupport.common.event.EventType;
 import com.aisupport.common.event.TicketAnalyzedEvent;
 import com.aisupport.common.event.TicketRoutedEvent;
-import com.aisupport.routing.dto.RoutingResponse;
+import com.aisupport.routing.dto.response.RoutingResponse;
 import com.aisupport.routing.entity.RoutingRule;
 import com.aisupport.routing.outbox.OutboxEventService;
 

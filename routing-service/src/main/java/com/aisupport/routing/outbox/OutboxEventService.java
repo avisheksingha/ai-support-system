@@ -4,7 +4,7 @@ import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.aisupport.common.constant.Correlation;
+import com.aisupport.common.constants.Correlation;
 import com.aisupport.common.event.EventType;
 import com.aisupport.common.exception.OutboxEventException;
 import com.fasterxml.jackson.core.JsonProcessingException;

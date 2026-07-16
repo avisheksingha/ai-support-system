@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.aisupport.auth.dto.UpdateUserRoleRequest;
-import com.aisupport.auth.dto.UserResponse;
+import com.aisupport.auth.dto.request.UpdateUserRoleRequest;
+import com.aisupport.auth.dto.response.UserResponse;
 import com.aisupport.auth.service.UserManagementService;
 
 import io.swagger.v3.oas.annotations.Operation;

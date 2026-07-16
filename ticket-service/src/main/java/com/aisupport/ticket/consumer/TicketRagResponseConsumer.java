@@ -9,10 +9,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
-import com.aisupport.common.constant.Correlation;
-import com.aisupport.common.constant.HttpHeaders;
-import com.aisupport.common.constant.KafkaGroups;
-import com.aisupport.common.constant.KafkaTopics;
+import com.aisupport.common.constants.Correlation;
+import com.aisupport.common.constants.HttpHeaders;
+import com.aisupport.common.constants.KafkaGroups;
+import com.aisupport.common.constants.KafkaTopics;
 import com.aisupport.common.event.TicketRagResponseEvent;
 import com.aisupport.common.exception.TicketEventProcessingException;
 import com.aisupport.ticket.service.TicketService;

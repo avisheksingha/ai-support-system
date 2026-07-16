@@ -8,8 +8,8 @@ import org.apache.kafka.common.header.Header;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
-import com.aisupport.common.constant.Correlation;
-import com.aisupport.common.constant.HttpHeaders;
+import com.aisupport.common.constants.Correlation;
+import com.aisupport.common.constants.HttpHeaders;
 import com.aisupport.common.event.TicketAnalyzedEvent;
 import com.aisupport.common.exception.TicketEventProcessingException;
 import com.aisupport.rag.service.RagService;

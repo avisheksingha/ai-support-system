@@ -9,10 +9,10 @@ import org.slf4j.MDC;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
-import com.aisupport.common.constant.Correlation;
-import com.aisupport.common.constant.HttpHeaders;
-import com.aisupport.common.constant.KafkaGroups;
-import com.aisupport.common.constant.KafkaTopics;
+import com.aisupport.common.constants.Correlation;
+import com.aisupport.common.constants.HttpHeaders;
+import com.aisupport.common.constants.KafkaGroups;
+import com.aisupport.common.constants.KafkaTopics;
 import com.aisupport.common.event.TicketCreatedEvent;
 import com.aisupport.common.exception.TicketEventProcessingException;
 import com.aisupport.orchestration.application.workflow.WorkflowEngine;

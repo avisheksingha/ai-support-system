@@ -390,6 +390,7 @@ curl "http://localhost:8080/api/v1/tickets/{ticketId}"
 5. The orchestrator composes the `ai-analysis-service` (via synchronous REST tools) for sentiment/urgency, and the `rag-service` for knowledge retrieval.
 6. Based on the analysis, it coordinates with the `routing-service` to assign the ticket to the appropriate queue.
 7. A `TicketOrchestratedEvent` is published asynchronously upon workflow completion, carrying the final analysis, routing decision, and knowledge context back to the `ticket-service`.
+s.
 8. Correlation IDs enable end-to-end request tracing across all services.
 
 ### Processing Flow
@@ -438,6 +439,15 @@ ai-support-system/
 ├── TESTING.md              # Test execution and troubleshooting guide
 └── README.md               # This file
 ```
+
+### Internal Package Structure
+
+The microservices follow a **Dual Package Philosophy**:
+
+1. **Standard Domain Services** (e.g., `ticket-service`, `auth-service`, `rag-service`): Strictly adhere to a flat structure (`config`, `controller`, `service`, `repository`, `dto/request`, `dto/response`) avoiding abstract layers to maximize Spring Boot discoverability.
+2. **Orchestrator** (`ai-orchestration-service`): Uses a strict feature-first Hexagonal Architecture (`config`, `application`, `domain`, `infrastructure`) due to its role in coordinating complex multi-agent AI workflows.
+
+> **Note:** The backend package structure is structurally frozen for V1. Please see [12. Package and Naming Convention](docs/architecture/12-package-and-naming-convention.md) for detailed guidelines.
 
 ## Contributing
 

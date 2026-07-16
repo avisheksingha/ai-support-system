@@ -10,8 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import com.aisupport.auth.dto.UpdateUserRoleRequest;
-import com.aisupport.auth.dto.UserResponse;
+import com.aisupport.auth.dto.request.UpdateUserRoleRequest;
+import com.aisupport.auth.dto.response.UserResponse;
 import com.aisupport.auth.service.UserManagementService;
 import com.aisupport.common.enums.UserRole;
 

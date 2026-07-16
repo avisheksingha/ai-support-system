@@ -4,8 +4,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-import com.aisupport.ticket.dto.TicketRequest;
-import com.aisupport.ticket.dto.TicketResponse;
+import com.aisupport.ticket.dto.request.TicketRequest;
+import com.aisupport.ticket.dto.response.TicketResponse;
 import com.aisupport.ticket.entity.Ticket;
 
 @Mapper(

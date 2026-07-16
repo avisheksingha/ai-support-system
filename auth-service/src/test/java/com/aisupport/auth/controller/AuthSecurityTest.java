@@ -16,7 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.aisupport.auth.config.SecurityConfig;
 import com.aisupport.auth.service.AuthService;
 import com.aisupport.auth.service.UserManagementService;
-import com.aisupport.common.auth.SecurityConstants;
+import com.aisupport.common.security.SecurityConstants;
 
 import lombok.RequiredArgsConstructor;
 

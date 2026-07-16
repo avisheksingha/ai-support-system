@@ -3,8 +3,8 @@ package com.aisupport.ticket.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-import com.aisupport.ticket.dto.MessageRequest;
-import com.aisupport.ticket.dto.MessageResponse;
+import com.aisupport.ticket.dto.request.MessageRequest;
+import com.aisupport.ticket.dto.response.MessageResponse;
 import com.aisupport.ticket.entity.Message;
 
 @Mapper(componentModel = "spring")

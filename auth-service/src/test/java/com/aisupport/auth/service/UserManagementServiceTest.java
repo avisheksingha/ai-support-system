@@ -12,7 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.aisupport.auth.dto.UserResponse;
+import com.aisupport.auth.dto.response.UserResponse;
 import com.aisupport.auth.entity.User;
 import com.aisupport.auth.mapper.UserMapper;
 import com.aisupport.auth.repository.RefreshTokenRepository;

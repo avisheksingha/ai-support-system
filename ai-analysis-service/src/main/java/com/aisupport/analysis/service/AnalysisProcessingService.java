@@ -6,9 +6,9 @@ import java.time.Instant;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.aisupport.analysis.chat.ChatProvider;
-import com.aisupport.analysis.dto.ParsedAnalysis;
+import com.aisupport.analysis.dto.response.ParsedAnalysis;
 import com.aisupport.analysis.entity.AnalysisResult;
+import com.aisupport.analysis.llm.ChatProvider;
 import com.aisupport.analysis.outbox.OutboxEventService;
 import com.aisupport.analysis.repository.AnalysisResultRepository;
 import com.aisupport.common.dto.AnalysisResultDTO;

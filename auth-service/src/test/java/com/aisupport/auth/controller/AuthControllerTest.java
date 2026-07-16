@@ -10,9 +10,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import com.aisupport.auth.dto.AuthResponse;
-import com.aisupport.auth.dto.LoginRequest;
-import com.aisupport.auth.dto.RegisterRequest;
+import com.aisupport.auth.dto.request.LoginRequest;
+import com.aisupport.auth.dto.request.RegisterRequest;
+import com.aisupport.auth.dto.response.AuthResponse;
 import com.aisupport.auth.service.AuthService;
 
 import jakarta.servlet.http.HttpServletRequest;

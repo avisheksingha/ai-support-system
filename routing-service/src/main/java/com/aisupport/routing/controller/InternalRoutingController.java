@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.aisupport.common.event.TicketAnalyzedEvent;
 import com.aisupport.common.event.TicketRoutedEvent;
-import com.aisupport.routing.dto.RoutingResponse;
+import com.aisupport.routing.dto.response.RoutingResponse;
 import com.aisupport.routing.service.RoutingService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;

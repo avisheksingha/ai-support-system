@@ -8,8 +8,8 @@ import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
 import com.aisupport.analysis.service.AnalysisProcessingService;
-import com.aisupport.common.constant.Correlation;
-import com.aisupport.common.constant.HttpHeaders;
+import com.aisupport.common.constants.Correlation;
+import com.aisupport.common.constants.HttpHeaders;
 import com.aisupport.common.event.TicketCreatedEvent;
 import com.aisupport.common.exception.TicketEventProcessingException;
 

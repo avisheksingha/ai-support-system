@@ -11,8 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.aisupport.auth.config.JwtConfig;
-import com.aisupport.auth.dto.LoginRequest;
-import com.aisupport.auth.dto.RegisterRequest;
+import com.aisupport.auth.dto.request.LoginRequest;
+import com.aisupport.auth.dto.request.RegisterRequest;
 import com.aisupport.auth.entity.User;
 import com.aisupport.auth.exception.AuthException;
 import com.aisupport.auth.mapper.UserMapper;

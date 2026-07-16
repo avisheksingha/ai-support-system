@@ -18,7 +18,7 @@ import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.server.ServerWebExchange;
 
-import com.aisupport.common.auth.SecurityConstants;
+import com.aisupport.common.security.SecurityConstants;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Encoders;

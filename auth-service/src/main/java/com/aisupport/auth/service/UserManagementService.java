@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.aisupport.auth.dto.UserResponse;
+import com.aisupport.auth.dto.response.UserResponse;
 import com.aisupport.auth.entity.User;
 import com.aisupport.auth.exception.AuthException;
 import com.aisupport.auth.mapper.UserMapper;

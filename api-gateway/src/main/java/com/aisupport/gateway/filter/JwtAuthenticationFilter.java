@@ -16,9 +16,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.server.ServerWebExchange;
 
-import com.aisupport.common.auth.JwtUtil;
-import com.aisupport.common.auth.SecurityConstants;
 import com.aisupport.common.security.CommonSecurityEndpoints;
+import com.aisupport.common.security.JwtUtil;
+import com.aisupport.common.security.SecurityConstants;
 
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;

@@ -17,9 +17,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.aisupport.analysis.chat.ChatProvider;
-import com.aisupport.analysis.dto.ParsedAnalysis;
+import com.aisupport.analysis.dto.response.ParsedAnalysis;
 import com.aisupport.analysis.entity.AnalysisResult;
+import com.aisupport.analysis.llm.ChatProvider;
 import com.aisupport.analysis.outbox.OutboxEventService;
 import com.aisupport.analysis.repository.AnalysisResultRepository;
 import com.aisupport.common.event.TicketAnalyzedEvent;
