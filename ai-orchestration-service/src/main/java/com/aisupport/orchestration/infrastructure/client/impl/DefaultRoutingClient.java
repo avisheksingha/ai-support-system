@@ -1,5 +1,6 @@
 package com.aisupport.orchestration.infrastructure.client.impl;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -18,7 +19,7 @@ public class DefaultRoutingClient implements RoutingClient {
 
     private final RestClient restClient;
 
-    public DefaultRoutingClient(RestClient.Builder restClientBuilder,
+    public DefaultRoutingClient(@Qualifier("loadBalancedRestClientBuilder") RestClient.Builder restClientBuilder,
                                 @Value("${api.services.routing.url}") String routingServiceUrl) {
         this.restClient = restClientBuilder.baseUrl(routingServiceUrl).build();
     }

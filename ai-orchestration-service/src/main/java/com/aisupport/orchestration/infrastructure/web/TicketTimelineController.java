@@ -1,7 +1,5 @@
 package com.aisupport.orchestration.infrastructure.web;
 
-import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
@@ -52,20 +50,9 @@ public class TicketTimelineController {
     public ResponseEntity<AIInsightResponse> getTicketInsights(@PathVariable Long ticketId) {
         log.info("Fetching AI insights for ticket: {}", ticketId);
         
-        // Mock implementation for V1 frontend integration testing. 
-        // In reality, this would query the DB for the latest AnalysisResult associated with this ticket.
-        AIInsightResponse mockResponse = AIInsightResponse.builder()
-                .ticketId(ticketId)
-                .intent("BILLING_ISSUE")
-                .sentiment("FRUSTRATED")
-                .urgency("HIGH")
-                .confidenceScore(0.92)
-                .keywords(List.of("subscription", "upgrade", "charge", "error"))
-                .suggestedCategory("Billing & Subscriptions")
-                .analyzedAt(Instant.now().toString())
-                .build();
-                
-        return ResponseEntity.ok(mockResponse);
+        return timelineService.getTicketInsights(ticketId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.noContent().build());
     }
     
     @PostMapping("/{ticketId}/actions")

@@ -3,9 +3,10 @@ import { useState } from "react";
 
 interface RagResponsePanelProps {
   ragResponse: string;
+  onUseReply?: (text: string) => void;
 }
 
-export function RagResponsePanel({ ragResponse }: RagResponsePanelProps) {
+export function RagResponsePanel({ ragResponse, onUseReply }: RagResponsePanelProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -27,38 +28,6 @@ export function RagResponsePanel({ ragResponse }: RagResponsePanelProps) {
       </div>
 
       <div className="p-5 flex flex-col gap-5">
-        {/* Mocked Knowledge Articles Used */}
-        <div>
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 block flex items-center gap-1.5">
-            <BookOpen className="h-3.5 w-3.5" /> Sources Used
-          </span>
-          <ul className="space-y-2 text-[13px] text-slate-700 pl-1">
-            <li className="bg-slate-50 p-3 rounded-lg border border-slate-100 flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 font-semibold text-slate-800"><Check className="h-4 w-4 text-emerald-500" /> Subscription Upgrades</span>
-                <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded shadow-sm border border-emerald-100">94% match</span>
-              </div>
-              <div className="flex items-center gap-3 text-[10px] text-slate-500 font-medium pl-6">
-                <span className="bg-white px-1.5 py-0.5 rounded border border-slate-200">Billing</span>
-                <span>Updated: 2 days ago</span>
-                <span>Audience: All Agents</span>
-              </div>
-            </li>
-            <li className="bg-slate-50 p-3 rounded-lg border border-slate-100 flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 font-semibold text-slate-800"><Check className="h-4 w-4 text-emerald-500" /> Billing Policy</span>
-                <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded shadow-sm border border-emerald-100">89% match</span>
-              </div>
-              <div className="flex items-center gap-3 text-[10px] text-slate-500 font-medium pl-6">
-                <span className="bg-white px-1.5 py-0.5 rounded border border-slate-200">Policy</span>
-                <span>Updated: 1 week ago</span>
-                <span>Audience: Tier 2</span>
-              </div>
-            </li>
-          </ul>
-        </div>
-
-        <div className="border-t border-slate-100" />
 
         {/* Generated Reply */}
         <div>
@@ -88,6 +57,16 @@ export function RagResponsePanel({ ragResponse }: RagResponsePanelProps) {
               return ragResponse;
             })()}
           </div>
+          {onUseReply && (
+            <div className="mt-3">
+              <button 
+                className="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-xs rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2"
+                onClick={() => onUseReply(ragResponse)}
+              >
+                <Check className="h-3.5 w-3.5" /> Use as Reply
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

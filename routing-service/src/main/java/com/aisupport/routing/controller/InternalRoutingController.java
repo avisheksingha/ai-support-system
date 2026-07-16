@@ -11,6 +11,7 @@ import com.aisupport.common.event.TicketAnalyzedEvent;
 import com.aisupport.common.event.TicketRoutedEvent;
 import com.aisupport.routing.service.RoutingService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping(value = "/api/internal/routing", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Internal Routing", description = "Internal endpoints for orchestration service")
 public class InternalRoutingController {
 
     private final RoutingService routingService;

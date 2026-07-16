@@ -1,72 +1,96 @@
 import type { TicketModel } from "@/shared/types/ticket";
-import { Check, Loader2, Circle, ArrowRight } from "lucide-react";
+import type { AnalysisModel, RoutingModel } from "@/shared/types/workspace";
+import { Check, Loader2, ArrowRight, Bot } from "lucide-react";
 
 interface AiPipelineProgressProps {
   ticket: TicketModel;
+  analysis?: AnalysisModel;
+  routing?: RoutingModel;
 }
 
-export function AiPipelineProgress({ ticket }: AiPipelineProgressProps) {
-  // Determine state of pipeline based on ticket status
-  // 1. Customer: always ✓ if ticket exists
-  // 2. Analysis: ✓ if > ANALYZING
-  // 3. Knowledge: ✓ if > ANALYZING (mocked for now, assuming RAG runs after analysis)
-  // 4. Routing: ✓ if >= ASSIGNED
-  // 5. Assignment: ✓ if >= ASSIGNED
+export function AiPipelineProgress({ ticket, analysis, routing }: AiPipelineProgressProps) {
+  // Determine true state of pipeline based on REAL backend data
+  const hasAnalysis = !!analysis;
+  const hasKnowledge = !!ticket.ragResponse;
+  const hasRouting = !!routing;
+  const isAssigned = !!ticket.assignedTo || ticket.status === 'ASSIGNED' || ticket.status === 'IN_PROGRESS' || ticket.status === 'RESOLVED' || ticket.status === 'CLOSED';
+  const isResolved = ticket.status === 'RESOLVED' || ticket.status === 'CLOSED';
 
-  const getStatusLevel = () => {
-    switch(ticket.status) {
-      case "NEW": return 0;
-      case "ANALYZING": return 1;
-      case "ANALYZED": return 3; // Finished Analysis and Knowledge
-      case "ASSIGNED": return 5;
-      case "IN_PROGRESS": return 5;
-      case "RESOLVED": 
-      case "CLOSED": return 6;
-      default: return 0;
-    }
-  };
+  const PrimaryNode = ({ label, isComplete }: { label: string, isComplete: boolean }) => (
+    <div className="flex items-center justify-between w-[95px]">
+      <span className={`text-[13px] ${isComplete ? 'text-slate-800' : 'text-slate-400'}`}>{label}</span>
+      {isComplete ? (
+        <div className="h-5 w-5 bg-[#00875A] rounded-full flex items-center justify-center shrink-0 shadow-sm">
+          <Check className="h-3 w-3 text-white" strokeWidth={3} />
+        </div>
+      ) : (
+        <div className="h-5 w-5 border-2 border-slate-200 rounded-full shrink-0" />
+      )}
+    </div>
+  );
 
-  const level = getStatusLevel();
+  const ChildNode1 = ({ label, isComplete, isCurrent }: { label: string, isComplete: boolean, isCurrent: boolean }) => (
+    <div className="flex items-center justify-between w-[100px]">
+      <span className={`text-[13px] ${isComplete || isCurrent ? 'text-slate-800' : 'text-slate-400'}`}>{label}</span>
+      {isComplete ? (
+        <div className="h-5 w-5 bg-[#00875A] rounded-full flex items-center justify-center shrink-0 shadow-sm">
+          <Check className="h-3 w-3 text-white" strokeWidth={3} />
+        </div>
+      ) : isCurrent ? (
+        <Loader2 className="h-4 w-4 text-[#0C66E4] animate-spin shrink-0" />
+      ) : (
+        <div className="h-4 w-4 opacity-0 shrink-0" />
+      )}
+    </div>
+  );
 
-  const steps = [
-    { label: "Customer", idx: 1 },
-    { label: "AI Analysis", idx: 2 },
-    { label: "Knowledge", idx: 3 },
-    { label: "Routing", idx: 4 },
-    { label: "Assigned", idx: 5 },
-    { label: "Resolution", idx: 6 },
-  ];
+  const ChildNode2 = ({ label, isComplete, isCurrent }: { label: string, isComplete: boolean, isCurrent: boolean }) => (
+    <div className="flex items-center justify-between w-[95px]">
+      <span className={`text-[13px] ${isComplete || isCurrent ? 'text-slate-800' : 'text-slate-400'}`}>{label}</span>
+      {isComplete ? (
+        <div className="h-5 w-5 bg-[#00875A] rounded-full flex items-center justify-center shrink-0 shadow-sm">
+          <Check className="h-3 w-3 text-white" strokeWidth={3} />
+        </div>
+      ) : isCurrent ? (
+        <Loader2 className="h-4 w-4 text-[#0C66E4] animate-spin shrink-0" />
+      ) : (
+        <div className="h-4 w-4 opacity-0 shrink-0" />
+      )}
+    </div>
+  );
+
+  const Arrow = ({ active }: { active: boolean }) => (
+    <div className="flex items-center justify-center w-6">
+      <ArrowRight className={`h-[11px] w-[11px] ${active ? 'text-[#00875A]' : 'text-slate-300'}`} />
+    </div>
+  );
 
   return (
-    <div className="bg-card shadow-sm border-0 ring-1 ring-border/50 rounded-lg p-5 mb-2">
-      <h2 className="text-[11px] font-semibold text-muted-foreground mb-4 uppercase tracking-wider">AI Pipeline Status</h2>
-      <div className="flex flex-wrap items-center justify-between md:justify-start md:gap-4 overflow-x-auto pb-2">
-        {steps.map((step, i) => {
-          const isComplete = level >= step.idx;
-          const isCurrent = level === step.idx - 1;
+    <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+      <h2 className="text-[10px] font-bold text-slate-400 mb-5 uppercase tracking-widest">AI Pipeline Status</h2>
+      
+      <div className="flex flex-col gap-4 overflow-x-auto pb-2">
+        {/* Row 1: Analysis Pipeline */}
+        <div className="flex items-center gap-1.5 min-w-max">
+          <PrimaryNode label="Customer" isComplete={!!ticket} />
+          <Arrow active={hasAnalysis} />
           
-          return (
-            <div key={step.label} className="flex items-center gap-2 md:gap-4">
-              <div className="flex items-center gap-2">
-                <span className={`text-[13px] font-medium ${isComplete || isCurrent ? 'text-foreground' : 'text-muted-foreground/60'}`}>
-                  {step.label}
-                </span>
-                
-                {isComplete ? (
-                  <Check className="h-4 w-4 text-emerald-500 shrink-0" />
-                ) : isCurrent ? (
-                  <Loader2 className="h-4 w-4 text-[#0C66E4] animate-spin shrink-0" />
-                ) : (
-                  <Circle className="h-4 w-4 text-muted-foreground/30 shrink-0" />
-                )}
-              </div>
-              
-              {i < steps.length - 1 && (
-                <ArrowRight className="h-3 w-3 text-muted-foreground/30 shrink-0 hidden md:block" />
-              )}
-            </div>
-          );
-        })}
+          <ChildNode1 label="AI Analysis" isComplete={hasAnalysis} isCurrent={!!ticket && !hasAnalysis} />
+          <Arrow active={hasKnowledge} />
+          
+          <ChildNode2 label="Knowledge" isComplete={hasKnowledge} isCurrent={hasAnalysis && !hasKnowledge} />
+        </div>
+
+        {/* Row 2: Action Pipeline */}
+        <div className="flex items-center gap-1.5 min-w-max">
+          <PrimaryNode label="Routing" isComplete={hasRouting} />
+          <Arrow active={isAssigned} />
+          
+          <ChildNode1 label="Assigned" isComplete={isAssigned} isCurrent={hasRouting && !isAssigned} />
+          <Arrow active={isResolved} />
+          
+          <ChildNode2 label="Resolution" isComplete={isResolved} isCurrent={isAssigned && !isResolved} />
+        </div>
       </div>
     </div>
   );

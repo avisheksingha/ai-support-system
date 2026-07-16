@@ -41,9 +41,9 @@ export function DiagnosticsPanel({ ticket, analysis, routing }: DiagnosticsPanel
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <DataPoint label="Provider" value={analysis?.analysisProvider || "Spring AI / OpenAI"} />
             <DataPoint label="Model" value="gpt-4o-mini" />
-            <DataPoint label="Latency" value={`${Math.floor(Math.random() * 800 + 400)} ms`} icon={<Activity />} />
-            <DataPoint label="Input Tokens" value={Math.floor(Math.random() * 200 + 50)} />
-            <DataPoint label="Output Tokens" value={Math.floor(Math.random() * 150 + 20)} />
+            <DataPoint label="Latency" value="N/A" icon={<Activity />} />
+            <DataPoint label="Input Tokens" value="N/A" />
+            <DataPoint label="Output Tokens" value="N/A" />
           </div>
         </DiagnosticSection>
 

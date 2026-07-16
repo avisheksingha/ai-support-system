@@ -5,6 +5,7 @@ import { Plus, Ticket, Activity, User, BookOpen, Clock, CheckCircle2 } from "luc
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatTimeAgo } from "@/shared/utils/date";
+import { CreateTicketDialog } from "@/features/customer/components/CreateTicketDialog";
 
 export function CustomerDashboardOverview() {
   const { user } = useAuth();
@@ -27,9 +28,12 @@ export function CustomerDashboardOverview() {
           </h1>
           <p className="text-muted-foreground mt-1 text-sm">How can we help you today?</p>
         </div>
-        <Button onClick={() => navigate("/my-tickets")} className="shrink-0">
-          <Plus className="mr-2 h-4 w-4" /> Create Ticket
-        </Button>
+        <CreateTicketDialog>
+          <Button className="shrink-0 shadow-sm h-9 px-4 text-sm font-medium gap-1.5 pb-0.5">
+            <Plus className="h-4 w-4" />
+            Create Ticket
+          </Button>
+        </CreateTicketDialog>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -90,8 +94,16 @@ export function CustomerDashboardOverview() {
           {/* Quick Actions */}
           <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
             <h2 className="text-sm font-semibold text-foreground mb-4">Quick Actions</h2>
-            <div className="space-y-2">
-              <QuickAction icon={Plus} label="Create Ticket" onClick={() => navigate("/my-tickets")} />
+            <div className="flex flex-col gap-2">
+              <CreateTicketDialog>
+                <button className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-muted text-left transition-colors group">
+                  <div className="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+                    <Plus className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <span className="text-sm font-medium text-foreground">Create Ticket</span>
+                </button>
+              </CreateTicketDialog>
+              <QuickAction icon={BookOpen} label="Browse Knowledge Base" onClick={() => {}} />
               <QuickAction icon={Ticket} label="My Tickets" onClick={() => navigate("/my-tickets")} />
               <QuickAction icon={Activity} label="Service Status" onClick={() => {}} active />
               <QuickAction icon={User} label="Profile" onClick={() => navigate("/profile")} />

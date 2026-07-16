@@ -3,6 +3,7 @@ package com.aisupport.orchestration.infrastructure.client.impl;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
@@ -22,7 +23,7 @@ public class DefaultRagClient implements RagClient {
 
     private final RestClient restClient;
 
-    public DefaultRagClient(RestClient.Builder restClientBuilder,
+    public DefaultRagClient(@Qualifier("loadBalancedRestClientBuilder") RestClient.Builder restClientBuilder,
                             @Value("${api.services.rag.url}") String ragServiceUrl) {
         this.restClient = restClientBuilder.baseUrl(ragServiceUrl).build();
     }
@@ -44,7 +45,7 @@ public class DefaultRagClient implements RagClient {
                     .retrieve()
                     .body(new ParameterizedTypeReference<Map<String, Object>>() {});
 
-            return Result.success(List.of(response.get("response")));
+            return Result.success(List.of(response.get("answer")));
         } catch (Exception e) {
             log.error("Failed to search knowledge for query={}", query, e);
             throw new RagUnavailableException("RAG Service Unavailable: " + e.getMessage(), e);

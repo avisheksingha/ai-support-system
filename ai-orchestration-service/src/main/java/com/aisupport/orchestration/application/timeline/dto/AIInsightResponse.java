@@ -20,4 +20,5 @@ public class AIInsightResponse {
     private List<String> keywords;
     private String suggestedCategory;
     private String analyzedAt;
+    private String analysisProvider;
 }

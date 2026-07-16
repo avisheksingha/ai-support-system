@@ -79,7 +79,7 @@ export function TicketList({ selectedTicket, onSelectTicket }: TicketListProps) 
               }`}>{ticket.ticketNumber}</span>
               <span className="text-[10px] font-medium text-slate-400">{ticket.updatedAt ? formatTimeAgo(ticket.updatedAt) : 'just now'}</span>
             </div>
-            <h3 className={`text-sm font-bold line-clamp-2 mb-3 leading-snug ${
+            <h3 className={`text-base font-semibold line-clamp-2 mb-3 leading-tight ${
               selectedTicket === ticket.ticketNumber ? "text-indigo-950" : "text-slate-800 group-hover:text-slate-900"
             }`}>
               {ticket.subject}

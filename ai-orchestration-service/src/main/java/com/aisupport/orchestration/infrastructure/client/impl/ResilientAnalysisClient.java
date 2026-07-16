@@ -35,4 +35,17 @@ public class ResilientAnalysisClient implements AnalysisClient {
                 ticketId, contentLength, t.getMessage());
         throw new AnalysisUnavailableException("Analysis Service Unavailable (Resilience Fallback)", t);
     }
+
+    @Override
+    @CircuitBreaker(name = "analysis", fallbackMethod = "getAnalysisFallback")
+    @Retry(name = "analysis", fallbackMethod = "getAnalysisFallback")
+    public Result<Object> getAnalysis(Long ticketId) {
+        return defaultAnalysisClient.getAnalysis(ticketId);
+    }
+
+    public Result<Object> getAnalysisFallback(Long ticketId, Throwable t) {
+        log.warn("Resilience fallback triggered for fetching analysis on ticketId={}: {}",
+                ticketId, t.getMessage());
+        return Result.failure("Analysis Service Unavailable (Resilience Fallback)");
+    }
 }

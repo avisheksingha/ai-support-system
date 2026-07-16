@@ -6,7 +6,11 @@ import { useCreateTicket } from "../hooks/useCustomerTickets";
 import { useImproveWriting } from "../../writing/hooks/useWriting";
 import { Loader2, Plus, Sparkles, Check, X } from "lucide-react";
 
-export function CreateTicketDialog() {
+interface CreateTicketDialogProps {
+  children?: React.ReactNode;
+}
+
+export function CreateTicketDialog({ children }: CreateTicketDialogProps = {}) {
   const [open, setOpen] = useState(false);
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
@@ -91,13 +95,12 @@ export function CreateTicketDialog() {
         setAiError(null);
       }
     }}>
-      {/* @ts-ignore: Radix UI asChild type incompatibility */}
-      <DialogTrigger asChild>
-        <Button className="shadow-sm h-9 px-4 text-sm font-medium gap-1.5">
+      <DialogTrigger render={children ? (children as React.ReactElement) : (
+        <Button className="shadow-sm h-9 px-4 text-sm font-medium gap-1.5 pb-0.5">
           <Plus className="h-4 w-4" />
           Create Ticket
         </Button>
-      </DialogTrigger>
+      )} />
       <DialogContent className="bg-background border-border text-foreground sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold pr-8">

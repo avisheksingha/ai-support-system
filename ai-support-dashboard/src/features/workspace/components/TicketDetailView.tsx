@@ -23,6 +23,32 @@ interface TicketDetailViewProps {
   ticketNumber: string;
 }
 
+// Helper to compute SLA progress
+function calculateSLA(createdAt: string, slaHours?: number) {
+  if (!slaHours) return null;
+  const created = new Date(createdAt).getTime();
+  const target = created + (slaHours * 60 * 60 * 1000);
+  const now = Date.now();
+  const timeLeft = target - now;
+  
+  if (timeLeft <= 0) {
+    return { text: "Breached", percent: 100, isBreached: true };
+  }
+  
+  const totalMs = slaHours * 60 * 60 * 1000;
+  const elapsed = now - created;
+  const percent = Math.min(100, Math.max(0, (elapsed / totalMs) * 100));
+  
+  const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60));
+  const minsLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+  
+  return {
+    text: `${hoursLeft}h ${minsLeft}m left`,
+    percent,
+    isBreached: false
+  };
+}
+
 export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
   const { data: ticket, isLoading: isTicketLoading } = useTicket(ticketNumber);
   const { mutate: updateStatus } = useUpdateTicketStatus();
@@ -40,6 +66,8 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
   const { data: timeline, isLoading: isTimelineLoading } = useTimeline(ticket?.id);
   const { data: messages, isLoading: isMessagesLoading } = useMessages(ticket?.ticketNumber);
   const { mutate: addMessage, isPending: isSendingMessage } = useAddMessage();
+  
+  const slaData = ticket ? calculateSLA(ticket.createdAt, ticket.slaHours) : null;
 
   const handleSendReply = () => {
     if (!replyText.trim()) return;
@@ -86,7 +114,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
           </ErrorBoundary>
         )}
 
-        <div className="bg-white shadow-sm border border-slate-200 rounded-xl p-6 mb-2 relative overflow-hidden">
+        <div className="bg-white shadow-sm border border-slate-200 rounded-xl p-6 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
           <div className="flex flex-col gap-6">
             <div className="w-full">
@@ -105,14 +133,10 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
                   <div className="w-6 h-6 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-[10px]">📧</div>
                   <span className="truncate max-w-[200px] sm:max-w-none">{ticket.customerEmail || 'customer@example.com'}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-[10px]">🏢</div>
-                  Support Department
-                </div>
               </div>
             </div>
             
-            <div className="w-full grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="bg-slate-50/80 border border-slate-100 rounded-lg p-3 flex flex-col justify-between gap-2">
                 <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Status</span>
                 <Select 
@@ -144,85 +168,120 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
                   {ticket.priority}
                 </Badge>
               </div>
-              <div className="bg-slate-50/80 border border-slate-100 rounded-lg p-3 flex flex-col justify-between gap-2">
+              
+              {/* SLA Tracking - Real Data or Fallback */}
+              <div className="bg-slate-50/80 border border-slate-100 rounded-lg px-3 py-2.5 flex flex-col justify-between gap-2.5 sm:col-span-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">SLA</span>
-                  <span className="text-[11px] font-bold text-amber-600 flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> 2h 15m left
+                  <span className={`text-[11px] font-bold flex items-center gap-1.5 ${slaData?.isBreached ? 'text-red-600' : 'text-amber-600'}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${slaData?.isBreached ? 'bg-red-500' : 'bg-amber-500'}`}></span> {slaData ? slaData.text : '2h 15m left'}
                   </span>
                 </div>
-                <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden mt-1">
-                  <div className="h-full bg-amber-500 w-[65%] rounded-full"></div>
+                <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden mb-0.5">
+                  <div className={`h-full rounded-full ${slaData?.isBreached ? 'bg-red-500' : 'bg-amber-500'}`} style={{ width: `${slaData ? slaData.percent : 65}%` }}></div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Ticket Lifecycle Visual */}
-        <div className="bg-white shadow-sm border border-slate-200 rounded-xl p-4 mb-2 flex items-center justify-between overflow-x-auto text-[10px] font-bold uppercase tracking-wider text-slate-400">
-          <div className="flex items-center gap-2 text-emerald-600">
-            <div className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center"><Check className="h-2.5 w-2.5" /></div>
-            Submitted
-          </div>
-          <div className="w-8 h-px bg-slate-200"></div>
-          <div className="flex items-center gap-2 text-emerald-600">
-            <div className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center"><Check className="h-2.5 w-2.5" /></div>
-            AI Analyzed
-          </div>
-          <div className="w-8 h-px bg-slate-200"></div>
-          <div className="flex items-center gap-2 text-blue-600">
-            <div className="w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center"><span className="animate-pulse w-1.5 h-1.5 bg-blue-600 rounded-full"></span></div>
-            Agent Assigned
-          </div>
-          <div className="w-8 h-px bg-slate-200"></div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-slate-100"></div>
-            Working
-          </div>
-          <div className="w-8 h-px bg-slate-200"></div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-slate-100"></div>
-            Resolved
+        {/* Ticket Lifecycle Visual - Railway Style */}
+        <div className="bg-white shadow-sm border border-slate-200 rounded-xl px-8 py-9">
+          <div className="relative flex justify-between items-center w-full">
+            {/* Background Track Line */}
+            <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 bg-slate-100 rounded-full z-0"></div>
+            
+            {(() => {
+              const statusOrder = ['NEW', 'ANALYZING', 'ANALYZED', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'];
+              const currentIndex = Math.max(0, statusOrder.indexOf(ticket.status));
+              
+              // Map the detailed backend statuses to the 5 visual stations
+              let stationIndex = 0; // NEW, ANALYZING
+              if (currentIndex >= statusOrder.indexOf('ANALYZED')) stationIndex = 1;
+              if (currentIndex >= statusOrder.indexOf('ASSIGNED')) stationIndex = 2;
+              if (currentIndex >= statusOrder.indexOf('IN_PROGRESS')) stationIndex = 3;
+              if (currentIndex >= statusOrder.indexOf('RESOLVED')) stationIndex = 4;
+
+              const stations = [
+                { label: 'SUBMITTED' },
+                { label: 'AI ANALYZED' },
+                { label: 'AGENT ASSIGNED' },
+                { label: 'WORKING' },
+                { label: 'RESOLVED' }
+              ];
+
+              return (
+                <>
+                  {/* Progress Fill Line */}
+                  <div 
+                    className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-emerald-400 transition-all duration-700 ease-in-out rounded-full z-0"
+                    style={{ width: `${(stationIndex / (stations.length - 1)) * 100}%` }}
+                  ></div>
+
+                  {stations.map((station, idx) => {
+                    const isPassed = stationIndex > idx;
+                    const isCurrent = stationIndex === idx;
+                    
+                    // Center all labels! The px-8 padding on the container gives enough room so the first/last don't clip.
+                    const labelAlignment = "left-1/2 -translate-x-1/2 text-center";
+                    
+                    // Alternate labels above and below the track
+                    const verticalAlignment = idx % 2 === 0 ? "top-7" : "bottom-7";
+
+                    return (
+                      <div key={station.label} className="relative z-10 flex flex-col items-center">
+                        {/* Station Node */}
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center ring-4 ring-white shadow-sm transition-colors duration-500 ${isPassed ? 'bg-emerald-500' : isCurrent ? 'bg-blue-600 ring-blue-50' : 'bg-slate-200'}`}>
+                          {isPassed ? <Check className="w-3 h-3 text-white" /> : isCurrent ? <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /> : <div className="w-1.5 h-1.5 bg-white rounded-full opacity-50" />}
+                        </div>
+                        {/* Station Label */}
+                        <div className={`absolute ${verticalAlignment} whitespace-nowrap text-[9px] sm:text-[10px] font-bold tracking-wider transition-colors duration-500 ${labelAlignment} ${isPassed ? 'text-emerald-700' : isCurrent ? 'text-blue-700' : 'text-slate-400'}`}>
+                          {station.label}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
+              );
+            })()}
           </div>
         </div>
 
-        <AiPipelineProgress ticket={ticket} />
+        <AiPipelineProgress ticket={ticket} analysis={analysis} routing={routing} />
 
         {/* Conversation */}
-        <div className="mt-4">
+        <div>
           <h2 className="text-[11px] font-bold text-slate-500 mb-4 uppercase tracking-widest px-1">Conversation</h2>
           
-          <div className="space-y-6 bg-white rounded-xl p-6 border border-slate-200 shadow-sm flex flex-col">
+          <div className="space-y-4 bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col">
             
             {/* Real Messages Map */}
             {isMessagesLoading ? (
               <div className="space-y-4">
-                <Skeleton className="h-16 w-full rounded-xl bg-slate-100" />
-                <Skeleton className="h-16 w-3/4 self-end rounded-xl bg-slate-100" />
+                <Skeleton className="h-12 w-full rounded-xl bg-slate-100" />
+                <Skeleton className="h-12 w-3/4 self-end rounded-xl bg-slate-100" />
               </div>
             ) : messages && messages.length > 0 ? (
               messages.map((msg: any) => {
-                const isAgent = msg.type === 'AGENT_MESSAGE' || msg.isInternal;
+                const isInternalNote = msg.isInternal || msg.internal || msg.type === 'INTERNAL_NOTE';
+                const isAgent = msg.type === 'AGENT_MESSAGE' || isInternalNote;
                 const isSystem = msg.senderName === 'System' || msg.type === 'SYSTEM_MESSAGE';
-                const avatarText = isAgent ? 'AG' : isSystem ? '⚙️' : (ticket.customerName?.charAt(0)?.toUpperCase() || 'C');
-                const badgeText = isAgent ? 'AGENT' : isSystem ? 'SYSTEM' : 'CUSTOMER';
+                
+                const avatarText = isAgent ? '🎧' : isSystem ? '⚙️' : '👤';
                 const displayName = isAgent ? 'You' : isSystem ? 'System' : ticket.customerName;
 
                 return (
-                  <div key={msg.id} className={`flex gap-4 ${isAgent ? 'flex-row-reverse' : ''}`}>
-                    <div className={`h-10 w-10 shrink-0 rounded-full flex items-center justify-center font-bold text-sm shadow-sm ring-4 ${isAgent ? 'bg-cyan-600 text-white ring-cyan-50' : isSystem ? 'bg-slate-800 text-white ring-slate-100' : 'bg-blue-600 text-white ring-blue-50'}`}>
+                  <div key={msg.id} className={`flex gap-3 ${isAgent ? 'flex-row-reverse' : ''}`}>
+                    <div className="h-8 w-8 shrink-0 rounded-full bg-slate-100 border border-slate-200 shadow-sm flex items-center justify-center text-sm mt-1">
                       {avatarText}
                     </div>
-                    <div className={`flex-1 space-y-1.5 flex flex-col ${isAgent ? 'items-end' : ''}`}>
-                      <div className={`flex items-baseline gap-2 ${isAgent ? 'flex-row-reverse' : ''}`}>
-                        <span className="text-sm font-bold text-slate-900">{displayName}</span>
-                        <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${isAgent ? 'text-cyan-700 bg-cyan-50 border border-cyan-100' : 'text-slate-500 bg-slate-100'}`}>
-                          {badgeText}
-                        </span>
-                        <span className="text-[10px] text-slate-400 font-medium mx-2">{formatTimeAgo(msg.createdAt)}</span>
+                    <div className={`flex flex-col max-w-[85%] ${isAgent ? 'items-end' : 'items-start'}`}>
+                      <div className={`flex items-baseline gap-2 mb-1 ${isAgent ? 'flex-row-reverse' : ''}`}>
+                        <span className="text-[11px] font-bold text-slate-700">{displayName}</span>
+                        {isInternalNote && <span className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded text-amber-700 bg-amber-100">Internal</span>}
+                        <span className="text-[10px] text-slate-400 font-medium">{formatTimeAgo(msg.createdAt)}</span>
                       </div>
-                      <div className={`border p-4 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed shadow-sm relative ${isAgent ? 'bg-cyan-50/50 border-cyan-100 rounded-2xl rounded-tr-sm text-right' : 'bg-slate-50 border-slate-100 rounded-2xl rounded-tl-sm'}`}>
+                      <div className={`px-4 py-2.5 text-xs whitespace-pre-wrap leading-relaxed shadow-sm ${isAgent && !isInternalNote ? 'bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tr-sm text-left' : isInternalNote ? 'bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl rounded-tr-sm text-left' : isSystem ? 'bg-slate-100 border border-slate-200 text-slate-700 rounded-2xl text-left' : 'bg-blue-600 text-white rounded-2xl rounded-tl-sm text-left'}`}>
                         {msg.content}
                       </div>
                     </div>
@@ -233,49 +292,11 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
               <div className="text-center text-slate-400 text-sm py-4 italic">No messages yet.</div>
             )}
 
-            {/* AI Suggested Reply (Mocked for visual demonstration of feature) */}
-            <div className="flex gap-4 mt-6 pt-6 border-t border-slate-100">
-              <div className="h-10 w-10 shrink-0 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-sm shadow-sm ring-4 ring-indigo-50 mt-1">
-                ✨
-              </div>
-              <div className="flex-1 space-y-1.5">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-sm font-bold text-indigo-700">Copilot Draft</span>
-                  <span className="text-[10px] text-slate-400 font-medium ml-2">Generated just now</span>
-                </div>
-                <div className="bg-indigo-50/50 border border-indigo-100 rounded-2xl rounded-tl-sm p-5 text-sm text-slate-800 whitespace-pre-wrap shadow-sm">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="flex h-2 w-2 rounded-full bg-indigo-500"></span>
-                    <span className="italic text-indigo-600/80 font-medium text-xs">Drafted based on matched knowledge article</span>
-                  </div>
-                  <div className="bg-white p-4 rounded-xl border border-indigo-50 shadow-sm leading-relaxed">
-                    Hi {ticket.customerName.split(' ')[0]},<br/><br/>
-                    I understand you need assistance with your request. Based on our policies, I can help you resolve this right away. Let me know if you would like me to proceed with the necessary steps on your account.
-                  </div>
-                  <div className="mt-4 flex flex-wrap gap-2 w-full">
-                    <button className="text-[11px] px-4 py-2 bg-indigo-600 shadow-sm border border-transparent rounded-md text-white hover:bg-indigo-700 transition-all font-semibold flex items-center gap-1.5" onClick={() => setReplyText("Hi " + ticket.customerName.split(' ')[0] + ",\n\nI understand you need assistance with your request. Based on our policies, I can help you resolve this right away. Let me know if you would like me to proceed with the necessary steps on your account.")}>
-                      <Check className="w-3.5 h-3.5" /> Use Reply
-                    </button>
-                    <button className="text-[11px] px-4 py-2 bg-white shadow-sm border border-slate-200 rounded-md text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all font-semibold flex items-center gap-1.5">
-                      Regenerate
-                    </button>
-                    <div className="flex-1"></div>
-                    <button className="text-[11px] px-4 py-2 bg-white shadow-sm border border-slate-200 rounded-md text-rose-600 hover:bg-rose-50 transition-all font-semibold flex items-center gap-1.5">
-                      Escalate
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
             {/* Message Input Box */}
-            <div className="mt-6 pt-6 border-t border-slate-100 flex gap-4">
-               <div className="h-10 w-10 shrink-0 rounded-full bg-cyan-600 text-white flex items-center justify-center font-bold text-sm shadow-sm ring-4 ring-cyan-50">
-                 AG
-               </div>
+            <div className="mt-4 pt-4 border-t border-slate-100 flex gap-3">
                <div className="flex-1 flex flex-col gap-2">
                  <textarea 
-                   className="w-full border border-slate-200 rounded-lg p-3 text-sm min-h-[100px] focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-y" 
+                   className="w-full border border-slate-200 rounded-lg p-3 text-[13px] min-h-[100px] focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-y" 
                    placeholder="Type your reply to the customer..."
                    value={replyText}
                    onChange={e => setReplyText(e.target.value)}
@@ -303,7 +324,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
         </div>
 
         {/* Activity Feed */}
-        <div className="mt-6 mb-8">
+        <div>
           <h2 className="text-[11px] font-bold text-slate-500 mb-4 uppercase tracking-widest px-1">Activity Feed</h2>
           {isTimelineLoading ? (
             <div className="space-y-4 ml-4">
@@ -360,7 +381,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
         ) : (
           <ErrorBoundary FallbackComponent={WorkspaceErrorFallback}>
             <Suspense fallback={<Skeleton className="h-48 w-full bg-card rounded-xl" />}>
-              <RagResponsePanel ragResponse={ticket.ragResponse} />
+              <RagResponsePanel ragResponse={ticket.ragResponse} onUseReply={setReplyText} />
             </Suspense>
           </ErrorBoundary>
         )}

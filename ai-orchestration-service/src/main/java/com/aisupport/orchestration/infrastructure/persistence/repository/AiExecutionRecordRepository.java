@@ -8,4 +8,5 @@ import com.aisupport.orchestration.infrastructure.persistence.entity.AiExecution
 
 public interface AiExecutionRecordRepository extends JpaRepository<AiExecutionRecordEntity, String> {
     List<AiExecutionRecordEntity> findByCorrelationId(String correlationId);
+    java.util.Optional<AiExecutionRecordEntity> findTopByTicketIdOrderByExecutedAtDesc(Long ticketId);
 }

@@ -2,6 +2,7 @@ package com.aisupport.orchestration.infrastructure.client.impl;
 
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,7 @@ public class DefaultAnalysisClient implements AnalysisClient {
 
     private final RestClient restClient;
 
-    public DefaultAnalysisClient(RestClient.Builder restClientBuilder,
+    public DefaultAnalysisClient(@Qualifier("loadBalancedRestClientBuilder") RestClient.Builder restClientBuilder,
                                  @Value("${api.services.ai-analysis.url}") String analysisServiceUrl) {
         this.restClient = restClientBuilder.baseUrl(analysisServiceUrl).build();
     }
@@ -47,6 +48,20 @@ public class DefaultAnalysisClient implements AnalysisClient {
         } catch (Exception e) {
             log.error("Failed to analyze ticketId={}", ticketId, e);
             throw new AnalysisUnavailableException("Analysis Service Unavailable: " + e.getMessage(), e);
+        }
+    }
+        
+    @Override
+    public Result<Object> getAnalysis(Long ticketId) {
+        try {
+            Object response = restClient.get()
+                    .uri("/api/internal/analysis/ticket/" + ticketId)
+                    .retrieve()
+                    .body(Object.class);
+            return Result.success(response);
+        } catch (Exception e) {
+            log.error("Failed to fetch analysis for ticketId={}", ticketId, e);
+            return Result.failure("Analysis not found or unavailable: " + e.getMessage());
         }
     }
 }

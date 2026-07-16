@@ -33,7 +33,7 @@ export function RoutingPanel({ routing, ticket }: RoutingPanelProps) {
           </div>
           <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Suggested Agent</span>
-            <div className="font-semibold text-slate-800">{assignee || "Any"}</div>
+            <div className="font-semibold text-slate-800">{assignee || "Unassigned"}</div>
           </div>
         </div>
 
@@ -41,33 +41,19 @@ export function RoutingPanel({ routing, ticket }: RoutingPanelProps) {
           <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Matched Rule</span>
             <div className="font-semibold text-cyan-700 font-mono text-[10px]">
-              {routing.ruleName || "GENERAL_ROUTING_RULE"}
+              {routing.ruleName || "N/A"}
             </div>
           </div>
           <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Confidence</span>
             <div className="font-bold text-emerald-600">
-              {(routing.confidenceScore * 100).toFixed(0)}%
+              {routing.confidenceScore ? `${(routing.confidenceScore * 100).toFixed(0)}%` : "N/A"}
             </div>
           </div>
         </div>
 
         <div className="pt-2 border-t border-slate-100 mt-2">
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Routing Factors</span>
-          <div className="flex flex-wrap gap-2 mb-3">
-            <span className="text-[10px] px-2 py-1 bg-cyan-50 text-cyan-700 border border-cyan-100 rounded-full font-semibold flex items-center gap-1">
-              ✓ Skill Match
-            </span>
-            <span className="text-[10px] px-2 py-1 bg-cyan-50 text-cyan-700 border border-cyan-100 rounded-full font-semibold flex items-center gap-1">
-              ✓ Availability
-            </span>
-            <span className="text-[10px] px-2 py-1 bg-cyan-50 text-cyan-700 border border-cyan-100 rounded-full font-semibold flex items-center gap-1">
-              ✓ Low Workload
-            </span>
-            <span className="text-[10px] px-2 py-1 bg-cyan-50 text-cyan-700 border border-cyan-100 rounded-full font-semibold flex items-center gap-1">
-              ✓ High Confidence
-            </span>
-          </div>
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Reason</span>
           <div className="text-slate-600 leading-relaxed text-[13px] bg-slate-50 p-3 rounded-lg border border-slate-100">
             {routing.reason}
           </div>

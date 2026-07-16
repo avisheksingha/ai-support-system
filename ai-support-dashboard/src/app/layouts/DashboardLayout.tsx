@@ -123,17 +123,14 @@ export function DashboardLayout() {
         {/* User footer */}
         <div className="p-3 border-t border-border">
           <DropdownMenu>
-            {/* @ts-ignore: Radix UI asChild type incompatibility */}
-            <DropdownMenuTrigger asChild>
-              <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-card transition-colors text-left outline-none border border-transparent hover:border-border">
-                <div className="h-7 w-7 rounded bg-[#0C66E4] flex items-center justify-center text-white text-[11px] font-bold shrink-0 shadow-sm">
-                  {initials}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-foreground truncate">{displayName}</p>
-                  <p className="text-[10px] text-muted-foreground truncate">{user?.role}</p>
-                </div>
-              </button>
+            <DropdownMenuTrigger className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-card transition-colors text-left outline-none border border-transparent hover:border-border">
+              <div className="h-7 w-7 rounded bg-[#0C66E4] flex items-center justify-center text-white text-[11px] font-bold shrink-0 shadow-sm">
+                {initials}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-foreground truncate">{displayName}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{user?.role}</p>
+              </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent side="top" align="start" className="w-52 bg-background border-border text-foreground mb-1">
               <DropdownMenuItem onClick={() => navigate("/profile")} className="focus:bg-card cursor-pointer">

@@ -32,7 +32,7 @@ export function AiInsightsPanel({ analysis }: AiInsightsPanelProps) {
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Model</span>
-            <div className="font-semibold text-slate-800">Gemini 2.5 Flash</div>
+            <div className="font-semibold text-slate-800 truncate">{analysis.analysisProvider}</div>
           </div>
           <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Confidence</span>
@@ -62,27 +62,6 @@ export function AiInsightsPanel({ analysis }: AiInsightsPanelProps) {
           <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Suggested Category</span>
             <div className="font-semibold text-slate-700 truncate">{formatSemanticString(analysis.suggestedCategory || "General")}</div>
-          </div>
-        </div>
-
-        <div className="pt-2 border-t border-slate-100 mt-2">
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Suggested Resolution</span>
-          <div className="text-slate-600 leading-relaxed text-[13px] bg-indigo-50/50 p-3 rounded-lg border border-indigo-100/50 font-medium">
-            Verify user identity and process the password reset manually using the admin portal. Share knowledge article #KB-904 with the user.
-          </div>
-        </div>
-
-        <div className="pt-2 border-t border-slate-100 mt-2">
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block text-indigo-600">What should I do next?</span>
-          <div className="flex flex-col gap-2">
-            <button className="text-left px-3 py-2.5 bg-indigo-600 border border-transparent rounded-lg text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors flex justify-between items-center group">
-              <span>Run Diagnostics Workflow</span>
-              <span className="opacity-70 group-hover:opacity-100">→</span>
-            </button>
-            <button className="text-left px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors flex justify-between items-center group">
-              <span>Send Identity Verification Email</span>
-              <span className="opacity-50 group-hover:opacity-100">→</span>
-            </button>
           </div>
         </div>
 

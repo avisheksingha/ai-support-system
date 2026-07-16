@@ -9,6 +9,7 @@ import type { TicketModel } from "@/shared/types/ticket";
 import { wsClient } from "@/lib/websocket";
 import { useQueryClient } from "@tanstack/react-query";
 
+
 export function CustomerTicketDetailPage() {
   const { ticketNumber } = useParams<{ ticketNumber: string }>();
   const navigate = useNavigate();
@@ -116,8 +117,8 @@ export function CustomerTicketDetailPage() {
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
               <div className="px-5 py-4 border-b border-border bg-card flex items-center gap-3">
-                <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs border border-blue-500/20">
-                  {ticket.customerName?.charAt(0)?.toUpperCase() || "U"}
+                <div className="h-8 w-8 shrink-0 rounded-full bg-slate-100 border border-slate-200 shadow-sm flex items-center justify-center text-sm">
+                  👤
                 </div>
                 <div>
                   <div className="flex items-baseline gap-2">
@@ -131,36 +132,41 @@ export function CustomerTicketDetailPage() {
               </div>
             </div>
             
-            <div className="flex items-center gap-3 text-sm text-muted-foreground py-2 before:h-px before:flex-1 before:bg-muted after:h-px after:flex-1 after:bg-muted">
-              <MessageSquare className="h-4 w-4" />
-              <span>Communication History</span>
-            </div>
-            
-            <div className="space-y-6">
+            <div className="mt-4">
+              <h2 className="text-[11px] font-bold text-muted-foreground mb-4 uppercase tracking-widest px-1">Communication History</h2>
+              
+              <div className="space-y-4 bg-card rounded-xl p-5 border border-border shadow-sm flex flex-col">
               {isMessagesLoading ? (
                 <div className="text-center p-10 border border-dashed border-border rounded-xl bg-card shadow-sm animate-pulse">
                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Loading messages...</h3>
                 </div>
               ) : messages && messages.length > 0 ? (
                 <div className="space-y-4">
-                  {messages.map((msg: any) => (
-                    <div key={msg.id} className={`flex gap-3 ${msg.type === 'CUSTOMER_MESSAGE' ? 'flex-row-reverse' : ''}`}>
-                      <div className={`h-8 w-8 shrink-0 rounded-full flex items-center justify-center font-bold text-xs shadow-sm ring-2 ${msg.type === 'CUSTOMER_MESSAGE' ? 'bg-blue-600 text-white ring-blue-50' : msg.type === 'SYSTEM_MESSAGE' ? 'bg-slate-800 text-white ring-slate-100' : 'bg-cyan-600 text-white ring-cyan-50'}`}>
-                        {msg.type === 'CUSTOMER_MESSAGE' ? (ticket.customerName?.charAt(0)?.toUpperCase() || 'M') : msg.type === 'SYSTEM_MESSAGE' ? '⚙️' : 'AG'}
-                      </div>
-                      <div className={`flex-1 space-y-1.5 flex flex-col ${msg.type === 'CUSTOMER_MESSAGE' ? 'items-end' : ''}`}>
-                        <div className={`flex items-baseline gap-2 ${msg.type === 'CUSTOMER_MESSAGE' ? 'flex-row-reverse' : ''}`}>
-                          <span className="text-sm font-medium text-foreground">
-                            {msg.type === 'CUSTOMER_MESSAGE' ? 'Me' : msg.type === 'SYSTEM_MESSAGE' ? 'System' : 'Support Agent'}
-                          </span>
-                          <span className="text-[10px] text-muted-foreground">{formatTimeAgo(msg.createdAt)}</span>
+                  {messages.filter((m: any) => !m.isInternal && !m.internal && m.type !== 'INTERNAL_NOTE').map((msg: any) => {
+                    const isCustomer = msg.type === 'CUSTOMER_MESSAGE';
+                    const isSystem = msg.type === 'SYSTEM_MESSAGE' || msg.senderName === 'System';
+                    const isAgent = msg.type === 'AGENT_MESSAGE' || (!isCustomer && !isSystem);
+
+                    const avatarText = isCustomer ? '👤' : isSystem ? '⚙️' : '🎧';
+                    const displayName = isCustomer ? 'Me' : isSystem ? 'System' : (msg.senderName || 'Support Agent');
+
+                    return (
+                      <div key={msg.id} className={`flex gap-3 ${isCustomer ? 'flex-row-reverse' : ''}`}>
+                        <div className="h-8 w-8 shrink-0 rounded-full bg-slate-100 border border-slate-200 shadow-sm flex items-center justify-center text-sm mt-1">
+                          {avatarText}
                         </div>
-                        <div className={`border p-4 text-sm text-foreground whitespace-pre-wrap leading-relaxed shadow-sm relative ${msg.type === 'CUSTOMER_MESSAGE' ? 'bg-blue-50/50 border-blue-100 rounded-2xl rounded-tr-sm text-right dark:bg-blue-900/20 dark:border-blue-800' : 'bg-card border-border rounded-2xl rounded-tl-sm'}`}>
-                          {msg.content}
+                        <div className={`flex flex-col max-w-[85%] ${isCustomer ? 'items-end' : 'items-start'}`}>
+                          <div className={`flex items-baseline gap-2 mb-1 ${isCustomer ? 'flex-row-reverse' : ''}`}>
+                            <span className="text-[11px] font-bold text-slate-700">{displayName}</span>
+                            <span className="text-[10px] text-slate-400 font-medium">{formatTimeAgo(msg.createdAt)}</span>
+                          </div>
+                          <div className={`px-4 py-2.5 text-[12px] whitespace-pre-wrap leading-relaxed shadow-sm ${isCustomer ? 'bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tr-sm text-left' : isSystem ? 'bg-slate-100 border border-slate-200 text-slate-700 rounded-2xl text-left' : 'bg-blue-600 text-white rounded-2xl rounded-tl-sm text-left'}`}>
+                            {msg.content}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="text-center p-10 border border-dashed border-border rounded-xl bg-card shadow-sm">
@@ -172,10 +178,7 @@ export function CustomerTicketDetailPage() {
               )}
               
               {/* Message Input Box */}
-              <div className="mt-4 bg-card border border-border rounded-xl p-4 shadow-sm flex gap-3">
-                 <div className="h-8 w-8 shrink-0 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-sm ring-2 ring-blue-50">
-                   {ticket.customerName?.charAt(0)?.toUpperCase() || "U"}
-                 </div>
+              <div className="mt-4 pt-4 border-t border-border flex gap-3">
                  <div className="flex-1 flex flex-col gap-2">
                    <textarea 
                      className="w-full border border-border bg-background rounded-lg p-3 text-sm min-h-[100px] focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-y" 
@@ -193,12 +196,13 @@ export function CustomerTicketDetailPage() {
                         {isSendingMessage ? 'Sending...' : 'Send Reply'}
                       </Button>
                    </div>
-                 </div>
-              </div>
-            </div>
+               </div>
+             </div>
+           </div>
           </div>
-          
-          {/* Sidebar */}
+        </div>
+        
+        {/* Sidebar */}
           <div className="space-y-6">
             <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
               <h3 className="text-sm font-semibold text-foreground mb-1">Current Status</h3>
