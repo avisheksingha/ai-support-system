@@ -140,7 +140,7 @@ export function CustomerTicketDetailPage() {
                 <div className="text-center p-10 border border-dashed border-border rounded-xl bg-card shadow-sm animate-pulse">
                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Loading messages...</h3>
                 </div>
-              ) : messages && messages.length > 0 ? (
+              ) : messages && messages.length > 0 && (
                 <div className="space-y-4">
                   {messages.filter((m: any) => !m.isInternal && !m.internal && m.type !== 'INTERNAL_NOTE').map((msg: any) => {
                     const isCustomer = msg.type === 'CUSTOMER_MESSAGE';

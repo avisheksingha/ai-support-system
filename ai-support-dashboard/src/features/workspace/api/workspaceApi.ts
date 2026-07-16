@@ -1,8 +1,5 @@
 import { apiClient } from "@/lib/api-client";
 import type {
-  AnalysisModel,
-  KnowledgeModel,
-  RoutingModel,
   TimelinePageResponse,
   OperationsDashboardResponse,
   WorkspaceAggregationResponse
