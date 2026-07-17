@@ -103,6 +103,7 @@ public class TicketService {
                 .ticketNumber(ticket.getTicketNumber())
                 .subject(ticket.getSubject())
                 .message(ticket.getMessage())
+                .priority(ticket.getPriority() != null ? ticket.getPriority().name() : null)
                 .createdAt(Instant.now())
                 .build();
 
