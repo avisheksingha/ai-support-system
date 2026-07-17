@@ -1,6 +1,7 @@
 package com.aisupport.orchestration.application.workflow;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -10,16 +11,21 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.aisupport.common.enums.TicketStatus;
 import com.aisupport.common.enums.WorkflowOutcome;
+import com.aisupport.common.event.AiDecision;
 import com.aisupport.common.event.AnalysisResult;
 import com.aisupport.common.event.EventMetadata;
 import com.aisupport.common.event.EventType;
 import com.aisupport.common.event.KnowledgeContext;
 import com.aisupport.common.event.RoutingDecision;
 import com.aisupport.common.event.TicketOrchestratedEvent;
+import com.aisupport.orchestration.domain.state.WorkflowState;
 import com.aisupport.orchestration.domain.workflow.WorkflowContext;
-import com.aisupport.orchestration.domain.workflow.WorkflowExecutionResult;
+import com.aisupport.orchestration.domain.workflow.WorkflowStepConstants;
 import com.aisupport.orchestration.infrastructure.persistence.entity.OutboxEventEntity;
+import com.aisupport.orchestration.infrastructure.persistence.entity.WorkflowCheckpointEntity;
 import com.aisupport.orchestration.infrastructure.persistence.repository.OutboxEventRepository;
+import com.aisupport.orchestration.infrastructure.persistence.repository.WorkflowCheckpointRepository;
+import com.aisupport.orchestration.infrastructure.persistence.repository.WorkflowExecutionRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -30,12 +36,20 @@ import lombok.extern.slf4j.Slf4j;
 @Order(40)
 @RequiredArgsConstructor
 public class OutboxWorkflowExecutionListener implements WorkflowExecutionListener {
-
+	
     private final OutboxEventRepository outboxEventRepository;
     private final ObjectMapper objectMapper;
+    private final WorkflowExecutionRepository executionRepository;
+    private final WorkflowCheckpointRepository checkpointRepository;
     
     @Value("${info.build.version:1.0.0}")
     private String serviceVersion;
+
+    @Value("${spring.ai.google.genai.chat.model:gemini-2.5-flash}")
+    private String chatModel;
+
+    @Value("${orchestration.prompt.version:1.0}")
+    private String promptVersion;
 
     @Override
     @Transactional
@@ -49,21 +63,16 @@ public class OutboxWorkflowExecutionListener implements WorkflowExecutionListene
             AnalysisResult analysis = context.getResource(AnalysisResult.class);
             RoutingDecision routing = context.getResource(RoutingDecision.class);
             KnowledgeContext knowledge = context.getResource(KnowledgeContext.class);
-
-            WorkflowExecutionResult result = WorkflowExecutionResult.builder()
-                .analysis(analysis)
-                .routing(routing)
-                .knowledge(knowledge)
-                .build();
+            AiDecision aiDecision = context.getResource(AiDecision.class);
 
             EventMetadata metadata = new EventMetadata(
                 UUID.randomUUID().toString(),
                 1,
                 context.getCorrelationId(),
                 context.getExecutionId(),
-                "1.0",
-                "1.0",
-                "default",
+                String.valueOf(context.getWorkflowVersion()),
+                promptVersion,
+                chatModel,
                 serviceVersion,
                 context.getExecutionDuration(),
                 WorkflowOutcome.SUCCESS,
@@ -73,9 +82,10 @@ public class OutboxWorkflowExecutionListener implements WorkflowExecutionListene
             TicketOrchestratedEvent event = new TicketOrchestratedEvent(
                     context.getTicketId(),
                     TicketStatus.ANALYZED,
-                    result.getAnalysis(),
-                    result.getRouting(),
-                    result.getKnowledge(),
+                    analysis,
+                    routing,
+                    knowledge,
+                    aiDecision,
                     metadata
             );
 
@@ -91,6 +101,19 @@ public class OutboxWorkflowExecutionListener implements WorkflowExecutionListene
 
             outboxEventRepository.save(entity);
             log.info("Outbox Saved - ticketId={}", context.getTicketId());
+
+            executionRepository.findById(context.getExecutionId()).ifPresent(execution -> {
+                WorkflowCheckpointEntity checkpoint = 
+                    WorkflowCheckpointEntity.builder()
+                        .execution(execution)
+                        .correlationId(context.getCorrelationId())
+                        .stepName(WorkflowStepConstants.EVENT_PUBLICATION)
+                        .stateSnapshot(WorkflowState.COMPLETED)
+                        .attributesSnapshot(new HashMap<>(context.getAttributes()))
+                        .createdAt(Instant.now())
+                        .build();
+                checkpointRepository.save(checkpoint);
+            });
         } catch (Exception e) {
             log.error("Failed to save outbox event for execution {}", context.getExecutionId(), e);
         }

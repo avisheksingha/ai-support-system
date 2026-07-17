@@ -1,6 +1,6 @@
 package com.aisupport.orchestration.infrastructure.client;
 
-import java.util.List;
+import java.util.Collections;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import com.aisupport.common.event.KnowledgeContext;
 import com.aisupport.orchestration.domain.model.Result;
 import com.aisupport.orchestration.infrastructure.client.exception.RagUnavailableException;
 
@@ -29,7 +30,7 @@ public class DefaultRagClient implements RagClient {
 
     @Override
     @Timed(value = "rag.client.duration", description = "Time taken by RAG Service")
-    public Result<List<Object>> searchKnowledge(Long ticketId, String query) {
+    public Result<KnowledgeContext> searchKnowledge(Long ticketId, String query) {
         log.info("Calling rag-service internal API for ticketId={} query={}", ticketId, query);
         try {
             Map<String, Object> request = Map.of(
@@ -44,7 +45,10 @@ public class DefaultRagClient implements RagClient {
                     .retrieve()
                     .body(new ParameterizedTypeReference<Map<String, Object>>() {});
 
-            return Result.success(List.of(response.get("answer")));
+            String answer = response != null && response.containsKey("answer") ? (String) response.get("answer") : "No relevant knowledge found.";
+            
+            KnowledgeContext context = new KnowledgeContext(answer, Collections.emptyList(), 1.0);
+            return Result.success(context);
         } catch (Exception e) {
             log.error("Failed to search knowledge for query={}", query, e);
             throw new RagUnavailableException("RAG Service Unavailable: " + e.getMessage(), e);
@@ -52,13 +56,16 @@ public class DefaultRagClient implements RagClient {
     }
 
     @Override
-    public Result<Object> getRagResponse(Long ticketId) {
+    public Result<KnowledgeContext> getRagResponse(Long ticketId) {
         try {
-            Object response = restClient.get()
+            Map<String, Object> response = restClient.get()
                     .uri("/api/internal/rag/ticket/" + ticketId)
                     .retrieve()
-                    .body(Object.class);
-            return Result.success(response);
+                    .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+                    
+            String answer = response != null && response.containsKey("generatedReply") ? (String) response.get("generatedReply") : "No relevant knowledge found.";
+            KnowledgeContext context = new KnowledgeContext(answer, Collections.emptyList(), 1.0);
+            return Result.success(context);
         } catch (Exception e) {
             log.error("Failed to get RAG response for ticketId={}", ticketId, e);
             return Result.failure("RAG Not Found: " + e.getMessage());

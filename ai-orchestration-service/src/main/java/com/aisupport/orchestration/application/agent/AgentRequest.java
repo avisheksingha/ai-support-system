@@ -3,8 +3,8 @@ package com.aisupport.orchestration.application.agent;
 import java.util.List;
 import java.util.Map;
 
+import com.aisupport.common.event.KnowledgeContext;
 import com.aisupport.orchestration.domain.context.ConversationContext;
-import com.aisupport.orchestration.domain.context.KnowledgeContext;
 import com.aisupport.orchestration.domain.model.ModelProfile;
 
 import lombok.Builder;

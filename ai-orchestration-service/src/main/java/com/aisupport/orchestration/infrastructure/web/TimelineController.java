@@ -1,19 +1,13 @@
 package com.aisupport.orchestration.infrastructure.web;
 
-import java.util.UUID;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.aisupport.orchestration.application.timeline.TimelineService;
-import com.aisupport.orchestration.application.timeline.dto.AIActionRequest;
-import com.aisupport.orchestration.application.timeline.dto.AIActionResponse;
 import com.aisupport.orchestration.application.timeline.dto.AIInsightResponse;
 import com.aisupport.orchestration.application.timeline.dto.TimelinePageResponse;
 import com.aisupport.orchestration.application.timeline.dto.WorkspaceAggregationResponse;
@@ -66,21 +60,4 @@ public class TimelineController {
                 .orElse(ResponseEntity.noContent().build());
     }
     
-    @PostMapping("/{ticketId}/actions")
-    @Operation(summary = "Trigger AI Action", description = "Manually trigger an AI action (e.g. generate draft, re-analyze)")
-    public ResponseEntity<AIActionResponse> triggerAction(
-            @PathVariable Long ticketId,
-            @RequestBody AIActionRequest request) {
-            
-        log.info("Triggering AI action {} for ticket: {}", request.getActionType(), ticketId);
-        
-        // Mock implementation. In reality, this would publish a command to Kafka for the workflow orchestrator.
-        AIActionResponse response = AIActionResponse.builder()
-                .status("ACCEPTED")
-                .message("Action " + request.getActionType() + " queued for execution")
-                .workflowExecutionId(UUID.randomUUID().toString())
-                .build();
-                
-        return ResponseEntity.accepted().body(response);
-    }
 }

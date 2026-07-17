@@ -58,5 +58,25 @@
     "name": "chat.max-context-tokens",
     "type": "java.lang.String",
     "description": "A description for 'chat.max-context-tokens'"
+  },
+  {
+    "name": "orchestration.prompt.final.path",
+    "type": "java.lang.String",
+    "description": "A description for 'orchestration.prompt.final.path'"
+  },
+  {
+    "name": "orchestration.prompt.version",
+    "type": "java.lang.String",
+    "description": "A description for 'orchestration.prompt.version'"
+  },
+  {
+    "name": "orchestration.workflow.version",
+    "type": "java.lang.String",
+    "description": "A description for 'orchestration.workflow.version'"
+  },
+  {
+    "name": "orchestration.policy.version",
+    "type": "java.lang.String",
+    "description": "A description for 'orchestration.policy.version'"
   }
 ]}

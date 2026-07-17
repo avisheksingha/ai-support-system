@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import com.aisupport.common.event.AnalysisResult;
 import com.aisupport.orchestration.domain.model.Result;
 import com.aisupport.orchestration.infrastructure.client.exception.AnalysisUnavailableException;
 
@@ -27,7 +28,7 @@ public class DefaultAnalysisClient implements AnalysisClient {
 
     @Override
     @Timed(value = "analysis.client.duration", description = "Time taken by Analysis Service")
-    public Result<Object> analyze(Long ticketId, String content) {
+    public Result<AnalysisResult> analyze(Long ticketId, String content) {
         log.info("Calling ai-analysis-service internal API for ticketId={}", ticketId);
         try {
             Map<String, Object> request = Map.of(
@@ -36,12 +37,12 @@ public class DefaultAnalysisClient implements AnalysisClient {
                 "message", content
             );
 
-            Object response = restClient.post()
+            AnalysisResult response = restClient.post()
                     .uri("/api/internal/analysis/analyze")
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(request)
                     .retrieve()
-                    .body(Object.class);
+                    .body(AnalysisResult.class);
 
             return Result.success(response);
         } catch (Exception e) {
@@ -51,12 +52,12 @@ public class DefaultAnalysisClient implements AnalysisClient {
     }
         
     @Override
-    public Result<Object> getAnalysis(Long ticketId) {
+    public Result<AnalysisResult> getAnalysis(Long ticketId) {
         try {
-            Object response = restClient.get()
+            AnalysisResult response = restClient.get()
                     .uri("/api/internal/analysis/ticket/" + ticketId)
                     .retrieve()
-                    .body(Object.class);
+                    .body(AnalysisResult.class);
             return Result.success(response);
         } catch (Exception e) {
             log.error("Failed to fetch analysis for ticketId={}", ticketId, e);

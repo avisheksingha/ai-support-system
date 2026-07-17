@@ -96,6 +96,15 @@ public class Ticket extends AuditableEntity {
     @Column(name = "rag_generated_at")
     private Instant ragGeneratedAt;
     
+    @Column(name = "ai_summary", columnDefinition = "TEXT")
+    private String aiSummary;
+
+    @Column(name = "suggested_reply", columnDefinition = "TEXT")
+    private String suggestedReply;
+
+    @Column(name = "ai_confidence")
+    private Double aiConfidence;
+    
     /**
      * Allowed ticket state transitions.
      */

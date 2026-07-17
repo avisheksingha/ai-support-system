@@ -88,7 +88,7 @@ public class SecurityConfig {
 	
 	            .authorizeHttpRequests(auth -> auth
 	                    .requestMatchers(ALL_PUBLIC_ENDPOINTS).permitAll()
-	                    .requestMatchers("/api/v1/routing/**", "/internal/**").authenticated()
+	                    .requestMatchers("/api/v1/routing/**").authenticated()
 	                    .anyRequest().denyAll()
 	            )
 	

@@ -2,8 +2,10 @@ package com.aisupport.orchestration.application.tool;
 
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.aisupport.common.event.AnalysisResult;
 import com.aisupport.orchestration.domain.model.Result;
 import com.aisupport.orchestration.domain.model.ToolResult;
 import com.aisupport.orchestration.domain.tool.ToolDefinition;
@@ -18,6 +20,9 @@ public class AiAnalysisTool implements ToolDefinition {
     
     private final AnalysisClient analysisClient;
 
+    @Value("${info.app.version:1.0.0}")
+    private String serviceVersion;
+
     @Override
     public ToolDescriptor getDescriptor() {
         return ToolDescriptor.builder()
@@ -25,7 +30,7 @@ public class AiAnalysisTool implements ToolDefinition {
                 .description("Analyzes a support ticket for intent, sentiment, and urgency.")
                 .parameters(Map.of("ticketId", Long.class, "content", String.class))
                 .returnType(Object.class)
-                .version("1.0.0")
+                .version(serviceVersion)
                 .build();
     }
 
@@ -48,7 +53,7 @@ public class AiAnalysisTool implements ToolDefinition {
         
         long start = System.currentTimeMillis();
         try {
-            Result<Object> clientResult = analysisClient.analyze(ticketId, content);
+            Result<AnalysisResult> clientResult = analysisClient.analyze(ticketId, content);
             long executionTime = System.currentTimeMillis() - start;
             
             if (clientResult.isSuccess()) {

@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,14 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class MetricsQueryService {
+
+    private static final String UNKNOWN_VALUE = "Unknown";
+
+    @Value("${spring.profiles.active:Unknown}")
+    private String activeProfile;
+    
+    @Value("${info.app.version:1.0.0}")
+    private String serviceVersion;
 
     private final WorkflowExecutionRepository workflowExecutionRepository;
     private final AiExecutionRecordRepository aiExecutionRecordRepository;
@@ -47,11 +56,8 @@ public class MetricsQueryService {
                 .activeWorkflows(activeWorkflows)
                 .completedToday(completedToday)
                 .failedToday(failedToday)
-                .averageDurationMs(750) // Mock calculation for V1 fallback
-                .hourlyThroughput(List.of(
-                    OperationsOverviewDTO.TrendData.builder().label("09:00").value(12).build(),
-                    OperationsOverviewDTO.TrendData.builder().label("10:00").value(18).build()
-                ))
+                .averageDurationMs(0) 
+                .hourlyThroughput(Collections.emptyList())
                 .build();
     }
 
@@ -101,15 +107,7 @@ public class MetricsQueryService {
     }
 
     private List<OperationsOverviewDTO.ProviderMetrics> buildToolMetrics() {
-        OperationsOverviewDTO.ProviderMetrics github = OperationsOverviewDTO.ProviderMetrics.builder()
-                .providerId("github-mcp")
-                .invocations(15)
-                .successes(15)
-                .failures(0)
-                .avgLatencyMs(350)
-                .lastInvocation(Instant.now().toString())
-                .build();
-        return List.of(github);
+        return Collections.emptyList();
     }
 
     private OperationsOverviewDTO.HealthMetrics buildHealthMetrics() {
@@ -126,10 +124,10 @@ public class MetricsQueryService {
 
     private OperationsOverviewDTO.SystemInfo buildSystemInfo() {
         return OperationsOverviewDTO.SystemInfo.builder()
-                .serviceVersion("1.0.0")
-                .gitCommit("8a4f9b2")
-                .buildNumber("1024")
-                .environment("development")
+                .serviceVersion(serviceVersion)
+                .gitCommit(UNKNOWN_VALUE)
+                .buildNumber(UNKNOWN_VALUE)
+                .environment(activeProfile)
                 .build();
     }
 }

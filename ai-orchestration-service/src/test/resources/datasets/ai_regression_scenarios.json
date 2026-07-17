@@ -16,7 +16,7 @@
       }
     ],
     "expectedPromptSnippet": "Ticket #1001",
-    "mockLlmResponse": "{\"analyzeResult\": \"SUCCESS\", \"urgency\": \"HIGH\", \"sentiment\": \"NEGATIVE\", \"reasoning\": \"The issue seems to be the power supply.\", \"recommendation\": \"Check power supply.\", \"category\": \"NETWORK\"}",
+    "mockLlmResponse": "{\"aiSummary\": \"The issue seems to be the power supply.\", \"suggestedReply\": \"Check power supply.\", \"recommendation\": \"Check power supply.\", \"confidence\": 0.95}",
     "expectedExtracts": {
       "analyzeResult": "SUCCESS"
     },

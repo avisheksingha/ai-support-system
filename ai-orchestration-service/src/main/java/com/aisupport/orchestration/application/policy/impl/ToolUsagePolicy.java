@@ -1,5 +1,6 @@
 package com.aisupport.orchestration.application.policy.impl;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.aisupport.orchestration.application.agent.AgentRequest;
@@ -9,6 +10,9 @@ import com.aisupport.orchestration.domain.workflow.WorkflowContext;
 
 @Component
 public class ToolUsagePolicy implements AiPolicy {
+
+    @Value("${orchestration.policy.version:1.0}")
+    private String policyVersion;
 
     @Override
     public PolicyResult evaluate(WorkflowContext context, AgentRequest request) {
@@ -21,7 +25,7 @@ public class ToolUsagePolicy implements AiPolicy {
             
             // For this generic policy, let's just say any workflow explicitly marked as "restricted" 
             // cannot use these tools.
-            return PolicyResult.deny("tool-usage-policy", "1.0", "ToolUsagePolicy: Database tools are blocked for public workflows.");
+            return PolicyResult.deny("tool-usage-policy", policyVersion, "ToolUsagePolicy: Database tools are blocked for public workflows.");
         }
         
         return PolicyResult.allow();

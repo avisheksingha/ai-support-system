@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.aisupport.common.enums.TicketPriority;
 import com.aisupport.common.enums.TicketStatus;
 import com.aisupport.common.enums.UserRole;
+import com.aisupport.common.event.AiDecision;
 import com.aisupport.common.event.AnalysisResult;
 import com.aisupport.common.event.DomainEvent;
 import com.aisupport.common.event.EventType;
@@ -416,6 +417,13 @@ public class TicketService {
             applyKnowledge(ticket, event.knowledge());
         }
 
+        // -------------------------
+        // AI Decision
+        // -------------------------
+        if (event.aiDecision() != null) {
+            applyAiDecision(ticket, event.aiDecision());
+        }
+
         // Hibernate dirty checking will persist changes automatically
         log.info(
                 "Ticket {} successfully updated. Final status={}, team={}, priority={}",
@@ -449,6 +457,13 @@ public class TicketService {
             ticket.setRagResponse(knowledge.knowledgeSummary());
             ticket.setRagGeneratedAt(Instant.now());
         }
+    }
+
+    private void applyAiDecision(Ticket ticket, AiDecision decision) {
+        if (decision == null) return;
+        if (decision.aiSummary() != null) ticket.setAiSummary(decision.aiSummary());
+        if (decision.suggestedReply() != null) ticket.setSuggestedReply(decision.suggestedReply());
+        if (decision.confidence() != null) ticket.setAiConfidence(decision.confidence());
     }
 
     /**

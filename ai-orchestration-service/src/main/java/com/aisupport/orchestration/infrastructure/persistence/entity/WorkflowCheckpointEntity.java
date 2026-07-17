@@ -39,6 +39,9 @@ public class WorkflowCheckpointEntity {
     @JoinColumn(name = "execution_id", nullable = false)
     private WorkflowExecutionEntity execution;
     
+    @Column(name = "correlation_id")
+    private String correlationId;
+    
     private String stepName;
     
     @Enumerated(EnumType.STRING)

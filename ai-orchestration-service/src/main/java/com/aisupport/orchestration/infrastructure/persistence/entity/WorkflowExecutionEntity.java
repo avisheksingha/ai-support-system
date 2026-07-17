@@ -7,6 +7,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import com.aisupport.orchestration.domain.state.WorkflowState;
+import com.aisupport.orchestration.domain.workflow.TicketContextSnapshot;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,6 +41,10 @@ public class WorkflowExecutionEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private Map<String, Object> attributes;
+    
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "ticket_context", columnDefinition = "jsonb")
+    private TicketContextSnapshot ticketContext;
     
     private Instant createdAt;
     private Instant updatedAt;

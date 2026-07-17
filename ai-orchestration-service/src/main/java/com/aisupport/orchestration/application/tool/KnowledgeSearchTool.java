@@ -3,8 +3,10 @@ package com.aisupport.orchestration.application.tool;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.aisupport.common.event.KnowledgeContext;
 import com.aisupport.orchestration.domain.model.Result;
 import com.aisupport.orchestration.domain.model.ToolResult;
 import com.aisupport.orchestration.domain.tool.ToolDefinition;
@@ -19,6 +21,9 @@ public class KnowledgeSearchTool implements ToolDefinition {
     
     private final RagClient ragClient;
 
+    @Value("${info.app.version:1.0.0}")
+    private String serviceVersion;
+
     @Override
     public ToolDescriptor getDescriptor() {
         return ToolDescriptor.builder()
@@ -26,7 +31,7 @@ public class KnowledgeSearchTool implements ToolDefinition {
                 .description("Searches the internal knowledge base for relevant articles.")
                 .parameters(Map.of("ticketId", Long.class, "query", String.class))
                 .returnType(List.class)
-                .version("1.0.0")
+                .version(serviceVersion)
                 .build();
     }
 
@@ -49,7 +54,7 @@ public class KnowledgeSearchTool implements ToolDefinition {
         
         long start = System.currentTimeMillis();
         try {
-            Result<List<Object>> clientResult = ragClient.searchKnowledge(ticketId, query);
+            Result<KnowledgeContext> clientResult = ragClient.searchKnowledge(ticketId, query);
             long executionTime = System.currentTimeMillis() - start;
             
             if (clientResult.isSuccess()) {

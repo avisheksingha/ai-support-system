@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import com.aisupport.orchestration.application.workflow.steps.AnalyzeTicketStep;
 import com.aisupport.orchestration.application.workflow.steps.AssembleContextStep;
+import com.aisupport.orchestration.application.workflow.steps.FinalAiDecisionStep;
 import com.aisupport.orchestration.application.workflow.steps.KnowledgeSearchStep;
 import com.aisupport.orchestration.application.workflow.steps.RouteTicketStep;
 import com.aisupport.orchestration.domain.workflow.WorkflowDefinition;
@@ -21,6 +22,7 @@ public class AnalyzeWorkflowDefinition implements WorkflowDefinition {
     private final AnalyzeTicketStep analyzeTicketStep;
     private final KnowledgeSearchStep knowledgeSearchStep;
     private final RouteTicketStep routeTicketStep;
+    private final FinalAiDecisionStep finalAiDecisionStep;
     
     @Override
     public String getId() {
@@ -34,7 +36,7 @@ public class AnalyzeWorkflowDefinition implements WorkflowDefinition {
 
     @Override
     public String getDescription() {
-        return "Analyzes a newly created ticket, searches knowledge, and routes it.";
+        return "Analyzes a newly created ticket, searches knowledge, routes it, and makes a final AI decision.";
     }
 
     @Override
@@ -48,7 +50,8 @@ public class AnalyzeWorkflowDefinition implements WorkflowDefinition {
             assembleContextStep,
             analyzeTicketStep,
             knowledgeSearchStep,
-            routeTicketStep
+            routeTicketStep,
+            finalAiDecisionStep
         );
     }
 }

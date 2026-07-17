@@ -5,17 +5,24 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.aisupport.common.enums.WorkflowOutcome;
 import com.aisupport.orchestration.application.timeline.dto.TimelineEvent;
 import com.aisupport.orchestration.application.timeline.dto.TimelineEventType;
+import com.aisupport.orchestration.domain.workflow.WorkflowStepConstants;
 import com.aisupport.orchestration.infrastructure.persistence.entity.AiExecutionRecordEntity;
 import com.aisupport.orchestration.infrastructure.persistence.entity.WorkflowCheckpointEntity;
 import com.aisupport.orchestration.infrastructure.persistence.entity.WorkflowExecutionEntity;
 
 @Component
 public class TimelineMapper {
+
+    private static final String STAGE_AI_REASONING = "AI Reasoning";
+
+    @Value("${orchestration.workflow.version:1.0}")
+    private String defaultWorkflowVersion;
 
     public TimelineEvent toEvent(WorkflowExecutionEntity execution) {
         return TimelineEvent.builder()
@@ -27,7 +34,7 @@ public class TimelineMapper {
                 .severity("SUCCESS")
                 .processingStage("Initialization")
                 .timestamp(execution.getCreatedAt())
-                .workflowVersion("1.0")
+                .workflowVersion(execution.getVersion() != null ? String.valueOf(execution.getVersion()) : defaultWorkflowVersion)
                 .build();
     }
 
@@ -77,14 +84,14 @@ public class TimelineMapper {
                 .title("AI Execution Completed")
                 .description(aiRecord.getReason() != null ? aiRecord.getReason() : "AI reasoning completed")
                 .severity(severity)
-                .processingStage("AI Reasoning")
+                .processingStage(STAGE_AI_REASONING)
                 .timestamp(aiRecord.getExecutedAt())
                 .tools(tools)
                 .latencyMs(aiRecord.getLatencyMs())
                 .tokens(aiRecord.getCompletionTokens() != null && aiRecord.getPromptTokens() != null ? 
                         aiRecord.getCompletionTokens() + aiRecord.getPromptTokens() : null)
                 .workflowVersion(aiRecord.getWorkflowVersion())
-                .promptVersion(aiRecord.getDefinitionVersion())
+                .promptVersion(aiRecord.getPromptVersion())
                 .model(aiRecord.getModelId())
                 .outcome(outcome)
                 .build();
@@ -93,10 +100,11 @@ public class TimelineMapper {
     private String getProcessingStage(String stepName) {
         if (stepName == null) return "System";
         return switch (stepName) {
-            case "AssembleContextStep" -> "Context Assembly";
-            case "AnalyzeTicketStep" -> "AI Reasoning";
-            case "KnowledgeSearchStep" -> "Tool Execution";
-            case "RouteTicketStep" -> "Routing";
+            case WorkflowStepConstants.ASSEMBLE_CONTEXT -> "Context Assembly";
+            case WorkflowStepConstants.ANALYZE_TICKET -> STAGE_AI_REASONING;
+            case WorkflowStepConstants.KNOWLEDGE_SEARCH -> "Tool Execution";
+            case WorkflowStepConstants.ROUTE_TICKET -> "Routing";
+            case WorkflowStepConstants.FINAL_AI_DECISION -> STAGE_AI_REASONING;
             default -> "Processing";
         };
     }

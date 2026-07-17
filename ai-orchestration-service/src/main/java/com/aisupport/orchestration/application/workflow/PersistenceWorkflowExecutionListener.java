@@ -3,13 +3,21 @@ package com.aisupport.orchestration.application.workflow;
 import java.time.Instant;
 import java.util.HashMap;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.aisupport.common.event.AiDecision;
+import com.aisupport.common.event.AnalysisResult;
+import com.aisupport.common.event.KnowledgeContext;
+import com.aisupport.common.event.RoutingDecision;
 import com.aisupport.orchestration.domain.state.WorkflowState;
+import com.aisupport.orchestration.domain.workflow.PromptMetadata;
+import com.aisupport.orchestration.domain.workflow.TicketContextSnapshot;
 import com.aisupport.orchestration.domain.workflow.WorkflowContext;
 import com.aisupport.orchestration.domain.workflow.WorkflowStep;
+import com.aisupport.orchestration.domain.workflow.WorkflowStepConstants;
 import com.aisupport.orchestration.infrastructure.persistence.entity.WorkflowCheckpointEntity;
 import com.aisupport.orchestration.infrastructure.persistence.entity.WorkflowExecutionEntity;
 import com.aisupport.orchestration.infrastructure.persistence.repository.WorkflowCheckpointRepository;
@@ -21,9 +29,20 @@ import lombok.RequiredArgsConstructor;
 @Order(30)
 @RequiredArgsConstructor
 public class PersistenceWorkflowExecutionListener implements WorkflowExecutionListener {
+	
+	private static final String UNKNOWN_VALUE = "Unknown";
 
     private final WorkflowExecutionRepository executionRepository;
     private final WorkflowCheckpointRepository checkpointRepository;
+
+    @Value("${spring.ai.google.genai.chat.model:gemini-2.5-flash}")
+    private String chatModel;
+    
+    @Value("${orchestration.prompt.final.path:classpath:prompts/final-decision.st}")
+    private String finalDecisionTemplatePath;
+
+    @Value("${orchestration.prompt.version:1.0}")
+    private String promptVersion;
 
     @Override
     @Transactional
@@ -47,11 +66,42 @@ public class PersistenceWorkflowExecutionListener implements WorkflowExecutionLi
     public void afterWorkflow(WorkflowContext context) {
         executionRepository.findById(context.getExecutionId()).ifPresent(entity -> {
             entity.setState(WorkflowState.COMPLETED);
-            entity.setCurrentStep("COMPLETED");
+            entity.setCurrentStep(WorkflowStepConstants.COMPLETED);
             entity.setCompletedAt(Instant.now());
             entity.setUpdatedAt(Instant.now());
             entity.setAttributes(new HashMap<>(context.getAttributes()));
+            
+            String templateName = finalDecisionTemplatePath.replace("classpath:prompts/", "");
+
+            TicketContextSnapshot snapshot = 
+                TicketContextSnapshot.builder()
+                    .schemaVersion(1)
+                    .ticketId(context.getTicketId())
+                    .workflowExecutionId(context.getExecutionId())
+                    .analysisResult(context.getResource(AnalysisResult.class))
+                    .knowledgeContext(context.getResource(KnowledgeContext.class))
+                    .routingDecision(context.getResource(RoutingDecision.class))
+                    .prompt(PromptMetadata.builder()
+                        .templateName(templateName)
+                        .promptVersion(promptVersion)
+                        .promptHash(context.getAttribute("promptHash") != null ? (String) context.getAttribute("promptHash") : UNKNOWN_VALUE)
+                        .modelId(chatModel)
+                        .build())
+                    .aiDecision(context.getResource(AiDecision.class))
+                    .build();
+            entity.setTicketContext(snapshot);
+
             executionRepository.save(entity);
+
+            WorkflowCheckpointEntity checkpoint = WorkflowCheckpointEntity.builder()
+                    .execution(entity)
+                    .correlationId(context.getCorrelationId())
+                    .stepName(WorkflowStepConstants.PERSISTENCE)
+                    .stateSnapshot(WorkflowState.COMPLETED)
+                    .attributesSnapshot(new HashMap<>(context.getAttributes()))
+                    .createdAt(Instant.now())
+                    .build();
+            checkpointRepository.save(checkpoint);
         });
     }
 
@@ -61,6 +111,7 @@ public class PersistenceWorkflowExecutionListener implements WorkflowExecutionLi
         executionRepository.findById(context.getExecutionId()).ifPresent(execution -> {
             WorkflowCheckpointEntity checkpoint = WorkflowCheckpointEntity.builder()
                     .execution(execution)
+                    .correlationId(context.getCorrelationId())
                     .stepName(step.getName())
                     .stateSnapshot(WorkflowState.RUNNING)
                     .attributesSnapshot(new HashMap<>(context.getAttributes()))
@@ -80,6 +131,7 @@ public class PersistenceWorkflowExecutionListener implements WorkflowExecutionLi
 
             WorkflowCheckpointEntity checkpoint = WorkflowCheckpointEntity.builder()
                     .execution(execution)
+                    .correlationId(context.getCorrelationId())
                     .stepName(step.getName())
                     .stateSnapshot(WorkflowState.COMPLETED)
                     .attributesSnapshot(new HashMap<>(context.getAttributes()))
@@ -99,7 +151,8 @@ public class PersistenceWorkflowExecutionListener implements WorkflowExecutionLi
 
             WorkflowCheckpointEntity checkpoint = WorkflowCheckpointEntity.builder()
                     .execution(entity)
-                    .stepName("FAILURE")
+                    .correlationId(context.getCorrelationId())
+                    .stepName(WorkflowStepConstants.FAILURE)
                     .stateSnapshot(WorkflowState.FAILED)
                     .attributesSnapshot(new HashMap<>(context.getAttributes()))
                     .createdAt(Instant.now())

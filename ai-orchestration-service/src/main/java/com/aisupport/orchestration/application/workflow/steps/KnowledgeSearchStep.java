@@ -1,60 +1,48 @@
 package com.aisupport.orchestration.application.workflow.steps;
 
-import java.util.Collections;
-
 import org.springframework.stereotype.Component;
 
-import com.aisupport.common.event.AnalysisResult;
 import com.aisupport.common.event.KnowledgeContext;
+import com.aisupport.orchestration.domain.model.Result;
 import com.aisupport.orchestration.domain.workflow.WorkflowContext;
 import com.aisupport.orchestration.domain.workflow.WorkflowStep;
+import com.aisupport.orchestration.domain.workflow.WorkflowStepConstants;
+import com.aisupport.orchestration.infrastructure.client.RagClient;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class KnowledgeSearchStep implements WorkflowStep {
+
+    private final RagClient ragClient;
+
     @Override
     public String getName() {
-        return "Knowledge Search";
+        return WorkflowStepConstants.KNOWLEDGE_SEARCH;
     }
 
     @Override
     public void execute(WorkflowContext context) {
-        log.info("Searching Knowledge...");
+        log.info("Searching Knowledge via internal domain service for Ticket ID: {}", context.getTicketId());
         context.putAttribute("knowledgeSearched", true);
         
-        AnalysisResult analysis = context.getResource(AnalysisResult.class);
-        String intent = (analysis != null && analysis.intent() != null) ? analysis.intent().toLowerCase() : "unknown";
+        String message = context.getAttribute("message") != null ? (String) context.getAttribute("message") : "";
         
-        String summary;
-        String source;
-        if (intent.contains("billing") || intent.contains("refund")) {
-            summary = "Knowledge base suggests processing a pro-rated refund based on usage or checking billing history.";
-            source = "KB-201-BILLING";
-        } else if (intent.contains("login") || intent.contains("password")) {
-            summary = "Knowledge base suggests performing a password reset and checking account lock status.";
-            source = "KB-101-AUTH";
-        } else if (intent.contains("api") || intent.contains("rate")) {
-            summary = "Knowledge base suggests checking the API rate limit tier and suggesting an upgrade.";
-            source = "KB-429-API";
-        } else if (intent.contains("gdpr") || intent.contains("privacy") || intent.contains("export")) {
-            summary = "Knowledge base suggests initiating a standard data export request via the privacy dashboard.";
-            source = "KB-500-PRIVACY";
-        } else if (intent.contains("subscription") || intent.contains("upgrade")) {
-            summary = "Knowledge base suggests redirecting the user to the self-serve subscription portal.";
-            source = "KB-301-SUBSCRIPTION";
+        Result<KnowledgeContext> result = ragClient.searchKnowledge(context.getTicketId(), message);
+        
+        if (result.isSuccess()) {
+            KnowledgeContext knowledge = result.getData();
+            context.putResource(KnowledgeContext.class, knowledge);
+            context.putAttribute("knowledgeContext", knowledge);
+            log.info("Knowledge Retrieved Confidence={}", knowledge.confidence());
         } else {
-            summary = "Knowledge base suggests escalating to L2 support for further investigation.";
-            source = "KB-999-GENERAL";
+            log.error("Failed to search knowledge: {}", result.getErrorMessage());
+            KnowledgeContext emptyContext = new KnowledgeContext("No relevant knowledge found.", java.util.Collections.emptyList(), 0.0);
+            context.putResource(KnowledgeContext.class, emptyContext);
+            context.putAttribute("knowledgeContext", emptyContext);
         }
-
-        KnowledgeContext knowledge = new KnowledgeContext(
-            summary,
-            Collections.singletonList(source),
-            0.85
-        );
-        context.putResource(KnowledgeContext.class, knowledge);
-        log.info("Knowledge Retrieved Sources={} Confidence={}", knowledge.sources().size(), knowledge.confidence());
     }
 }

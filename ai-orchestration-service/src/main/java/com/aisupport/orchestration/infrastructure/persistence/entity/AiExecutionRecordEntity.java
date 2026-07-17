@@ -39,6 +39,12 @@ public class AiExecutionRecordEntity {
     @Column(name = "agent_version")
     private String agentVersion;
     
+    @Column(name = "prompt_template")
+    private String promptTemplate;
+    
+    @Column(name = "prompt_version")
+    private String promptVersion;
+
     @Column(name = "prompt_hash")
     private String promptHash;
     

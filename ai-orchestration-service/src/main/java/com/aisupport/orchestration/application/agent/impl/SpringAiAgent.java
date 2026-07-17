@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -21,7 +22,6 @@ import com.aisupport.orchestration.application.agent.budget.TokenBudgetManager;
 import com.aisupport.orchestration.application.agent.guardrail.GuardrailContext;
 import com.aisupport.orchestration.application.agent.guardrail.GuardrailPipeline;
 import com.aisupport.orchestration.application.agent.guardrail.GuardrailResult;
-import com.aisupport.orchestration.application.tool.ToolExecutor;
 import com.aisupport.orchestration.domain.model.Result;
 
 import lombok.extern.slf4j.Slf4j;
@@ -30,17 +30,16 @@ import lombok.extern.slf4j.Slf4j;
 @Component("springAiAgent")
 public class SpringAiAgent implements Agent {
 
+    private static final String UNKNOWN_MODEL = "Unknown";
+
     private final TokenBudgetManager tokenBudgetManager;
-    private final ToolExecutor toolExecutor;
     private final GuardrailPipeline guardrailPipeline;
     private final ChatModel chatModel;
 
     public SpringAiAgent(TokenBudgetManager tokenBudgetManager,
-                         ToolExecutor toolExecutor,
                          GuardrailPipeline guardrailPipeline,
                          @Qualifier("googleGenAiChatModel") ChatModel chatModel) {
         this.tokenBudgetManager = tokenBudgetManager;
-        this.toolExecutor = toolExecutor;
         this.guardrailPipeline = guardrailPipeline;
         this.chatModel = chatModel;
     }
@@ -48,7 +47,7 @@ public class SpringAiAgent implements Agent {
     @Override
     public Result<AgentSession> execute(AgentRequest request) {
         log.info("SpringAiAgent executing inference for model: {}", 
-                 request.getModelProfile() != null ? request.getModelProfile().getName() : "unknown");
+                 request.getModelProfile() != null ? request.getModelProfile().getName() : UNKNOWN_MODEL);
                  
         AgentSession session = AgentSession.builder()
                 .sessionId(UUID.randomUUID().toString())
@@ -56,80 +55,61 @@ public class SpringAiAgent implements Agent {
                 .startedAt(Instant.now())
                 .build();
         
-        // 0. Guardrails (Input)
+        // 1. Guardrails (Input)
         GuardrailContext<AgentRequest> inputContext = GuardrailContext.<AgentRequest>builder()
                 .payload(request)
                 .metadata(new HashMap<>())
                 .build();
+        
         GuardrailResult<AgentRequest> inputResult = guardrailPipeline.runInputGuardrails(inputContext);
         if (inputResult.getStatus() == GuardrailResult.Status.BLOCK) {
              session.setFailureReason(inputResult.getReason());
              session.setCompletedAt(Instant.now());
-             // For V1 portfolio we just use a placeholder ID and version based on the reason
-             session.setGuardrailId(inputResult.getReason().split(":")[0].toLowerCase());
-             session.setGuardrailVersion("1.0");
+
              return Result.success(session);
         }
+        
         AgentRequest safeRequest = inputResult.getPayload();
 
-        // 1. Enforce Token Budget
+        // 2. Enforce Token Budget
         AgentRequest budgetedRequest = tokenBudgetManager.applyBudget(safeRequest);
         
-        // 2. Initial Inference
+        // 3. LLM Inference
         log.debug("Calling LLM API...");
-        
-        // Pseudo-logic simulating a tool call from the LLM
-        boolean llmRequestedTool = budgetedRequest.getAllowedCapabilities() != null 
-                                && !budgetedRequest.getAllowedCapabilities().isEmpty();
-                                
-        if (llmRequestedTool) {
-            log.info("LLM requested tool execution. Intercepting...");
-            
-            // 3. Delegate to ToolExecutor
-            String requestedTool = budgetedRequest.getAllowedCapabilities().get(0);
-            log.debug("Executing tool: {}", requestedTool);
-            
-            try {
-                Object toolResult = toolExecutor.execute(requestedTool, new java.util.HashMap<>());
-                log.debug("Tool executed successfully. Result: {}", toolResult);
-                
-                // 4. Feed Tool Result back to LLM for final reasoning
-                log.debug("Feeding tool result back to LLM...");
-            } catch (Exception e) {
-                log.error("Tool execution failed", e);
-                return Result.failure(e.getMessage());
-            }
-        }
-        
-        // 5. Final LLM Response
         Prompt prompt = new Prompt(List.of(
                 new SystemMessage(budgetedRequest.getSystemPrompt()),
                 new UserMessage(budgetedRequest.getUserPrompt())
         ));
+        
         ChatResponse chatResponse = chatModel.call(prompt);
+        
+        Usage usage = chatResponse.getMetadata() != null ? chatResponse.getMetadata().getUsage() : null;
+        int promptTokens = usage != null && usage.getPromptTokens() != null ? usage.getPromptTokens().intValue() : 0;
+        int totalTokens = usage != null && usage.getTotalTokens() != null ? usage.getTotalTokens().intValue() : 0;
+        int completionTokens = Math.max(0, totalTokens - promptTokens);
         
         AgentResponse response = AgentResponse.builder()
                 .responseType(AgentResponse.ResponseType.FINAL)
                 .content(chatResponse.getResult().getOutput().getText())
                 .finishReason(AgentResponse.FinishReason.STOP)
                 .usage(AgentResponse.UsageData.builder()
-                        .promptTokens(100)
-                        .completionTokens(50)
-                        .totalTokens(150)
+                        .promptTokens(promptTokens)
+                        .completionTokens(completionTokens)
+                        .totalTokens(totalTokens)
                         .build())
                 .metadata(new HashMap<>())
                 .build();
                 
-        // 6. Guardrails (Output)
+        // 4. Guardrails (Output)
         GuardrailContext<AgentResponse> outputContext = GuardrailContext.<AgentResponse>builder()
                 .payload(response)
                 .metadata(new HashMap<>())
                 .build();
+        
         GuardrailResult<AgentResponse> outputResult = guardrailPipeline.runOutputGuardrails(outputContext);
+        
         if (outputResult.getStatus() == GuardrailResult.Status.BLOCK) {
             session.setFailureReason(outputResult.getReason());
-            session.setGuardrailId(outputResult.getReason().split(":")[0].toLowerCase());
-            session.setGuardrailVersion("1.0");
             session.setCompletedAt(Instant.now());
             return Result.success(session);
         }

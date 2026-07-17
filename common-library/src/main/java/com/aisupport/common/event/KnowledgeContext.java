@@ -4,6 +4,6 @@ import java.util.List;
 
 public record KnowledgeContext(
     String knowledgeSummary,
-    List<String> sources,
+    List<KnowledgeSource> sources,
     Double confidence
 ) {}

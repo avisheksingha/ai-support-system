@@ -19,7 +19,7 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import com.aisupport.orchestration.application.workflow.steps.AnalyzeTicketStep;
+import com.aisupport.orchestration.application.workflow.steps.FinalAiDecisionStep;
 import com.aisupport.orchestration.domain.workflow.WorkflowContext;
 import com.aisupport.orchestration.infrastructure.AbstractIntegrationTest;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 class AiEvaluationRegressionIT extends AbstractIntegrationTest {
 
     @Autowired
-    private AnalyzeTicketStep analyzeTicketStep;
+    private FinalAiDecisionStep finalAiDecisionStep;
 
     @MockitoBean(name = "googleGenAiChatModel")
     private ChatModel chatModel;
@@ -57,6 +57,7 @@ class AiEvaluationRegressionIT extends AbstractIntegrationTest {
         // 1. Prepare WorkflowContext
         WorkflowContext context = WorkflowContext.builder()
                 .ticketId(scenario.getTicketId())
+                .executionId(UUID.randomUUID().toString())
                 .correlationId(UUID.randomUUID().toString())
                 .build();
         
@@ -71,30 +72,26 @@ class AiEvaluationRegressionIT extends AbstractIntegrationTest {
 
         // 3. Execute Step
         try {
-            analyzeTicketStep.execute(context);
+            finalAiDecisionStep.execute(context);
         } catch (Exception e) {
-            if (!scenario.isExpectPolicyBlock()) {
-                throw new AssertionError("Unexpected policy block or failure: " + e.getMessage(), e);
-            }
-            return; // Expected block
+            throw new AssertionError("Unexpected failure: " + e.getMessage(), e);
         }
+
+        com.aisupport.common.event.AiDecision decision = context.getResource(com.aisupport.common.event.AiDecision.class);
 
         // 4. Verify Policy Block Expectation
         if (scenario.isExpectPolicyBlock()) {
-            throw new AssertionError("Expected policy block but execution succeeded.");
+            if (decision == null || !decision.aiSummary().contains("blocked")) {
+                throw new AssertionError("Expected policy block but execution succeeded.");
+            }
+            return; // Expected block
+        } else if (decision != null && decision.aiSummary().contains("blocked")) {
+            throw new AssertionError("Unexpected policy block.");
         }
 
         // 5. Verify Prompt Snapshot
         Prompt capturedPrompt = promptCaptor.getValue();
         String promptText = capturedPrompt.getContents();
         assertThat(promptText).contains(scenario.getExpectedPromptSnippet());
-
-        // 6. Verify Extraction
-        if (scenario.getExpectedExtracts() != null) {
-            for (java.util.Map.Entry<String, Object> entry : scenario.getExpectedExtracts().entrySet()) {
-                Object actualValue = context.getAttribute(entry.getKey());
-                assertThat(actualValue).isEqualTo(entry.getValue());
-            }
-        }
     }
 }

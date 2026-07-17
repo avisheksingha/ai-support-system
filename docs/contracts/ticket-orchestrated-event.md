@@ -102,7 +102,7 @@ The event is designed as a structured JSON object containing nested sections.
 ```json
 {
   "ticketId": 12345,
-  "ticketStatus": "ASSIGNED",
+  "ticketStatus": "ANALYZED",
   "analysis": {
     "intent": "Password Reset",
     "sentiment": "Frustrated",
@@ -115,8 +115,19 @@ The event is designed as a structured JSON object containing nested sections.
   },
   "knowledge": {
     "knowledgeSummary": "The user is attempting to reset their password. Suggest following KB-101.",
-    "sources": ["KB-101"],
+    "sources": [
+      {
+        "id": "KB-101",
+        "title": "How to Reset Password",
+        "similarityScore": 0.88
+      }
+    ],
     "confidence": 0.95
+  },
+  "aiDecision": {
+    "aiSummary": "User is unable to access their account and needs a password reset link.",
+    "suggestedReply": "Hello, please click the following link to securely reset your password: [Link]",
+    "confidence": 0.92
   },
   "metadata": {
     "eventId": "123e4567-e89b-12d3-a456-426614174000",
@@ -125,8 +136,8 @@ The event is designed as a structured JSON object containing nested sections.
     "workflowExecutionId": "exec-9999",
     "workflowVersion": "1.0",
     "promptVersion": "1.0",
-    "modelProfile": "gemini-1.5-pro",
-    "orchestratorVersion": "1.0",
+    "modelProfile": "gemini-2.5-flash",
+    "orchestratorVersion": "1.0.0",
     "processingDurationMs": 1450,
     "outcome": "SUCCESS",
     "generatedAt": "2026-07-13T12:00:00Z"

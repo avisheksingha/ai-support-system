@@ -14,6 +14,9 @@ import com.aisupport.ticket.entity.Ticket;
 )
 public interface TicketMapper {
 	
+	@Mapping(target = "aiConfidence", ignore = true)
+	@Mapping(target = "aiSummary", ignore = true)
+	@Mapping(target = "suggestedReply", ignore = true)
 	@Mapping(target = "id", ignore = true)
 	@Mapping(target = "version", ignore = true)
 	@Mapping(target = "customerUserId", ignore = true)

@@ -45,8 +45,8 @@ class WorkflowRecoveryIT extends AbstractIntegrationTest {
     void testWorkflowRecoveryAndOutboxPublishing() {
         // Clean up any existing outbox events from previous tests
         outboxEventRepository.deleteAll();
-        workflowExecutionRepository.deleteAll();
         workflowCheckpointRepository.deleteAll();
+        workflowExecutionRepository.deleteAll();
         
         // Given a simulated crashed execution
         String executionId = UUID.randomUUID().toString();

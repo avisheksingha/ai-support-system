@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import com.aisupport.orchestration.application.workflow.context.ContextProvider;
 import com.aisupport.orchestration.domain.workflow.WorkflowContext;
 import com.aisupport.orchestration.domain.workflow.WorkflowStep;
+import com.aisupport.orchestration.domain.workflow.WorkflowStepConstants;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +21,7 @@ public class AssembleContextStep implements WorkflowStep {
 
     @Override
     public String getName() {
-        return "AssembleContextStep";
+        return WorkflowStepConstants.ASSEMBLE_CONTEXT;
     }
 
     @Override

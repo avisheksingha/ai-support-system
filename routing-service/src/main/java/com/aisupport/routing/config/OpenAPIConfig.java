@@ -2,6 +2,7 @@ package com.aisupport.routing.config;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,6 +18,9 @@ import io.swagger.v3.oas.models.servers.Server;
 @Configuration
 public class OpenAPIConfig {
 
+	@Value("${info.app.version:1.0.0}")
+	private String serviceVersion;
+
 	@Bean
 	OpenAPI customOpenAPI() {
 		
@@ -25,7 +29,7 @@ public class OpenAPIConfig {
 		return new OpenAPI()
 				.info(new Info()
 						.title("Routing Service API")
-						.version("1.0.0")
+						.version(serviceVersion)
 						.description("Orchestration service for ticket routing workflow")
 						.contact(new Contact()
 								.name("AI Support Team")

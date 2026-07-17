@@ -99,7 +99,7 @@ public class RuntimeCoverageReporter implements WorkflowExecutionListener {
 
     private void appendSingleAiRecord(StringBuilder report, AiExecutionRecordEntity aiRecord) {
         report.append("### Agent Execution (").append(aiRecord.getOutcome()).append(")\n");
-        report.append("- **Provider**: Google\n"); // V1 Placeholder
+
         report.append("- **Model**: ").append(aiRecord.getModelId()).append("\n");
         
         int toolCount = 0;
@@ -116,9 +116,6 @@ public class RuntimeCoverageReporter implements WorkflowExecutionListener {
         report.append("- **Guardrail**: ").append(aiRecord.getGuardrailId() != null ? aiRecord.getGuardrailId() + " (v" + aiRecord.getGuardrailVersion() + ")" : "None").append("\n");
         report.append("- **Reason**: ").append(aiRecord.getReason() != null ? aiRecord.getReason() : "N/A").append("\n");
         
-        report.append("- **Queue Delay**: 0 ms\n"); // Intentional V1 placeholder
-        report.append("- **Circuit Breaker State**: CLOSED\n"); // Intentional V1 placeholder
-        report.append("- **Retries**: 0\n"); // Intentional V1 placeholder
         report.append("\n");
     }
 }

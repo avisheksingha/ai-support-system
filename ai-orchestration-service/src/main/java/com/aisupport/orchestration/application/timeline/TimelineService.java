@@ -3,12 +3,15 @@ package com.aisupport.orchestration.application.timeline;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.aisupport.common.event.AnalysisResult;
+import com.aisupport.common.event.KnowledgeContext;
+import com.aisupport.common.event.RoutingDecision;
 import com.aisupport.orchestration.application.timeline.dto.AIInsightResponse;
 import com.aisupport.orchestration.application.timeline.dto.TimelineEvent;
 import com.aisupport.orchestration.application.timeline.dto.TimelinePageResponse;
@@ -28,6 +31,8 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class TimelineService {
+	
+	private static final String DEFAULT_MODEL_ID = "ai-analysis-service";
 
     private final WorkflowExecutionRepository workflowExecutionRepository;
     private final WorkflowCheckpointRepository workflowCheckpointRepository;
@@ -84,48 +89,28 @@ public class TimelineService {
 
     @Transactional(readOnly = true)
     public Optional<AIInsightResponse> getTicketInsights(Long ticketId) {
+        return fetchTicketInsights(ticketId);
+    }
+
+    private Optional<AIInsightResponse> fetchTicketInsights(Long ticketId) {
         try {
-            Result<Object> analysisResult = analysisClient.getAnalysis(ticketId);
+            Result<AnalysisResult> analysisResult = analysisClient.getAnalysis(ticketId);
             if (!analysisResult.isSuccess() || analysisResult.getData() == null) {
                 return Optional.empty();
             }
 
-            
-            Object rawData = analysisResult.getData();
-            if (!(rawData instanceof Map<?, ?>)) {
-                return Optional.empty();
-            }
-            Map<?, ?> data = (Map<?, ?>) rawData;
+            AnalysisResult data = analysisResult.getData();
 
-            String model = (String) data.get("analysisProvider"); // Fallback from analysis service
-            Optional<AiExecutionRecordEntity> aiRecord = aiExecutionRecordRepository.findTopByTicketIdOrderByExecutedAtDesc(ticketId);
-            if (aiRecord.isPresent() && aiRecord.get().getModelId() != null) {
-                model = aiRecord.get().getModelId();
-            }
-
-            Double confidence = null;
-            if (data.get("confidenceScore") instanceof Number number) {
-                confidence = number.doubleValue();
-            }
-
-            
-            List<String> keywords = null;
-            if (data.get("keywords") instanceof List<?> rawList) {
-                keywords = rawList.stream()
-                        .filter(String.class::isInstance)
-                        .map(String.class::cast)
-                        .toList();
-            }
+            String model = aiExecutionRecordRepository.findTopByTicketIdOrderByExecutedAtDesc(ticketId)
+                    .map(AiExecutionRecordEntity::getModelId)
+                    .filter(Objects::nonNull)
+                    .orElse(DEFAULT_MODEL_ID);
 
             return Optional.of(AIInsightResponse.builder()
                     .ticketId(ticketId)
-                    .intent((String) data.get("intent"))
-                    .sentiment((String) data.get("sentiment"))
-                    .urgency((String) data.get("urgency"))
-                    .confidenceScore(confidence)
-                    .keywords(keywords)
-                    .suggestedCategory((String) data.get("suggestedCategory"))
-                    .analyzedAt((String) data.get("analyzedAt"))
+                    .intent(data.intent())
+                    .sentiment(data.sentiment())
+                    .urgency(data.urgency())
                     .analysisProvider(model)
                     .build());
         } catch (Exception e) {
@@ -138,19 +123,17 @@ public class TimelineService {
         WorkspaceAggregationResponse response = new WorkspaceAggregationResponse();
 
         // Fetch Analysis
-        Optional<AIInsightResponse> insights = getTicketInsights(ticketId);
+        Optional<AIInsightResponse> insights = fetchTicketInsights(ticketId);
         insights.ifPresent(response::setAnalysis);
 
-        // Fetch RAG
-        Result<Object> ragResult = ragClient.getRagResponse(ticketId);
-        if (ragResult.isSuccess()) {
-            response.setKnowledge(ragResult.getData());
+        Result<KnowledgeContext> ragResponse = ragClient.getRagResponse(ticketId);
+        if (ragResponse.isSuccess()) {
+            response.setKnowledge(ragResponse.getData());
         }
 
-        // Fetch Routing
-        Result<Object> routingResult = routingClient.getRouting(ticketId);
-        if (routingResult.isSuccess()) {
-            response.setRouting(routingResult.getData());
+        Result<RoutingDecision> routingResponse = routingClient.getRouting(ticketId);
+        if (routingResponse.isSuccess()) {
+            response.setRouting(routingResponse.getData());
         }
 
         if (response.getAnalysis() == null && response.getKnowledge() == null && response.getRouting() == null) {

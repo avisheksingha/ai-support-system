@@ -8,5 +8,6 @@ public record TicketOrchestratedEvent(
     AnalysisResult analysis,
     RoutingDecision routing,
     KnowledgeContext knowledge,
+    AiDecision aiDecision,
     EventMetadata metadata
 ) {}
