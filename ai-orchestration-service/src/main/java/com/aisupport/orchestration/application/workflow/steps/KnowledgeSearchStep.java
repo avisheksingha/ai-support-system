@@ -1,5 +1,7 @@
 package com.aisupport.orchestration.application.workflow.steps;
 
+import java.util.Collections;
+
 import org.springframework.stereotype.Component;
 
 import com.aisupport.common.event.KnowledgeContext;
@@ -40,7 +42,7 @@ public class KnowledgeSearchStep implements WorkflowStep {
             log.info("Knowledge Retrieved Confidence={}", knowledge.confidence());
         } else {
             log.error("Failed to search knowledge: {}", result.getErrorMessage());
-            KnowledgeContext emptyContext = new KnowledgeContext("No relevant knowledge found.", java.util.Collections.emptyList(), 0.0);
+            KnowledgeContext emptyContext = new KnowledgeContext("No relevant knowledge article found.", Collections.emptyList(), 0.0);
             context.putResource(KnowledgeContext.class, emptyContext);
             context.putAttribute("knowledgeContext", emptyContext);
         }

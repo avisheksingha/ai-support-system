@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DefaultRagClient implements RagClient {
 
-    private static final String DEFAULT_ANSWER = "No relevant knowledge found.";
+    private static final String DEFAULT_ANSWER = "No relevant knowledge article found.";
     private static final String ANSWER_KEY = "answer";
     private static final String CONFIDENCE_KEY = "confidence";
     private static final String SOURCES_KEY = "sources";
