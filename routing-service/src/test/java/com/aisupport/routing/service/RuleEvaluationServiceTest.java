@@ -53,12 +53,11 @@ class RuleEvaluationServiceTest {
                 .build();
         when(routingRuleRepository.findActiveRulesOrderedByPriority()).thenReturn(List.of(first, second));
 
+        com.aisupport.common.event.AnalysisResult analysis = new com.aisupport.common.event.AnalysisResult(
+                "PAYMENT_ISSUE", "NEGATIVE", "HIGH", 0.9, List.of("payment"), "Billing");
         TicketAnalyzedEvent event = TicketAnalyzedEvent.builder()
                 .ticketId(100L)
-                .intent("PAYMENT_ISSUE")
-                .sentiment("NEGATIVE")
-                .urgency("HIGH")
-                .keywords(List.of("payment"))
+                .analysis(analysis)
                 .build();
 
         RoutingRule matched = service.evaluate(event);
@@ -78,11 +77,11 @@ class RuleEvaluationServiceTest {
                 .build();
         when(routingRuleRepository.findActiveRulesOrderedByPriority()).thenReturn(List.of(onlyRule));
 
+        com.aisupport.common.event.AnalysisResult analysis = new com.aisupport.common.event.AnalysisResult(
+                "PAYMENT_ISSUE", "NEGATIVE", "HIGH", 0.9, java.util.Collections.emptyList(), "Billing");
         TicketAnalyzedEvent event = TicketAnalyzedEvent.builder()
                 .ticketId(200L)
-                .intent("PAYMENT_ISSUE")
-                .sentiment("NEGATIVE")
-                .urgency("HIGH")
+                .analysis(analysis)
                 .build();
 
         RoutingRule matched = service.evaluate(event);

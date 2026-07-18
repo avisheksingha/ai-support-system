@@ -88,7 +88,7 @@ class AnalysisProcessingServiceTest {
         verify(repository).save(savedCaptor.capture());
         AnalysisResult saved = savedCaptor.getValue();
         assertThat(saved.getTicketId()).isEqualTo(42L);
-        assertThat(saved.getIntent()).isEqualTo("PAYMENT_ISSUE");
+        assertThat(saved.getIntent()).isEqualTo("GENERAL");
         assertThat(saved.getSentiment()).isEqualTo("NEUTRAL");
         assertThat(saved.getUrgency()).isEqualTo("LOW");
         assertThat(saved.getConfidenceScore()).isEqualByComparingTo(BigDecimal.ZERO);
@@ -103,8 +103,8 @@ class AnalysisProcessingServiceTest {
         );
         TicketAnalyzedEvent published = (TicketAnalyzedEvent) eventCaptor.getValue();
         assertThat(published.getTicketId()).isEqualTo(42L);
-        assertThat(published.getIntent()).isEqualTo("PAYMENT_ISSUE");
-        assertThat(published.getSentiment()).isEqualTo("NEUTRAL");
-        assertThat(published.getUrgency()).isEqualTo("LOW");
+        assertThat(published.getAnalysis().intent()).isEqualTo("GENERAL"); // "payment error" is not in ALLOWED_INTENTS so it falls back to GENERAL.
+        assertThat(published.getAnalysis().sentiment()).isEqualTo("NEUTRAL");
+        assertThat(published.getAnalysis().urgency()).isEqualTo("LOW");
     }
 }

@@ -60,11 +60,11 @@ public class RuleEvaluationService {
         
         boolean isKeywordMatch = rule.getKeywordPatterns() == null 
                 || rule.getKeywordPatterns().length == 0 
-                || matchKeywords(rule.getKeywordPatterns(), e.getKeywords());
+                || matchKeywords(rule.getKeywordPatterns(), e.getAnalysis().keywords());
 
-        return match(rule.getIntentPattern(), e.getIntent()) 
-                && match(rule.getSentimentPattern(), e.getSentiment()) 
-                && match(rule.getUrgencyPattern(), e.getUrgency()) 
+        return match(rule.getIntentPattern(), e.getAnalysis().intent()) 
+                && match(rule.getSentimentPattern(), e.getAnalysis().sentiment()) 
+                && match(rule.getUrgencyPattern(), e.getAnalysis().urgency()) 
                 && isKeywordMatch;
     }
 

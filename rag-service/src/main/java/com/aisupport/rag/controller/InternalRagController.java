@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.aisupport.rag.dto.request.RagSearchRequest;
 import com.aisupport.rag.dto.response.RagKnowledgeResponse;
 import com.aisupport.rag.dto.response.RagSearchResponse;
+import com.aisupport.rag.entity.RagResponse;
 import com.aisupport.rag.service.RagService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,9 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @Tag(name = "Internal RAG", description = "Internal endpoints for orchestration service")
 public class InternalRagController {
 	
-	private static final String NO_KNOWLEDGE_FOUND = "No relevant knowledge article found.";
-
-    private final RagService ragService;
+	private final RagService ragService;
 
     @PostMapping("/search")
     public ResponseEntity<RagSearchResponse> searchKnowledge(@Valid @RequestBody RagSearchRequest request) {
@@ -36,16 +35,14 @@ public class InternalRagController {
         int queryLength = request.getQuery() != null ? request.getQuery().length() : 0;
         log.info("Internal REST request for RAG search. ticketId={}, queryLength={}", request.getTicketId(), queryLength);
         
-        String responseText = ragService.generateResponseSync(
+        RagResponse ragResponse = ragService.generateResponseSync(
                 request.getTicketId(), 
                 request.getQuery());
                 
-        // In the legacy RAG service, "No relevant knowledge article found." is returned if none found.
-        boolean knowledgeFound = responseText != null && !responseText.contains(NO_KNOWLEDGE_FOUND);
-                
         return ResponseEntity.ok(RagSearchResponse.builder()
-                .answer(responseText)
-                .knowledgeFound(knowledgeFound)
+                .answer(ragResponse.getResponse())
+                .knowledgeFound(ragResponse.getKnowledgeFound())
+                .model(ragResponse.getModel())
                 .build());
     }
 

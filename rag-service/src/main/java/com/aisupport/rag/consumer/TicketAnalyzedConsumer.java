@@ -45,8 +45,8 @@ public class TicketAnalyzedConsumer {
 				"""
 				.formatted(
 				        safe(event.getTicketDescription()),
-				        String.join(", ", safeList(event.getKeywords())),
-				        safe(event.getIntent())
+				        String.join(", ", safeList(event.getAnalysis().keywords())),
+				        safe(event.getAnalysis().intent())
 				);
 				
 			log.info("Constructed RAG query for ticketId={}", event.getTicketId());

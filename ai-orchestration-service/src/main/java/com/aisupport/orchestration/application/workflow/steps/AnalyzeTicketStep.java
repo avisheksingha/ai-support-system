@@ -1,5 +1,7 @@
 package com.aisupport.orchestration.application.workflow.steps;
 
+import java.util.Collections;
+
 import org.springframework.stereotype.Component;
 
 import com.aisupport.common.event.AnalysisResult;
@@ -49,7 +51,7 @@ public class AnalyzeTicketStep implements WorkflowStep {
             context.putAttribute("analyzeError", result.getErrorMessage());
             
             // Fallback for resiliency
-            AnalysisResult fallback = new AnalysisResult("Support", "Neutral", "Medium");
+            AnalysisResult fallback = new AnalysisResult("GENERAL", "NEUTRAL", "MEDIUM", 0.0, Collections.emptyList(), "Fallback");
             context.putResource(AnalysisResult.class, fallback);
             context.putAttribute(ATTR_ANALYSIS_RESULT, fallback);
         }

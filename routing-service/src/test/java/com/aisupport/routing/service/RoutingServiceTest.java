@@ -37,11 +37,11 @@ class RoutingServiceTest {
 
     @Test
     void route_withMatchedRule_shouldPublishRuleDrivenEvent() {
+        com.aisupport.common.event.AnalysisResult analysis = new com.aisupport.common.event.AnalysisResult(
+                "PAYMENT_ISSUE", "NEGATIVE", "HIGH", 0.9, java.util.Collections.emptyList(), "Billing");
         TicketAnalyzedEvent analyzed = TicketAnalyzedEvent.builder()
                 .ticketId(1L)
-                .intent("PAYMENT_ISSUE")
-                .sentiment("NEGATIVE")
-                .urgency("HIGH")
+                .analysis(analysis)
                 .build();
 
         RoutingRule rule = RoutingRule.builder()
@@ -70,11 +70,11 @@ class RoutingServiceTest {
 
     @Test
     void route_withoutMatchedRule_shouldUseFallbackValues() {
+        com.aisupport.common.event.AnalysisResult analysis = new com.aisupport.common.event.AnalysisResult(
+                "GENERAL", "NEUTRAL", "LOW", 0.0, java.util.Collections.emptyList(), "General");
         TicketAnalyzedEvent analyzed = TicketAnalyzedEvent.builder()
                 .ticketId(2L)
-                .intent("GENERAL")
-                .sentiment("NEUTRAL")
-                .urgency("LOW")
+                .analysis(analysis)
                 .build();
         when(ruleEvaluationService.evaluate(analyzed)).thenReturn(null);
 

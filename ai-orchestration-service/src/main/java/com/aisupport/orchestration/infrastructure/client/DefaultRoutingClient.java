@@ -42,9 +42,7 @@ public class DefaultRoutingClient implements RoutingClient {
             
             TicketAnalyzedEvent request = TicketAnalyzedEvent.builder()
                 .ticketId(ticketId)
-                .intent(analysis.intent())
-                .sentiment(analysis.sentiment())
-                .urgency(analysis.urgency())
+                .analysis(analysis)
                 .build();
                 
             TicketRoutedEvent response = restClient.post()

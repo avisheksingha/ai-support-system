@@ -1,7 +1,6 @@
 package com.aisupport.common.event;
 
 import java.time.Instant;
-import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,12 +16,7 @@ import lombok.Setter;
 public class TicketAnalyzedEvent {
 
     private Long ticketId;
-    private String ticketDescription;    
-    private String intent;
-    private String sentiment;
-    private String urgency;
-    private Double confidenceScore;
-    private List<String> keywords;
-    private String suggestedCategory;
+    private String ticketDescription;
+    private AnalysisResult analysis;
     private Instant analyzedAt;
 }

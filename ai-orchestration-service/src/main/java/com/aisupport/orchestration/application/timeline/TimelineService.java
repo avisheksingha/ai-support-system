@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.aisupport.orchestration.application.timeline.dto.AIInsightResponse;
 import com.aisupport.orchestration.application.timeline.dto.AiDecisionDTO;
 import com.aisupport.orchestration.application.timeline.dto.KnowledgeInsightDTO;
-import com.aisupport.orchestration.application.timeline.dto.KnowledgeSourceDTO;
 import com.aisupport.orchestration.application.timeline.dto.PipelineProgressDTO;
 import com.aisupport.orchestration.application.timeline.dto.RoutingInsightDTO;
 import com.aisupport.orchestration.application.timeline.dto.TimelineEvent;
@@ -44,11 +43,7 @@ public class TimelineService {
     private static final String AI_DECISION_KEY = "aiDecision";
     private static final String ANALYSIS_RESULT_KEY = "analysisResult";
     private static final String CONFIDENCE_KEY = "confidence";
-    private static final String SOURCES_KEY = "sources";
     private static final String KNOWLEDGE_SUMMARY_KEY = "knowledgeSummary";
-    private static final String ID_KEY = "id";
-    private static final String TITLE_KEY = "title";
-    private static final String SIMILARITY_SCORE_KEY = "similarityScore";
     private static final String ASSIGN_TO_TEAM_KEY = "assignToTeam";
     private static final String PRIORITY_KEY = "priority";
     private static final String SLA_HOURS_KEY = "slaHours";
@@ -220,28 +215,12 @@ public class TimelineService {
         }
         Map<?, ?> kc = (Map<?, ?>) kcObj;
 
-        List<KnowledgeSourceDTO> sources = Collections.emptyList();
-        Object rawSources = kc.get(SOURCES_KEY);
-        if (rawSources instanceof List<?> sourceList) {
-            sources = sourceList.stream()
-                    .filter(Map.class::isInstance)
-                    .map(s -> {
-                        Map<?, ?> sm = (Map<?, ?>) s;
-                        return KnowledgeSourceDTO.builder()
-                                .id(Objects.toString(sm.get(ID_KEY), null))
-                                .title(Objects.toString(sm.get(TITLE_KEY), null))
-                                .similarityScore(sm.get(SIMILARITY_SCORE_KEY) instanceof Number n ? n.doubleValue() : null)
-                                .build();
-                    })
-                    .toList();
-        }
-
-        boolean knowledgeFound = !sources.isEmpty();
-
+        boolean knowledgeFound = Boolean.TRUE.equals(kc.get("knowledgeFound"));
+        
         return KnowledgeInsightDTO.builder()
                 .knowledgeSummary(Objects.toString(kc.get(KNOWLEDGE_SUMMARY_KEY), null))
-                .confidence(kc.get(CONFIDENCE_KEY) instanceof Number n ? n.doubleValue() : null)
-                .sources(sources)
+                .confidence(knowledgeFound ? 1.0 : 0.0)
+                .sources(Collections.emptyList())
                 .knowledgeFound(knowledgeFound)
                 .build();
     }

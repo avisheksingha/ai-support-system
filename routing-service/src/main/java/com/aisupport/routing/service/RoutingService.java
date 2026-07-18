@@ -55,9 +55,9 @@ public class RoutingService {
                 .assignToTeam(team)
                 .priority(priority)
                 .slaHours(sla)
-                .intent(event.getIntent())
-                .sentiment(event.getSentiment())
-                .urgency(event.getUrgency())
+                .intent(event.getAnalysis().intent())
+                .sentiment(event.getAnalysis().sentiment())
+                .urgency(event.getAnalysis().urgency())
                 .build();
 
         outboxService.publishEvent(
@@ -91,9 +91,9 @@ public class RoutingService {
                 .assignToTeam(team)
                 .priority(priority)
                 .slaHours(sla)
-                .intent(event.getIntent())
-                .sentiment(event.getSentiment())
-                .urgency(event.getUrgency())
+                .intent(event.getAnalysis().intent())
+                .sentiment(event.getAnalysis().sentiment())
+                .urgency(event.getAnalysis().urgency())
                 .build();
 
         log.info("Sync Routing completed ticketId={} team={} priority={}", ticketId, team, priority);

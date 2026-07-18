@@ -37,8 +37,8 @@ public class TicketAnalyzedConsumer {
         	
             log.info("Consumed ticket-analyzed event: ticketId={} intent={} urgency={}",
                     event.getTicketId(),
-                    event.getIntent(),
-                    event.getUrgency());
+                    event.getAnalysis().intent(),
+                    event.getAnalysis().urgency());
 
             routingService.route(event);
 

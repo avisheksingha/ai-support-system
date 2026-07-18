@@ -115,7 +115,7 @@ public class RagService {
 	}
 
 	@Transactional
-	public String generateResponseSync(Long ticketId, String query) {
+	public RagResponse generateResponseSync(Long ticketId, String query) {
 		log.info("Running sync RAG for query: {}", query);
 		
 		String response;
@@ -151,7 +151,7 @@ public class RagService {
         ragResponseRepository.save(ragResponse);
         log.info("Sync RAG response persisted for ticketId={}", ticketId);
 
-        return response;
+        return ragResponse;
 	}
 
 	/**

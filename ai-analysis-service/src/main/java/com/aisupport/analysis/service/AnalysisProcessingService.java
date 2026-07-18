@@ -12,6 +12,7 @@ import com.aisupport.analysis.llm.ChatProvider;
 import com.aisupport.analysis.outbox.OutboxEventService;
 import com.aisupport.analysis.repository.AnalysisResultRepository;
 import com.aisupport.common.dto.AnalysisResultDTO;
+import com.aisupport.common.event.SupportIntentVocabulary;
 import com.aisupport.common.event.TicketAnalyzedEvent;
 import com.aisupport.common.event.TicketCreatedEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,7 +50,7 @@ public class AnalysisProcessingService {
                 event.getMessage()
         );
         
-        String normalizedIntent = normalizeIntent(parsed.getIntent());
+        String normalizedIntent = SupportIntentVocabulary.normalize(parsed.getIntent());
         
         BigDecimal confidence = parsed.getConfidenceScore() != null
                 ? BigDecimal.valueOf(parsed.getConfidenceScore())
@@ -72,16 +73,20 @@ public class AnalysisProcessingService {
 
         log.info("Analysis persisted for ticketId={}, intent={}", ticketId, normalizedIntent);
 
-        // NEW: Publish analyzed event via Outbox
+        // NEW: Publish analyzed event via Outbox using canonical AnalysisResult
+        com.aisupport.common.event.AnalysisResult canonicalAnalysis = new com.aisupport.common.event.AnalysisResult(
+                normalizedIntent,
+                defaultIfNull(parsed.getSentiment(), DEFAULT_SENTIMENT).toUpperCase(),
+                defaultIfNull(parsed.getUrgency(), "LOW").toUpperCase(),
+                parsed.getConfidenceScore(),
+                parsed.getKeywords(),
+                parsed.getSuggestedCategory()
+        );
+
         TicketAnalyzedEvent analyzedEvent = TicketAnalyzedEvent.builder()
                 .ticketId(ticketId)
                 .ticketDescription(event.getMessage())
-                .intent(normalizedIntent)
-                .sentiment(defaultIfNull(parsed.getSentiment(), DEFAULT_SENTIMENT).toUpperCase())
-                .urgency(defaultIfNull(parsed.getUrgency(), "LOW").toUpperCase())
-                .confidenceScore(parsed.getConfidenceScore())
-                .keywords(parsed.getKeywords())
-                .suggestedCategory(parsed.getSuggestedCategory())
+                .analysis(canonicalAnalysis)
                 .analyzedAt(Instant.now())
                 .build();
 
@@ -99,7 +104,7 @@ public class AnalysisProcessingService {
 
         ParsedAnalysis parsed = chatProvider.analyzeTicket(subject, message);
         
-        String normalizedIntent = normalizeIntent(parsed.getIntent());
+        String normalizedIntent = SupportIntentVocabulary.normalize(parsed.getIntent());
         
         BigDecimal confidence = parsed.getConfidenceScore() != null
                 ? BigDecimal.valueOf(parsed.getConfidenceScore())
@@ -141,32 +146,7 @@ public class AnalysisProcessingService {
                 .build();
     }
     
-    private String normalizeIntent(String intent) {
 
-        if (intent == null) return "GENERAL";
-
-        intent = intent.toUpperCase();
-
-        if (intent.contains("REFUND"))
-            return "CHECK_REFUND_STATUS";
-
-        if (intent.contains("PAYMENT"))
-            return "PAYMENT_ISSUE";
-
-        if (intent.contains("CRASH") || intent.contains("BUG"))
-            return "TECHNICAL_ISSUE";
-
-        if (intent.contains("COMPLAINT"))
-            return "GENERAL_COMPLAINT";
-
-        if (intent.contains("GRATITUDE") || intent.contains("THANK"))
-            return "GRATITUDE";
-
-        if (intent.contains("FEATURE"))
-            return "FEATURE_REQUEST";
-
-        return "GENERAL";
-    }
 
     private String convertToJson(ParsedAnalysis analysis) {
         try {
