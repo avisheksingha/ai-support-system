@@ -27,10 +27,6 @@ export function CreateTicketDialog({ children }: CreateTicketDialogProps = {}) {
     if (!subject.trim() || !message.trim()) return;
     
     const currentKey = `${subject.trim()}|${message.trim()}`;
-    if (currentKey === lastCacheKey && suggestion) {
-      // Don't call again if nothing changed and we already have a suggestion
-      return;
-    }
 
     setAiError(null);
     setSuggestion(null);
@@ -278,7 +274,7 @@ export function CreateTicketDialog({ children }: CreateTicketDialogProps = {}) {
               <Button 
                 type="submit" 
                 className="min-w-[120px]"
-                disabled={createTicketMutation.isPending || !subject.trim() || !message.trim()}
+                disabled={createTicketMutation.isPending || improveWritingMutation.isPending || !subject.trim() || !message.trim()}
               >
                 {createTicketMutation.isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
