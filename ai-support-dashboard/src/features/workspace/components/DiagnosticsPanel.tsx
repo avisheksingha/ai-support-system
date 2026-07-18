@@ -69,10 +69,9 @@ export function DiagnosticsPanel({ ticket, analysis, routing }: DiagnosticsPanel
         {routing && (
           <DiagnosticSection title="Routing Engine" icon={<Cpu className="h-4 w-4 text-purple-500" />}>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-               <DataPoint label="Routing Rule" value={routing.ruleName || "GENERAL_ROUTING_RULE"} />
-               <DataPoint label="Rule Version" value={routing.ruleVersion || 1} />
-               <DataPoint label="Confidence" value={`${((routing.confidenceScore || 0) * 100).toFixed(1)}%`} />
-               <DataPoint label="Department Match" value={routing.department} />
+               <DataPoint label="Priority Match" value={routing.priority} />
+               <DataPoint label="SLA Target" value={`${routing.slaHours}h`} />
+               <DataPoint label="Assigned Team" value={routing.assignedTeam} />
             </div>
           </DiagnosticSection>
         )}
@@ -93,7 +92,7 @@ export function DiagnosticsPanel({ ticket, analysis, routing }: DiagnosticsPanel
               <div>
                 <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold block mb-1">Raw LLM Response</span>
                 <pre className="text-[11px] text-muted-foreground bg-card p-3 rounded-md overflow-x-auto border border-border">
-                  {analysis?.rawResponse || JSON.stringify(analysis, null, 2)}
+                  {JSON.stringify(analysis, null, 2)}
                 </pre>
               </div>
             </div>

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.aisupport.orchestration.application.timeline.TimelineService;
 import com.aisupport.orchestration.application.timeline.dto.AIInsightResponse;
 import com.aisupport.orchestration.application.timeline.dto.TimelinePageResponse;
-import com.aisupport.orchestration.application.timeline.dto.WorkspaceAggregationResponse;
+import com.aisupport.orchestration.application.timeline.dto.WorkspaceDataResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -51,9 +51,9 @@ public class TimelineController {
     }
     
     @GetMapping("/{ticketId}/workspace")
-    @Operation(summary = "Get Workspace Aggregation", description = "Retrieves the combined AI analysis, routing, and knowledge data for a ticket")
-    public ResponseEntity<WorkspaceAggregationResponse> getWorkspaceData(@PathVariable Long ticketId) {
-        log.info("Fetching workspace aggregation for ticket: {}", ticketId);
+    @Operation(summary = "Get Workspace Data", description = "Retrieves the complete workspace overview for a ticket including analysis, knowledge, routing, AI decision, workflow metadata, and pipeline progress")
+    public ResponseEntity<WorkspaceDataResponse> getWorkspaceData(@PathVariable Long ticketId) {
+        log.info("Fetching workspace data for ticket: {}", ticketId);
         
         return timelineService.getWorkspaceData(ticketId)
                 .map(ResponseEntity::ok)

@@ -1,6 +1,8 @@
 package com.aisupport.orchestration.infrastructure.client;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import com.aisupport.common.event.KnowledgeContext;
+import com.aisupport.common.event.KnowledgeSource;
 import com.aisupport.orchestration.domain.model.Result;
 import com.aisupport.orchestration.infrastructure.client.exception.RagUnavailableException;
 
@@ -20,6 +23,16 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class DefaultRagClient implements RagClient {
+
+    private static final String DEFAULT_ANSWER = "No relevant knowledge found.";
+    private static final String ANSWER_KEY = "answer";
+    private static final String CONFIDENCE_KEY = "confidence";
+    private static final String SOURCES_KEY = "sources";
+    private static final String GENERATED_REPLY_KEY = "generatedReply";
+    private static final String SOURCE_DOCUMENTS_KEY = "sourceDocuments";
+    private static final String SIMILARITY_SCORE_KEY = "similarityScore";
+    private static final String TITLE_KEY = "title";
+    private static final String ID_KEY = "id";
 
     private final RestClient restClient;
 
@@ -45,10 +58,7 @@ public class DefaultRagClient implements RagClient {
                     .retrieve()
                     .body(new ParameterizedTypeReference<Map<String, Object>>() {});
 
-            String answer = response != null && response.containsKey("answer") ? (String) response.get("answer") : "No relevant knowledge found.";
-            
-            KnowledgeContext context = new KnowledgeContext(answer, Collections.emptyList(), 1.0);
-            return Result.success(context);
+            return Result.success(buildKnowledgeContext(response, ANSWER_KEY, CONFIDENCE_KEY, SOURCES_KEY));
         } catch (Exception e) {
             log.error("Failed to search knowledge for query={}", query, e);
             throw new RagUnavailableException("RAG Service Unavailable: " + e.getMessage(), e);
@@ -63,12 +73,67 @@ public class DefaultRagClient implements RagClient {
                     .retrieve()
                     .body(new ParameterizedTypeReference<Map<String, Object>>() {});
                     
-            String answer = response != null && response.containsKey("generatedReply") ? (String) response.get("generatedReply") : "No relevant knowledge found.";
-            KnowledgeContext context = new KnowledgeContext(answer, Collections.emptyList(), 1.0);
-            return Result.success(context);
+            return Result.success(buildKnowledgeContext(response, GENERATED_REPLY_KEY, SIMILARITY_SCORE_KEY, SOURCE_DOCUMENTS_KEY));
         } catch (Exception e) {
             log.error("Failed to get RAG response for ticketId={}", ticketId, e);
             return Result.failure("RAG Not Found: " + e.getMessage());
         }
+    }
+
+    /**
+     * Constructs the KnowledgeContext from the API response map.
+     */
+    private KnowledgeContext buildKnowledgeContext(Map<String, Object> response, String answerKey, String confidenceKey, String sourcesKey) {
+        String answer = extractString(response, answerKey, DEFAULT_ANSWER);
+        Double confidence = extractDouble(response, confidenceKey);
+        List<KnowledgeSource> sources = extractSources(response, sourcesKey);
+        return new KnowledgeContext(answer, sources, confidence);
+    }
+
+    /**
+     * Safely extracts a list of KnowledgeSource objects from the response map.
+     */
+    private List<KnowledgeSource> extractSources(Map<String, Object> response, String key) {
+        if (response == null || !(response.get(key) instanceof java.util.List<?> list)) {
+            return Collections.emptyList();
+        }
+        
+        List<KnowledgeSource> sources = new ArrayList<>();
+        for (Object item : list) {
+            if (item instanceof Map<?, ?> map) {
+                sources.add(buildKnowledgeSource(map));
+            }
+        }
+        return sources;
+    }
+
+    /**
+     * Maps a raw response item into a KnowledgeSource object.
+     */
+    private KnowledgeSource buildKnowledgeSource(Map<?, ?> map) {
+        String id = extractString(map, ID_KEY, null);
+        String title = extractString(map, TITLE_KEY, null);
+        Double simScore = extractDouble(map, SIMILARITY_SCORE_KEY);
+        return new KnowledgeSource(id, title, simScore);
+    }
+
+    /**
+     * Safely extracts a String value from a map.
+     */
+    private String extractString(Map<?, ?> map, String key, String defaultValue) {
+        if (map != null && map.get(key) != null) {
+            return map.get(key).toString();
+        }
+        return defaultValue;
+    }
+
+    /**
+     * Safely extracts a Double value from a map.
+     */
+    private Double extractDouble(Map<?, ?> map, String key) {
+        if (map != null && map.get(key) instanceof Number n) {
+            return n.doubleValue();
+        }
+        return null;
     }
 }

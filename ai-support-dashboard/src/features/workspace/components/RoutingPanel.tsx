@@ -8,7 +8,7 @@ interface RoutingPanelProps {
 }
 
 export function RoutingPanel({ routing, ticket }: RoutingPanelProps) {
-  const assignee = ticket.assignedTo || routing.assignedAgent;
+  const assignee = ticket.assignedTo || "Unassigned";
   
   return (
     <div className="bg-white shadow-sm border border-slate-200 rounded-xl overflow-hidden relative">
@@ -28,34 +28,27 @@ export function RoutingPanel({ routing, ticket }: RoutingPanelProps) {
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Assigned Team</span>
             <div className="font-semibold text-slate-800 flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-500"></span>
-              {routing.department}
+              {routing.assignedTeam}
             </div>
           </div>
           <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Suggested Agent</span>
-            <div className="font-semibold text-slate-800">{assignee || "Unassigned"}</div>
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Assigned To</span>
+            <div className="font-semibold text-slate-800">{assignee}</div>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Matched Rule</span>
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Priority</span>
             <div className="font-semibold text-cyan-700 font-mono text-[10px]">
-              {routing.ruleName || "N/A"}
+              {routing.priority}
             </div>
           </div>
           <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Confidence</span>
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">SLA Hours</span>
             <div className="font-bold text-emerald-600">
-              {routing.confidenceScore ? `${(routing.confidenceScore * 100).toFixed(0)}%` : "N/A"}
+              {routing.slaHours}h
             </div>
-          </div>
-        </div>
-
-        <div className="pt-2 border-t border-slate-100 mt-2">
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Reason</span>
-          <div className="text-slate-600 leading-relaxed text-[13px] bg-slate-50 p-3 rounded-lg border border-slate-100">
-            {routing.reason}
           </div>
         </div>
       </div>

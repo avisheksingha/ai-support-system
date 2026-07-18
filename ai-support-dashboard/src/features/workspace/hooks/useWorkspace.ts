@@ -42,7 +42,7 @@ export const useWorkspaceAggregation = (ticketId?: number, ticketStatus?: Ticket
     refetchInterval: (query) => {
       // If we already have a complete response, we don't need to poll anymore
       const data = query.state.data;
-      if (data?.analysis && data?.knowledge && data?.routing) return false;
+      if (data?.analysis && data?.knowledge && data?.routing && data?.aiDecision) return false;
       
       // If the ticket has passed the AI phase, stop polling
       if (ticketStatus && ["ASSIGNED", "IN_PROGRESS", "RESOLVED", "CLOSED"].includes(ticketStatus)) return false;

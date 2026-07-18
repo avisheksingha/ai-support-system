@@ -12,6 +12,7 @@ import { formatTimeAgo } from "@/shared/utils/date";
 // Lazy Loaded Panels
 const AiInsightsPanel = React.lazy(() => import("./AiInsightsPanel").then(m => ({ default: m.AiInsightsPanel })));
 const RagResponsePanel = React.lazy(() => import("./RagResponsePanel").then(m => ({ default: m.RagResponsePanel })));
+const AiDecisionPanel = React.lazy(() => import("./AiDecisionPanel").then(m => ({ default: m.AiDecisionPanel })));
 const RoutingPanel = React.lazy(() => import("./RoutingPanel").then(m => ({ default: m.RoutingPanel })));
 const DiagnosticsPanel = React.lazy(() => import("./DiagnosticsPanel").then(m => ({ default: m.DiagnosticsPanel })));
 import { AiPipelineProgress } from "./AiPipelineProgress";
@@ -65,6 +66,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
   const analysis = workspaceData?.analysis;
   const routing = workspaceData?.routing;
   const knowledge = workspaceData?.knowledge;
+  const aiDecision = workspaceData?.aiDecision;
   const { data: timeline, isLoading: isTimelineLoading } = useTimeline(ticket?.id);
   const { data: messages, isLoading: isMessagesLoading } = useMessages(ticket?.ticketNumber);
   const { mutate: addMessage, isPending: isSendingMessage } = useAddMessage();
@@ -249,7 +251,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
           </div>
         </div>
 
-        <AiPipelineProgress ticket={ticket} analysis={analysis} routing={routing} />
+        <AiPipelineProgress ticket={ticket} analysis={analysis} knowledge={knowledge} routing={routing} aiDecision={aiDecision} />
 
         {/* Conversation */}
         <div>
@@ -381,7 +383,16 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
         ) : (
           <ErrorBoundary FallbackComponent={WorkspaceErrorFallback}>
             <Suspense fallback={<Skeleton className="h-48 w-full bg-card rounded-xl" />}>
-              <RagResponsePanel knowledge={knowledge} onUseReply={setReplyText} />
+              <RagResponsePanel knowledge={knowledge} />
+            </Suspense>
+          </ErrorBoundary>
+        )}
+
+        {/* AI Decision Panel */}
+        {aiDecision && (
+          <ErrorBoundary FallbackComponent={WorkspaceErrorFallback}>
+            <Suspense fallback={<Skeleton className="h-48 w-full bg-card rounded-xl" />}>
+              <AiDecisionPanel decision={aiDecision} onUseReply={setReplyText} />
             </Suspense>
           </ErrorBoundary>
         )}

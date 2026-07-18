@@ -10,7 +10,7 @@ interface RagResponsePanelProps {
 export function RagResponsePanel({ knowledge, onUseReply }: RagResponsePanelProps) {
   const [copied, setCopied] = useState(false);
   
-  const ragResponse = knowledge.generatedReply;
+  const ragResponse = knowledge.knowledgeSummary;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(ragResponse);

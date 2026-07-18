@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class WorkspaceAggregationResponse {
-    private AIInsightResponse analysis;
-    private Object knowledge;
-    private Object routing;
+public class WorkflowMetadataDTO {
+    private String workflowExecutionId;
+    private String workflowState;
+    private Long workflowDurationMs;
 }

@@ -9,10 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AIInsightResponse {
-    private String intent;
-    private String sentiment;
-    private String urgency;
-    private Double confidenceScore;
-    private String analysisProvider;
+public class AiDecisionDTO {
+    private String aiSummary;
+    private String suggestedReply;
+    private Double confidence;
 }

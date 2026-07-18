@@ -1,18 +1,21 @@
 import type { TicketModel } from "@/shared/types/ticket";
-import type { AnalysisModel, RoutingModel } from "@/shared/types/workspace";
+import type { AnalysisModel, RoutingModel, AiDecisionModel, KnowledgeModel } from "@/shared/types/workspace";
 import { Check, Loader2, ArrowRight } from "lucide-react";
 
 interface AiPipelineProgressProps {
   ticket: TicketModel;
   analysis?: AnalysisModel | undefined;
+  knowledge?: KnowledgeModel | undefined;
   routing?: RoutingModel | undefined;
+  aiDecision?: AiDecisionModel | undefined;
 }
 
-export function AiPipelineProgress({ ticket, analysis, routing }: AiPipelineProgressProps) {
+export function AiPipelineProgress({ ticket, analysis, knowledge, routing, aiDecision }: AiPipelineProgressProps) {
   // Determine true state of pipeline based on REAL backend data
   const hasAnalysis = !!analysis;
-  const hasKnowledge = !!ticket.ragResponse;
+  const hasKnowledge = !!knowledge || !!ticket.ragResponse;
   const hasRouting = !!routing;
+  const hasAiDecision = !!aiDecision;
   const isAssigned = !!ticket.assignedTo || ticket.status === 'ASSIGNED' || ticket.status === 'IN_PROGRESS' || ticket.status === 'RESOLVED' || ticket.status === 'CLOSED';
   const isResolved = ticket.status === 'RESOLVED' || ticket.status === 'CLOSED';
 
@@ -83,13 +86,16 @@ export function AiPipelineProgress({ ticket, analysis, routing }: AiPipelineProg
 
         {/* Row 2: Action Pipeline */}
         <div className="flex items-center gap-1.5 min-w-max">
-          <PrimaryNode label="Routing" isComplete={hasRouting} />
+          <PrimaryNode label="AI Decision" isComplete={hasAiDecision} />
+          <Arrow active={hasRouting} />
+          
+          <ChildNode1 label="Routing" isComplete={hasRouting} isCurrent={hasAiDecision && !hasRouting} />
           <Arrow active={isAssigned} />
           
-          <ChildNode1 label="Assigned" isComplete={isAssigned} isCurrent={hasRouting && !isAssigned} />
+          <ChildNode2 label="Assigned" isComplete={isAssigned} isCurrent={hasRouting && !isAssigned} />
           <Arrow active={isResolved} />
           
-          <ChildNode2 label="Resolution" isComplete={isResolved} isCurrent={isAssigned && !isResolved} />
+          <ChildNode1 label="Resolution" isComplete={isResolved} isCurrent={isAssigned && !isResolved} />
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@ import { apiClient } from "@/lib/api-client";
 import type {
   TimelinePageResponse,
   OperationsDashboardResponse,
-  WorkspaceAggregationResponse
+  WorkspaceDataResponse
 } from "@/shared/types/workspace";
 import type {
   TicketModel,
@@ -44,9 +44,9 @@ export const workspaceApi = {
   },
 
   // Workspace Aggregation (Orchestrator Central Brain)
-  getWorkspaceAggregation: async (ticketId: number): Promise<WorkspaceAggregationResponse | null> => {
+  getWorkspaceAggregation: async (ticketId: number): Promise<WorkspaceDataResponse | null> => {
     try {
-      const response = await apiClient.get<WorkspaceAggregationResponse>(`/orchestration/tickets/${ticketId}/workspace`);
+      const response = await apiClient.get<WorkspaceDataResponse>(`/orchestration/tickets/${ticketId}/workspace`);
       return response.data;
     } catch (error: any) {
       if (error.response?.status === 404) {

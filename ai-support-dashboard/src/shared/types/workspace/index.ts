@@ -1,46 +1,58 @@
-import type { TicketPriority } from "../ticket";
+
 
 export interface AnalysisModel {
-  id: number;
-  ticketId: number;
   intent: string;
   sentiment: string;
-  urgency: TicketPriority | string;
+  urgency: string;
   confidenceScore: number;
-  keywords: string[];
-  suggestedCategory: string;
-  rawResponse?: string;
-  analysisProvider?: string;
-  analyzedAt: string;
+  analysisProvider: string;
+}
+
+export interface KnowledgeSource {
+  id: string;
+  title: string;
+  similarityScore?: number;
 }
 
 export interface KnowledgeModel {
-  id?: number;
-  ticketId?: number;
-  query?: string;
-  generatedReply: string;
-  similarityScore?: number;
-  sourceDocuments?: Array<{ title: string; url: string }>;
-  modelUsed?: string;
-  generatedAt?: string;
+  knowledgeSummary: string;
+  confidence?: number;
+  sources: KnowledgeSource[];
+  knowledgeFound: boolean;
 }
 
 export interface RoutingModel {
-  id?: number;
-  ticketId?: number;
-  department: string;
-  assignedAgent?: string;
-  confidenceScore: number;
-  reason: string;
-  ruleName?: string;
-  ruleVersion?: number;
-  executedAt?: string;
+  assignedTeam: string;
+  priority: string;
+  slaHours: number;
 }
 
-export interface WorkspaceAggregationResponse {
+export interface AiDecisionModel {
+  aiSummary: string;
+  suggestedReply: string;
+  confidence: number;
+}
+
+export interface WorkflowMetadata {
+  workflowExecutionId: string;
+  workflowState: string;
+  workflowDurationMs: number;
+}
+
+export interface PipelineProgress {
+  analysisCompleted: boolean;
+  knowledgeCompleted: boolean;
+  routingCompleted: boolean;
+  decisionCompleted: boolean;
+}
+
+export interface WorkspaceDataResponse {
   analysis?: AnalysisModel;
   knowledge?: KnowledgeModel;
   routing?: RoutingModel;
+  aiDecision?: AiDecisionModel;
+  workflowMetadata?: WorkflowMetadata;
+  pipelineProgress?: PipelineProgress;
 }
 
 

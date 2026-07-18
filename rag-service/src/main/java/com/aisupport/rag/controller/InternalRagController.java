@@ -1,7 +1,5 @@
 package com.aisupport.rag.controller;
 
-import java.util.Collections;
-
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Tag(name = "Internal RAG", description = "Internal endpoints for orchestration service")
 public class InternalRagController {
+	
+	private static final String NO_KNOWLEDGE_FOUND = "No relevant knowledge article found.";
 
     private final RagService ragService;
 
@@ -40,8 +40,12 @@ public class InternalRagController {
                 request.getTicketId(), 
                 request.getQuery());
                 
+        // In the legacy RAG service, "No relevant knowledge article found." is returned if none found.
+        boolean knowledgeFound = responseText != null && !responseText.contains(NO_KNOWLEDGE_FOUND);
+                
         return ResponseEntity.ok(RagSearchResponse.builder()
                 .answer(responseText)
+                .knowledgeFound(knowledgeFound)
                 .build());
     }
 
@@ -54,8 +58,6 @@ public class InternalRagController {
                         .ticketId(rag.getTicketId())
                         .query(rag.getQuery())
                         .generatedReply(rag.getResponse())
-                        .similarityScore(1.0)
-                        .sourceDocuments(Collections.emptyList())
                         .modelUsed(rag.getModel())
                         .generatedAt(rag.getCreatedAt())
                         .build()))

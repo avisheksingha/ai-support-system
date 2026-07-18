@@ -1,46 +1,67 @@
 package com.aisupport.orchestration.application.timeline;
 
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.aisupport.common.event.AnalysisResult;
-import com.aisupport.common.event.KnowledgeContext;
-import com.aisupport.common.event.RoutingDecision;
 import com.aisupport.orchestration.application.timeline.dto.AIInsightResponse;
+import com.aisupport.orchestration.application.timeline.dto.AiDecisionDTO;
+import com.aisupport.orchestration.application.timeline.dto.KnowledgeInsightDTO;
+import com.aisupport.orchestration.application.timeline.dto.KnowledgeSourceDTO;
+import com.aisupport.orchestration.application.timeline.dto.PipelineProgressDTO;
+import com.aisupport.orchestration.application.timeline.dto.RoutingInsightDTO;
 import com.aisupport.orchestration.application.timeline.dto.TimelineEvent;
 import com.aisupport.orchestration.application.timeline.dto.TimelinePageResponse;
-import com.aisupport.orchestration.application.timeline.dto.WorkspaceAggregationResponse;
-import com.aisupport.orchestration.domain.model.Result;
-import com.aisupport.orchestration.infrastructure.client.AnalysisClient;
-import com.aisupport.orchestration.infrastructure.client.RagClient;
-import com.aisupport.orchestration.infrastructure.client.RoutingClient;
+import com.aisupport.orchestration.application.timeline.dto.WorkflowMetadataDTO;
+import com.aisupport.orchestration.application.timeline.dto.WorkspaceDataResponse;
 import com.aisupport.orchestration.infrastructure.persistence.entity.AiExecutionRecordEntity;
 import com.aisupport.orchestration.infrastructure.persistence.entity.WorkflowCheckpointEntity;
+import com.aisupport.orchestration.infrastructure.persistence.entity.WorkflowExecutionEntity;
 import com.aisupport.orchestration.infrastructure.persistence.repository.AiExecutionRecordRepository;
 import com.aisupport.orchestration.infrastructure.persistence.repository.WorkflowCheckpointRepository;
 import com.aisupport.orchestration.infrastructure.persistence.repository.WorkflowExecutionRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TimelineService {
-	
-	private static final String DEFAULT_MODEL_ID = "ai-analysis-service";
+
+    private static final String DEFAULT_MODEL_ID = "unavailable";
+    
+    private static final String KNOWLEDGE_CONTEXT_KEY = "knowledgeContext";
+    private static final String ROUTING_DECISION_KEY = "routingDecision";
+    private static final String AI_DECISION_KEY = "aiDecision";
+    private static final String ANALYSIS_RESULT_KEY = "analysisResult";
+    private static final String CONFIDENCE_KEY = "confidence";
+    private static final String SOURCES_KEY = "sources";
+    private static final String KNOWLEDGE_SUMMARY_KEY = "knowledgeSummary";
+    private static final String ID_KEY = "id";
+    private static final String TITLE_KEY = "title";
+    private static final String SIMILARITY_SCORE_KEY = "similarityScore";
+    private static final String ASSIGN_TO_TEAM_KEY = "assignToTeam";
+    private static final String PRIORITY_KEY = "priority";
+    private static final String SLA_HOURS_KEY = "slaHours";
+    private static final String AI_SUMMARY_KEY = "aiSummary";
+    private static final String SUGGESTED_REPLY_KEY = "suggestedReply";
+    private static final String INTENT_KEY = "intent";
+    private static final String SENTIMENT_KEY = "sentiment";
+    private static final String URGENCY_KEY = "urgency";
 
     private final WorkflowExecutionRepository workflowExecutionRepository;
     private final WorkflowCheckpointRepository workflowCheckpointRepository;
     private final AiExecutionRecordRepository aiExecutionRecordRepository;
     private final TimelineMapper timelineMapper;
-    private final AnalysisClient analysisClient;
-    private final RoutingClient routingClient;
-    private final RagClient ragClient;
 
     @Transactional(readOnly = true)
     public TimelinePageResponse getTimelineForTicket(Long ticketId, int page, int size) {
@@ -71,10 +92,10 @@ public class TimelineService {
         // In-memory pagination
         int totalElements = allEvents.size();
         int totalPages = (int) Math.ceil((double) totalElements / size);
-        
+
         int start = Math.min(page * size, totalElements);
         int end = Math.min(start + size, totalElements);
-        
+
         List<TimelineEvent> pageContent = allEvents.subList(start, end);
 
         return TimelinePageResponse.builder()
@@ -92,54 +113,186 @@ public class TimelineService {
         return fetchTicketInsights(ticketId);
     }
 
-    private Optional<AIInsightResponse> fetchTicketInsights(Long ticketId) {
+    @Transactional(readOnly = true)
+    public Optional<WorkspaceDataResponse> getWorkspaceData(Long ticketId) {
         try {
-            Result<AnalysisResult> analysisResult = analysisClient.getAnalysis(ticketId);
-            if (!analysisResult.isSuccess() || analysisResult.getData() == null) {
+            Optional<WorkflowExecutionEntity> executionOpt = workflowExecutionRepository.findByTicketId(ticketId);
+            if (executionOpt.isEmpty()) {
                 return Optional.empty();
             }
 
-            AnalysisResult data = analysisResult.getData();
+            WorkflowExecutionEntity execution = executionOpt.get();
+
+            List<WorkflowCheckpointEntity> checkpoints = workflowCheckpointRepository
+                    .findByExecutionIdOrderByCreatedAtDesc(execution.getId());
+            if (checkpoints.isEmpty()) {
+                return Optional.empty();
+            }
+
+            WorkflowCheckpointEntity latestCheckpoint = checkpoints.get(0);
+            Map<String, Object> attributes = latestCheckpoint.getAttributesSnapshot();
+
+            WorkspaceDataResponse.WorkspaceDataResponseBuilder responseBuilder = WorkspaceDataResponse.builder();
+
+            // --- Analysis ---
+            fetchTicketInsights(ticketId).ifPresent(responseBuilder::analysis);
+
+            // --- Knowledge ---
+            if (attributes.containsKey(KNOWLEDGE_CONTEXT_KEY)) {
+                responseBuilder.knowledge(mapKnowledgeInsight(attributes));
+            }
+
+            // --- Routing ---
+            if (attributes.containsKey(ROUTING_DECISION_KEY)) {
+                responseBuilder.routing(mapRoutingInsight(attributes));
+            }
+
+            // --- AI Decision ---
+            if (attributes.containsKey(AI_DECISION_KEY)) {
+                responseBuilder.aiDecision(mapAiDecision(attributes));
+            }
+
+            // --- Workflow Metadata ---
+            responseBuilder.workflowMetadata(mapWorkflowMetadata(execution));
+
+            // --- Pipeline Progress ---
+            responseBuilder.pipelineProgress(mapPipelineProgress(attributes));
+
+            return Optional.of(responseBuilder.build());
+        } catch (Exception e) {
+            log.error("Failed to build workspace data for ticketId={}", ticketId, e);
+            return Optional.empty();
+        }
+    }
+
+    // ── Private Mapping Methods ──────────────────────────────────────────────
+
+    private Optional<AIInsightResponse> fetchTicketInsights(Long ticketId) {
+        try {
+            Optional<WorkflowExecutionEntity> executionOpt = workflowExecutionRepository.findByTicketId(ticketId);
+            if (executionOpt.isEmpty()) {
+                return Optional.empty();
+            }
+
+            List<WorkflowCheckpointEntity> checkpoints = workflowCheckpointRepository
+                    .findByExecutionIdOrderByCreatedAtDesc(executionOpt.get().getId());
+            if (checkpoints.isEmpty()) {
+                return Optional.empty();
+            }
+
+            WorkflowCheckpointEntity latestCheckpoint = checkpoints.get(0);
+            Map<String, Object> attributes = latestCheckpoint.getAttributesSnapshot();
+
+            Object analysisObj = attributes.get(ANALYSIS_RESULT_KEY);
+            if (!(analysisObj instanceof Map<?, ?>)) {
+                return Optional.empty();
+            }
+            Map<?, ?> analysisMap = (Map<?, ?>) analysisObj;
 
             String model = aiExecutionRecordRepository.findTopByTicketIdOrderByExecutedAtDesc(ticketId)
                     .map(AiExecutionRecordEntity::getModelId)
                     .filter(Objects::nonNull)
                     .orElse(DEFAULT_MODEL_ID);
 
+            Double confidence = 0.0;
+            Object aiDecisionObj = attributes.get(AI_DECISION_KEY);
+            if (aiDecisionObj instanceof Map<?, ?> aiDecision && aiDecision.get(CONFIDENCE_KEY) instanceof Number num) {
+                confidence = num.doubleValue();
+            }
+
             return Optional.of(AIInsightResponse.builder()
-                    .ticketId(ticketId)
-                    .intent(data.intent())
-                    .sentiment(data.sentiment())
-                    .urgency(data.urgency())
+                    .intent(Objects.toString(analysisMap.get(INTENT_KEY), null))
+                    .sentiment(Objects.toString(analysisMap.get(SENTIMENT_KEY), null))
+                    .urgency(Objects.toString(analysisMap.get(URGENCY_KEY), null))
+                    .confidenceScore(confidence)
                     .analysisProvider(model)
                     .build());
         } catch (Exception e) {
+            log.error("Failed to fetch ticket insights for ticketId={}", ticketId, e);
             return Optional.empty();
         }
     }
 
-    @Transactional(readOnly = true)
-    public Optional<WorkspaceAggregationResponse> getWorkspaceData(Long ticketId) {
-        WorkspaceAggregationResponse response = new WorkspaceAggregationResponse();
+    private KnowledgeInsightDTO mapKnowledgeInsight(Map<String, Object> attributes) {
+        Object kcObj = attributes.get(KNOWLEDGE_CONTEXT_KEY);
+        if (!(kcObj instanceof Map<?, ?>)) {
+            return null;
+        }
+        Map<?, ?> kc = (Map<?, ?>) kcObj;
 
-        // Fetch Analysis
-        Optional<AIInsightResponse> insights = fetchTicketInsights(ticketId);
-        insights.ifPresent(response::setAnalysis);
-
-        Result<KnowledgeContext> ragResponse = ragClient.getRagResponse(ticketId);
-        if (ragResponse.isSuccess()) {
-            response.setKnowledge(ragResponse.getData());
+        List<KnowledgeSourceDTO> sources = Collections.emptyList();
+        Object rawSources = kc.get(SOURCES_KEY);
+        if (rawSources instanceof List<?> sourceList) {
+            sources = sourceList.stream()
+                    .filter(Map.class::isInstance)
+                    .map(s -> {
+                        Map<?, ?> sm = (Map<?, ?>) s;
+                        return KnowledgeSourceDTO.builder()
+                                .id(Objects.toString(sm.get(ID_KEY), null))
+                                .title(Objects.toString(sm.get(TITLE_KEY), null))
+                                .similarityScore(sm.get(SIMILARITY_SCORE_KEY) instanceof Number n ? n.doubleValue() : null)
+                                .build();
+                    })
+                    .toList();
         }
 
-        Result<RoutingDecision> routingResponse = routingClient.getRouting(ticketId);
-        if (routingResponse.isSuccess()) {
-            response.setRouting(routingResponse.getData());
+        boolean knowledgeFound = !sources.isEmpty();
+
+        return KnowledgeInsightDTO.builder()
+                .knowledgeSummary(Objects.toString(kc.get(KNOWLEDGE_SUMMARY_KEY), null))
+                .confidence(kc.get(CONFIDENCE_KEY) instanceof Number n ? n.doubleValue() : null)
+                .sources(sources)
+                .knowledgeFound(knowledgeFound)
+                .build();
+    }
+
+    private RoutingInsightDTO mapRoutingInsight(Map<String, Object> attributes) {
+        Object rdObj = attributes.get(ROUTING_DECISION_KEY);
+        if (!(rdObj instanceof Map<?, ?>)) {
+            return null;
+        }
+        Map<?, ?> rd = (Map<?, ?>) rdObj;
+
+        return RoutingInsightDTO.builder()
+                .assignedTeam(Objects.toString(rd.get(ASSIGN_TO_TEAM_KEY), null))
+                .priority(rd.get(PRIORITY_KEY) != null ? rd.get(PRIORITY_KEY).toString() : null)
+                .slaHours(rd.get(SLA_HOURS_KEY) instanceof Number n ? n.intValue() : null)
+                .build();
+    }
+
+    private AiDecisionDTO mapAiDecision(Map<String, Object> attributes) {
+        Object adObj = attributes.get(AI_DECISION_KEY);
+        if (!(adObj instanceof Map<?, ?>)) {
+            return null;
+        }
+        Map<?, ?> ad = (Map<?, ?>) adObj;
+
+        return AiDecisionDTO.builder()
+                .aiSummary(Objects.toString(ad.get(AI_SUMMARY_KEY), null))
+                .suggestedReply(Objects.toString(ad.get(SUGGESTED_REPLY_KEY), null))
+                .confidence(ad.get(CONFIDENCE_KEY) instanceof Number n ? n.doubleValue() : null)
+                .build();
+    }
+
+    private WorkflowMetadataDTO mapWorkflowMetadata(WorkflowExecutionEntity execution) {
+        Long durationMs = null;
+        if (execution.getCreatedAt() != null && execution.getCompletedAt() != null) {
+            durationMs = Duration.between(execution.getCreatedAt(), execution.getCompletedAt()).toMillis();
         }
 
-        if (response.getAnalysis() == null && response.getKnowledge() == null && response.getRouting() == null) {
-            return Optional.empty();
-        }
+        return WorkflowMetadataDTO.builder()
+                .workflowExecutionId(execution.getId())
+                .workflowState(execution.getState() != null ? execution.getState().name() : null)
+                .workflowDurationMs(durationMs)
+                .build();
+    }
 
-        return Optional.of(response);
+    private PipelineProgressDTO mapPipelineProgress(Map<String, Object> attributes) {
+        return PipelineProgressDTO.builder()
+                .analysisCompleted(attributes.containsKey(ANALYSIS_RESULT_KEY))
+                .knowledgeCompleted(attributes.containsKey(KNOWLEDGE_CONTEXT_KEY))
+                .routingCompleted(attributes.containsKey(ROUTING_DECISION_KEY))
+                .decisionCompleted(attributes.containsKey(AI_DECISION_KEY))
+                .build();
     }
 }

@@ -1,5 +1,7 @@
 package com.aisupport.orchestration.application.timeline.dto;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,10 +11,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AIInsightResponse {
-    private String intent;
-    private String sentiment;
-    private String urgency;
-    private Double confidenceScore;
-    private String analysisProvider;
+public class KnowledgeInsightDTO {
+    private String knowledgeSummary;
+    private Double confidence;
+    private List<KnowledgeSourceDTO> sources;
+    private boolean knowledgeFound;
 }

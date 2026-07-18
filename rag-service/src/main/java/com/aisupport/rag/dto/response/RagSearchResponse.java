@@ -11,6 +11,7 @@ import lombok.Data;
 public class RagSearchResponse {
     
     private String answer;
+    private boolean knowledgeFound;
     
     // Extensibility fields for future enhancements
     private List<String> sources;
