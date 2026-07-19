@@ -6,6 +6,8 @@ export interface AnalysisModel {
   urgency: string;
   confidenceScore: number;
   analysisProvider: string;
+  keywords?: string[];
+  suggestedCategory?: string;
 }
 
 export interface KnowledgeSource {
@@ -19,6 +21,9 @@ export interface KnowledgeModel {
   confidence?: number;
   sources: KnowledgeSource[];
   knowledgeFound: boolean;
+  model?: string;
+  retrievedDocumentCount?: number;
+  matchedArticleTitles?: string[];
 }
 
 export interface RoutingModel {

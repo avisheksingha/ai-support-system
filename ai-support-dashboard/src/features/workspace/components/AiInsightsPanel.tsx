@@ -43,12 +43,29 @@ export function AiInsightsPanel({ analysis }: AiInsightsPanelProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Urgency</span>
             <div className="font-semibold text-rose-600">{formatSemanticString(analysis.urgency)}</div>
           </div>
+          <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Category</span>
+            <div className="font-semibold text-slate-700 truncate">{analysis.suggestedCategory || "Uncategorized"}</div>
+          </div>
         </div>
+
+        {analysis.keywords && analysis.keywords.length > 0 && (
+          <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Keywords</span>
+            <div className="flex flex-wrap gap-1.5">
+              {analysis.keywords.map((kw, i) => (
+                <span key={i} className="px-2 py-0.5 bg-white border border-slate-200 text-slate-600 rounded-md text-xs font-medium">
+                  {kw}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

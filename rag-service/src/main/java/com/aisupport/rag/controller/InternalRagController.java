@@ -1,5 +1,8 @@
 package com.aisupport.rag.controller;
 
+import java.util.Arrays;
+import java.util.Collections;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,6 +46,10 @@ public class InternalRagController {
                 .answer(ragResponse.getResponse())
                 .knowledgeFound(ragResponse.getKnowledgeFound())
                 .model(ragResponse.getModel())
+                .retrievedDocumentCount(ragResponse.getRetrievedDocumentCount())
+                .matchedArticleTitles(ragResponse.getMatchedArticleTitles() != null
+                	? Arrays.asList(ragResponse.getMatchedArticleTitles().split(","))
+                			: Collections.emptyList())
                 .build());
     }
 

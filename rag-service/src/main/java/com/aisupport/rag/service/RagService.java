@@ -1,12 +1,17 @@
 package com.aisupport.rag.service;
 
 import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.PromptTemplate;
+import org.springframework.ai.document.Document;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +43,9 @@ import lombok.extern.slf4j.Slf4j;
 public class RagService {
 	
 	private static final String NO_KNOWLEDGE_FOUND = "No relevant knowledge article found.";
+	
+	private static final String TITLE_KEY = "title";
+	private static final String UNKNOWN_TITLE = "Unknown";
 
 	private final ChatClient chatClient;
 	private final QuestionAnswerAdvisor questionAnswerAdvisor;
@@ -116,42 +124,73 @@ public class RagService {
 
 	@Transactional
 	public RagResponse generateResponseSync(Long ticketId, String query) {
-		log.info("Running sync RAG for query: {}", query);
-		
-		String response;
-		String systemPrompt = ragSystemPromptTemplate.render(
-		        Map.of("noKnowledgeFound", NO_KNOWLEDGE_FOUND));
-		
-		try {
-	        response = chatClient.prompt()
-				.system(systemPrompt)
+	    log.info("Running sync RAG for query: {}", query);
+	    
+	    String response;
+	    int docCount = 0;
+	    String titles = null;
+	    String systemPrompt = ragSystemPromptTemplate.render(
+	            Map.of("noKnowledgeFound", NO_KNOWLEDGE_FOUND));
+	    
+	    try {
+	        ChatResponse chatResponse = chatClient.prompt()
+	            .system(systemPrompt)
 	            .user(query)
 	            .advisors(questionAnswerAdvisor)
 	            .call()
-	            .content();
-		} catch (Exception e) {
-			log.error("Google GenAI RAG generation failed for ticketId={}", ticketId, e);
+	            .chatResponse();
+	            
+	        if (chatResponse == null || chatResponse.getResult() == null || chatResponse.getResult().getOutput() == null) {
+	            // Throwing IllegalStateException allows the catch block to handle it properly
+	            throw new IllegalStateException("Empty or null chat response received for ticketId: " + ticketId);
+	        }
+
+	        response = chatResponse.getResult().getOutput().getText();
+	        
+	        // Safely retrieve and cast the documents
+	        List<Document> docs = Collections.emptyList();
+	        Object rawDocs = chatResponse.getMetadata().get(QuestionAnswerAdvisor.RETRIEVED_DOCUMENTS);
+	        
+	        if (rawDocs instanceof List<?> rawList) {
+	            docs = rawList.stream()
+	                    .filter(Document.class::isInstance)
+	                    .map(Document.class::cast)
+	                    .toList();
+	        }
+	            
+	        if (!docs.isEmpty()) {
+	            docCount = docs.size();
+	            titles = docs.stream()
+	                .map(d -> d.getMetadata().get(TITLE_KEY) != null ? d.getMetadata().get(TITLE_KEY).toString() : UNKNOWN_TITLE)
+	                .distinct()
+	                .collect(Collectors.joining(","));
+	        }
+	        
+	    } catch (Exception e) {
+	        log.error("Google GenAI RAG generation failed for ticketId={}", ticketId, e);
 	        throw new RagGenerationException(
 	                "RAG generation failed for ticketId: " + ticketId, e);
-	    } 
+	    }
 
-        // If exists, delete old one for idempotency
-        if (ragResponseRepository.existsById(ticketId)) {
-        	ragResponseRepository.deleteById(ticketId);
-        }
+	    // If exists, delete old one for idempotency
+	    if (ragResponseRepository.existsById(ticketId)) {
+	        ragResponseRepository.deleteById(ticketId);
+	    }
 
-        RagResponse ragResponse = RagResponse.builder()
-                .ticketId(ticketId)
-                .query(query)
-                .response(response)
-                .model(chatModel)
-                .knowledgeFound(isKnowledgeFound(response))
-                .build();
+	    RagResponse ragResponse = RagResponse.builder()
+	            .ticketId(ticketId)
+	            .query(query)
+	            .response(response)
+	            .model(chatModel)
+	            .knowledgeFound(isKnowledgeFound(response))
+	            .retrievedDocumentCount(docCount)
+	            .matchedArticleTitles(titles)
+	            .build();
 
-        ragResponseRepository.save(ragResponse);
-        log.info("Sync RAG response persisted for ticketId={}", ticketId);
+	    ragResponseRepository.save(ragResponse);
+	    log.info("Sync RAG response persisted for ticketId={}", ticketId);
 
-        return ragResponse;
+	    return ragResponse;
 	}
 
 	/**

@@ -1,6 +1,9 @@
 package com.aisupport.orchestration.infrastructure.client;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +27,12 @@ public class DefaultRagClient implements RagClient {
     private static final String ANSWER_KEY = "answer";
     private static final String KNOWLEDGE_FOUND_KEY = "knowledgeFound";
     private static final String MODEL_KEY = "model";
+    
+    private static final String GENERATED_REPLY_KEY = "generatedReply";
+    private static final String MODEL_USED_KEY = "modelUsed";
+    private static final String UNKNOWN_MODEL = "Unknown";
+    private static final String RETRIEVED_DOCUMENT_COUNT_KEY = "retrievedDocumentCount";
+    private static final String MATCHED_ARTICLE_TITLES_KEY = "matchedArticleTitles";
 
     private final RestClient restClient;
 
@@ -75,11 +84,35 @@ public class DefaultRagClient implements RagClient {
      * Constructs the KnowledgeContext from the API response map.
      */
     private KnowledgeContext buildKnowledgeContext(Map<String, Object> response) {
+        if (response == null) {
+            return new KnowledgeContext(DEFAULT_ANSWER, false, UNKNOWN_MODEL, 0, Collections.emptyList());
+        }
+
         // Handle both /search (answer) and /ticket/{id} (generatedReply) formats
-        String answer = extractString(response, ANSWER_KEY, extractString(response, "generatedReply", DEFAULT_ANSWER));
+        String answer = extractString(response, ANSWER_KEY, extractString(response, GENERATED_REPLY_KEY, DEFAULT_ANSWER));
         boolean knowledgeFound = extractBoolean(response, KNOWLEDGE_FOUND_KEY);
-        String model = extractString(response, MODEL_KEY, extractString(response, "modelUsed", "Unknown"));
-        return new KnowledgeContext(answer, knowledgeFound, model);
+        String model = extractString(response, MODEL_KEY, extractString(response, MODEL_USED_KEY, UNKNOWN_MODEL));
+        Integer retrievedDocumentCount = extractInteger(response, RETRIEVED_DOCUMENT_COUNT_KEY);
+        
+        List<String> matchedArticleTitles = Collections.emptyList();
+        Object rawTitles = response.get(MATCHED_ARTICLE_TITLES_KEY);
+        
+        // Safely cast
+        if (rawTitles instanceof List<?> titleList) {
+            matchedArticleTitles = titleList.stream()
+                    .filter(Objects::nonNull)
+                    .map(Object::toString)
+                    .toList();
+        }
+        
+        return new KnowledgeContext(answer, knowledgeFound, model, retrievedDocumentCount, matchedArticleTitles);
+    }
+
+    private Integer extractInteger(Map<?, ?> map, String key) {
+        if (map != null && map.get(key) instanceof Number n) {
+            return n.intValue();
+        }
+        return null;
     }
 
     /**

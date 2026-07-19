@@ -16,4 +16,7 @@ public class KnowledgeInsightDTO {
     private Double confidence;
     private List<KnowledgeSourceDTO> sources;
     private boolean knowledgeFound;
+    private String model;
+    private Integer retrievedDocumentCount;
+    private List<String> matchedArticleTitles;
 }

@@ -15,4 +15,6 @@ public class AIInsightResponse {
     private String urgency;
     private Double confidenceScore;
     private String analysisProvider;
+    private java.util.List<String> keywords;
+    private String suggestedCategory;
 }

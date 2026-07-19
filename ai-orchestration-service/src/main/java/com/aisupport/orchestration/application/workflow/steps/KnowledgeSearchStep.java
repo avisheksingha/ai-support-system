@@ -39,11 +39,12 @@ public class KnowledgeSearchStep implements WorkflowStep {
         
         String query = message;
         if (analysis != null) {
-            query = String.format("Issue: %s%nSubject: %s%nKeywords: %s%nIntent: %s", 
+            query = String.format("Customer Message: %s%nSubject: %s%nKeywords: %s%nIntent: %s%nSuggested Category: %s", 
                 message, 
                 subject, 
                 String.join(", ", analysis.keywords() != null ? analysis.keywords() : Collections.emptyList()), 
-                analysis.intent());
+                analysis.intent(),
+                analysis.suggestedCategory() != null ? analysis.suggestedCategory() : "None");
         }
         
         Result<KnowledgeContext> result = ragClient.searchKnowledge(context.getTicketId(), query);
@@ -55,7 +56,7 @@ public class KnowledgeSearchStep implements WorkflowStep {
             log.info("Knowledge Retrieved KnowledgeFound={} Model={}", knowledge.knowledgeFound(), knowledge.model());
         } else {
             log.error("Failed to search knowledge: {}", result.getErrorMessage());
-            KnowledgeContext emptyContext = new KnowledgeContext("No relevant knowledge article found.", false, "Unknown");
+            KnowledgeContext emptyContext = new KnowledgeContext("No relevant knowledge article found.", false, "Unknown", 0, Collections.emptyList());
             context.putResource(KnowledgeContext.class, emptyContext);
             context.putAttribute("knowledgeContext", emptyContext);
         }

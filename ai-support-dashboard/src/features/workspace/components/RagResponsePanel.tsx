@@ -32,12 +32,34 @@ export function RagResponsePanel({ knowledge, onUseReply }: RagResponsePanelProp
 
       <div className="p-5 flex flex-col gap-5">
 
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Model</span>
+            <div className="font-semibold text-slate-800 truncate">{knowledge.model || "unavailable"}</div>
+          </div>
+          <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Documents Retrieved</span>
+            <div className="font-semibold text-slate-700">{knowledge.retrievedDocumentCount ?? 0}</div>
+          </div>
+        </div>
+
+        {knowledge.matchedArticleTitles && knowledge.matchedArticleTitles.length > 0 && (
+          <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Matched Articles</span>
+            <ul className="text-xs text-slate-600 list-disc list-inside space-y-1">
+              {knowledge.matchedArticleTitles.map((title, i) => (
+                <li key={i} className="truncate font-medium" title={title}>{title}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {/* Generated Reply */}
         <div>
           <div className="flex items-center justify-between mb-3">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
               <Sparkles className="h-3.5 w-3.5 text-emerald-500" /> 
-              RAG Summary
+              Knowledge Summary
             </span>
             <button 
               onClick={handleCopy}

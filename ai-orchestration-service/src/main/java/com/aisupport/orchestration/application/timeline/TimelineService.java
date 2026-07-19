@@ -36,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class TimelineService {
 
+	private static final String MODEL_KEY = "model";
     private static final String DEFAULT_MODEL_ID = "unavailable";
     
     private static final String KNOWLEDGE_CONTEXT_KEY = "knowledgeContext";
@@ -52,6 +53,8 @@ public class TimelineService {
     private static final String INTENT_KEY = "intent";
     private static final String SENTIMENT_KEY = "sentiment";
     private static final String URGENCY_KEY = "urgency";
+    
+	private static final String MATCHED_ARTICLE_TITLES_KEY = "matchedArticleTitles";
 
     private final WorkflowExecutionRepository workflowExecutionRepository;
     private final WorkflowCheckpointRepository workflowCheckpointRepository;
@@ -188,6 +191,13 @@ public class TimelineService {
                     .map(AiExecutionRecordEntity::getModelId)
                     .filter(Objects::nonNull)
                     .orElse(DEFAULT_MODEL_ID);
+                    
+            if (DEFAULT_MODEL_ID.equals(model)) {
+                Object kcObj = attributes.get(KNOWLEDGE_CONTEXT_KEY);
+                if (kcObj instanceof Map<?, ?> kc && kc.get(MODEL_KEY) != null) {
+                    model = kc.get(MODEL_KEY).toString();
+                }
+            }
 
             Double confidence = 0.0;
             Object aiDecisionObj = attributes.get(AI_DECISION_KEY);
@@ -195,12 +205,18 @@ public class TimelineService {
                 confidence = num.doubleValue();
             }
 
+            List<String> keywordsList = analysisMap.get("keywords") instanceof List<?> list
+                    ? list.stream().map(Objects::toString).toList()
+                    : Collections.emptyList();
+
             return Optional.of(AIInsightResponse.builder()
                     .intent(Objects.toString(analysisMap.get(INTENT_KEY), null))
                     .sentiment(Objects.toString(analysisMap.get(SENTIMENT_KEY), null))
                     .urgency(Objects.toString(analysisMap.get(URGENCY_KEY), null))
                     .confidenceScore(confidence)
                     .analysisProvider(model)
+                    .keywords(keywordsList)
+                    .suggestedCategory(Objects.toString(analysisMap.get("suggestedCategory"), null))
                     .build());
         } catch (Exception e) {
             log.error("Failed to fetch ticket insights for ticketId={}", ticketId, e);
@@ -216,12 +232,28 @@ public class TimelineService {
         Map<?, ?> kc = (Map<?, ?>) kcObj;
 
         boolean knowledgeFound = Boolean.TRUE.equals(kc.get("knowledgeFound"));
+        String model = Objects.toString(kc.get(MODEL_KEY), null);
+        Integer retrievedDocumentCount = kc.get("retrievedDocumentCount") instanceof Number n ? n.intValue() : null;
+        
+        List<String> matchedArticleTitles = Collections.emptyList();
+        Object rawTitles = kc.get(MATCHED_ARTICLE_TITLES_KEY);
+        
+        // Safely cast
+        if (rawTitles instanceof List<?> titleList) {
+            matchedArticleTitles = titleList.stream()
+                    .filter(Objects::nonNull)
+                    .map(Object::toString)
+                    .toList();
+        }
         
         return KnowledgeInsightDTO.builder()
                 .knowledgeSummary(Objects.toString(kc.get(KNOWLEDGE_SUMMARY_KEY), null))
                 .confidence(knowledgeFound ? 1.0 : 0.0)
                 .sources(Collections.emptyList())
                 .knowledgeFound(knowledgeFound)
+                .model(model)
+                .retrievedDocumentCount(retrievedDocumentCount)
+                .matchedArticleTitles(matchedArticleTitles)
                 .build();
     }
 
