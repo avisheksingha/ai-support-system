@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useCustomerTickets } from "../hooks/useCustomerTickets";
+import { useCustomerDashboard } from "../hooks/useCustomerDashboard";
 import { CustomerTicketCard } from "../components/CustomerTicketCard";
 import { CreateTicketDialog } from "../components/CreateTicketDialog";
 import { Loader2, Inbox } from "lucide-react";
@@ -8,17 +8,19 @@ import { useNavigate } from "react-router-dom";
 type FilterStatus = "ALL" | "OPEN" | "RESOLVED" | "CLOSED";
 
 export function MyTicketsPage() {
-  const { data: tickets, isLoading } = useCustomerTickets();
+  const { data: dashboard, isLoading } = useCustomerDashboard();
   const [filter, setFilter] = useState<FilterStatus>("ALL");
   const navigate = useNavigate();
 
-  const filteredTickets = tickets?.filter(ticket => {
+  const allTickets = dashboard?.tickets || [];
+
+  const filteredTickets = allTickets.filter(ticket => {
     if (filter === "ALL") return true;
     if (filter === "OPEN") {
       return ["NEW", "ANALYZING", "ANALYZED", "ASSIGNED", "IN_PROGRESS"].includes(ticket.status);
     }
     return ticket.status === filter;
-  }) || [];
+  });
 
   const handleTicketClick = (ticketNumber: string) => {
     navigate(`/my-tickets/${ticketNumber}`);
@@ -39,22 +41,22 @@ export function MyTicketsPage() {
       <div className="flex-1 overflow-y-auto p-6">
         <div className="max-w-4xl mx-auto w-full space-y-6">
           <div className="flex items-center gap-2">
-            <FilterChip label="All" count={tickets?.length} active={filter === "ALL"} onClick={() => setFilter("ALL")} />
+            <FilterChip label="All" count={allTickets.length} active={filter === "ALL"} onClick={() => setFilter("ALL")} />
             <FilterChip 
               label="Open" 
-              count={tickets?.filter(t => ["NEW", "ANALYZING", "ANALYZED", "ASSIGNED", "IN_PROGRESS"].includes(t.status)).length} 
+              count={allTickets.filter(t => ["NEW", "ANALYZING", "ANALYZED", "ASSIGNED", "IN_PROGRESS"].includes(t.status)).length} 
               active={filter === "OPEN"} 
               onClick={() => setFilter("OPEN")} 
             />
             <FilterChip 
               label="Resolved" 
-              count={tickets?.filter(t => t.status === "RESOLVED").length} 
+              count={allTickets.filter(t => t.status === "RESOLVED").length} 
               active={filter === "RESOLVED"} 
               onClick={() => setFilter("RESOLVED")} 
             />
             <FilterChip 
               label="Closed" 
-              count={tickets?.filter(t => t.status === "CLOSED").length} 
+              count={allTickets.filter(t => t.status === "CLOSED").length} 
               active={filter === "CLOSED"} 
               onClick={() => setFilter("CLOSED")} 
             />
@@ -81,8 +83,8 @@ export function MyTicketsPage() {
             <div className="grid gap-3">
               {filteredTickets.map(ticket => (
                 <CustomerTicketCard 
-                  key={ticket.id} 
-                  ticket={ticket} 
+                  key={ticket.ticketNumber} 
+                  ticket={ticket as any} 
                   onClick={() => handleTicketClick(ticket.ticketNumber)} 
                 />
               ))}

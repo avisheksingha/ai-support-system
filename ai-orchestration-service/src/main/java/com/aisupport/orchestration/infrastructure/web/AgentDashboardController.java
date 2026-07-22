@@ -2,9 +2,8 @@ package com.aisupport.orchestration.infrastructure.web;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,13 +29,10 @@ public class AgentDashboardController {
     @Operation(summary = "Get Agent Dashboard", description = "Returns aggregated dashboard for the authenticated agent")
     @ApiResponse(responseCode = "200", description = "Successfully retrieved agent dashboard summary")
     @PreAuthorize("hasAnyRole('AGENT', 'ADMIN')")
-    public ResponseEntity<AgentDashboardResponse> getAgentDashboard() {
+    public ResponseEntity<AgentDashboardResponse> getAgentDashboard(
+            @RequestHeader(value = "X-User-Email", defaultValue = "agent@example.com") String userEmail,
+            @RequestHeader(value = "X-User-Name", defaultValue = "Agent") String userName) {
         
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userEmail = authentication != null ? authentication.getName() : "agent@example.com";
-        // Attempt to extract friendly name if available, otherwise fallback
-        String userName = userEmail;
-
         log.info("Fetching dashboard for agent: {}", userEmail);
 
         return ResponseEntity.ok(dashboardService.getAgentDashboard(userEmail, userName));

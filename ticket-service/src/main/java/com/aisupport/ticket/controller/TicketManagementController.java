@@ -191,12 +191,14 @@ public class TicketManagementController {
     @PreAuthorize("hasAnyRole('AGENT', 'ADMIN')")
     @GetMapping("/summary/agent")
     public ResponseEntity<com.aisupport.ticket.dto.response.TicketDashboardSummaryResponse> getAgentSummary(
-        @RequestHeader(value = "X-User-Email", required = true) String userEmail) {
+        @RequestHeader(value = "X-User-Email", required = true) String userEmail,
+        @RequestParam(required = false) String team) {
         
-        log.info("Management requested dashboard summary for agent: {}", userEmail);
+        String queryId = (team != null && !team.isBlank()) ? team : userEmail;
+        log.info("Management requested dashboard summary for agent/team: {}", queryId);
         
         return ResponseEntity.ok(
-                ticketService.getAgentDashboardSummary(userEmail)
+                ticketService.getAgentDashboardSummary(queryId)
         );
     }
 }

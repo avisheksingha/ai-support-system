@@ -18,12 +18,12 @@ public class ResilientTicketClient {
 
     @CircuitBreaker(name = "ticketService", fallbackMethod = "fallbackAgentSummary")
     @Retry(name = "ticketService")
-    public TicketDashboardSummaryDTO getAgentSummary(String userEmail) {
+    public TicketDashboardSummaryDTO getAgentSummary(String userEmail, String team) {
         log.info("Fetching agent dashboard summary from ticket-service for {}", userEmail);
-        return ticketClient.getAgentSummary(userEmail);
+        return ticketClient.getAgentSummary(userEmail, team);
     }
 
-    public TicketDashboardSummaryDTO fallbackAgentSummary(String userEmail, Throwable t) {
+    public TicketDashboardSummaryDTO fallbackAgentSummary(String userEmail, String team, Throwable t) {
         log.error("Ticket service unavailable. Returning empty agent dashboard summary. Error: {}", t.getMessage());
         return new TicketDashboardSummaryDTO();
     }

@@ -1,5 +1,5 @@
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import { useCustomerTickets } from "@/features/customer/hooks/useCustomerTickets";
+import { useCustomerDashboard } from "@/features/customer/hooks/useCustomerDashboard";
 import { useNavigate } from "react-router-dom";
 import { Plus, Ticket, Activity, User, BookOpen, Clock, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,13 +10,13 @@ import { CreateTicketDialog } from "@/features/customer/components/CreateTicketD
 export function CustomerDashboardOverview() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { data: tickets, isLoading } = useCustomerTickets();
+  const { data: dashboard, isLoading } = useCustomerDashboard();
 
-  const openCount = tickets?.filter(t => ["NEW", "ANALYZING", "ANALYZED", "ASSIGNED", "IN_PROGRESS"].includes(t.status)).length || 0;
-  const waitingCount = tickets?.filter(t => ["NEW", "ANALYZING", "ANALYZED"].includes(t.status)).length || 0;
-  const resolvedCount = tickets?.filter(t => ["RESOLVED", "CLOSED"].includes(t.status)).length || 0;
+  const openCount = dashboard?.summary.openRequests || 0;
+  const waitingCount = dashboard?.summary.waitingForSupport || 0;
+  const resolvedCount = dashboard?.summary.resolved || 0;
 
-  const recentTickets = tickets?.slice(0, 3) || [];
+  const recentTickets = dashboard?.tickets?.slice(0, 3) || [];
 
   return (
     <div className="h-full overflow-auto p-6 flex flex-col gap-8 bg-background">
@@ -60,10 +60,10 @@ export function CustomerDashboardOverview() {
                 [1,2,3].map(i => <Skeleton key={i} className="h-16 w-full rounded-lg bg-muted" />)
               ) : recentTickets.length > 0 ? (
                 recentTickets.map(ticket => (
-                  <div key={ticket.id} onClick={() => navigate(`/my-tickets/${ticket.ticketNumber}`)} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 cursor-pointer border border-transparent hover:border-border transition-colors">
+                  <div key={ticket.ticketNumber} onClick={() => navigate(`/my-tickets/${ticket.ticketNumber}`)} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 cursor-pointer border border-transparent hover:border-border transition-colors">
                     <div>
                       <p className="font-medium text-sm text-foreground mb-1 truncate max-w-[200px] sm:max-w-[300px]">{ticket.subject}</p>
-                      <p className="text-xs text-muted-foreground">{ticket.updatedAt ? formatTimeAgo(ticket.updatedAt) : 'just now'}</p>
+                      <p className="text-xs text-muted-foreground">{ticket.lastUpdated ? formatTimeAgo(ticket.lastUpdated) : 'just now'}</p>
                     </div>
                     <CustomerStatusBadge status={ticket.status} />
                   </div>
@@ -76,16 +76,32 @@ export function CustomerDashboardOverview() {
             </div>
           </div>
 
-          {/* Helpful Articles */}
-          <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
-            <h2 className="text-sm font-semibold text-foreground mb-4">Helpful Articles</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <ArticleLink title="Refund Policy" />
-              <ArticleLink title="Payment Issues" />
-              <ArticleLink title="Subscription Upgrades" />
-              <ArticleLink title="Login Troubleshooting" />
+          {/* Recommended Resources or Helpful Articles */}
+          {dashboard?.recommendedResources ? (
+            <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+              <h2 className="text-sm font-semibold text-foreground mb-3">{dashboard.recommendedResources.title}</h2>
+              <p className="text-sm text-muted-foreground mb-4 leading-relaxed line-clamp-3">
+                {dashboard.recommendedResources.summary}
+              </p>
+              {dashboard.recommendedResources.resourceLinks && dashboard.recommendedResources.resourceLinks.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  {dashboard.recommendedResources.resourceLinks.map((link, idx) => (
+                    <a key={idx} href="#" className="text-sm text-blue-600 hover:underline">{link}</a>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
+          ) : (
+            <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+              <h2 className="text-sm font-semibold text-foreground mb-4">Helpful Articles</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <ArticleLink title="Refund Policy" />
+                <ArticleLink title="Payment Issues" />
+                <ArticleLink title="Subscription Upgrades" />
+                <ArticleLink title="Login Troubleshooting" />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Sidebar */}
@@ -117,8 +133,8 @@ export function CustomerDashboardOverview() {
                <Skeleton className="h-32 w-full rounded-lg bg-muted" />
             ) : recentTickets.length > 0 ? (
               <div className="space-y-0">
-                <UpdateItem label="Ticket received" time={recentTickets[0]?.createdAt ? formatTimeAgo(recentTickets[0].createdAt) : ""} active isLast={false} />
-                <UpdateItem label="Support is reviewing your request" time="" active={false} isLast={true} />
+                <UpdateItem label="Ticket received" time={recentTickets[0]?.lastUpdated ? formatTimeAgo(recentTickets[0].lastUpdated) : ""} active isLast={false} />
+                <UpdateItem label={`Status: ${dashboard?.summary?.latestTicketStatus || 'In Review'}`} time="" active={false} isLast={true} />
               </div>
             ) : (
               <p className="text-sm text-muted-foreground text-center py-4">No recent updates.</p>

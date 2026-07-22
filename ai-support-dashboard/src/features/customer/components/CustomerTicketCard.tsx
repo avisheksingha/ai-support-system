@@ -1,9 +1,9 @@
 import { formatTimeAgo } from "@/shared/utils/date";
-import type { TicketModel } from "@/shared/types/ticket";
+import type { TicketSummaryDTO } from "../api/customerDashboardApi";
 import { ChevronRight } from "lucide-react";
 
 interface CustomerTicketCardProps {
-  ticket: TicketModel;
+  ticket: TicketSummaryDTO;
   onClick: () => void;
 }
 
@@ -24,27 +24,27 @@ export function CustomerTicketCard({ ticket, onClick }: CustomerTicketCardProps)
         </h3>
         
         <p className="text-sm text-muted-foreground line-clamp-1 mb-4">
-          {ticket.message}
+          Status: {ticket.status}
         </p>
         
         <MiniPipeline status={ticket.status} />
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-5 pt-5 border-t border-border/60">
           <div className="flex flex-col">
-             <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground mb-1">Support Category</span>
-             <div className="font-medium text-foreground text-xs">🖥 Technical</div>
+             <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground mb-1">Priority</span>
+             <div className="font-medium text-foreground text-xs">{ticket.priority}</div>
           </div>
           <div className="flex flex-col">
              <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground mb-1">Assigned Team</span>
-             <div className="font-medium text-foreground text-xs">Technical Support</div>
+             <div className="font-medium text-foreground text-xs">{ticket.assignedSupportStatus}</div>
           </div>
           <div className="flex flex-col">
              <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground mb-1">Updated</span>
-             <div className="font-medium text-foreground text-xs">{ticket.updatedAt ? formatTimeAgo(ticket.updatedAt) : 'just now'}</div>
+             <div className="font-medium text-foreground text-xs">{ticket.lastUpdated ? formatTimeAgo(ticket.lastUpdated) : 'just now'}</div>
           </div>
           <div className="flex flex-col">
              <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground mb-1">Estimated Response</span>
-             <div className="font-medium text-foreground text-xs">Within 4 hours</div>
+             <div className="font-medium text-foreground text-xs">{ticket.estimatedResponse}</div>
           </div>
         </div>
       </div>
@@ -98,15 +98,19 @@ function MiniPipeline({ status }: { status: string }) {
   const isAssigned = ["ASSIGNED", "IN_PROGRESS", "RESOLVED", "CLOSED"].includes(s);
   const isResolved = ["RESOLVED", "CLOSED"].includes(s);
   
-  const icon = (done: boolean) => done ? <span className="text-blue-600 font-bold">✓</span> : <span className="text-muted-foreground opacity-50 font-bold">○</span>;
+  const icon = (done: boolean, active: boolean) => {
+    if (active && !done) return <span className="text-blue-600 font-bold animate-pulse">●</span>;
+    if (done) return <span className="text-blue-600 font-bold">✓</span>;
+    return <span className="text-muted-foreground opacity-50 font-bold">○</span>;
+  };
   const arrow = <span className="text-muted-foreground/30 mx-1.5 font-bold">→</span>;
 
   return (
     <div className="flex items-center text-[11px] font-medium text-muted-foreground gap-1 bg-muted/50 w-fit px-3 py-1.5 rounded-lg border border-border/50">
-      {icon(true)} <span className={true ? "text-foreground" : ""}>Submitted</span> {arrow}
-      {icon(isReviewed)} <span className={isReviewed ? "text-foreground" : ""}>Reviewed</span> {arrow}
-      {icon(isAssigned)} <span className={isAssigned ? "text-foreground" : ""}>Assigned</span> {arrow}
-      {icon(isResolved)} <span className={isResolved ? "text-foreground" : ""}>Resolved</span>
+      {icon(true, true)} <span className="text-foreground">Submitted</span> {arrow}
+      {icon(isReviewed, !isAssigned)} <span className={isReviewed ? "text-foreground" : (!isAssigned ? "text-foreground opacity-80" : "")}>Reviewed</span> {arrow}
+      {icon(isAssigned, !isResolved && isAssigned)} <span className={isAssigned ? "text-foreground" : (!isResolved && isAssigned ? "text-foreground opacity-80" : "")}>Assigned</span> {arrow}
+      {icon(isResolved, false)} <span className={isResolved ? "text-foreground" : ""}>Resolved</span>
     </div>
   );
 }

@@ -3,9 +3,7 @@ package com.aisupport.orchestration.application.agent;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -25,13 +23,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AgentDashboardService {
 
+    private static final String ATTR_AI_CONFIDENCE = "aiConfidence";
+    private static final String ATTR_TICKET_NUMBER = "ticketNumber";
+
     private final ResilientTicketClient ticketClient;
     private final WorkflowExecutionRepository workflowRepository;
 
     public AgentDashboardResponse getAgentDashboard(String userEmail, String userName) {
         log.info("Generating dashboard for agent: {}", userEmail);
         
-        TicketDashboardSummaryDTO ticketSummary = ticketClient.getAgentSummary(userEmail);
+        String team = "Tier 1 Support"; // Match the hardcoded team in buildProfile
+        TicketDashboardSummaryDTO ticketSummary = ticketClient.getAgentSummary(userEmail, team);
         
         List<WorkflowExecutionEntity> recentWorkflows = workflowRepository.findAll().stream()
                 .filter(w -> w.getCompletedAt() != null)
@@ -128,30 +130,33 @@ public class AgentDashboardService {
     }
 
     private List<AiRecommendationDTO> buildAiRecommendations(List<WorkflowExecutionEntity> workflows) {
-        List<AiRecommendationDTO> recommendations = new ArrayList<>();
+        return workflows.stream()
+                .filter(w -> w.getAttributes() != null && w.getAttributes().containsKey("aiDecision"))
+                .limit(3)
+                .map(this::createRecommendationDTO)
+                .toList();
+    }
+
+    private AiRecommendationDTO createRecommendationDTO(WorkflowExecutionEntity workflow) {
+        var attributes = workflow.getAttributes();
+        Object intent = attributes.get("intent");
+        Object confidence = attributes.get(ATTR_AI_CONFIDENCE);
+        Object suggestedReply = attributes.get("suggestedReply");
+        Object ticketNumberObj = attributes.get(ATTR_TICKET_NUMBER);
+        Object subjectObj = attributes.get("subject");
         
-        for (WorkflowExecutionEntity workflow : workflows) {
-            if (workflow.getAttributes() != null && workflow.getAttributes().containsKey("aiDecision")) {
-                Object intent = workflow.getAttributes().get("intent");
-                Object confidence = workflow.getAttributes().get("aiConfidence");
-                Object suggestedReply = workflow.getAttributes().get("suggestedReply");
-                Object ticketNumberObj = workflow.getAttributes().get("ticketNumber");
-                
-                String ticketNumber = ticketNumberObj != null ? ticketNumberObj.toString() : "TKT-" + workflow.getTicketId();
-                
-                recommendations.add(AiRecommendationDTO.builder()
-                        .ticketNumber(ticketNumber)
-                        .subject(workflow.getAttributes().get("subject") != null ? workflow.getAttributes().get("subject").toString() : "Unknown Ticket")
-                        .confidence(confidence instanceof Number ? ((Number) confidence).doubleValue() : 0.85)
-                        .intent(intent != null ? intent.toString() : "Unknown")
-                        .suggestedAction("Draft Reply Available")
-                        .businessReason(suggestedReply != null ? suggestedReply.toString() : "AI has analyzed this ticket and generated a recommendation.")
-                        .build());
-            }
-            if (recommendations.size() >= 3) break; // Limit to top 3 recommendations
-        }
+        String ticketNumber = ticketNumberObj != null ? ticketNumberObj.toString() : "TKT-" + workflow.getTicketId();
+        String subject = subjectObj != null ? subjectObj.toString() : "Unknown Ticket";
+        double confidenceVal = confidence instanceof Number number ? number.doubleValue() : 0.85;
         
-        return recommendations;
+        return AiRecommendationDTO.builder()
+                .ticketNumber(ticketNumber)
+                .subject(subject)
+                .confidence(confidenceVal)
+                .intent(intent != null ? intent.toString() : "Unknown")
+                .suggestedAction("Draft Reply Available")
+                .businessReason(suggestedReply != null ? suggestedReply.toString() : "AI has analyzed this ticket and generated a recommendation.")
+                .build();
     }
 
     private AgentDashboardResponse.AiActivityTodaySummaryDTO buildAiActivityToday(List<WorkflowExecutionEntity> workflows) {
@@ -160,8 +165,8 @@ public class AgentDashboardService {
         long searches = workflows.stream().filter(w -> w.getAttributes() != null && w.getAttributes().containsKey("knowledgeFound")).count();
         
         double avgConfidence = workflows.stream()
-                .filter(w -> w.getAttributes() != null && w.getAttributes().get("aiConfidence") instanceof Number)
-                .mapToDouble(w -> ((Number) w.getAttributes().get("aiConfidence")).doubleValue())
+                .filter(w -> w.getAttributes() != null && w.getAttributes().get(ATTR_AI_CONFIDENCE) instanceof Number)
+                .mapToDouble(w -> ((Number) w.getAttributes().get(ATTR_AI_CONFIDENCE)).doubleValue())
                 .average()
                 .orElse(0.0);
         
@@ -205,8 +210,8 @@ public class AgentDashboardService {
         return workflows.stream()
                 .limit(5)
                 .map(w -> {
-                    String ticketNumber = w.getAttributes() != null && w.getAttributes().get("ticketNumber") != null 
-                            ? w.getAttributes().get("ticketNumber").toString() 
+                    String ticketNumber = w.getAttributes() != null && w.getAttributes().get(ATTR_TICKET_NUMBER) != null 
+                            ? w.getAttributes().get(ATTR_TICKET_NUMBER).toString() 
                             : "TKT-" + w.getTicketId();
                             
                     return TimelineEventDTO.builder()
@@ -218,6 +223,6 @@ public class AgentDashboardService {
                             .source("orchestration-service")
                             .build();
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 }

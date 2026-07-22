@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useCustomerTicket, useCustomerMessages, useCustomerAddMessage, customerKeys } from "../hooks/useCustomerTickets";
+import { useCustomerAddMessage, customerKeys } from "../hooks/useCustomerTickets";
+import { useCustomerTicketDetail } from "../hooks/useCustomerDashboard";
 import { formatTimeAgo, parseDate, formatTime } from "@/shared/utils/date";
 import { format } from "date-fns";
 import { Loader2, Paperclip, CheckCircle2, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { TicketModel } from "@/shared/types/ticket";
+import type { TicketDetailDTO } from "../api/customerDashboardApi";
 import { wsClient } from "@/lib/websocket";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -13,8 +14,10 @@ import { useQueryClient } from "@tanstack/react-query";
 export function CustomerTicketDetailPage() {
   const { ticketNumber } = useParams<{ ticketNumber: string }>();
   const navigate = useNavigate();
-  const { data: ticket, isLoading, isError } = useCustomerTicket(ticketNumber || "");
-  const { data: messages, isLoading: isMessagesLoading } = useCustomerMessages(ticketNumber);
+  const { data: detailData, isLoading, isError } = useCustomerTicketDetail(ticketNumber || "");
+  const ticket = detailData?.ticket;
+  const messages = detailData?.messages || [];
+  const customerAssistance = detailData?.customerAssistance;
   const { mutate: addMessage, isPending: isSendingMessage } = useCustomerAddMessage();
   const [replyText, setReplyText] = useState("");
   const queryClient = useQueryClient();
@@ -136,7 +139,7 @@ export function CustomerTicketDetailPage() {
               <h2 className="text-[11px] font-bold text-muted-foreground mb-4 uppercase tracking-widest px-1">Communication History</h2>
               
               <div className="space-y-4 bg-card rounded-xl p-5 border border-border shadow-sm flex flex-col">
-              {isMessagesLoading ? (
+              {isLoading ? (
                 <div className="text-center p-10 border border-dashed border-border rounded-xl bg-card shadow-sm animate-pulse">
                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Loading messages...</h3>
                 </div>
@@ -197,12 +200,46 @@ export function CustomerTicketDetailPage() {
           <div className="space-y-6">
             <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
               <h3 className="text-sm font-semibold text-foreground mb-1">Current Status</h3>
-              <p className="text-[13px] text-muted-foreground mb-5 pb-5 border-b border-border leading-relaxed">
-                {getStatusExplanation(ticket.status)}
-              </p>
+              <div className="flex flex-col gap-4 mb-5 pb-5 border-b border-border">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Status</span>
+                  <span className="text-sm font-medium text-foreground">{ticket.status}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Assigned Team</span>
+                  <span className="text-sm font-medium text-foreground">{ticket.assignedSupportStatus}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Est. Response</span>
+                  <span className="text-sm font-medium text-foreground">{ticket.estimatedResponse}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Last Updated</span>
+                  <span className="text-sm font-medium text-foreground">{ticket.lastUpdated ? formatTimeAgo(ticket.lastUpdated) : 'just now'}</span>
+                </div>
+              </div>
               
-              <TicketTimeline ticket={ticket} />
+              <TicketTimeline ticket={ticket as any} />
             </div>
+            
+            {customerAssistance && (
+              <div className="bg-blue-50/50 border border-blue-200 rounded-xl p-5 shadow-sm">
+                <h3 className="text-sm font-semibold text-blue-900 mb-2">Recommended Resources</h3>
+                <h4 className="text-xs font-bold text-blue-800 mb-1">{customerAssistance.title}</h4>
+                <p className="text-[13px] text-blue-800/80 mb-4 leading-relaxed">
+                  {customerAssistance.summary}
+                </p>
+                {customerAssistance.resourceLinks && customerAssistance.resourceLinks.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    {customerAssistance.resourceLinks.map((link, idx) => (
+                      <a key={idx} href="#" className="text-xs text-blue-600 hover:underline font-medium flex items-center gap-1">
+                        <ChevronRight className="h-3 w-3" /> {link}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
             
             <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
               <div className="flex items-center justify-between mb-4">
@@ -225,15 +262,6 @@ export function CustomerTicketDetailPage() {
   );
 }
 
-function getStatusExplanation(status: string) {
-  if (["NEW", "ANALYZING", "ANALYZED"].includes(status)) {
-    return "Our support system is reviewing your request. We've received it and are preparing a response.";
-  }
-  if (["ASSIGNED", "IN_PROGRESS"].includes(status)) {
-    return "Your request has been assigned to a support agent. Estimated response: within 4 hours.";
-  }
-  return "This ticket has been resolved and closed.";
-}
 
 function StatusChip({ status }: { status: string }) {
   let style = "text-muted-foreground bg-muted border-border";
@@ -271,7 +299,7 @@ function StatusChip({ status }: { status: string }) {
   );
 }
 
-function TicketTimeline({ ticket }: { ticket: TicketModel }) {
+function TicketTimeline({ ticket }: { ticket: TicketDetailDTO }) {
   const status = ticket.status;
   const createdAt = parseDate(ticket.createdAt);
   const m1 = new Date(createdAt.getTime() + 60000); // 1 min later
