@@ -17,7 +17,7 @@ export function CreateTicketDialog({ children }: CreateTicketDialogProps = {}) {
   const [message, setMessage] = useState("");
   
   // AI Suggestion State
-  const [suggestion, setSuggestion] = useState<{ subject: string, message: string, improved: boolean, changes: string[], qualityAssessment?: string, checklist?: string[] } | null>(null);
+  const [suggestion, setSuggestion] = useState<{ subject: string, message: string, improved: boolean, changes: string[], qualityAssessment?: string | undefined, checklist?: string[] | undefined } | null>(null);
   const [lastCacheKey, setLastCacheKey] = useState<string>("");
   const [aiError, setAiError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<ValidationResult | null>(null);
@@ -76,7 +76,7 @@ export function CreateTicketDialog({ children }: CreateTicketDialogProps = {}) {
     if (!subject.trim() || !message.trim()) return;
 
     createTicketMutation.mutate(
-      { subject, message, bypassSoftValidation: validationError?.isSoftValidation },
+      { subject, message, bypassSoftValidation: validationError?.isSoftValidation === true },
       {
         onSuccess: () => {
           setOpen(false);

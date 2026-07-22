@@ -4,7 +4,7 @@ import { useCustomerAddMessage, customerKeys } from "../hooks/useCustomerTickets
 import { useCustomerTicketDetail } from "../hooks/useCustomerDashboard";
 import { formatTimeAgo, parseDate, formatTime } from "@/shared/utils/date";
 import { format } from "date-fns";
-import { Loader2, Paperclip, CheckCircle2, ChevronRight, User, Bot, HeadphonesIcon, UploadCloud } from "lucide-react";
+import { Loader2, CheckCircle2, ChevronRight, User, Bot, HeadphonesIcon, UploadCloud } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { TicketDetailDTO } from "../api/customerDashboardApi";
 import { getCustomerStatusMapping } from "../utils/customer-status";

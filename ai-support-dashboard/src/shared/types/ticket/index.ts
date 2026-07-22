@@ -24,5 +24,5 @@ export interface TicketModel {
 export interface CreateTicketRequest {
   subject: string;
   message: string;
-  bypassSoftValidation?: boolean;
+  bypassSoftValidation?: boolean | undefined;
 }
