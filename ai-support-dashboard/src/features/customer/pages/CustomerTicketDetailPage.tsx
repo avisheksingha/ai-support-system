@@ -4,9 +4,10 @@ import { useCustomerAddMessage, customerKeys } from "../hooks/useCustomerTickets
 import { useCustomerTicketDetail } from "../hooks/useCustomerDashboard";
 import { formatTimeAgo, parseDate, formatTime } from "@/shared/utils/date";
 import { format } from "date-fns";
-import { Loader2, Paperclip, CheckCircle2, ChevronRight } from "lucide-react";
+import { Loader2, Paperclip, CheckCircle2, ChevronRight, User, Bot, HeadphonesIcon, UploadCloud } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { TicketDetailDTO } from "../api/customerDashboardApi";
+import { getCustomerStatusMapping } from "../utils/customer-status";
 import { wsClient } from "@/lib/websocket";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -144,24 +145,29 @@ export function CustomerTicketDetailPage() {
                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Loading messages...</h3>
                 </div>
               ) : messages && messages.length > 0 && (
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {messages.filter((m: any) => !m.isInternal && !m.internal && m.type !== 'INTERNAL_NOTE').map((msg: any) => {
                     const isCustomer = msg.type === 'CUSTOMER_MESSAGE';
                     const isSystem = msg.type === 'SYSTEM_MESSAGE' || msg.senderName === 'System';
-                    const avatarText = isCustomer ? '👤' : isSystem ? '⚙️' : '🎧';
+                    
+                    const avatar = isCustomer ? <User className="h-4 w-4" /> : isSystem ? <Bot className="h-4 w-4" /> : <HeadphonesIcon className="h-4 w-4" />;
+                    const avatarBg = isCustomer ? 'bg-blue-100 text-blue-700 border-blue-200' : isSystem ? 'bg-slate-100 text-slate-600 border-slate-200' : 'bg-emerald-100 text-emerald-700 border-emerald-200';
                     const displayName = isCustomer ? 'Me' : isSystem ? 'System' : (msg.senderName || 'Support Agent');
+                    
+                    const msgDate = parseDate(msg.createdAt);
+                    const timeString = `${format(msgDate, "h:mm a")} (${formatTimeAgo(msg.createdAt)})`;
 
                     return (
                       <div key={msg.id} className={`flex gap-3 ${isCustomer ? 'flex-row-reverse' : ''}`}>
-                        <div className="h-8 w-8 shrink-0 rounded-full bg-slate-100 border border-slate-200 shadow-sm flex items-center justify-center text-sm mt-1">
-                          {avatarText}
+                        <div className={`h-8 w-8 shrink-0 rounded-full border shadow-sm flex items-center justify-center mt-1 ${avatarBg}`}>
+                          {avatar}
                         </div>
                         <div className={`flex flex-col max-w-[85%] ${isCustomer ? 'items-end' : 'items-start'}`}>
                           <div className={`flex items-baseline gap-2 mb-1 ${isCustomer ? 'flex-row-reverse' : ''}`}>
                             <span className="text-[11px] font-bold text-slate-700">{displayName}</span>
-                            <span className="text-[10px] text-slate-400 font-medium">{formatTimeAgo(msg.createdAt)}</span>
+                            <span className="text-[10px] text-slate-400 font-medium">{timeString}</span>
                           </div>
-                          <div className={`px-4 py-2.5 text-[12px] whitespace-pre-wrap leading-relaxed shadow-sm ${isCustomer ? 'bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tr-sm text-left' : isSystem ? 'bg-slate-100 border border-slate-200 text-slate-700 rounded-2xl text-left' : 'bg-blue-600 text-white rounded-2xl rounded-tl-sm text-left'}`}>
+                          <div className={`px-4 py-2.5 text-[13px] whitespace-pre-wrap leading-relaxed shadow-sm ${isCustomer ? 'bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tr-sm text-left' : isSystem ? 'bg-slate-100 border border-slate-200 text-slate-700 rounded-2xl text-left' : 'bg-blue-600 text-white rounded-2xl rounded-tl-sm text-left'}`}>
                             {msg.content}
                           </div>
                         </div>
@@ -245,12 +251,15 @@ export function CustomerTicketDetailPage() {
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-foreground">Attachments</h3>
               </div>
-              <div className="flex flex-col items-center justify-center py-6 bg-muted/30 rounded-lg border border-dashed border-border text-center gap-2">
-                <Paperclip className="h-5 w-5 text-muted-foreground/60" />
-                <div className="text-xs text-muted-foreground mt-1">
-                  <span className="font-medium text-foreground">No attachments</span>
-                  <br/>
-                  <span className="opacity-70">(Upload support coming soon)</span>
+              <div className="flex flex-col items-center justify-center py-8 bg-muted/20 hover:bg-muted/40 transition-colors rounded-lg border-2 border-dashed border-border/80 text-center gap-2 cursor-not-allowed opacity-80">
+                <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center mb-1">
+                  <UploadCloud className="h-5 w-5 text-slate-500" />
+                </div>
+                <div className="text-sm text-foreground font-medium">
+                  Drag & drop files here or <span className="text-blue-600">Browse Files</span>
+                </div>
+                <div className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold mt-1">
+                  Coming Soon
                 </div>
               </div>
             </div>
@@ -264,51 +273,27 @@ export function CustomerTicketDetailPage() {
 
 
 function StatusChip({ status }: { status: string }) {
-  let style = "text-muted-foreground bg-muted border-border";
-  let label = status;
-
-  switch (status) {
-    case "NEW":
-    case "ANALYZING":
-    case "ANALYZED":
-      style = "text-blue-600 bg-blue-50 border-blue-200";
-      label = "Submitted";
-      break;
-    case "ASSIGNED":
-      style = "text-purple-600 bg-purple-50 border-purple-200";
-      label = "In Review";
-      break;
-    case "IN_PROGRESS":
-      style = "text-orange-600 bg-orange-50 border-orange-200";
-      label = "In Progress";
-      break;
-    case "RESOLVED":
-      style = "text-emerald-600 bg-emerald-50 border-emerald-200";
-      label = "Resolved";
-      break;
-    case "CLOSED":
-      style = "text-gray-600 bg-gray-50 border-gray-200";
-      label = "Closed";
-      break;
-  }
+  const mapping = getCustomerStatusMapping(status);
 
   return (
-    <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded border ${style}`}>
-      {label}
+    <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded border ${mapping.style}`}>
+      {mapping.label}
     </span>
   );
 }
 
 function TicketTimeline({ ticket }: { ticket: TicketDetailDTO }) {
-  const status = ticket.status;
+  const mapping = getCustomerStatusMapping(ticket.status);
+  const { isReviewed, isAssigned, isResolved } = mapping.progress;
+  
   const createdAt = parseDate(ticket.createdAt);
-  const m1 = new Date(createdAt.getTime() + 60000); // 1 min later
+  const lastUpdated = ticket.lastUpdated ? parseDate(ticket.lastUpdated) : null;
   
   const steps = [
     { key: "SUBMITTED", label: "Submitted", time: formatTime(createdAt), active: true, done: true },
-    { key: "REVIEW", label: "Under Review", time: formatTime(m1), active: ["ANALYZING", "ANALYZED", "ASSIGNED", "IN_PROGRESS", "RESOLVED", "CLOSED"].includes(status), done: ["ASSIGNED", "IN_PROGRESS", "RESOLVED", "CLOSED"].includes(status) },
-    { key: "PROGRESS", label: "Assigned to Agent", time: null, active: ["ASSIGNED", "IN_PROGRESS", "RESOLVED", "CLOSED"].includes(status), done: ["RESOLVED", "CLOSED"].includes(status) },
-    { key: "RESOLVED", label: "Resolved", time: null, active: ["RESOLVED", "CLOSED"].includes(status), done: ["RESOLVED", "CLOSED"].includes(status) },
+    { key: "REVIEW", label: "Under Review", time: (isReviewed && !isAssigned && lastUpdated) ? formatTime(lastUpdated) : null, active: isReviewed, done: isAssigned },
+    { key: "PROGRESS", label: "Assigned to Agent", time: (isAssigned && !isResolved && lastUpdated) ? formatTime(lastUpdated) : null, active: isAssigned, done: isResolved },
+    { key: "RESOLVED", label: "Resolved", time: (isResolved && lastUpdated) ? formatTime(lastUpdated) : null, active: isResolved, done: isResolved },
   ];
   
   return (

@@ -162,7 +162,7 @@ export function CreateTicketDialog({ children }: CreateTicketDialogProps = {}) {
                 ) : (
                   <>
                     <Sparkles className="h-3 w-3" />
-                    {suggestion && lastCacheKey === `${subject.trim()}|${message.trim()}` ? "Refresh" : "Improve Draft"}
+                    {suggestion && lastCacheKey === `${subject.trim()}|${message.trim()}` ? "Improve Again" : "Improve Draft"}
                   </>
                 )}
               </Button>
@@ -177,28 +177,22 @@ export function CreateTicketDialog({ children }: CreateTicketDialogProps = {}) {
                     <Sparkles className="h-4 w-4" /> Suggested Improvements
                   </h4>
                   
-                  <div className="space-y-4 mb-4">
-                    <div>
-                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Suggested Subject</span>
-                      <div className="mt-1.5 space-y-1">
-                        <p className="text-foreground/50 line-through text-xs px-2">{subject}</p>
-                        <div className="text-center text-muted-foreground/30 text-[10px] leading-none">↓</div>
-                        <p className="text-foreground font-medium px-2">{suggestion.subject}</p>
+                  <div className="space-y-3 mb-5">
+                    <div className="bg-blue-50/40 rounded-lg p-3 border border-blue-100/50">
+                      <span className="text-xs font-semibold text-blue-800 uppercase tracking-wider mb-2 block">Suggested Subject</span>
+                      <div className="space-y-1">
+                        <p className="text-blue-900/50 line-through text-xs">{subject}</p>
+                        <p className="text-blue-950 font-medium">{suggestion.subject}</p>
                       </div>
                     </div>
                     
-                    <div className="h-px bg-border/40 w-full" />
-                    
-                    <div>
-                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Suggested Description</span>
-                      <div className="mt-1.5 space-y-1">
-                        <p className="text-foreground/50 line-through text-xs px-2 whitespace-pre-wrap">{message}</p>
-                        <div className="text-center text-muted-foreground/30 text-[10px] leading-none">↓</div>
-                        <p className="text-foreground px-2 whitespace-pre-wrap">{suggestion.message}</p>
+                    <div className="bg-blue-50/40 rounded-lg p-3 border border-blue-100/50">
+                      <span className="text-xs font-semibold text-blue-800 uppercase tracking-wider mb-2 block">Suggested Description</span>
+                      <div className="space-y-1">
+                        <p className="text-blue-900/50 line-through text-xs whitespace-pre-wrap">{message}</p>
+                        <p className="text-blue-950 whitespace-pre-wrap">{suggestion.message}</p>
                       </div>
                     </div>
-                    
-                    <div className="h-px bg-border/40 w-full" />
                   </div>
 
                   {suggestion.changes.length > 0 && (

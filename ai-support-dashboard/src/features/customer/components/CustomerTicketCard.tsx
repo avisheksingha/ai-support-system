@@ -1,6 +1,7 @@
 import { formatTimeAgo } from "@/shared/utils/date";
 import type { TicketSummaryDTO } from "../api/customerDashboardApi";
 import { ChevronRight } from "lucide-react";
+import { getCustomerStatusMapping } from "../utils/customer-status";
 
 interface CustomerTicketCardProps {
   ticket: TicketSummaryDTO;
@@ -57,46 +58,18 @@ export function CustomerTicketCard({ ticket, onClick }: CustomerTicketCardProps)
 }
 
 function StatusBadge({ status }: { status: string }) {
-  let style = "text-muted-foreground border-border bg-muted";
-  let label = status;
-
-  switch (status) {
-    case "NEW":
-    case "ANALYZING":
-    case "ANALYZED":
-      style = "text-blue-600 border-blue-200 bg-blue-50";
-      label = "Submitted";
-      break;
-    case "ASSIGNED":
-      style = "text-purple-600 border-purple-200 bg-purple-50";
-      label = "In Review";
-      break;
-    case "IN_PROGRESS":
-      style = "text-orange-600 border-orange-200 bg-orange-50";
-      label = "In Progress";
-      break;
-    case "RESOLVED":
-      style = "text-emerald-600 border-emerald-200 bg-emerald-50";
-      label = "Resolved";
-      break;
-    case "CLOSED":
-      style = "text-gray-600 border-gray-200 bg-gray-50";
-      label = "Closed";
-      break;
-  }
+  const mapping = getCustomerStatusMapping(status);
 
   return (
-    <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded border ${style}`}>
-      {label}
+    <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded border ${mapping.style}`}>
+      {mapping.label}
     </span>
   );
 }
 
 function MiniPipeline({ status }: { status: string }) {
-  const s = status;
-  const isReviewed = ["ASSIGNED", "IN_PROGRESS", "RESOLVED", "CLOSED"].includes(s);
-  const isAssigned = ["ASSIGNED", "IN_PROGRESS", "RESOLVED", "CLOSED"].includes(s);
-  const isResolved = ["RESOLVED", "CLOSED"].includes(s);
+  const mapping = getCustomerStatusMapping(status);
+  const { isReviewed, isAssigned, isResolved } = mapping.progress;
   
   const icon = (done: boolean, active: boolean) => {
     if (active && !done) return <span className="text-blue-600 font-bold animate-pulse">●</span>;

@@ -102,7 +102,7 @@ public class CustomerDashboardService {
         List<TicketMessageResponseDTO> messages = messagesArray != null ? Arrays.asList(messagesArray) : Collections.emptyList();
 
         List<MessageDTO> messageDTOs = messages.stream()
-                .filter(m -> !m.isInternal() && !"INTERNAL_NOTE".equals(m.getType()))
+                .filter(m -> !Boolean.TRUE.equals(m.getIsInternal()) && !"INTERNAL_NOTE".equals(m.getType()))
                 .map(m -> MessageDTO.builder()
                         .id(m.getId())
                         .content(m.getContent())
@@ -191,7 +191,7 @@ public class CustomerDashboardService {
 
     private CustomerAssistanceDTO extractAssistance(TicketResponseDTO ticket) {
         return CustomerAssistanceDTO.builder()
-                .title("Suggested Solution")
+                .title("Helpful Information")
                 .summary(ticket.getRagResponse())
                 .build();
     }

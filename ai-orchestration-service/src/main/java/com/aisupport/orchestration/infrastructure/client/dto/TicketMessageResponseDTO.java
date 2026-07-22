@@ -13,9 +13,9 @@ public class TicketMessageResponseDTO {
     private Long id;
     private Long ticketId;
     private String content;
-    private Long senderId;
+    private String senderId;
     private String senderName;
     private String type; // CUSTOMER_MESSAGE, AGENT_MESSAGE, SYSTEM_MESSAGE
-    private boolean isInternal;
+    private Boolean isInternal;
     private String createdAt;
 }
