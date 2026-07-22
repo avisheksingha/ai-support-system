@@ -22,7 +22,7 @@ public class DefaultAnalysisClient implements AnalysisClient {
     private final RestClient restClient;
 
     public DefaultAnalysisClient(@Qualifier("loadBalancedRestClientBuilder") RestClient.Builder restClientBuilder,
-                                 @Value("${api.services.ai-analysis.url}") String analysisServiceUrl) {
+                                 @Value("${api.services.ai-analysis.url:http://AI-ANALYSIS-SERVICE}") String analysisServiceUrl) {
         this.restClient = restClientBuilder.baseUrl(analysisServiceUrl).build();
     }
 

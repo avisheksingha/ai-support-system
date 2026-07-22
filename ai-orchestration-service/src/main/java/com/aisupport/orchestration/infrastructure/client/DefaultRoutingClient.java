@@ -27,7 +27,7 @@ public class DefaultRoutingClient implements RoutingClient {
     private final RestClient restClient;
 
     public DefaultRoutingClient(@Qualifier("loadBalancedRestClientBuilder") RestClient.Builder restClientBuilder,
-                                @Value("${api.services.routing.url}") String routingServiceUrl) {
+                                @Value("${api.services.routing.url:http://ROUTING-SERVICE}") String routingServiceUrl) {
         this.restClient = restClientBuilder.baseUrl(routingServiceUrl).build();
     }
 

@@ -16,6 +16,9 @@ public class WorkflowSummaryDTO {
     @Schema(description = "Associated ticket ID", example = "12")
     private Long ticketId;
     
+    @Schema(description = "Associated ticket number", example = "TKT-9E327DD8")
+    private String ticketNumber;
+    
     @Schema(description = "Correlation ID tracing the full request lifecycle", example = "aa941075-43ad-4c6e-9ad8-d24a009bf94e")
     private String correlationId;
     

@@ -1,9 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { WorkflowList } from "../components/WorkflowList";
 import { WorkflowDetail } from "../components/WorkflowDetail";
+import { useWorkflows } from "../hooks/useWorkflows";
 
 export function WorkflowExplorer() {
-  const [selectedExecutionId, setSelectedExecutionId] = useState<string | null>("wf-exc-9042");
+  const [selectedExecutionId, setSelectedExecutionId] = useState<string | null>(null);
+  const { data: workflows } = useWorkflows();
+
+  useEffect(() => {
+    if (workflows && workflows.length > 0 && !selectedExecutionId) {
+      if (workflows[0]?.id) {
+        setSelectedExecutionId(workflows[0].id);
+      }
+    }
+  }, [workflows, selectedExecutionId]);
 
   return (
     <div className="flex h-full w-full bg-[#F8FAFC] overflow-hidden text-slate-800">

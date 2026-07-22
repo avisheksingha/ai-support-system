@@ -132,7 +132,7 @@ export const OperationsDashboard = () => {
                   {data.recentExecutions?.map((exec) => (
                     <div key={exec.workflowId} className="flex items-center justify-between border-b pb-2 last:border-0">
                       <div>
-                        <p className="text-sm font-medium">Ticket #{exec.ticketId}</p>
+                        <p className="text-sm font-medium">{exec.ticketNumber || `TKT-${exec.ticketId}`}</p>
                         <p className="text-xs text-muted-foreground">{exec.definitionId}</p>
                       </div>
                       <div className="text-right">

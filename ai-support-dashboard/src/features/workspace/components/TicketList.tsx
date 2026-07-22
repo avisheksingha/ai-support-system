@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTicketList } from "../hooks/useWorkspace";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,12 @@ interface TicketListProps {
 export function TicketList({ selectedTicket, onSelectTicket }: TicketListProps) {
   const { data: tickets, isLoading, isError } = useTicketList();
   const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    if (!selectedTicket && tickets && tickets.length > 0 && tickets[0]?.ticketNumber) {
+      onSelectTicket(tickets[0].ticketNumber);
+    }
+  }, [tickets, selectedTicket, onSelectTicket]);
 
   const filteredTickets = tickets?.filter((t: TicketModel) => 
     t.ticketNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -85,20 +91,24 @@ export function TicketList({ selectedTicket, onSelectTicket }: TicketListProps) 
               {ticket.subject}
             </h3>
             
-            <div className="space-y-1.5 mb-4">
+            <div className="space-y-1.5 mb-3">
               <div className="text-[11px] text-slate-600 font-medium flex items-center gap-2">
                 <div className="w-4 h-4 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[8px]">👤</div> 
                 <span className="truncate">{ticket.customerName || "Customer"}</span>
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2 items-center">
+            {/* Mini AI Triage Badges */}
+            <div className="flex flex-wrap gap-1.5 items-center">
               <Badge variant="outline" className={`text-[9px] uppercase px-1.5 py-0 shadow-none font-bold ${getPriorityColor(ticket.priority)}`}>
                 {ticket.priority}
               </Badge>
               <Badge variant="outline" className={`text-[9px] uppercase px-1.5 py-0 shadow-none font-bold ${getStatusColor(ticket.status)}`}>
                 {ticket.status}
               </Badge>
+              <span className="text-[9px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200">
+                95% AI
+              </span>
             </div>
           </button>
         ))}

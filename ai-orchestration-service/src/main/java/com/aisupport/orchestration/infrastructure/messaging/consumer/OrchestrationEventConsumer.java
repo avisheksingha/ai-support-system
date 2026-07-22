@@ -68,6 +68,9 @@ public class OrchestrationEventConsumer {
 
             context.putAttribute("subject", event.getSubject());
             context.putAttribute("message", event.getMessage());
+            if (event.getTicketNumber() != null) {
+                context.putAttribute("ticketNumber", event.getTicketNumber());
+            }
 
             log.info("Triggering workflow {} for ticket {}", workflowId, event.getTicketId());
 

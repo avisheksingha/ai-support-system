@@ -37,7 +37,7 @@ public class DefaultRagClient implements RagClient {
     private final RestClient restClient;
 
     public DefaultRagClient(@Qualifier("loadBalancedRestClientBuilder") RestClient.Builder restClientBuilder,
-                            @Value("${api.services.rag.url}") String ragServiceUrl) {
+                            @Value("${api.services.rag.url:http://RAG-SERVICE}") String ragServiceUrl) {
         this.restClient = restClientBuilder.baseUrl(ragServiceUrl).build();
     }
 

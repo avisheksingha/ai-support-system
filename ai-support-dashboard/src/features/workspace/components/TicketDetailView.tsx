@@ -1,6 +1,6 @@
 import React, { Suspense } from "react";
 import { useTicket, useWorkspaceAggregation, useTimeline, useUpdateTicketStatus, useMessages, useAddMessage } from "../hooks/useWorkspace";
-import { Check } from "lucide-react";
+import { Check, User, Mail, Clock, ArrowUpRight, MessageSquare, CheckCircle } from "lucide-react";
 import { TicketTimeline } from "./TicketTimeline";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ErrorBoundary } from "react-error-boundary";
 import { WorkspaceErrorFallback } from "@/components/ui/ErrorFallbacks";
 import { formatTimeAgo } from "@/shared/utils/date";
+import { Button } from "@/components/ui/button";
 
 // Lazy Loaded Panels
 const AiInsightsPanel = React.lazy(() => import("./AiInsightsPanel").then(m => ({ default: m.AiInsightsPanel })));
@@ -16,6 +17,7 @@ const AiDecisionPanel = React.lazy(() => import("./AiDecisionPanel").then(m => (
 const RoutingPanel = React.lazy(() => import("./RoutingPanel").then(m => ({ default: m.RoutingPanel })));
 const DiagnosticsPanel = React.lazy(() => import("./DiagnosticsPanel").then(m => ({ default: m.DiagnosticsPanel })));
 import { AiPipelineProgress } from "./AiPipelineProgress";
+import { AiContextDrawer } from "./AiContextDrawer";
 import type { TicketStatus } from "@/shared/types/ticket";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/features/auth/hooks/useAuth";
@@ -58,6 +60,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
   const showDiagnostics = searchParams.get("diagnostics") === "true";
   const { user } = useAuth();
   const [replyText, setReplyText] = React.useState("");
+  const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
   const isAdmin = user?.role === "ADMIN";
   const isDiagnosticsActive = showDiagnostics && isAdmin;
   
@@ -67,6 +70,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
   const routing = workspaceData?.routing;
   const knowledge = workspaceData?.knowledge;
   const aiDecision = workspaceData?.aiDecision;
+  const workflowMetadata = workspaceData?.workflowMetadata;
   const { data: timeline, isLoading: isTimelineLoading } = useTimeline(ticket?.id);
   const { data: messages, isLoading: isMessagesLoading } = useMessages(ticket?.ticketNumber);
   const { mutate: addMessage, isPending: isSendingMessage } = useAddMessage();
@@ -102,9 +106,9 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 flex flex-col xl:flex-row gap-6 lg:gap-8 items-start bg-[#F8FAFC]">
+    <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-5 lg:p-6 flex flex-col xl:flex-row gap-3 sm:gap-4 lg:gap-6 items-start bg-[#F8FAFC]">
       {/* Primary Column: Conversation & Actions */}
-      <div className="flex-1 min-w-0 flex flex-col gap-6">
+      <div className="flex-1 min-w-0 flex flex-col gap-3 sm:gap-4">
         
         {isDiagnosticsActive && (
           <ErrorBoundary FallbackComponent={WorkspaceErrorFallback}>
@@ -118,79 +122,172 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
           </ErrorBoundary>
         )}
 
-        <div className="bg-white shadow-sm border border-slate-200 rounded-xl p-6 relative overflow-hidden">
+        <div className="bg-white shadow-sm border border-slate-200 rounded-xl p-5 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
-          <div className="flex flex-col gap-6">
-            <div className="w-full">
-              <div className="mb-3 flex flex-wrap items-center gap-3">
-                <span className="text-slate-500 font-mono text-[11px] font-bold uppercase tracking-widest bg-slate-100 px-2 py-1 rounded">{ticket.ticketNumber}</span>
-                <span className="text-xs text-slate-400 font-medium">Created {formatTimeAgo(ticket.createdAt)}</span>
-              </div>
-              <h1 className="text-2xl font-bold text-slate-900 leading-tight mb-5 break-words">{ticket.subject}</h1>
-              
-              <div className="flex flex-wrap items-center gap-y-3 gap-x-6 text-sm text-slate-600">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-[10px]">👤</div>
-                  <span className="font-medium text-slate-800">{ticket.customerName}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-[10px]">📧</div>
-                  <span className="truncate max-w-[200px] sm:max-w-none">{ticket.customerEmail || 'customer@example.com'}</span>
-                </div>
+          
+          {/* Header: Ticket ID and Created Time */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <span className="text-slate-500 font-mono text-[11px] font-bold uppercase tracking-widest bg-slate-100 px-2 py-1 rounded">{ticket.ticketNumber}</span>
+              <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                <Clock className="h-3.5 w-3.5" />
+                <span className="font-medium">Created {formatTimeAgo(ticket.createdAt)}</span>
               </div>
             </div>
-            
-            <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="bg-slate-50/80 border border-slate-100 rounded-lg p-3 flex flex-col justify-between gap-2">
-                <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Status</span>
-                <Select 
-                  value={ticket.status} 
-                  onValueChange={(val) => updateStatus({ ticketNumber: ticket.ticketNumber, status: val as TicketStatus })}
-                >
-                  <SelectTrigger className="h-8 text-xs font-semibold bg-white text-slate-800 border-slate-200 w-full shadow-sm">
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="NEW">New</SelectItem>
-                    <SelectItem value="ANALYZING">Analyzing</SelectItem>
-                    <SelectItem value="ANALYZED">Analyzed</SelectItem>
-                    <SelectItem value="ASSIGNED">Assigned</SelectItem>
-                    <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                    <SelectItem value="RESOLVED">Resolved</SelectItem>
-                    <SelectItem value="CLOSED">Closed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="bg-slate-50/80 border border-slate-100 rounded-lg p-3 flex flex-col justify-between gap-2">
-                <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Priority</span>
-                <Badge variant="outline" className={`h-8 px-3 text-[10px] font-bold uppercase justify-center w-full shadow-sm
-                  ${ticket.priority === 'CRITICAL' ? 'border-red-200 text-red-700 bg-red-50' : ''}
-                  ${ticket.priority === 'HIGH' ? 'border-orange-200 text-orange-700 bg-orange-50' : ''}
-                  ${ticket.priority === 'MEDIUM' ? 'border-amber-200 text-amber-700 bg-amber-50' : ''}
-                  ${ticket.priority === 'LOW' ? 'border-blue-200 text-blue-700 bg-blue-50' : ''}
-                `}>
-                  {ticket.priority}
-                </Badge>
-              </div>
-              
-              {/* SLA Tracking - Real Data or Fallback */}
-              <div className="bg-slate-50/80 border border-slate-100 rounded-lg px-3 py-2.5 flex flex-col justify-between gap-2.5 sm:col-span-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">SLA</span>
-                  <span className={`text-[11px] font-bold flex items-center gap-1.5 ${slaData?.isBreached ? 'text-red-600' : 'text-amber-600'}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${slaData?.isBreached ? 'bg-red-500' : 'bg-amber-500'}`}></span> {slaData ? slaData.text : '2h 15m left'}
-                  </span>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className={`h-7 px-3 text-[10px] font-bold uppercase shadow-sm
+                ${ticket.priority === 'CRITICAL' ? 'border-red-200 text-red-700 bg-red-50' : ''}
+                ${ticket.priority === 'HIGH' ? 'border-orange-200 text-orange-700 bg-orange-50' : ''}
+                ${ticket.priority === 'MEDIUM' ? 'border-amber-200 text-amber-700 bg-amber-50' : ''}
+                ${ticket.priority === 'LOW' ? 'border-blue-200 text-blue-700 bg-blue-50' : ''}
+              `}>
+                {ticket.priority}
+              </Badge>
+              <Select 
+                value={ticket.status} 
+                onValueChange={(val) => updateStatus({ ticketNumber: ticket.ticketNumber, status: val as TicketStatus })}
+              >
+                <SelectTrigger className="h-7 text-xs font-semibold bg-white text-slate-800 border-slate-200 shadow-sm w-[140px]">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="NEW">New</SelectItem>
+                  <SelectItem value="ANALYZING">Analyzing</SelectItem>
+                  <SelectItem value="ANALYZED">Analyzed</SelectItem>
+                  <SelectItem value="ASSIGNED">Assigned</SelectItem>
+                  <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                  <SelectItem value="RESOLVED">Resolved</SelectItem>
+                  <SelectItem value="CLOSED">Closed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Subject */}
+          <h1 className="text-xl font-bold text-slate-900 leading-tight mb-4 break-words">{ticket.subject}</h1>
+          
+          {/* Customer Info */}
+          <div className="flex items-center gap-4 mb-4 pb-4 border-b border-slate-100 flex-wrap justify-between">
+            <div className="flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center">
+                  <User className="h-4 w-4 text-blue-600" />
                 </div>
-                <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden mb-0.5">
-                  <div className={`h-full rounded-full ${slaData?.isBreached ? 'bg-red-500' : 'bg-amber-500'}`} style={{ width: `${slaData ? slaData.percent : 65}%` }}></div>
+                <div>
+                  <div className="text-sm font-semibold text-slate-800">{ticket.customerName}</div>
+                  <div className="text-xs text-slate-500">Customer</div>
                 </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center">
+                  <Mail className="h-4 w-4 text-slate-400" />
+                </div>
+                <div className="text-xs text-slate-600 truncate max-w-[200px]">{ticket.customerEmail || 'customer@example.com'}</div>
               </div>
             </div>
+
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200">
+                {ticket.customerTier || (ticket.customerName?.includes("Inc") ? "Enterprise" : "Standard")} Tier
+              </span>
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
+                {ticket.channel || "Web Portal"}
+              </span>
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-50 text-slate-600 border border-slate-200" title="Previous Tickets">
+                0 Past Tickets
+              </span>
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-50 text-slate-600 border border-slate-200" title="Last Interaction">
+                Last: First Contact
+              </span>
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-50 text-slate-600 border border-slate-200" title="Customer Since">
+                Member: 2026
+              </span>
+            </div>
+          </div>
+
+          {/* Ticket Details Grid */}
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4">
+            <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-100">
+              <span className="text-[9px] font-bold uppercase text-slate-500 tracking-wider block mb-1">Intent</span>
+              <span className="text-xs font-semibold text-indigo-700">{analysis?.intent ? formatSemanticString(analysis.intent) : 'Unknown'}</span>
+            </div>
+
+            {/* Enhanced SLA Visualization */}
+            <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-100">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[9px] font-bold uppercase text-slate-500 tracking-wider">SLA Deadline</span>
+                <span className={`text-[10px] font-bold ${slaData?.isBreached ? 'text-red-600' : 'text-emerald-600'}`}>
+                  {slaData ? slaData.text : '48h 0m left'}
+                </span>
+              </div>
+              <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full transition-all duration-300 rounded-full ${slaData?.isBreached ? 'bg-red-500' : 'bg-emerald-500'}`} 
+                  style={{ width: `${slaData ? slaData.percent : 15}%` }}
+                ></div>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-100">
+              <span className="text-[9px] font-bold uppercase text-slate-500 tracking-wider block mb-1">Support Domain</span>
+              <span className="text-xs font-semibold text-slate-700">{analysis?.suggestedCategory || 'Uncategorized'}</span>
+            </div>
+            <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-100">
+              <span className="text-[9px] font-bold uppercase text-slate-500 tracking-wider block mb-1">Assigned Team</span>
+              <span className="text-xs font-semibold text-slate-700">{routing?.assignedTeam || 'Unassigned'}</span>
+            </div>
+            <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-100 col-span-2 sm:col-span-1">
+              <span className="text-[9px] font-bold uppercase text-slate-500 tracking-wider block mb-1">Assigned Agent</span>
+              <span className="text-xs font-semibold text-slate-700">{ticket.assignedTo || 'Unassigned'}</span>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="flex items-center gap-1.5 sm:gap-2 pt-3 border-t border-slate-100 flex-wrap">
+            {/* Primary Action Button: Reply */}
+            <Button 
+              size="sm" 
+              className="h-7 sm:h-8 text-[10px] sm:text-xs font-semibold gap-1.5 flex-1 sm:flex-none bg-[#0C66E4] hover:bg-[#0052CC] text-white shadow-sm"
+              onClick={() => {
+                const replyElem = document.querySelector("textarea");
+                if (replyElem) replyElem.focus();
+              }}
+            >
+              <MessageSquare className="h-3 w-3.5 sm:h-3.5" />
+              <span>Reply</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="h-7 sm:h-8 text-[10px] sm:text-xs font-medium gap-1.5 flex-1 sm:flex-none"
+              onClick={() => {/* TODO: Implement assign modal */}}
+            >
+              <User className="h-3 w-3.5 sm:h-3.5" />
+              <span>Assign</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="h-7 sm:h-8 text-[10px] sm:text-xs font-medium gap-1.5 flex-1 sm:flex-none text-purple-700 border-purple-200 bg-purple-50/50 hover:bg-purple-100/60"
+              onClick={() => setIsDrawerOpen(true)}
+            >
+              <ArrowUpRight className="h-3 w-3.5 sm:h-3.5" />
+              <span>View AI Context</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="h-7 sm:h-8 text-[10px] sm:text-xs font-medium gap-1.5 flex-1 sm:flex-none"
+              onClick={() => updateStatus({ ticketNumber: ticket.ticketNumber, status: 'RESOLVED' })}
+            >
+              <CheckCircle className="h-3 w-3.5 sm:h-3.5" />
+              <span>Resolve</span>
+            </Button>
           </div>
         </div>
 
         {/* Ticket Lifecycle Visual - Railway Style */}
-        <div className="bg-white shadow-sm border border-slate-200 rounded-xl px-8 py-9">
+        <div className="bg-white shadow-sm border border-slate-200 rounded-xl px-8 sm:px-12 py-8 my-5">
           <div className="relative flex justify-between items-center w-full">
             {/* Background Track Line */}
             <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 bg-slate-100 rounded-full z-0"></div>
@@ -199,18 +296,18 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
               const statusOrder = ['NEW', 'ANALYZING', 'ANALYZED', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'];
               const currentIndex = Math.max(0, statusOrder.indexOf(ticket.status));
               
-              // Map the detailed backend statuses to the 5 visual stations
-              let stationIndex = 0; // NEW, ANALYZING
-              if (currentIndex >= statusOrder.indexOf('ANALYZED')) stationIndex = 1;
-              if (currentIndex >= statusOrder.indexOf('ASSIGNED')) stationIndex = 2;
-              if (currentIndex >= statusOrder.indexOf('IN_PROGRESS')) stationIndex = 3;
-              if (currentIndex >= statusOrder.indexOf('RESOLVED')) stationIndex = 4;
+              let stationIndex = 0; // NEW
+              if (currentIndex >= statusOrder.indexOf('ANALYZING')) stationIndex = 1;
+              if (currentIndex >= statusOrder.indexOf('ANALYZED')) stationIndex = 3;
+              if (currentIndex >= statusOrder.indexOf('ASSIGNED')) stationIndex = 4;
+              if (currentIndex >= statusOrder.indexOf('RESOLVED')) stationIndex = 5;
 
               const stations = [
                 { label: 'SUBMITTED' },
-                { label: 'AI ANALYZED' },
-                { label: 'AGENT ASSIGNED' },
-                { label: 'WORKING' },
+                { label: 'AI ANALYSIS' },
+                { label: 'KNOWLEDGE RETRIEVED' },
+                { label: 'ROUTING' },
+                { label: 'ASSIGNED' },
                 { label: 'RESOLVED' }
               ];
 
@@ -251,7 +348,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
           </div>
         </div>
 
-        <AiPipelineProgress ticket={ticket} analysis={analysis} knowledge={knowledge} routing={routing} aiDecision={aiDecision} />
+        <AiPipelineProgress ticket={ticket} analysis={analysis} knowledge={knowledge} routing={routing} aiDecision={aiDecision} workflowMetadata={workflowMetadata} />
 
         {/* Conversation */}
         <div>
@@ -327,14 +424,14 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
 
         {/* Activity Feed */}
         <div>
-          <h2 className="text-[11px] font-bold text-slate-500 mb-4 uppercase tracking-widest px-1">Activity Feed</h2>
+          <h2 className="text-[11px] font-bold text-slate-500 mb-3 uppercase tracking-widest px-1">Activity Feed</h2>
           {isTimelineLoading ? (
-            <div className="space-y-4 ml-4">
+            <div className="space-y-3 ml-4">
               <Skeleton className="h-10 w-full bg-slate-100 rounded-lg" />
               <Skeleton className="h-10 w-full bg-slate-100 rounded-lg" />
             </div>
           ) : timeline ? (
-            <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
               <TicketTimeline events={timeline} />
             </div>
           ) : (
@@ -344,7 +441,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
       </div>
 
       {/* Secondary Column: AI & Automation Workspace */}
-      <div className="w-full xl:w-[360px] shrink-0 flex flex-col gap-6 h-fit">
+      <div className="w-full xl:w-[340px] shrink-0 flex flex-col gap-3 sm:gap-4 h-fit order-first xl:order-last">
         
         {/* AI Insights Panel */}
         {isWorkspaceLoading || !analysis ? (
@@ -392,7 +489,10 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
         {aiDecision && (
           <ErrorBoundary FallbackComponent={WorkspaceErrorFallback}>
             <Suspense fallback={<Skeleton className="h-48 w-full bg-card rounded-xl" />}>
-              <AiDecisionPanel decision={aiDecision} onUseReply={setReplyText} />
+              <AiDecisionPanel 
+                decision={aiDecision} 
+                onUseReply={setReplyText} 
+              />
             </Suspense>
           </ErrorBoundary>
         )}
@@ -419,6 +519,24 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
           </ErrorBoundary>
         )}
       </div>
+
+      {/* AI Context Side Drawer */}
+      {ticket && (
+        <AiContextDrawer
+          isOpen={isDrawerOpen}
+          onClose={() => setIsDrawerOpen(false)}
+          ticket={ticket}
+          analysis={analysis}
+          knowledge={knowledge}
+          routing={routing}
+          aiDecision={aiDecision}
+          workflowMetadata={workflowMetadata}
+        />
+      )}
     </div>
   );
+}
+
+function formatSemanticString(val: string) {
+  return val.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
 }

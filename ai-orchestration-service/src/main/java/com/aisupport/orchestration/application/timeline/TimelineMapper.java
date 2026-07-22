@@ -1,7 +1,7 @@
 package com.aisupport.orchestration.application.timeline;
 
+import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import com.aisupport.common.enums.WorkflowOutcome;
 import com.aisupport.orchestration.application.timeline.dto.TimelineEvent;
 import com.aisupport.orchestration.application.timeline.dto.TimelineEventType;
+import com.aisupport.orchestration.domain.state.WorkflowState;
 import com.aisupport.orchestration.domain.workflow.WorkflowStepConstants;
 import com.aisupport.orchestration.infrastructure.persistence.entity.AiExecutionRecordEntity;
 import com.aisupport.orchestration.infrastructure.persistence.entity.WorkflowCheckpointEntity;
@@ -25,24 +26,48 @@ public class TimelineMapper {
     private String defaultWorkflowVersion;
 
     public TimelineEvent toEvent(WorkflowExecutionEntity execution) {
+        Long latencyMs = null;
+        if (execution.getCreatedAt() != null && execution.getCompletedAt() != null) {
+            latencyMs = Duration.between(execution.getCreatedAt(), execution.getCompletedAt()).toMillis();
+        }
+
+        WorkflowOutcome outcome = null;
+        if (execution.getState() != null) {
+            switch (execution.getState()) {
+                case COMPLETED -> outcome = WorkflowOutcome.SUCCESS;
+                case FAILED -> outcome = WorkflowOutcome.FAILED;
+                default -> outcome = null;
+            }
+        }
+
         return TimelineEvent.builder()
                 .eventId(execution.getId())
                 .type(TimelineEventType.WORKFLOW)
-                .subType(execution.getState().name())
-                .title("Workflow " + execution.getState().name())
+                .subType(execution.getState() != null ? execution.getState().name() : "COMPLETED")
+                .title("Workflow " + (execution.getState() != null ? execution.getState().name() : "COMPLETED"))
                 .description("Workflow definition: " + execution.getDefinitionId())
-                .severity("SUCCESS")
+                .severity(execution.getState() == WorkflowState.FAILED ? "ERROR" : "SUCCESS")
                 .processingStage("Initialization")
                 .timestamp(execution.getCreatedAt())
+                .latencyMs(latencyMs)
+                .outcome(outcome)
                 .workflowVersion(execution.getVersion() != null ? String.valueOf(execution.getVersion()) : defaultWorkflowVersion)
                 .build();
     }
 
     public TimelineEvent toEvent(WorkflowCheckpointEntity checkpoint) {
         String stage = getProcessingStage(checkpoint.getStepName());
+        String model = null;
+        
+        if (checkpoint.getAttributesSnapshot() != null) {
+            Object kcObj = checkpoint.getAttributesSnapshot().get("knowledgeContext");
+            if (kcObj instanceof java.util.Map<?, ?> kc && kc.get("model") != null) {
+                model = kc.get("model").toString();
+            }
+        }
         
         return TimelineEvent.builder()
-                .eventId(UUID.randomUUID().toString()) // Checkpoints don't have UUIDs, generate one or use ID
+                .eventId(checkpoint.getId() != null ? String.valueOf(checkpoint.getId()) : UUID.randomUUID().toString())
                 .parentEventId(checkpoint.getExecution().getId())
                 .type(TimelineEventType.SYSTEM)
                 .subType("CHECKPOINT")
@@ -51,6 +76,7 @@ public class TimelineMapper {
                 .severity("INFO")
                 .processingStage(stage)
                 .timestamp(checkpoint.getCreatedAt())
+                .model(model)
                 .build();
     }
 
@@ -66,7 +92,13 @@ public class TimelineMapper {
 
         List<String> tools = new ArrayList<>();
         if (aiRecord.getToolsInvoked() != null && !aiRecord.getToolsInvoked().isBlank()) {
-            tools = Arrays.asList(aiRecord.getToolsInvoked().split(","));
+            String rawTools = aiRecord.getToolsInvoked().replaceAll("[\\[\\]\"\\\\]", "");
+            for (String tool : rawTools.split(",")) {
+                String trimmed = tool.trim();
+                if (!trimmed.isEmpty()) {
+                    tools.add(trimmed);
+                }
+            }
         }
 
         String severity = "SUCCESS";

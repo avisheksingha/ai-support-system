@@ -42,7 +42,7 @@ public class OutboxWorkflowExecutionListener implements WorkflowExecutionListene
     private final WorkflowExecutionRepository executionRepository;
     private final WorkflowCheckpointRepository checkpointRepository;
     
-    @Value("${info.build.version:1.0.0}")
+    @Value("${info.app.version:1.0.0}")
     private String serviceVersion;
 
     @Value("${spring.ai.google.genai.chat.model:gemini-2.5-flash}")

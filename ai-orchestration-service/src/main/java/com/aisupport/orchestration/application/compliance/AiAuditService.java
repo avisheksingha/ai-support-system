@@ -175,10 +175,10 @@ public class AiAuditService {
 
     private String deriveToolsInvoked(WorkflowContext context) {
         List<String> tools = new ArrayList<>();
-        if (context.getResource(AnalysisResult.class) != null) tools.add("\"Analysis\"");
-        if (context.getResource(KnowledgeContext.class) != null) tools.add("\"RAG\"");
-        if (context.getResource(RoutingDecision.class) != null) tools.add("\"Routing\"");
-        if (context.getResource(AiDecision.class) != null) tools.add("\"Final_AI_Decision\"");
-        return tools.isEmpty() ? "[]" : "[" + String.join(",", tools) + "]";
+        if (context.getResource(AnalysisResult.class) != null) tools.add("Analysis");
+        if (context.getResource(KnowledgeContext.class) != null) tools.add("RAG");
+        if (context.getResource(RoutingDecision.class) != null) tools.add("Routing");
+        if (context.getResource(AiDecision.class) != null) tools.add("Final_AI_Decision");
+        return String.join(",", tools);
     }
 }

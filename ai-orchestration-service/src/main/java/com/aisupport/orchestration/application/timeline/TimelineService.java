@@ -107,6 +107,51 @@ public class TimelineService {
     }
 
     @Transactional(readOnly = true)
+    public TimelinePageResponse getTimelineForWorkflowId(String workflowId, int page, int size) {
+        List<TimelineEvent> allEvents = new ArrayList<>();
+
+        workflowExecutionRepository.findById(workflowId).ifPresent(execution -> {
+            // 1. Add Workflow Execution Event
+            allEvents.add(timelineMapper.toEvent(execution));
+
+            // 2. Add Checkpoint Events
+            List<WorkflowCheckpointEntity> checkpoints = workflowCheckpointRepository
+                    .findByExecutionIdOrderByCreatedAtDesc(execution.getId());
+            for (WorkflowCheckpointEntity checkpoint : checkpoints) {
+                allEvents.add(timelineMapper.toEvent(checkpoint));
+            }
+
+            // 3. Add AI Execution Events
+            List<AiExecutionRecordEntity> aiRecords = aiExecutionRecordRepository
+                    .findByCorrelationId(execution.getCorrelationId());
+            for (AiExecutionRecordEntity aiRecord : aiRecords) {
+                allEvents.add(timelineMapper.toEvent(aiRecord));
+            }
+        });
+
+        // Sort chronologically
+        allEvents.sort(Comparator.comparing(TimelineEvent::getTimestamp));
+
+        // In-memory pagination
+        int totalElements = allEvents.size();
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+
+        int start = Math.min(page * size, totalElements);
+        int end = Math.min(start + size, totalElements);
+
+        List<TimelineEvent> pageContent = allEvents.subList(start, end);
+
+        return TimelinePageResponse.builder()
+                .content(pageContent)
+                .pageNumber(page)
+                .pageSize(size)
+                .totalElements(totalElements)
+                .totalPages(totalPages)
+                .isLast(end >= totalElements)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
     public Optional<AIInsightResponse> getTicketInsights(Long ticketId) {
         return fetchTicketInsights(ticketId);
     }
@@ -282,6 +327,7 @@ public class TimelineService {
                 .aiSummary(Objects.toString(ad.get(AI_SUMMARY_KEY), null))
                 .suggestedReply(Objects.toString(ad.get(SUGGESTED_REPLY_KEY), null))
                 .confidence(ad.get(CONFIDENCE_KEY) instanceof Number n ? n.doubleValue() : null)
+                .decisionReason(Objects.toString(ad.get("decisionReason"), null))
                 .build();
     }
 

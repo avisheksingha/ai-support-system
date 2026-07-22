@@ -54,3 +54,11 @@ export function formatTime(date: any): string {
   if (!date) return "";
   return format(parseDate(date), "MMM d, h:mm a");
 }
+
+export function formatDuration(ms: number | undefined | null): string {
+  if (ms === undefined || ms === null) return "—";
+  if (ms <= 0) return "<1 ms";
+  if (ms < 1000) return `${ms} ms`;
+  if (ms < 60000) return `${(ms / 1000).toFixed(1)} sec`;
+  return `${(ms / 60000).toFixed(1)} min`;
+}

@@ -1,6 +1,7 @@
 package com.aisupport.ticket.service;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -24,6 +25,7 @@ import com.aisupport.common.event.TicketRoutedEvent;
 import com.aisupport.ticket.dto.request.MessageRequest;
 import com.aisupport.ticket.dto.request.TicketRequest;
 import com.aisupport.ticket.dto.response.MessageResponse;
+import com.aisupport.ticket.dto.response.TicketDashboardSummaryResponse;
 import com.aisupport.ticket.dto.response.TicketResponse;
 import com.aisupport.ticket.entity.Message;
 import com.aisupport.ticket.entity.Ticket;
@@ -249,6 +251,114 @@ public class TicketService {
                 .stream()
                 .map(ticketMapper::toResponse)
                 .toList();
+    }
+
+    /**
+     * Helper class for aggregating dashboard metrics.
+     */
+    private static class DashboardMetrics {
+        long critical = 0;
+        long high = 0;
+        long medium = 0;
+        long low = 0;
+        long totalWaitMs = 0;
+        long oldestTicketMs = 0;
+        long resolvedToday = 0;
+        long totalHandleMs = 0;
+        long nearSlaBreach = 0;
+        long nextSlaBreachMins = Long.MAX_VALUE;
+        long totalSlaRemainingMins = 0;
+        long activeSlaCount = 0;
+    }
+
+    /**
+     * Returns a dashboard summary for a specific agent.
+     */
+    @Transactional(readOnly = true)
+    public TicketDashboardSummaryResponse getAgentDashboardSummary(String agentId) {
+        List<Ticket> tickets = ticketRepository.findByAssignedTo(agentId);
+        DashboardMetrics metrics = new DashboardMetrics();
+        
+        Instant startOfDay = Instant.now().truncatedTo(ChronoUnit.DAYS);
+        long nowMs = Instant.now().toEpochMilli();
+
+        for (Ticket t : tickets) {
+            if (t.getStatus() == TicketStatus.RESOLVED || t.getStatus() == TicketStatus.CLOSED) {
+                processResolvedTicket(t, metrics, startOfDay);
+            } else {
+                processActiveTicket(t, metrics, nowMs);
+            }
+        }
+
+        return buildDashboardResponse(tickets.size(), metrics);
+    }
+
+    private void processResolvedTicket(Ticket t, DashboardMetrics metrics, Instant startOfDay) {
+        if (t.getUpdatedAt() != null && t.getUpdatedAt().isAfter(startOfDay)) {
+            metrics.resolvedToday++;
+            metrics.totalHandleMs += t.getUpdatedAt().toEpochMilli() - t.getCreatedAt().toEpochMilli();
+        }
+    }
+
+    private void processActiveTicket(Ticket t, DashboardMetrics metrics, long nowMs) {
+        updatePriorityCounts(t, metrics);
+        updateWaitTime(t, metrics, nowMs);
+        updateSlaMetrics(t, metrics, nowMs);
+    }
+
+    private void updatePriorityCounts(Ticket t, DashboardMetrics metrics) {
+        if (t.getPriority() == TicketPriority.CRITICAL) metrics.critical++;
+        else if (t.getPriority() == TicketPriority.HIGH) metrics.high++;
+        else if (t.getPriority() == TicketPriority.MEDIUM) metrics.medium++;
+        else metrics.low++;
+    }
+
+    private void updateWaitTime(Ticket t, DashboardMetrics metrics, long nowMs) {
+        long waitTime = nowMs - t.getCreatedAt().toEpochMilli();
+        metrics.totalWaitMs += waitTime;
+        if (waitTime > metrics.oldestTicketMs) {
+            metrics.oldestTicketMs = waitTime;
+        }
+    }
+
+    private void updateSlaMetrics(Ticket t, DashboardMetrics metrics, long nowMs) {
+        if (t.getSlaHours() != null) {
+            long targetMs = t.getCreatedAt().toEpochMilli() + (t.getSlaHours() * 3600000L);
+            long remainingMins = (targetMs - nowMs) / 60000L;
+            metrics.totalSlaRemainingMins += remainingMins;
+            metrics.activeSlaCount++;
+
+            if (remainingMins > 0 && remainingMins < metrics.nextSlaBreachMins) {
+                metrics.nextSlaBreachMins = remainingMins;
+            }
+            if (remainingMins > 0 && remainingMins < 120) { // < 2 hours
+                metrics.nearSlaBreach++;
+            }
+        }
+    }
+
+    private TicketDashboardSummaryResponse buildDashboardResponse(int totalTickets, DashboardMetrics metrics) {
+        long activeCount = totalTickets - metrics.resolvedToday;
+        Long avgWaitMins = activeCount > 0 ? (metrics.totalWaitMs / activeCount) / 60000L : null;
+        Long oldestMins = activeCount > 0 ? metrics.oldestTicketMs / 60000L : null;
+        Long avgSlaMins = metrics.activeSlaCount > 0 ? metrics.totalSlaRemainingMins / metrics.activeSlaCount : null;
+        Long avgHandleMins = metrics.resolvedToday > 0 ? (metrics.totalHandleMs / metrics.resolvedToday) / 60000L : null;
+
+        return TicketDashboardSummaryResponse.builder()
+                .assignedToday(activeCount) // roughly using active count
+                .totalAssigned(activeCount)
+                .critical(metrics.critical)
+                .high(metrics.high)
+                .medium(metrics.medium)
+                .low(metrics.low)
+                .averageWaitTimeMins(avgWaitMins)
+                .oldestTicketAgeMins(oldestMins)
+                .nearSlaBreach(metrics.nearSlaBreach)
+                .nextSlaBreachMins(metrics.nextSlaBreachMins == Long.MAX_VALUE ? null : metrics.nextSlaBreachMins)
+                .averageRemainingSlaMins(avgSlaMins)
+                .resolvedToday(metrics.resolvedToday)
+                .averageHandleTimeMins(avgHandleMins)
+                .build();
     }
 
     /**

@@ -19,7 +19,7 @@ public class AuditWorkflowExecutionListener implements WorkflowExecutionListener
 
     private final AiAuditService auditService;
     
-    @Value("${info.build.version:1.0.0}")
+    @Value("${info.app.version:1.0.0}")
     private String serviceVersion;
 
     @Override

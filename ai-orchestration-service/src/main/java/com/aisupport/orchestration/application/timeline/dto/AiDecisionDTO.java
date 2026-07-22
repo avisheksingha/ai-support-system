@@ -13,4 +13,5 @@ public class AiDecisionDTO {
     private String aiSummary;
     private String suggestedReply;
     private Double confidence;
+    private String decisionReason;
 }

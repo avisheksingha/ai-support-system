@@ -22,6 +22,7 @@ import com.aisupport.ticket.service.TicketService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -179,6 +180,23 @@ public class TicketManagementController {
         
         return ResponseEntity.ok(
                 ticketService.addMessage(ticketNumber, request, userRole, userEmail)
+        );
+    }
+    
+    @Operation(
+        summary = "Get agent dashboard summary",
+        description = "Retrieves aggregated metrics for a specific agent's dashboard"
+    )
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved agent dashboard summary")
+    @PreAuthorize("hasAnyRole('AGENT', 'ADMIN')")
+    @GetMapping("/summary/agent")
+    public ResponseEntity<com.aisupport.ticket.dto.response.TicketDashboardSummaryResponse> getAgentSummary(
+        @RequestHeader(value = "X-User-Email", required = true) String userEmail) {
+        
+        log.info("Management requested dashboard summary for agent: {}", userEmail);
+        
+        return ResponseEntity.ok(
+                ticketService.getAgentDashboardSummary(userEmail)
         );
     }
 }

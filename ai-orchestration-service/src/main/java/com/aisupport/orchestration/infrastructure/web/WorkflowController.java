@@ -2,6 +2,7 @@ package com.aisupport.orchestration.infrastructure.web;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,7 +38,7 @@ public class WorkflowController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size) {
         
-        log.info("Searching workflows - ticketId: {}, correlationId: {}", ticketId, correlationId);
+        log.info("Searching workflows - ticketId={}, correlationId={}", ticketId, correlationId);
         
         // For V1 we just route ticketId to TimelineService, which provides the timeline
         // In a real V2, this would query workflowExecutionRepo first, handle correlationId etc.
@@ -46,5 +47,17 @@ public class WorkflowController {
         }
         
         return ResponseEntity.ok(TimelinePageResponse.builder().build());
+    }
+
+    @GetMapping("/{workflowId}/timeline")
+    @Operation(summary = "Get workflow timeline", description = "Get the orchestration timeline for a specific workflow execution")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved workflow timeline")
+    public ResponseEntity<TimelinePageResponse> getWorkflowTimeline(
+            @PathVariable String workflowId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size) {
+        
+        log.info("Fetching timeline for workflowId: {}", workflowId);
+        return ResponseEntity.ok(timelineService.getTimelineForWorkflowId(workflowId, page, size));
     }
 }

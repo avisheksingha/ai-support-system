@@ -15,6 +15,8 @@ export interface TicketModel {
   ragResponse?: string;
   ragGeneratedAt?: string;
   slaHours?: number;
+  customerTier?: string;
+  channel?: string;
   createdAt: string;
   updatedAt: string;
 }

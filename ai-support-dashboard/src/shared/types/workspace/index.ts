@@ -36,6 +36,7 @@ export interface AiDecisionModel {
   aiSummary: string;
   suggestedReply: string;
   confidence: number;
+  decisionReason?: string;
 }
 
 export interface WorkflowMetadata {
@@ -159,6 +160,7 @@ export interface OperationsOverviewDTO {
 export interface WorkflowSummaryDTO {
   workflowId: string;
   ticketId: number;
+  ticketNumber?: string;
   correlationId: string;
   definitionId: string;
   state: string;
@@ -204,4 +206,94 @@ export interface AuditLog {
   decision: "ALLOWED" | "BLOCKED" | "APPROVAL_REQUIRED";
   durationMs: number;
   actor: "AI" | "SYSTEM" | "AGENT";
+}
+
+export interface AiRecommendationDTO {
+  ticketNumber: string;
+  subject: string;
+  confidence: number;
+  intent: string;
+  suggestedAction: string;
+  businessReason: string;
+}
+
+export interface AgentProfileDTO {
+  name: string;
+  team: string;
+  status: string;
+  avatarUrl: string;
+}
+
+export interface TopSummaryDTO {
+  currentDate: string;
+  shift: string;
+  assignedToday: number;
+  currentSla: string;
+}
+
+export interface MyQueueSummaryDTO {
+  assignedTickets: number;
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
+  averageWaitTime: string;
+  oldestTicketAge: string;
+}
+
+export interface SlaAtRiskSummaryDTO {
+  ticketsNearBreach: number;
+  nextSlaBreach: string;
+  averageRemainingTime: string;
+}
+
+export interface ResolvedTodaySummaryDTO {
+  ticketsResolvedToday: number;
+  averageHandleTime: string;
+  averageFirstResponseTime: string;
+}
+
+export interface PerformanceSummaryDTO {
+  csat: number;
+  resolutionRate: number;
+  qualityScore: number;
+}
+
+export interface AiActivityTodaySummaryDTO {
+  aiDecisionsGenerated: number;
+  suggestedRepliesGenerated: number;
+  knowledgeSearches: number;
+  averageAiConfidence: number | null;
+}
+
+export interface AiProcessingSummaryDTO {
+  workflowsExecuted: number;
+  averageProcessingDurationMs: number;
+  successRate: number;
+  primaryModel: string;
+}
+
+export interface DashboardTimelineEvent {
+  id: string;
+  eventType: string;
+  ticketNumber: string;
+  timestamp: string;
+  description: string;
+  source: string;
+}
+
+export interface AgentDashboardResponse {
+  generatedAt: string;
+  refreshIntervalMs: number;
+  version: string;
+  profile: AgentProfileDTO;
+  topSummary: TopSummaryDTO;
+  myQueue: MyQueueSummaryDTO;
+  slaAtRisk: SlaAtRiskSummaryDTO;
+  resolvedToday: ResolvedTodaySummaryDTO;
+  myPerformance: PerformanceSummaryDTO | null;
+  aiRecommendations: AiRecommendationDTO[];
+  aiActivityToday: AiActivityTodaySummaryDTO;
+  aiProcessing: AiProcessingSummaryDTO | null;
+  recentActivity: DashboardTimelineEvent[];
 }

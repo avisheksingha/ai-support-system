@@ -2,7 +2,8 @@ import { apiClient } from "@/lib/api-client";
 import type {
   TimelinePageResponse,
   OperationsDashboardResponse,
-  WorkspaceDataResponse
+  WorkspaceDataResponse,
+  AgentDashboardResponse
 } from "@/shared/types/workspace";
 import type {
   TicketModel,
@@ -11,6 +12,12 @@ import type {
 } from "@/shared/types/ticket";
 
 export const workspaceApi = {
+  // Agent Dashboard API
+  getAgentDashboard: async (): Promise<AgentDashboardResponse> => {
+    const response = await apiClient.get<AgentDashboardResponse>("/orchestration/dashboard/agent");
+    return response.data;
+  },
+
   // Ticket Service
   getTickets: async (status?: string): Promise<TicketModel[]> => {
     const response = await apiClient.get<TicketModel[]>("/tickets", { params: { status } });
@@ -97,6 +104,14 @@ export const workspaceApi = {
   // Workflow Explorer API
   searchWorkflows: async (params?: Record<string, any>): Promise<TimelinePageResponse> => {
     const response = await apiClient.get<TimelinePageResponse>(`/orchestration/workflows/search`, { params });
+    return response.data;
+  },
+
+  // Get timeline for a specific workflow execution
+  getWorkflowTimeline: async (workflowId: string, page: number = 0, size: number = 100): Promise<TimelinePageResponse> => {
+    const response = await apiClient.get<TimelinePageResponse>(`/orchestration/workflows/${workflowId}/timeline`, {
+      params: { page, size }
+    });
     return response.data;
   }
 };
