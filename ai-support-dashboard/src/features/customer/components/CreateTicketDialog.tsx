@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCreateTicket } from "../hooks/useCustomerTickets";
 import { useImproveWriting } from "../../writing/hooks/useWriting";
-import { Loader2, Plus, Sparkles, Check, X } from "lucide-react";
+import { Loader2, Plus, Sparkles, Check, X, AlertTriangle } from "lucide-react";
+import type { ValidationResult } from "../../writing/api/writingApi";
 
 interface CreateTicketDialogProps {
   children?: React.ReactNode;
@@ -16,9 +17,10 @@ export function CreateTicketDialog({ children }: CreateTicketDialogProps = {}) {
   const [message, setMessage] = useState("");
   
   // AI Suggestion State
-  const [suggestion, setSuggestion] = useState<{ subject: string, message: string, improved: boolean, changes: string[] } | null>(null);
+  const [suggestion, setSuggestion] = useState<{ subject: string, message: string, improved: boolean, changes: string[], qualityAssessment?: string, checklist?: string[] } | null>(null);
   const [lastCacheKey, setLastCacheKey] = useState<string>("");
   const [aiError, setAiError] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<ValidationResult | null>(null);
   
   const createTicketMutation = useCreateTicket();
   const improveWritingMutation = useImproveWriting();
@@ -40,11 +42,17 @@ export function CreateTicketDialog({ children }: CreateTicketDialogProps = {}) {
       },
       {
         onSuccess: (data) => {
+          if (data.validationResult && !data.validationResult.canProceed) {
+            setValidationError(data.validationResult);
+            return;
+          }
           setSuggestion({
             subject: data.improvedSubject,
             message: data.improvedContent,
             improved: data.improved,
-            changes: data.changes
+            changes: data.changes,
+            qualityAssessment: data.qualityAssessment,
+            checklist: data.checklist
           });
           setLastCacheKey(currentKey);
         },
@@ -68,7 +76,7 @@ export function CreateTicketDialog({ children }: CreateTicketDialogProps = {}) {
     if (!subject.trim() || !message.trim()) return;
 
     createTicketMutation.mutate(
-      { subject, message },
+      { subject, message, bypassSoftValidation: validationError?.isSoftValidation },
       {
         onSuccess: () => {
           setOpen(false);
@@ -77,6 +85,12 @@ export function CreateTicketDialog({ children }: CreateTicketDialogProps = {}) {
           setSuggestion(null);
           setLastCacheKey("");
           setAiError(null);
+          setValidationError(null);
+        },
+        onError: (error: any) => {
+          if (error.response?.data?.outcome) {
+            setValidationError(error.response.data);
+          }
         }
       }
     );
@@ -106,8 +120,21 @@ export function CreateTicketDialog({ children }: CreateTicketDialogProps = {}) {
         
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           {aiError && (
-            <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
-              {aiError}
+            <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200 flex items-start gap-2">
+              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+              <span>{aiError}</span>
+            </div>
+          )}
+          
+          {validationError && (
+            <div className={`text-sm p-3 rounded border flex flex-col gap-1 ${validationError.isSoftValidation ? 'text-amber-800 bg-amber-50 border-amber-200' : 'text-red-700 bg-red-50 border-red-200'}`}>
+              <div className="flex items-center gap-2 font-semibold">
+                <AlertTriangle className="h-4 w-4" />
+                {validationError.title || `Validation Failed: ${validationError.outcome}`}
+              </div>
+              <p className={`text-xs pl-6 ${validationError.isSoftValidation ? 'text-amber-700' : 'text-red-600'}`}>
+                {validationError.userMessage || validationError.reason}
+              </p>
             </div>
           )}
           
@@ -120,7 +147,11 @@ export function CreateTicketDialog({ children }: CreateTicketDialogProps = {}) {
               placeholder="Brief summary of your issue"
               className="bg-card border-border focus-visible:ring-[#0C66E4]"
               value={subject}
-              onChange={(e) => setSubject(e.target.value)}
+              onChange={(e) => {
+                setSubject(e.target.value);
+                setValidationError(null);
+                setAiError(null);
+              }}
               required
               maxLength={150}
             />
@@ -140,7 +171,11 @@ export function CreateTicketDialog({ children }: CreateTicketDialogProps = {}) {
               placeholder="Please describe the issue in detail so we can best assist you."
               className="min-h-[120px] bg-card border border-border rounded-md p-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0C66E4] resize-none"
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={(e) => {
+                setMessage(e.target.value);
+                setValidationError(null);
+                setAiError(null);
+              }}
               required
               minLength={10}
             />
@@ -207,6 +242,24 @@ export function CreateTicketDialog({ children }: CreateTicketDialogProps = {}) {
                       </ul>
                     </div>
                   )}
+                  {suggestion.qualityAssessment && (
+                    <div className="mb-4 bg-purple-50/50 p-3 rounded-lg border border-purple-100">
+                      <span className="text-xs font-semibold text-purple-800 uppercase tracking-wider mb-1 block">Ticket Quality Assessment</span>
+                      <p className="text-xs text-purple-900 leading-relaxed">{suggestion.qualityAssessment}</p>
+                    </div>
+                  )}
+
+                  {suggestion.checklist && suggestion.checklist.length > 0 && (
+                    <div className="mb-5 bg-amber-50/50 p-3 rounded-lg border border-amber-100">
+                      <span className="text-xs font-semibold text-amber-800 uppercase tracking-wider mb-2 block">Before Submit Checklist</span>
+                      <ul className="text-xs text-amber-900 space-y-1.5 list-disc pl-4">
+                        {suggestion.checklist.map((item, idx) => (
+                          <li key={idx}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-2">
                     <Button 
                       type="button" 
@@ -272,6 +325,8 @@ export function CreateTicketDialog({ children }: CreateTicketDialogProps = {}) {
               >
                 {createTicketMutation.isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
+                ) : validationError?.isSoftValidation ? (
+                  "Submit Anyway"
                 ) : (
                   "Submit Ticket"
                 )}

@@ -19,6 +19,15 @@ public record WritingImproveResponse(
         boolean improved,
         
         @Schema(description = "The AI model used for the improvement", example = "gpt-4o")
-        String model
+        String model,
+
+        @Schema(description = "Quality assessment of the ticket", example = "Good")
+        String qualityAssessment,
+
+        @Schema(description = "Checklist of items to complete before submission")
+        List<String> checklist,
+
+        @Schema(description = "Result of the pre-validation stage")
+        com.aisupport.common.dto.ValidationResult validationResult
 ) {
 }

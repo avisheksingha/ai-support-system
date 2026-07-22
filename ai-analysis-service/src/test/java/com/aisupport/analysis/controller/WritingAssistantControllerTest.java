@@ -54,7 +54,10 @@ class WritingAssistantControllerTest {
                 "I need help.",
                 List.of("Corrected grammar"),
                 true,
-                "Gemini 2.5"
+                "Gemini 2.5",
+                "Good",
+                List.of("Add error codes"),
+                null
         );
 
         when(writingAssistantService.improve(any(WritingImproveRequest.class))).thenReturn(response);

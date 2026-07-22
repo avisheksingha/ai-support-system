@@ -29,4 +29,6 @@ public class TicketRequest {
     @Size(min = 10, message = "Message must be at least 10 characters")
     private String message;
 
+    @Schema(description = "If true, bypasses soft validation warnings like TOO_SHORT", example = "false")
+    private boolean bypassSoftValidation;
 }

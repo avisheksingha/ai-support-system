@@ -1,5 +1,7 @@
 package com.aisupport.analysis.service;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.ai.chat.client.ChatClient;
@@ -9,6 +11,8 @@ import org.springframework.stereotype.Service;
 import com.aisupport.analysis.dto.request.WritingContext;
 import com.aisupport.analysis.dto.request.WritingImproveRequest;
 import com.aisupport.analysis.dto.response.WritingImproveResponse;
+import com.aisupport.common.dto.ValidationResult;
+import com.aisupport.common.util.TicketPreValidator;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,6 +37,21 @@ public class WritingAssistantService {
                 request.context(),
                 request.subject() != null ? request.subject().length() : 0,
                 request.content() != null ? request.content().length() : 0);
+
+        ValidationResult validationResult = TicketPreValidator.validate(request.subject(), request.content());
+        if (!validationResult.isCanProceed()) {
+            log.info("Pre-validation failed: {}", validationResult.getReason());
+            return new WritingImproveResponse(
+                    request.subject(),
+                    request.content(),
+                    Collections.emptyList(),
+                    false,
+                    "validation",
+                    null,
+                    Collections.emptyList(),
+                    validationResult
+            );
+        }
 
         String systemPrompt = getSystemPromptForContext(request.context());
 
@@ -69,9 +88,12 @@ public class WritingAssistantService {
             return new WritingImproveResponse(
                     request.subject(),
                     request.content(),
-                    java.util.List.of("AI service unavailable. Original text retained."),
+                    List.of("AI service unavailable. Original text retained."),
                     false,
-                    "fallback"
+                    "fallback",
+                    "Unknown",
+                    Collections.emptyList(),
+                    validationResult
             );
         }
     }

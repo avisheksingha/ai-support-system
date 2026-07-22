@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.aisupport.common.dto.ValidationResult;
+import com.aisupport.common.util.TicketPreValidator;
 import com.aisupport.ticket.dto.request.MessageRequest;
 import com.aisupport.ticket.dto.request.TicketRequest;
 import com.aisupport.ticket.dto.response.MessageResponse;
@@ -42,11 +44,23 @@ public class CustomerTicketController {
     )
     @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping
-    public ResponseEntity<TicketResponse> createCustomerTicket(
+    public ResponseEntity<Object> createCustomerTicket(
             @Parameter(hidden = true) @RequestHeader(value = "X-User-Id", required = false) String userId,
             @Parameter(hidden = true) @RequestHeader(value = "X-User-Email", required = true) String userEmail,
             @Parameter(hidden = true) @RequestHeader(value = "X-User-Name", required = false) String userName,
             @Valid @RequestBody TicketRequest request) {
+        
+        ValidationResult validationResult = TicketPreValidator.validate(request.getSubject(), request.getMessage());
+        
+        boolean shouldBlock = !validationResult.isCanProceed() 
+                && !(validationResult.isSoftValidation() && request.isBypassSoftValidation());
+
+        if (shouldBlock) {
+            log.info("Ticket pre-validation failed for customer [{}]: {} (Soft: {}, Bypassed: {})", 
+                    userEmail, validationResult.getReason(), validationResult.isSoftValidation(), request.isBypassSoftValidation());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(validationResult);
+        }
+
         TicketResponse response = ticketService.createTicket(userId, userEmail, userName, request);
         log.info("Customer [{}] created ticket [{}]", userEmail, response.getTicketNumber());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);

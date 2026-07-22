@@ -52,7 +52,10 @@ class WritingAssistantServiceTest {
                 "I need help.",
                 List.of("Grammar fix"),
                 true,
-                "Model"
+                "Model",
+                "Good",
+                List.of("Add error codes"),
+                null
         );
 
         when(chatClient.prompt()

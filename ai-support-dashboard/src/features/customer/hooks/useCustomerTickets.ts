@@ -49,10 +49,17 @@ export const useCreateTicket = () => {
         description: `Your ticket ${newTicket.ticketNumber} has been created.`,
       });
     },
-    onError: () => {
-      toast.error("Failed to create ticket", {
-        description: "Please try again later.",
-      });
+    onError: (error: any) => {
+      const validationData = error.response?.data;
+      if (validationData?.outcome) {
+        toast.error(validationData.title || `Validation Failed: ${validationData.outcome}`, {
+          description: validationData.userMessage || validationData.reason,
+        });
+      } else {
+        toast.error("Failed to create ticket", {
+          description: "Please try again later.",
+        });
+      }
     }
   });
 };

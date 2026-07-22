@@ -7,12 +7,24 @@ export interface WritingImproveRequest {
   language?: string;
 }
 
+export interface ValidationResult {
+  outcome: string;
+  reason: string;
+  title?: string;
+  userMessage: string;
+  canProceed: boolean;
+  isSoftValidation?: boolean;
+}
+
 export interface WritingImproveResponse {
   improvedSubject: string;
   improvedContent: string;
   changes: string[];
   improved: boolean;
   model: string;
+  qualityAssessment?: string;
+  checklist?: string[];
+  validationResult?: ValidationResult;
 }
 
 export const writingApi = {
