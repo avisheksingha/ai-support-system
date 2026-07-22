@@ -26,7 +26,10 @@ public class TicketPreValidator {
                     .build();
         }
 
-        if (SupportRequestDictionary.isGreeting(combined)) {
+        boolean subjectIsGreeting = safeSubject.isEmpty() || SupportRequestDictionary.isGreeting(safeSubject);
+        boolean contentIsGreeting = safeContent.isEmpty() || SupportRequestDictionary.isGreeting(safeContent);
+
+        if (SupportRequestDictionary.isGreeting(combined) || (subjectIsGreeting && contentIsGreeting)) {
             return ValidationResult.builder()
                     .outcome(ValidationOutcome.GREETING)
                     .reason("The input is just a greeting.")
@@ -37,7 +40,10 @@ public class TicketPreValidator {
                     .build();
         }
 
-        if (SupportRequestDictionary.isNonSupportMessage(combined)) {
+        boolean subjectIsNonSupport = safeSubject.isEmpty() || SupportRequestDictionary.isNonSupportMessage(safeSubject);
+        boolean contentIsNonSupport = safeContent.isEmpty() || SupportRequestDictionary.isNonSupportMessage(safeContent);
+
+        if (SupportRequestDictionary.isNonSupportMessage(combined) || (subjectIsNonSupport && contentIsNonSupport)) {
             return ValidationResult.builder()
                     .outcome(ValidationOutcome.NON_SUPPORT_MESSAGE)
                     .reason("The input appears to be a conversational or non-support message.")
