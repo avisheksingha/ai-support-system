@@ -70,7 +70,7 @@ class AnalysisProcessingServiceTest {
                 .build();
 
         ParsedAnalysis parsed = ParsedAnalysis.builder()
-                .intent("payment error")
+                .intent("completely unknown issue")
                 .sentiment(null)
                 .urgency(null)
                 .confidenceScore(null)
@@ -103,7 +103,7 @@ class AnalysisProcessingServiceTest {
         );
         TicketAnalyzedEvent published = (TicketAnalyzedEvent) eventCaptor.getValue();
         assertThat(published.getTicketId()).isEqualTo(42L);
-        assertThat(published.getAnalysis().intent()).isEqualTo("GENERAL"); // "payment error" is not in ALLOWED_INTENTS so it falls back to GENERAL.
+        assertThat(published.getAnalysis().intent()).isEqualTo("GENERAL");
         assertThat(published.getAnalysis().sentiment()).isEqualTo("NEUTRAL");
         assertThat(published.getAnalysis().urgency()).isEqualTo("LOW");
     }
