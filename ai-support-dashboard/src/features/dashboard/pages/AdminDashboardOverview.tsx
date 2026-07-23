@@ -1,16 +1,15 @@
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import { useAdminDashboard, useOrchestrationHealth } from "../hooks/useAdminDashboard";
+import { useAdminDashboard } from "../hooks/useAdminDashboard";
 import { useNavigate } from "react-router-dom";
 import { 
   Activity, Users, Settings, Server, BrainCircuit,
-  Network, ShieldCheck, Bot, BookOpen, Zap
+  Network, ShieldCheck, Bot, BookOpen
 } from "lucide-react";
 
 export function AdminDashboardOverview() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { data, isLoading } = useAdminDashboard();
-  const { data: orchestrationHealth, isLoading: healthLoading } = useOrchestrationHealth();
 
   return (
     <div className="h-full overflow-auto p-6 flex flex-col gap-6 bg-background">

@@ -13,27 +13,34 @@ const actuatorClient = axios.create({
 export interface SystemHealthDTO {
   serviceName: string;
   status: string; // HEALTHY, DEGRADED, DOWN
+  version?: string;
+  buildVersion?: string;
+  uptime?: string;
 }
 
 export interface PlatformOverviewDTO {
   ticketsToday: number;
+  activeTickets: number;
+  resolvedToday: number;
+  aiProcessedToday: number;
   totalCustomers: number;
   totalAgents: number;
   totalAdmins: number;
-  activeUsers: string;
 }
 
 export interface AiGovernanceDTO {
-  analysisSuccess: string;
-  routingSuccess: string;
-  ragCoverage: string;
+  highConfidenceRate: string;
+  assignmentRate: string;
+  knowledgeCoverage: string;
   averageLatency: string;
 }
 
 export interface RagKnowledgeDTO {
   totalArticles: number;
-  vectorizedDocuments: number;
-  mostAccessedArticle: string;
+  embeddedArticles: number;
+  embeddingCoverage: string;
+  knowledgeCoverage: string;
+  mostUsedArticle: string;
 }
 
 export interface EventDTO {
@@ -48,6 +55,13 @@ export interface ActivityDTO {
   color: string;
 }
 
+export interface PlatformInfoDTO {
+  platformName: string;
+  platformVersion: string;
+  buildVersion: string;
+  environment: string;
+}
+
 export interface AdminDashboardResponse {
   platformOverview: PlatformOverviewDTO;
   aiGovernance: AiGovernanceDTO;
@@ -57,6 +71,7 @@ export interface AdminDashboardResponse {
   ragKnowledge: RagKnowledgeDTO;
   recentEvents: EventDTO[];
   myActivity: ActivityDTO[];
+  platformInfo: PlatformInfoDTO;
 }
 
 export const adminDashboardApi = {
