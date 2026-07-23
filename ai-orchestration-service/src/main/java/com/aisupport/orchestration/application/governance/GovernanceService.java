@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,11 +34,10 @@ public class GovernanceService {
     private static final String ENFORCING_STATUS = "Enforcing";
 
     @Transactional(readOnly = true)
-    public CompletableFuture<GovernanceOverviewDTO> getOverview() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                List<WorkflowExecutionEntity> workflows = workflowExecutionRepository.findAll();
-                List<AiExecutionRecordEntity> records = aiExecutionRecordRepository.findAll();
+    public GovernanceOverviewDTO getOverview() {
+        try {
+            List<WorkflowExecutionEntity> workflows = workflowExecutionRepository.findAll();
+            List<AiExecutionRecordEntity> records = aiExecutionRecordRepository.findAll();
 
                 int approvalRequests = (int) workflows.stream()
                         .filter(w -> WAITING_APPROVAL_STATE.equals(w.getState().name()))
@@ -70,70 +68,62 @@ public class GovernanceService {
                         .avgEvaluationTimeMs(avgTime)
                         .hourlyViolations(Collections.emptyList()) // Future enhancement
                         .build();
-            } catch (Exception e) {
-                log.error("Failed to fetch governance overview metrics", e);
-                return GovernanceOverviewDTO.builder()
-                        .policyViolations(0).guardrailBlocks(0).approvalRequests(0).avgEvaluationTimeMs(0L)
-                        .hourlyViolations(Collections.emptyList())
-                        .build();
-            }
-        });
+        } catch (Exception e) {
+            log.error("Failed to fetch governance overview metrics", e);
+            return GovernanceOverviewDTO.builder()
+                    .policyViolations(0).guardrailBlocks(0).approvalRequests(0).avgEvaluationTimeMs(0L)
+                    .hourlyViolations(Collections.emptyList())
+                    .build();
+        }
     }
 
     @Transactional(readOnly = true)
-    public CompletableFuture<List<ApprovalRequestDTO>> getApprovalQueue() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                return workflowExecutionRepository.findAll().stream()
-                        .filter(w -> WAITING_APPROVAL_STATE.equals(w.getState().name()))
+    public List<ApprovalRequestDTO> getApprovalQueue() {
+        try {
+            return workflowExecutionRepository.findAll().stream()
+                    .filter(w -> WAITING_APPROVAL_STATE.equals(w.getState().name()))
                         .map(this::mapToApprovalRequest)
                         .sorted(Comparator.comparing(ApprovalRequestDTO::getCreatedAt).reversed())
                         .toList();
-            } catch (Exception e) {
-                log.error("Failed to fetch approval queue", e);
-                return Collections.emptyList();
-            }
-        });
+        } catch (Exception e) {
+            log.error("Failed to fetch approval queue", e);
+            return Collections.emptyList();
+        }
     }
 
     @Transactional(readOnly = true)
-    public CompletableFuture<List<BlockedRequestDTO>> getBlockedRequests() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                return aiExecutionRecordRepository.findAll().stream()
-                        .filter(r -> BLOCKED_OUTCOME.equals(r.getOutcome()))
+    public List<BlockedRequestDTO> getBlockedRequests() {
+        try {
+            return aiExecutionRecordRepository.findAll().stream()
+                    .filter(r -> BLOCKED_OUTCOME.equals(r.getOutcome()))
                         .map(this::mapToBlockedRequest)
                         .sorted(Comparator.comparing(BlockedRequestDTO::getBlockedAt).reversed())
                         .toList();
-            } catch (Exception e) {
-                log.error("Failed to fetch blocked requests", e);
-                return Collections.emptyList();
-            }
-        });
+        } catch (Exception e) {
+            log.error("Failed to fetch blocked requests", e);
+            return Collections.emptyList();
+        }
     }
 
     @Transactional(readOnly = true)
-    public CompletableFuture<List<AuditLogDTO>> getAuditLogs() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                return aiExecutionRecordRepository.findAll().stream()
-                        .filter(r -> r.getGuardrailId() != null || r.getPolicyId() != null || BLOCKED_OUTCOME.equals(r.getOutcome()))
+    public List<AuditLogDTO> getAuditLogs() {
+        try {
+            return aiExecutionRecordRepository.findAll().stream()
+                    .filter(r -> r.getGuardrailId() != null || r.getPolicyId() != null || BLOCKED_OUTCOME.equals(r.getOutcome()))
                         .map(this::mapToAuditLog)
                         .sorted(Comparator.comparing(AuditLogDTO::getTimestamp).reversed())
                         .limit(100) // limit for UI
                         .toList();
-            } catch (Exception e) {
-                log.error("Failed to fetch audit logs", e);
-                return Collections.emptyList();
-            }
-        });
+        } catch (Exception e) {
+            log.error("Failed to fetch audit logs", e);
+            return Collections.emptyList();
+        }
     }
 
     @Transactional(readOnly = true)
-    public CompletableFuture<List<ActiveGuardrailDTO>> getActiveGuardrails() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                // In a full implementation, this would query the Policy Engine.
+    public List<ActiveGuardrailDTO> getActiveGuardrails() {
+        try {
+            // In a full implementation, this would query the Policy Engine.
                 // For Phase 1, we map existing implemented guardrails and count hits from DB.
                 List<AiExecutionRecordEntity> records = aiExecutionRecordRepository.findAll();
                 
@@ -148,11 +138,10 @@ public class GovernanceService {
                 ).build());
                 
                 return guardrails;
-            } catch (Exception e) {
-                log.error("Failed to fetch active guardrails", e);
-                return Collections.emptyList();
-            }
-        });
+        } catch (Exception e) {
+            log.error("Failed to fetch active guardrails", e);
+            return Collections.emptyList();
+        }
     }
 
     private ApprovalRequestDTO mapToApprovalRequest(WorkflowExecutionEntity entity) {

@@ -1,7 +1,6 @@
 package com.aisupport.orchestration.infrastructure.web;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,36 +30,36 @@ public class GovernanceController {
 
     @GetMapping("/overview")
     @Operation(summary = "Get governance overview metrics")
-    public CompletableFuture<ResponseEntity<GovernanceOverviewDTO>> getOverview() {
+    public ResponseEntity<GovernanceOverviewDTO> getOverview() {
         log.info("Fetching governance overview");
-        return governanceService.getOverview().thenApply(ResponseEntity::ok);
+        return ResponseEntity.ok(governanceService.getOverview());
     }
 
     @GetMapping("/approval-queue")
     @Operation(summary = "Get pending human approvals")
-    public CompletableFuture<ResponseEntity<List<ApprovalRequestDTO>>> getApprovalQueue() {
+    public ResponseEntity<List<ApprovalRequestDTO>> getApprovalQueue() {
         log.info("Fetching governance approval queue");
-        return governanceService.getApprovalQueue().thenApply(ResponseEntity::ok);
+        return ResponseEntity.ok(governanceService.getApprovalQueue());
     }
 
     @GetMapping("/blocked-requests")
     @Operation(summary = "Get guardrail blocked requests")
-    public CompletableFuture<ResponseEntity<List<BlockedRequestDTO>>> getBlockedRequests() {
+    public ResponseEntity<List<BlockedRequestDTO>> getBlockedRequests() {
         log.info("Fetching governance blocked requests");
-        return governanceService.getBlockedRequests().thenApply(ResponseEntity::ok);
+        return ResponseEntity.ok(governanceService.getBlockedRequests());
     }
 
     @GetMapping("/audit-logs")
     @Operation(summary = "Get governance audit logs")
-    public CompletableFuture<ResponseEntity<List<AuditLogDTO>>> getAuditLogs() {
+    public ResponseEntity<List<AuditLogDTO>> getAuditLogs() {
         log.info("Fetching governance audit logs");
-        return governanceService.getAuditLogs().thenApply(ResponseEntity::ok);
+        return ResponseEntity.ok(governanceService.getAuditLogs());
     }
 
     @GetMapping("/active-guardrails")
     @Operation(summary = "Get active guardrails")
-    public CompletableFuture<ResponseEntity<List<ActiveGuardrailDTO>>> getActiveGuardrails() {
+    public ResponseEntity<List<ActiveGuardrailDTO>> getActiveGuardrails() {
         log.info("Fetching active guardrails");
-        return governanceService.getActiveGuardrails().thenApply(ResponseEntity::ok);
+        return ResponseEntity.ok(governanceService.getActiveGuardrails());
     }
 }

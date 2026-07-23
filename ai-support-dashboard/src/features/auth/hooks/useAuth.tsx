@@ -40,6 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch {
           // If refetch fails (and our interceptor fails to refresh), clear tokens
           defaultTokenManager.clear();
+          queryClient.setQueryData(["currentUser"], null);
         }
       }
       setIsInitializing(false);
