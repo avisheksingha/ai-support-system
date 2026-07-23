@@ -3,6 +3,7 @@ package com.aisupport.orchestration.infrastructure.client;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
+import com.aisupport.common.dto.admin.AdminRagStatsResponse;
 import com.aisupport.common.event.KnowledgeContext;
 import com.aisupport.orchestration.domain.model.Result;
 
@@ -43,5 +44,17 @@ public class ResilientRagClient implements RagClient {
     public Result<KnowledgeContext> getRagResponseFallback(Long ticketId, Throwable t) {
         log.warn("Resilience fallback triggered for fetching RAG response on ticketId={}: {}", ticketId, t.getMessage());
         return Result.failure("RAG Service Unavailable (Resilience Fallback)");
+    }
+
+    @Override
+    @CircuitBreaker(name = "rag", fallbackMethod = "getAdminStatsFallback")
+    @Retry(name = "rag", fallbackMethod = "getAdminStatsFallback")
+    public AdminRagStatsResponse getAdminStats() {
+        return defaultRagClient.getAdminStats();
+    }
+
+    public AdminRagStatsResponse getAdminStatsFallback(Throwable t) {
+        log.warn("Resilience fallback triggered for fetching RAG admin stats: {}", t.getMessage());
+        return AdminRagStatsResponse.builder().build();
     }
 }

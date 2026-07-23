@@ -1,15 +1,16 @@
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import { useTicketList } from "@/features/workspace/hooks/useWorkspace";
+import { useAdminDashboard, useOrchestrationHealth } from "../hooks/useAdminDashboard";
 import { useNavigate } from "react-router-dom";
 import { 
-  Activity, Users, Settings, Server, Database, BrainCircuit,
-  Network, ShieldCheck, Zap, Bot, BookOpen
+  Activity, Users, Settings, Server, BrainCircuit,
+  Network, ShieldCheck, Bot, BookOpen, Zap
 } from "lucide-react";
 
 export function AdminDashboardOverview() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { isLoading } = useTicketList();
+  const { data, isLoading } = useAdminDashboard();
+  const { data: orchestrationHealth, isLoading: healthLoading } = useOrchestrationHealth();
 
   return (
     <div className="h-full overflow-auto p-6 flex flex-col gap-6 bg-background">
@@ -44,13 +45,15 @@ export function AdminDashboardOverview() {
                 <p className="text-slate-400 font-medium text-xs uppercase tracking-wider mb-1 flex items-center gap-2">
                   <Server className="h-3.5 w-3.5" /> Platform Overview
                 </p>
-                <div className="text-4xl font-bold mb-4">{isLoading ? "-" : "143"} <span className="text-lg text-slate-300 font-medium">Tickets Today</span></div>
+                <div className="text-4xl font-bold mb-4">{isLoading ? "-" : data?.platformOverview.ticketsToday || 0} <span className="text-lg text-slate-300 font-medium">Tickets Today</span></div>
               </div>
-              <div className="flex gap-4 text-sm font-medium bg-white/10 rounded-lg p-3">
-                <div className="flex flex-col"><span className="text-white font-bold">432</span> <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400">Customers</span></div>
-                <div className="flex flex-col"><span className="text-white font-bold">24</span> <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400">Agents</span></div>
-                <div className="flex flex-col"><span className="text-white font-bold">2</span> <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400">Admins</span></div>
-                <div className="flex flex-col ml-auto text-right"><span className="text-emerald-400 font-bold">18</span> <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400">Active</span></div>
+              <div className="flex gap-4 text-sm font-medium bg-white/10 rounded-lg p-3 overflow-x-auto">
+                <div className="flex flex-col"><span className="text-white font-bold">{isLoading ? "-" : data?.platformOverview.activeTickets || 0}</span> <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400">Active</span></div>
+                <div className="flex flex-col"><span className="text-white font-bold">{isLoading ? "-" : data?.platformOverview.resolvedToday || 0}</span> <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400">Resolved</span></div>
+                <div className="flex flex-col"><span className="text-white font-bold">{isLoading ? "-" : data?.platformOverview.aiProcessedToday || 0}</span> <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400">AI Processed</span></div>
+                <div className="flex flex-col"><span className="text-white font-bold">{isLoading ? "-" : data?.platformOverview.totalCustomers || 0}</span> <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400">Customers</span></div>
+                <div className="flex flex-col"><span className="text-white font-bold">{isLoading ? "-" : data?.platformOverview.totalAgents || 0}</span> <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400">Agents</span></div>
+                <div className="flex flex-col"><span className="text-white font-bold">{isLoading ? "-" : data?.platformOverview.totalAdmins || 0}</span> <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400">Admins</span></div>
               </div>
             </div>
 
@@ -66,19 +69,19 @@ export function AdminDashboardOverview() {
               
               <div className="grid grid-cols-2 gap-4 mt-auto">
                 <div className="flex flex-col">
-                  <span className="text-2xl font-bold text-foreground">98%</span>
-                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Analysis Success</span>
+                  <span className="text-2xl font-bold text-foreground">{isLoading ? "-" : data?.aiGovernance.highConfidenceRate || "N/A"}</span>
+                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">High Confidence Rate</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-2xl font-bold text-foreground">100%</span>
-                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Routing Success</span>
+                  <span className="text-2xl font-bold text-foreground">{isLoading ? "-" : data?.aiGovernance.assignmentRate || "N/A"}</span>
+                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Assignment Rate</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-2xl font-bold text-foreground">93%</span>
-                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">RAG Coverage</span>
+                  <span className="text-2xl font-bold text-foreground">{isLoading ? "-" : data?.aiGovernance.knowledgeCoverage || "N/A"}</span>
+                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Knowledge Coverage</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-2xl font-bold text-foreground">850<span className="text-sm text-muted-foreground ml-1">ms</span></span>
+                  <span className="text-2xl font-bold text-foreground">{isLoading ? "-" : data?.aiGovernance.averageLatency || "N/A"}</span>
                   <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Avg Latency</span>
                 </div>
               </div>
@@ -92,10 +95,19 @@ export function AdminDashboardOverview() {
               <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
                 <h2 className="text-sm font-semibold text-foreground mb-4">Department Workload</h2>
                 <div className="space-y-4">
-                  <WorkloadBar label="Billing" value={42} max={50} color="bg-blue-500" />
-                  <WorkloadBar label="Support" value={38} max={50} color="bg-emerald-500" />
-                  <WorkloadBar label="Security" value={14} max={50} color="bg-orange-500" />
-                  <WorkloadBar label="Sales" value={8} max={50} color="bg-purple-500" />
+                  {isLoading ? (
+                    <div className="text-sm text-muted-foreground">Loading...</div>
+                  ) : !data?.departmentWorkload || Object.keys(data.departmentWorkload).length === 0 ? (
+                    <div className="text-sm text-muted-foreground italic">No current workload data.</div>
+                  ) : (
+                    Object.entries(data.departmentWorkload).map(([team, count], index) => {
+                      const colors = ["bg-blue-500", "bg-emerald-500", "bg-orange-500", "bg-purple-500", "bg-indigo-500"];
+                      const max = Math.max(...Object.values(data.departmentWorkload), 10);
+                      return (
+                        <WorkloadBar key={team} label={team} value={count} max={max} color={colors[index % colors.length] || "bg-blue-500"} />
+                      );
+                    })
+                  )}
                 </div>
               </div>
 
@@ -103,10 +115,15 @@ export function AdminDashboardOverview() {
               <div className="bg-card border border-border rounded-xl p-5 shadow-sm flex-1">
                 <h2 className="text-sm font-semibold text-foreground mb-4">Routing Overview</h2>
                 <div className="grid grid-cols-2 gap-4">
-                  <RoutingStat label="Billing Routed" value="32" />
-                  <RoutingStat label="Security Routed" value="14" />
-                  <RoutingStat label="Support Routed" value="48" />
-                  <RoutingStat label="Manual Overrides" value="5" alert />
+                  {isLoading ? (
+                    <div className="text-sm text-muted-foreground col-span-2">Loading...</div>
+                  ) : !data?.routingOverview || Object.keys(data.routingOverview).length === 0 ? (
+                    <div className="text-sm text-muted-foreground col-span-2 italic">No routing data available.</div>
+                  ) : (
+                    Object.entries(data.routingOverview).map(([label, count]) => (
+                      <RoutingStat key={label} label={label} value={count.toString()} alert={label.toLowerCase().includes("override") && count > 0} />
+                    ))
+                  )}
                 </div>
               </div>
             </div>
@@ -116,12 +133,23 @@ export function AdminDashboardOverview() {
               <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
                 <h2 className="text-sm font-semibold text-foreground mb-4">Platform Status</h2>
                 <div className="grid grid-cols-2 gap-3">
-                  <SystemStatus label="API Gateway" icon={Network} />
-                  <SystemStatus label="Kafka" icon={Activity} />
-                  <SystemStatus label="Postgres" icon={Database} />
-                  <SystemStatus label="Redis" icon={Zap} />
-                  <SystemStatus label="AI Models" icon={Bot} />
-                  <SystemStatus label="Auth Service" icon={ShieldCheck} />
+                  {isLoading ? (
+                    <div className="text-sm text-muted-foreground col-span-2">Checking systems...</div>
+                  ) : (
+                    data?.systemHealth?.map((sys: any) => {
+                      let Icon = Server;
+                      if (sys.serviceName.includes("Gateway") || sys.serviceName.includes("API-GATEWAY")) Icon = Network;
+                      else if (sys.serviceName.includes("Ticket") || sys.serviceName.includes("Kafka") || sys.serviceName.includes("TICKET")) Icon = Activity;
+                      else if (sys.serviceName.includes("Auth") || sys.serviceName.includes("AUTH")) Icon = ShieldCheck;
+                      else if (sys.serviceName.includes("AI") || sys.serviceName.includes("RAG") || sys.serviceName.includes("ORCHESTRATION")) Icon = Bot;
+                      
+                      const label = sys.serviceName.replace("-SERVICE", "").replace("-", " ");
+                      
+                      return (
+                        <SystemStatus key={sys.serviceName} label={label} status={sys.status} icon={Icon} sys={sys} />
+                      );
+                    })
+                  )}
                 </div>
               </div>
 
@@ -131,10 +159,15 @@ export function AdminDashboardOverview() {
                   <h2 className="text-sm font-semibold text-foreground">Recent Platform Events</h2>
                 </div>
                 <div className="space-y-4">
-                  <EventItem label="Routing rule changed" sublabel="By admin@system" time="10m ago" />
-                  <EventItem label="Knowledge article updated" sublabel="Refund Policy v2" time="1h ago" />
-                  <EventItem label="Agent created" sublabel="john.doe@support" time="3h ago" />
-                  <EventItem label="Customer registered" sublabel="new client" time="4h ago" />
+                  {isLoading ? (
+                    <div className="text-sm text-muted-foreground">Loading...</div>
+                  ) : !data?.recentEvents || data.recentEvents.length === 0 ? (
+                    <div className="text-sm text-muted-foreground italic">No platform events available.</div>
+                  ) : (
+                    data.recentEvents.map((evt, idx) => (
+                      <EventItem key={idx} label={evt.label} sublabel={evt.sublabel} time={evt.time} />
+                    ))
+                  )}
                 </div>
               </div>
             </div>
@@ -161,15 +194,46 @@ export function AdminDashboardOverview() {
             <div className="flex flex-col gap-3">
               <div className="flex justify-between items-center text-[13px]">
                 <span className="text-muted-foreground font-medium">Total Articles</span>
-                <span className="font-bold text-foreground">56</span>
+                <span className="font-bold text-foreground">{isLoading ? "-" : data?.ragKnowledge.totalArticles || 0}</span>
               </div>
               <div className="flex justify-between items-center text-[13px]">
-                <span className="text-muted-foreground font-medium">Vector Embedded</span>
-                <span className="font-bold text-emerald-600">56</span>
+                <span className="text-muted-foreground font-medium">Embedded Articles</span>
+                <span className="font-bold text-emerald-600">{isLoading ? "-" : data?.ragKnowledge.embeddedArticles || 0}</span>
               </div>
-              <div className="flex justify-between items-center text-[13px] pt-2 border-t border-border mt-1">
-                <span className="text-muted-foreground font-medium">Most Used</span>
-                <span className="font-bold text-foreground text-right w-24 truncate">Refund Policy</span>
+              <div className="flex justify-between items-center text-[13px]">
+                <span className="text-muted-foreground font-medium">Embedding Coverage</span>
+                <span className="font-bold text-emerald-600">{isLoading ? "-" : data?.ragKnowledge.embeddingCoverage || "0%"}</span>
+              </div>
+              <div className="flex justify-between items-center text-[13px]">
+                <span className="text-muted-foreground font-medium">Knowledge Coverage</span>
+                <span className="font-bold text-blue-600">{isLoading ? "-" : data?.ragKnowledge.knowledgeCoverage || "0%"}</span>
+              </div>
+              <div className="flex flex-col gap-1 pt-2 border-t border-border mt-1">
+                <span className="text-muted-foreground font-medium text-[13px]">Most Used Article</span>
+                <span className="font-bold text-foreground text-[13px] truncate" title={data?.ragKnowledge.mostUsedArticle || "N/A"}>{isLoading ? "-" : data?.ragKnowledge.mostUsedArticle || "N/A"}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Platform Information */}
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
+            <h2 className="text-sm font-semibold text-foreground mb-4">Platform Information</h2>
+            <div className="flex flex-col gap-3">
+              <div className="flex justify-between items-center text-[13px]">
+                <span className="text-muted-foreground font-medium">Platform Name</span>
+                <span className="font-bold text-foreground">{isLoading ? "-" : data?.platformInfo?.platformName || "N/A"}</span>
+              </div>
+              <div className="flex justify-between items-center text-[13px]">
+                <span className="text-muted-foreground font-medium">Version</span>
+                <span className="font-bold text-foreground">{isLoading ? "-" : data?.platformInfo?.platformVersion || "N/A"}</span>
+              </div>
+              <div className="flex justify-between items-center text-[13px]">
+                <span className="text-muted-foreground font-medium">Environment</span>
+                <span className="font-bold text-foreground">{isLoading ? "-" : data?.platformInfo?.environment || "N/A"}</span>
+              </div>
+              <div className="flex justify-between items-center text-[13px]">
+                <span className="text-muted-foreground font-medium">Build</span>
+                <span className="font-bold text-foreground truncate max-w-[120px]">{isLoading ? "-" : data?.platformInfo?.buildVersion || "N/A"}</span>
               </div>
             </div>
           </div>
@@ -178,9 +242,15 @@ export function AdminDashboardOverview() {
           <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
             <h2 className="text-sm font-semibold text-foreground mb-4">My Admin Activity</h2>
             <div className="space-y-4">
-              <ActivityItem label="Created user account" time="3h ago" color="text-blue-500" />
-              <ActivityItem label="Assigned role AGENT" time="3h ago" color="text-emerald-500" />
-              <ActivityItem label="Updated routing rule" time="Yesterday" color="text-orange-500" />
+              {isLoading ? (
+                <div className="text-sm text-muted-foreground">Loading...</div>
+              ) : !data?.myActivity || data.myActivity.length === 0 ? (
+                <div className="text-sm text-muted-foreground italic">No recent activity.</div>
+              ) : (
+                data.myActivity.map((act, idx) => (
+                  <ActivityItem key={idx} label={act.label} time={act.time} color={act.color} />
+                ))
+              )}
             </div>
           </div>
 
@@ -214,16 +284,30 @@ function RoutingStat({ label, value, alert }: { label: string, value: string, al
   );
 }
 
-function SystemStatus({ label, icon: Icon }: { label: string, icon: any }) {
+function SystemStatus({ label, status, icon: Icon, sys }: { label: string, status: string, icon: any, sys?: any }) {
+  const isHealthy = status === "HEALTHY" || status === "UP";
+  const isDown = status === "DOWN";
+  const isChecking = status === "CHECKING";
+  
+  const bgClass = isHealthy ? "bg-emerald-50 border-emerald-100" : isDown ? "bg-red-50 border-red-100" : isChecking ? "bg-slate-50 border-slate-100" : "bg-orange-50 border-orange-100";
+  const textClass = isHealthy ? "text-emerald-600" : isDown ? "text-red-600" : isChecking ? "text-slate-400" : "text-orange-600";
+
   return (
-    <div className="flex items-center gap-2 p-2.5 rounded-lg border border-border bg-card">
-      <div className="h-6 w-6 rounded bg-emerald-50 flex items-center justify-center shrink-0 border border-emerald-100">
-        <Icon className="h-3.5 w-3.5 text-emerald-600" />
+    <div className="flex flex-col gap-1 p-2.5 rounded-lg border border-border bg-card">
+      <div className="flex items-center gap-2">
+        <div className={`h-6 w-6 rounded flex items-center justify-center shrink-0 border ${bgClass}`}>
+          <Icon className={`h-3.5 w-3.5 ${textClass}`} />
+        </div>
+        <div className="flex flex-col min-w-0 flex-1">
+          <span className="text-[11px] font-bold text-foreground truncate">{label}</span>
+          <span className={`text-[9px] uppercase tracking-wider font-bold ${textClass}`}>{status}</span>
+        </div>
       </div>
-      <div className="flex flex-col min-w-0 flex-1">
-        <span className="text-[11px] font-bold text-foreground truncate">{label}</span>
-        <span className="text-[9px] uppercase tracking-wider font-bold text-emerald-600">Healthy</span>
-      </div>
+      {sys && sys.version && sys.version !== "N/A" && (
+        <div className="mt-1 pl-8 flex flex-col gap-0.5 text-[9px] text-muted-foreground">
+          <div>Ver: {sys.version}</div>
+        </div>
+      )}
     </div>
   );
 }

@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import com.aisupport.common.dto.admin.AdminAnalysisStatsResponse;
 import com.aisupport.common.event.AnalysisResult;
 import com.aisupport.orchestration.domain.model.Result;
 import com.aisupport.orchestration.infrastructure.client.exception.AnalysisUnavailableException;
@@ -62,6 +63,20 @@ public class DefaultAnalysisClient implements AnalysisClient {
         } catch (Exception e) {
             log.error("Failed to fetch analysis for ticketId={}", ticketId, e);
             return Result.failure("Analysis not found or unavailable: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public Result<AdminAnalysisStatsResponse> getAdminStats() {
+        try {
+            AdminAnalysisStatsResponse response = restClient.get()
+                    .uri("/api/internal/analysis/stats/admin")
+                    .retrieve()
+                    .body(AdminAnalysisStatsResponse.class);
+            return Result.success(response);
+        } catch (Exception e) {
+            log.error("Failed to fetch admin analysis stats", e);
+            return Result.failure("Admin analysis stats unavailable: " + e.getMessage());
         }
     }
 }

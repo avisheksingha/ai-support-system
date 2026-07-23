@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React, { Suspense, useState } from "react";
 import { useTicket, useWorkspaceAggregation, useTimeline, useUpdateTicketStatus, useMessages, useAddMessage } from "../hooks/useWorkspace";
 import { Check, User, Mail, Clock, ArrowUpRight, MessageSquare, CheckCircle } from "lucide-react";
 import { TicketTimeline } from "./TicketTimeline";
@@ -18,6 +18,12 @@ const RoutingPanel = React.lazy(() => import("./RoutingPanel").then(m => ({ defa
 const DiagnosticsPanel = React.lazy(() => import("./DiagnosticsPanel").then(m => ({ default: m.DiagnosticsPanel })));
 import { AiPipelineProgress } from "./AiPipelineProgress";
 import { AiContextDrawer } from "./AiContextDrawer";
+import { CollapsiblePanel } from "./CollapsiblePanel";
+import { BrainCircuit } from "lucide-react";
+import { BookOpen } from "lucide-react";
+import { Bot } from "lucide-react";
+import { Network } from "lucide-react";
+import { Activity } from "lucide-react";
 import type { TicketStatus } from "@/shared/types/ticket";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/features/auth/hooks/useAuth";
@@ -33,18 +39,18 @@ function calculateSLA(createdAt: string, slaHours?: number) {
   const target = created + (slaHours * 60 * 60 * 1000);
   const now = Date.now();
   const timeLeft = target - now;
-  
+
   if (timeLeft <= 0) {
     return { text: "Breached", percent: 100, isBreached: true };
   }
-  
+
   const totalMs = slaHours * 60 * 60 * 1000;
   const elapsed = now - created;
   const percent = Math.min(100, Math.max(0, (elapsed / totalMs) * 100));
-  
+
   const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60));
   const minsLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-  
+
   return {
     text: `${hoursLeft}h ${minsLeft}m left`,
     percent,
@@ -55,7 +61,7 @@ function calculateSLA(createdAt: string, slaHours?: number) {
 export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
   const { data: ticket, isLoading: isTicketLoading } = useTicket(ticketNumber);
   const { mutate: updateStatus } = useUpdateTicketStatus();
-  
+
   const [searchParams] = useSearchParams();
   const showDiagnostics = searchParams.get("diagnostics") === "true";
   const { user } = useAuth();
@@ -63,7 +69,20 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
   const isAdmin = user?.role === "ADMIN";
   const isDiagnosticsActive = showDiagnostics && isAdmin;
-  
+
+  // Collapsible panel states
+  const [expandedPanels, setExpandedPanels] = useState({
+    aiAnalysis: true, // AI Analysis expanded by default
+    knowledgeBase: false,
+    aiDecision: false,
+    routing: false,
+    timeline: false,
+  });
+
+  const togglePanel = (panel: keyof typeof expandedPanels) => {
+    setExpandedPanels(prev => ({ ...prev, [panel]: !prev[panel] }));
+  };
+
   // We only enable AI/Routing queries if we have the ticket ID
   const { data: workspaceData, isLoading: isWorkspaceLoading } = useWorkspaceAggregation(ticket?.id, ticket?.status);
   const analysis = workspaceData?.analysis;
@@ -74,7 +93,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
   const { data: timeline, isLoading: isTimelineLoading } = useTimeline(ticket?.id);
   const { data: messages, isLoading: isMessagesLoading } = useMessages(ticket?.ticketNumber);
   const { mutate: addMessage, isPending: isSendingMessage } = useAddMessage();
-  
+
   const slaData = ticket ? calculateSLA(ticket.createdAt, ticket.slaHours) : null;
 
   const handleSendReply = () => {
@@ -109,14 +128,14 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
     <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-5 lg:p-6 flex flex-col xl:flex-row gap-3 sm:gap-4 lg:gap-6 items-start bg-[#F8FAFC]">
       {/* Primary Column: Conversation & Actions */}
       <div className="flex-1 min-w-0 flex flex-col gap-3 sm:gap-4">
-        
+
         {isDiagnosticsActive && (
           <ErrorBoundary FallbackComponent={WorkspaceErrorFallback}>
             <Suspense fallback={<Skeleton className="h-64 w-full bg-card rounded-xl" />}>
-              <DiagnosticsPanel 
-                 ticket={ticket} 
-                 analysis={analysis} 
-                 routing={routing}
+              <DiagnosticsPanel
+                ticket={ticket}
+                analysis={analysis}
+                routing={routing}
               />
             </Suspense>
           </ErrorBoundary>
@@ -124,7 +143,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
 
         <div className="bg-white shadow-sm border border-slate-200 rounded-xl p-5 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
-          
+
           {/* Header: Ticket ID and Created Time */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -143,8 +162,8 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
               `}>
                 {ticket.priority}
               </Badge>
-              <Select 
-                value={ticket.status} 
+              <Select
+                value={ticket.status}
                 onValueChange={(val) => updateStatus({ ticketNumber: ticket.ticketNumber, status: val as TicketStatus })}
               >
                 <SelectTrigger className="h-7 text-xs font-semibold bg-white text-slate-800 border-slate-200 shadow-sm w-[140px]">
@@ -165,7 +184,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
 
           {/* Subject */}
           <h1 className="text-xl font-bold text-slate-900 leading-tight mb-4 break-words">{ticket.subject}</h1>
-          
+
           {/* Customer Info */}
           <div className="flex items-center gap-4 mb-4 pb-4 border-b border-slate-100 flex-wrap justify-between">
             <div className="flex items-center gap-4 flex-wrap">
@@ -221,8 +240,8 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
                 </span>
               </div>
               <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                <div 
-                  className={`h-full transition-all duration-300 rounded-full ${slaData?.isBreached ? 'bg-red-500' : 'bg-emerald-500'}`} 
+                <div
+                  className={`h-full transition-all duration-300 rounded-full ${slaData?.isBreached ? 'bg-red-500' : 'bg-emerald-500'}`}
                   style={{ width: `${slaData ? slaData.percent : 15}%` }}
                 ></div>
               </div>
@@ -245,8 +264,8 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
           {/* Quick Actions */}
           <div className="flex items-center gap-1.5 sm:gap-2 pt-3 border-t border-slate-100 flex-wrap">
             {/* Primary Action Button: Reply */}
-            <Button 
-              size="sm" 
+            <Button
+              size="sm"
               className="h-7 sm:h-8 text-[10px] sm:text-xs font-semibold gap-1.5 flex-1 sm:flex-none bg-[#0C66E4] hover:bg-[#0052CC] text-white shadow-sm"
               onClick={() => {
                 const replyElem = document.querySelector("textarea");
@@ -256,27 +275,27 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
               <MessageSquare className="h-3 w-3.5 sm:h-3.5" />
               <span>Reply</span>
             </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="h-7 sm:h-8 text-[10px] sm:text-xs font-medium gap-1.5 flex-1 sm:flex-none"
-              onClick={() => {/* TODO: Implement assign modal */}}
+              onClick={() => {/* TODO: Implement assign modal */ }}
             >
               <User className="h-3 w-3.5 sm:h-3.5" />
               <span>Assign</span>
             </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="h-7 sm:h-8 text-[10px] sm:text-xs font-medium gap-1.5 flex-1 sm:flex-none text-purple-700 border-purple-200 bg-purple-50/50 hover:bg-purple-100/60"
               onClick={() => setIsDrawerOpen(true)}
             >
               <ArrowUpRight className="h-3 w-3.5 sm:h-3.5" />
               <span>View AI Context</span>
             </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="h-7 sm:h-8 text-[10px] sm:text-xs font-medium gap-1.5 flex-1 sm:flex-none"
               onClick={() => updateStatus({ ticketNumber: ticket.ticketNumber, status: 'RESOLVED' })}
             >
@@ -291,11 +310,11 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
           <div className="relative flex justify-between items-center w-full">
             {/* Background Track Line */}
             <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 bg-slate-100 rounded-full z-0"></div>
-            
+
             {(() => {
               const statusOrder = ['NEW', 'ANALYZING', 'ANALYZED', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'];
               const currentIndex = Math.max(0, statusOrder.indexOf(ticket.status));
-              
+
               let stationIndex = 0; // NEW
               if (currentIndex >= statusOrder.indexOf('ANALYZING')) stationIndex = 1;
               if (currentIndex >= statusOrder.indexOf('ANALYZED')) stationIndex = 3;
@@ -314,7 +333,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
               return (
                 <>
                   {/* Progress Fill Line */}
-                  <div 
+                  <div
                     className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-emerald-400 transition-all duration-700 ease-in-out rounded-full z-0"
                     style={{ width: `${(stationIndex / (stations.length - 1)) * 100}%` }}
                   ></div>
@@ -322,10 +341,10 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
                   {stations.map((station, idx) => {
                     const isPassed = stationIndex > idx;
                     const isCurrent = stationIndex === idx;
-                    
+
                     // Center all labels! The px-8 padding on the container gives enough room so the first/last don't clip.
                     const labelAlignment = "left-1/2 -translate-x-1/2 text-center";
-                    
+
                     // Alternate labels above and below the track
                     const verticalAlignment = idx % 2 === 0 ? "top-7" : "bottom-7";
 
@@ -353,9 +372,9 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
         {/* Conversation */}
         <div>
           <h2 className="text-[11px] font-bold text-slate-500 mb-4 uppercase tracking-widest px-1">Conversation</h2>
-          
+
           <div className="space-y-4 bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col">
-            
+
             {/* Real Messages Map */}
             {isMessagesLoading ? (
               <div className="space-y-4">
@@ -367,7 +386,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
                 const isInternalNote = msg.isInternal || msg.internal || msg.type === 'INTERNAL_NOTE';
                 const isAgent = msg.type === 'AGENT_MESSAGE' || isInternalNote;
                 const isSystem = msg.senderName === 'System' || msg.type === 'SYSTEM_MESSAGE';
-                
+
                 const avatarText = isAgent ? '🎧' : isSystem ? '⚙️' : '👤';
                 const displayName = isAgent ? 'You' : isSystem ? 'System' : ticket.customerName;
 
@@ -393,38 +412,42 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
 
             {/* Message Input Box */}
             <div className="mt-2 pt-2 border-t border-slate-100 flex gap-2">
-               <div className="flex-1 flex flex-col gap-1.5">
-                 <textarea 
-                   className="w-full border border-slate-200 rounded-lg p-2.5 text-[12px] min-h-[80px] focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-y leading-tight" 
-                   placeholder="Type your reply to the customer..."
-                   value={replyText}
-                   onChange={e => setReplyText(e.target.value)}
-                 ></textarea>
-                 <div className="flex justify-end gap-1.5">
-                    <button 
-                      className="px-3 py-1.5 bg-slate-100 text-slate-700 font-semibold text-[11px] rounded-md hover:bg-slate-200 transition-colors shadow-sm"
-                      onClick={() => addMessage({ ticketNumber: ticket.ticketNumber, content: replyText, isInternal: true }, { onSuccess: () => setReplyText("") })}
-                      disabled={isSendingMessage || !replyText.trim()}
-                    >
-                      Add Internal Note
-                    </button>
-                    <button 
-                      className="px-4 py-1.5 bg-blue-600 text-white font-semibold text-[11px] rounded-md hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50"
-                      onClick={handleSendReply}
-                      disabled={isSendingMessage || !replyText.trim()}
-                    >
-                      {isSendingMessage ? 'Sending...' : 'Send Reply'}
-                    </button>
-                 </div>
-               </div>
+              <div className="flex-1 flex flex-col gap-1.5">
+                <textarea
+                  className="w-full border border-slate-200 rounded-lg p-2.5 text-[12px] min-h-[80px] focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-y leading-tight"
+                  placeholder="Type your reply to the customer..."
+                  value={replyText}
+                  onChange={e => setReplyText(e.target.value)}
+                ></textarea>
+                <div className="flex justify-end gap-1.5">
+                  <button
+                    className="px-3 py-1.5 bg-slate-100 text-slate-700 font-semibold text-[11px] rounded-md hover:bg-slate-200 transition-colors shadow-sm"
+                    onClick={() => addMessage({ ticketNumber: ticket.ticketNumber, content: replyText, isInternal: true }, { onSuccess: () => setReplyText("") })}
+                    disabled={isSendingMessage || !replyText.trim()}
+                  >
+                    Add Internal Note
+                  </button>
+                  <button
+                    className="px-4 py-1.5 bg-blue-600 text-white font-semibold text-[11px] rounded-md hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50"
+                    onClick={handleSendReply}
+                    disabled={isSendingMessage || !replyText.trim()}
+                  >
+                    {isSendingMessage ? 'Sending...' : 'Send Reply'}
+                  </button>
+                </div>
+              </div>
             </div>
 
           </div>
         </div>
 
         {/* Activity Feed */}
-        <div>
-          <h2 className="text-[11px] font-bold text-slate-500 mb-3 uppercase tracking-widest px-1">Activity Feed</h2>
+        <CollapsiblePanel
+          title="Workflow Timeline"
+          icon={<Activity className="h-4 w-4 text-blue-500" />}
+          isExpanded={expandedPanels.timeline}
+          onToggle={() => togglePanel('timeline')}
+        >
           {isTimelineLoading ? (
             <div className="space-y-3 ml-4">
               <Skeleton className="h-10 w-full bg-slate-100 rounded-lg" />
@@ -437,87 +460,147 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
           ) : (
             <div className="text-sm text-slate-500 italic ml-4 bg-white p-4 rounded-xl border border-slate-200">No activity yet.</div>
           )}
-        </div>
+        </CollapsiblePanel>
       </div>
 
       {/* Secondary Column: AI & Automation Workspace */}
       <div className="w-full xl:w-[340px] shrink-0 flex flex-col gap-3 sm:gap-4 h-fit order-first xl:order-last">
-        
+
         {/* AI Insights Panel */}
-        {isWorkspaceLoading || !analysis ? (
-          <div className="border border-border border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center gap-3">
-            <div className="text-2xl animate-bounce">🤖</div>
-            <div className="flex flex-col items-center gap-1">
-              <p className="text-sm font-medium text-foreground">Analyzing customer issue</p>
-              <div className="flex gap-1 text-blue-500">
-                <span className="animate-pulse delay-75">●</span>
-                <span className="animate-pulse delay-150">○</span>
-                <span className="animate-pulse delay-300">○</span>
+        <CollapsiblePanel
+          title="AI Analysis"
+          icon={<BrainCircuit className="h-4 w-4 text-indigo-500" />}
+          isExpanded={expandedPanels.aiAnalysis}
+          onToggle={() => togglePanel('aiAnalysis')}
+          badge={analysis && !isWorkspaceLoading ? (
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold text-indigo-700 uppercase">{analysis.urgency}</span>
+              <Badge className="h-6 px-2 text-[10px] font-bold bg-indigo-50 text-indigo-700 border-indigo-200">
+                {Math.round(analysis.confidenceScore * 100)}%
+              </Badge>
+            </div>
+          ) : null}
+        >
+          {isWorkspaceLoading || !analysis ? (
+            <div className="border border-border border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center gap-3">
+              <div className="text-2xl animate-bounce">🤖</div>
+              <div className="flex flex-col items-center gap-1">
+                <p className="text-sm font-medium text-foreground">Analyzing customer issue</p>
+                <div className="flex gap-1 text-blue-500">
+                  <span className="animate-pulse delay-75">●</span>
+                  <span className="animate-pulse delay-150">○</span>
+                  <span className="animate-pulse delay-300">○</span>
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <ErrorBoundary FallbackComponent={WorkspaceErrorFallback}>
-            <Suspense fallback={<Skeleton className="h-48 w-full bg-card rounded-xl" />}>
-              <AiInsightsPanel analysis={analysis} />
-            </Suspense>
-          </ErrorBoundary>
-        )}
+          ) : (
+            <ErrorBoundary FallbackComponent={WorkspaceErrorFallback}>
+              <Suspense fallback={<Skeleton className="h-48 w-full bg-card rounded-xl" />}>
+                <AiInsightsPanel analysis={analysis} />
+              </Suspense>
+            </ErrorBoundary>
+          )}
+        </CollapsiblePanel>
 
         {/* Knowledge Panel */}
-        {isWorkspaceLoading || !knowledge ? (
-          <div className="border border-border border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center gap-3">
-            <div className="text-2xl animate-bounce" style={{ animationDelay: '0.2s' }}>📚</div>
-            <div className="flex flex-col items-center gap-1">
-              <p className="text-sm font-medium text-foreground">Retrieving Knowledge</p>
-              <div className="flex gap-1 text-emerald-500">
-                <span className="animate-pulse delay-75">●</span>
-                <span className="animate-pulse delay-150">○</span>
-                <span className="animate-pulse delay-300">○</span>
+        <CollapsiblePanel
+          title="Knowledge Base"
+          icon={<BookOpen className="h-4 w-4 text-emerald-500" />}
+          isExpanded={expandedPanels.knowledgeBase}
+          onToggle={() => togglePanel('knowledgeBase')}
+          badge={knowledge && !isWorkspaceLoading && knowledge.knowledgeFound ? (
+            <div className="flex items-center gap-2">
+              <Badge className="h-6 px-2 text-[10px] font-bold bg-emerald-50 text-emerald-700 border-emerald-200">
+                {knowledge.retrievedDocumentCount ?? knowledge.matchedArticleTitles?.length ?? 0}
+              </Badge>
+              <span className="text-[11px] font-bold text-emerald-700 uppercase">High Match</span>
+            </div>
+          ) : null}
+        >
+          {isWorkspaceLoading || !knowledge ? (
+            <div className="border border-border border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center gap-3">
+              <div className="text-2xl animate-bounce" style={{ animationDelay: '0.2s' }}>📚</div>
+              <div className="flex flex-col items-center gap-1">
+                <p className="text-sm font-medium text-foreground">Retrieving Knowledge</p>
+                <div className="flex gap-1 text-emerald-500">
+                  <span className="animate-pulse delay-75">●</span>
+                  <span className="animate-pulse delay-150">○</span>
+                  <span className="animate-pulse delay-300">○</span>
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <ErrorBoundary FallbackComponent={WorkspaceErrorFallback}>
-            <Suspense fallback={<Skeleton className="h-48 w-full bg-card rounded-xl" />}>
-              <RagResponsePanel knowledge={knowledge} />
-            </Suspense>
-          </ErrorBoundary>
-        )}
+          ) : (
+            <ErrorBoundary FallbackComponent={WorkspaceErrorFallback}>
+              <Suspense fallback={<Skeleton className="h-48 w-full bg-card rounded-xl" />}>
+                <RagResponsePanel knowledge={knowledge} />
+              </Suspense>
+            </ErrorBoundary>
+          )}
+        </CollapsiblePanel>
 
         {/* AI Decision Panel */}
         {aiDecision && (
-          <ErrorBoundary FallbackComponent={WorkspaceErrorFallback}>
-            <Suspense fallback={<Skeleton className="h-48 w-full bg-card rounded-xl" />}>
-              <AiDecisionPanel 
-                decision={aiDecision} 
-                onUseReply={setReplyText} 
-              />
-            </Suspense>
-          </ErrorBoundary>
+          <CollapsiblePanel
+            title="AI Decision"
+            icon={<Bot className="h-4 w-4 text-purple-500" />}
+            isExpanded={expandedPanels.aiDecision}
+            onToggle={() => togglePanel('aiDecision')}
+            badge={
+              <div className="flex items-center gap-2">
+                <Badge className="h-6 px-2 text-[10px] font-bold bg-purple-50 text-purple-700 border-purple-200">
+                  {Math.round(aiDecision.confidence * 100)}%
+                </Badge>
+                <span className="text-[11px] font-bold text-purple-700 uppercase">Ready</span>
+              </div>
+            }
+          >
+            <ErrorBoundary FallbackComponent={WorkspaceErrorFallback}>
+              <Suspense fallback={<Skeleton className="h-48 w-full bg-card rounded-xl" />}>
+                <AiDecisionPanel
+                  decision={aiDecision}
+                  onUseReply={setReplyText}
+                />
+              </Suspense>
+            </ErrorBoundary>
+          </CollapsiblePanel>
         )}
 
 
         {/* Assignment Panel */}
-        {isWorkspaceLoading || !routing ? (
-          <div className="border border-border border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center gap-3">
-            <div className="text-2xl animate-bounce" style={{ animationDelay: '0.4s' }}>🧭</div>
-            <div className="flex flex-col items-center gap-1">
-              <p className="text-sm font-medium text-foreground">Evaluating Routing Rules</p>
-              <div className="flex gap-1 text-blue-500">
-                <span className="animate-pulse delay-75">●</span>
-                <span className="animate-pulse delay-150">○</span>
-                <span className="animate-pulse delay-300">○</span>
+        <CollapsiblePanel
+          title="Routing"
+          icon={<Network className="h-4 w-4 text-cyan-500" />}
+          isExpanded={expandedPanels.routing}
+          onToggle={() => togglePanel('routing')}
+          badge={routing && !isWorkspaceLoading ? (
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold text-cyan-700 uppercase">{routing.priority}</span>
+              <Badge className="h-6 px-2 text-[10px] font-bold bg-cyan-50 text-cyan-700 border-cyan-200">
+                {routing.slaHours}h SLA
+              </Badge>
+            </div>
+          ) : null}
+        >
+          {isWorkspaceLoading || !routing ? (
+            <div className="border border-border border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center gap-3">
+              <div className="text-2xl animate-bounce" style={{ animationDelay: '0.4s' }}>🧭</div>
+              <div className="flex flex-col items-center gap-1">
+                <p className="text-sm font-medium text-foreground">Evaluating Routing Rules</p>
+                <div className="flex gap-1 text-blue-500">
+                  <span className="animate-pulse delay-75">●</span>
+                  <span className="animate-pulse delay-150">○</span>
+                  <span className="animate-pulse delay-300">○</span>
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <ErrorBoundary FallbackComponent={WorkspaceErrorFallback}>
-            <Suspense fallback={<Skeleton className="h-32 w-full bg-card rounded-xl" />}>
-              <RoutingPanel routing={routing} ticket={ticket} />
-            </Suspense>
-          </ErrorBoundary>
-        )}
+          ) : (
+            <ErrorBoundary FallbackComponent={WorkspaceErrorFallback}>
+              <Suspense fallback={<Skeleton className="h-32 w-full bg-card rounded-xl" />}>
+                <RoutingPanel routing={routing} ticket={ticket} />
+              </Suspense>
+            </ErrorBoundary>
+          )}
+        </CollapsiblePanel>
       </div>
 
       {/* AI Context Side Drawer */}

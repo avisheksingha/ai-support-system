@@ -9,4 +9,6 @@ import com.aisupport.rag.entity.RagResponse;
 public interface RagResponseRepository extends JpaRepository<RagResponse, Long> {
 
     Optional<RagResponse> findTopByTicketIdOrderByCreatedAtDesc(Long ticketId);
+
+    long countByKnowledgeFoundTrue();
 }

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.aisupport.analysis.dto.request.WritingContext;
 import com.aisupport.analysis.dto.request.WritingImproveRequest;
 import com.aisupport.analysis.dto.response.WritingImproveResponse;
+import com.aisupport.analysis.dto.response.WritingImprovementLLMResponse;
 import com.aisupport.common.dto.ValidationResult;
 import com.aisupport.common.util.TicketPreValidator;
 
@@ -72,15 +73,22 @@ public class WritingAssistantService {
         ));
 
         try {
-            // Because this is UX assistance, don't wait forever. 
-            // We implement a basic timeout on the response block if supported by the provider,
-            // or rely on a wrapper timeout if necessary. For now we use the native Spring AI features.
-            
-            return chatClient.prompt()
+            WritingImprovementLLMResponse llmResponse = chatClient.prompt()
                     .system(systemPrompt)
                     .user(formattedUserPrompt)
                     .call()
-                    .entity(WritingImproveResponse.class);
+                    .entity(WritingImprovementLLMResponse.class);
+
+            return new WritingImproveResponse(
+                    llmResponse.improvedSubject(),
+                    llmResponse.improvedContent(),
+                    llmResponse.changes(),
+                    llmResponse.improved(),
+                    llmResponse.model() != null ? llmResponse.model() : "Unknown",
+                    llmResponse.qualityAssessment(),
+                    llmResponse.checklist(),
+                    validationResult
+            );
 
         } catch (Exception e) {
             log.warn("Failed to generate writing improvement: {}", e.getMessage());

@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import com.aisupport.common.dto.admin.AdminRagStatsResponse;
 import com.aisupport.common.event.KnowledgeContext;
 import com.aisupport.orchestration.domain.model.Result;
 import com.aisupport.orchestration.infrastructure.client.exception.RagUnavailableException;
@@ -78,6 +79,14 @@ public class DefaultRagClient implements RagClient {
             log.error("Failed to get RAG response for ticketId={}", ticketId, e);
             return Result.failure("RAG Not Found: " + e.getMessage());
         }
+    }
+
+    @Override
+    public AdminRagStatsResponse getAdminStats() {
+        return restClient.get()
+                .uri("/api/internal/rag/stats/admin")
+                .retrieve()
+                .body(AdminRagStatsResponse.class);
     }
 
     /**

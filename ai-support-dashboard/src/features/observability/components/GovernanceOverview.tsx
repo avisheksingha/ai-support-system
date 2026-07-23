@@ -1,7 +1,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShieldAlert, AlertOctagon, CheckSquare, ShieldCheck, Activity } from "lucide-react";
+import { useGovernanceOverview, useActiveGuardrails } from "../hooks/useGovernance";
 
 export function GovernanceOverview() {
+  const { data: overview, isLoading: isOverviewLoading } = useGovernanceOverview();
+  const { data: guardrails, isLoading: isGuardrailsLoading } = useActiveGuardrails();
+
   return (
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -11,9 +15,9 @@ export function GovernanceOverview() {
             <ShieldCheck className="h-4 w-4 text-emerald-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-900">14,231</div>
+            <div className="text-2xl font-bold text-slate-900">{isOverviewLoading ? "..." : (overview?.policyViolations ?? "N/A")}</div>
             <p className="text-xs text-slate-500 mt-1">
-              <span className="text-emerald-500 font-medium">↑ 12%</span> from last week
+              <span className="text-slate-400 font-medium">Total evaluated</span>
             </p>
           </CardContent>
         </Card>
@@ -23,9 +27,9 @@ export function GovernanceOverview() {
             <AlertOctagon className="h-4 w-4 text-rose-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-900">23</div>
+            <div className="text-2xl font-bold text-slate-900">{isOverviewLoading ? "..." : (overview?.guardrailBlocks ?? "N/A")}</div>
             <p className="text-xs text-slate-500 mt-1">
-              <span className="text-rose-500 font-medium">↑ 3</span> today
+              <span className="text-slate-400 font-medium">Total blocked</span>
             </p>
           </CardContent>
         </Card>
@@ -35,9 +39,9 @@ export function GovernanceOverview() {
             <CheckSquare className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-900">14</div>
+            <div className="text-2xl font-bold text-slate-900">{isOverviewLoading ? "..." : (overview?.approvalRequests ?? "N/A")}</div>
             <p className="text-xs text-slate-500 mt-1">
-              <span className="text-amber-500 font-medium">2 pending</span> review
+              <span className="text-slate-400 font-medium">Total requests</span>
             </p>
           </CardContent>
         </Card>
@@ -47,9 +51,9 @@ export function GovernanceOverview() {
             <Activity className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-900">18ms</div>
+            <div className="text-2xl font-bold text-slate-900">{isOverviewLoading ? "..." : `${overview?.avgEvaluationTimeMs ?? 0}ms`}</div>
             <p className="text-xs text-slate-500 mt-1">
-              <span className="text-emerald-500 font-medium">↓ 2ms</span> from last week
+              <span className="text-slate-400 font-medium">Average latency</span>
             </p>
           </CardContent>
         </Card>
@@ -63,17 +67,19 @@ export function GovernanceOverview() {
           </CardHeader>
           <CardContent className="pl-2 h-[300px] flex items-end justify-between px-4 pb-4">
             {/* Mock Chart Area - using simple flex bars for v1 */}
-            <div className="w-full flex items-end justify-between gap-2 h-full pt-4 border-b border-l border-slate-200 relative">
+            <div className="w-full flex items-center justify-center gap-2 h-full pt-4 border-b border-l border-slate-200 relative">
                <div className="absolute top-0 left-0 text-[10px] text-slate-400 -translate-x-full pr-2">30</div>
                <div className="absolute top-1/2 left-0 text-[10px] text-slate-400 -translate-x-full pr-2 -translate-y-1/2">15</div>
                <div className="absolute bottom-0 left-0 text-[10px] text-slate-400 -translate-x-full pr-2">0</div>
                
-               {[12, 19, 15, 8, 22, 14, 25, 18, 10, 14, 12, 28, 16, 20].map((val, i) => (
+               {overview?.hourlyViolations?.length ? overview.hourlyViolations.map((trend, i) => (
                  <div key={i} className="flex-1 flex flex-col justify-end gap-1 group">
-                    <div className="w-full bg-indigo-500/80 rounded-t-sm hover:bg-indigo-600 transition-colors" style={{ height: `${(val/30)*100}%` }}></div>
-                    <div className="text-[9px] text-slate-400 text-center">{i + 8}:00</div>
+                    <div className="w-full bg-indigo-500/80 rounded-t-sm hover:bg-indigo-600 transition-colors" style={{ height: `${(trend.value/30)*100}%` }}></div>
+                    <div className="text-[9px] text-slate-400 text-center">{trend.label}</div>
                  </div>
-               ))}
+               )) : (
+                 <div className="text-sm text-slate-400">No trend data available</div>
+               )}
             </div>
           </CardContent>
         </Card>
@@ -85,13 +91,11 @@ export function GovernanceOverview() {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              {[
-                { name: "PII Redaction", type: "Security", status: "Enforcing", count: 12 },
-                { name: "Prompt Injection Detection", type: "Security", status: "Enforcing", count: 5 },
-                { name: "Hallucination Risk Review", type: "Quality", status: "Monitoring", count: 48 },
-                { name: "Manual Approval Required", type: "Workflow", status: "Enforcing", count: 14 },
-                { name: "Unsafe Tool Invocation", type: "Security", status: "Enforcing", count: 2 },
-              ].map((policy, i) => (
+              {isGuardrailsLoading ? (
+                <div className="text-sm text-slate-500">Loading guardrails...</div>
+              ) : !guardrails?.length ? (
+                <div className="text-sm text-slate-500">No active guardrails found.</div>
+              ) : guardrails.map((policy, i) => (
                 <div key={i} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className={`p-2 rounded-lg ${policy.status === 'Enforcing' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'}`}>

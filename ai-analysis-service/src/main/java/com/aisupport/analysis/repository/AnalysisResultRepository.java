@@ -1,5 +1,6 @@
 package com.aisupport.analysis.repository;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -35,4 +36,8 @@ public interface AnalysisResultRepository
         WHERE ar.urgency = :urgency
     """)
     Long countByUrgency(String urgency);
+
+    long countByConfidenceScoreGreaterThanEqual(BigDecimal confidenceScore);
+    
+    long countByCreatedAtAfter(Instant startDate);
 }

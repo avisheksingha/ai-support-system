@@ -33,4 +33,8 @@ public class KnowledgeArticle {
     @Builder.Default
     @Column(nullable = false)
     private boolean embedded = false;
+
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "BIGINT DEFAULT 0")
+    private long accessCount = 0;
 }

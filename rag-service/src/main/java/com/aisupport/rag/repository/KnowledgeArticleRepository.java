@@ -1,6 +1,7 @@
 package com.aisupport.rag.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -21,4 +22,14 @@ public interface KnowledgeArticleRepository extends JpaRepository<KnowledgeArtic
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE KnowledgeArticle a SET a.embedded = true WHERE a.id IN :ids")
     void markArticlesAsEmbedded(@Param("ids") List<Long> ids);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE KnowledgeArticle a SET a.embedded = true")
+    void markAllAsEmbedded();
+
+    Optional<KnowledgeArticle> findFirstByOrderByAccessCountDesc();
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE KnowledgeArticle a SET a.accessCount = a.accessCount + 1 WHERE a.title IN :titles")
+    void incrementAccessCountByTitles(@Param("titles") List<String> titles);
 }

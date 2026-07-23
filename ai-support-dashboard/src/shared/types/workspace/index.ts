@@ -208,6 +208,21 @@ export interface AuditLog {
   actor: "AI" | "SYSTEM" | "AGENT";
 }
 
+export interface ActiveGuardrail {
+  name: string;
+  type: string;
+  status: string;
+  count: number;
+}
+
+export interface GovernanceOverview {
+  policyViolations: number;
+  guardrailBlocks: number;
+  approvalRequests: number;
+  avgEvaluationTimeMs: number;
+  hourlyViolations: TrendData[];
+}
+
 export interface AiRecommendationDTO {
   ticketNumber: string;
   subject: string;

@@ -17,7 +17,7 @@ public class SupportRequestDictionary {
 
     // Regex patterns for non-support messages like "thanks" or emojis
     public static final Pattern NON_SUPPORT_PATTERN = Pattern.compile(
-            "^(thanks|thank you|thx|tysm|ty|awesome|great|cool|ok|okay|bye|goodbye|👍|💯|👏)\\s*[.!?,]*$", 
+            "^(thanks|thank you|thx|tysm|ty|awesome|great|cool|ok|okay|bye|goodbye|how are you\\??|what's up\\??|👍|💯|👏)\\s*[.!?,]*$", 
             Pattern.CASE_INSENSITIVE
     );
 
@@ -30,7 +30,8 @@ public class SupportRequestDictionary {
     // Common words indicating a support request (used if length is borderline)
     public static final List<String> SUPPORT_KEYWORDS = List.of(
             "issue", "error", "fail", "broken", "help", "need", "not working", "bug", "support", 
-            "login", "password", "account", "payment", "charge", "refund", "api", "500", "404", "crash"
+            "login", "password", "account", "payment", "charge", "refund", "api", "500", "404", "crash",
+            "slow", "stuck", "cannot", "can't", "cant", "doesn't", "does not", "wrong", "update", "billing", "screen", "app", "website", "fix"
     );
 
     public static boolean isGreeting(String text) {

@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
@@ -21,11 +20,6 @@ import com.aisupport.common.event.TicketRagResponseEvent;
 import com.aisupport.rag.entity.RagResponse;
 import com.aisupport.rag.exception.RagGenerationException;
 import com.aisupport.rag.outbox.OutboxEventService;
-import com.aisupport.rag.repository.RagResponseRepository;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * Core RAG (Retrieval-Augmented Generation) service.
  *
@@ -37,6 +31,12 @@ import lombok.extern.slf4j.Slf4j;
  * 5. Publish a Kafka event with the response to rag_responses table
  * 6. Publish TicketRagResponseEvent via outbox
  */
+import com.aisupport.rag.repository.KnowledgeArticleRepository;
+import com.aisupport.rag.repository.RagResponseRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -50,6 +50,7 @@ public class RagService {
 	private final ChatClient chatClient;
 	private final QuestionAnswerAdvisor questionAnswerAdvisor;
 	private final RagResponseRepository ragResponseRepository;
+	private final KnowledgeArticleRepository knowledgeArticleRepository;
 	private final OutboxEventService outboxEventService;
 	private final PromptTemplate ragSystemPromptTemplate;
 	
@@ -160,10 +161,17 @@ public class RagService {
 	            
 	        if (!docs.isEmpty()) {
 	            docCount = docs.size();
-	            titles = docs.stream()
+	            
+	            List<String> matchedTitles = docs.stream()
 	                .map(d -> d.getMetadata().get(TITLE_KEY) != null ? d.getMetadata().get(TITLE_KEY).toString() : UNKNOWN_TITLE)
 	                .distinct()
-	                .collect(Collectors.joining(","));
+	                .toList();
+	                
+	            titles = String.join(",", matchedTitles);
+	            
+	            if (!matchedTitles.isEmpty()) {
+	                incrementAccessCountSafe(matchedTitles);
+	            }
 	        }
 	        
 	    } catch (Exception e) {
@@ -207,5 +215,13 @@ public class RagService {
 	private boolean isKnowledgeFound(String response) {
 		return response != null
 			&& !NO_KNOWLEDGE_FOUND.equalsIgnoreCase(response.trim());
+	}
+
+	private void incrementAccessCountSafe(List<String> matchedTitles) {
+		try {
+			knowledgeArticleRepository.incrementAccessCountByTitles(matchedTitles);
+		} catch (Exception e) {
+			log.warn("Failed to increment access count for titles: {}", matchedTitles, e);
+		}
 	}
 }

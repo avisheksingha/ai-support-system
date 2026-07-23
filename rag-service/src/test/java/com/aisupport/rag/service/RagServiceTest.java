@@ -27,6 +27,7 @@ import com.aisupport.common.event.TicketRagResponseEvent;
 import com.aisupport.rag.entity.RagResponse;
 import com.aisupport.rag.exception.RagGenerationException;
 import com.aisupport.rag.outbox.OutboxEventService;
+import com.aisupport.rag.repository.KnowledgeArticleRepository;
 import com.aisupport.rag.repository.RagResponseRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,6 +39,8 @@ class RagServiceTest {
     private QuestionAnswerAdvisor questionAnswerAdvisor;
     @Mock
     private RagResponseRepository ragResponseRepository;
+    @Mock
+    private KnowledgeArticleRepository knowledgeArticleRepository;
     @Mock
     private OutboxEventService outboxEventService;
     
@@ -54,6 +57,7 @@ class RagServiceTest {
                 chatClient,
                 questionAnswerAdvisor,
                 ragResponseRepository,
+                knowledgeArticleRepository,
                 outboxEventService,
                 ragSystemPromptTemplate
         );

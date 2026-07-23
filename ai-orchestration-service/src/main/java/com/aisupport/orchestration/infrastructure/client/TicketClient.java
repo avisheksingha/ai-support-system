@@ -2,12 +2,14 @@ package com.aisupport.orchestration.infrastructure.client;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import com.aisupport.common.dto.admin.AdminTicketStatsResponse;
 import com.aisupport.orchestration.infrastructure.client.dto.TicketDashboardSummaryDTO;
 import com.aisupport.orchestration.infrastructure.client.dto.TicketMessageResponseDTO;
 import com.aisupport.orchestration.infrastructure.client.dto.TicketResponseDTO;
@@ -39,6 +41,14 @@ public class TicketClient {
                 .body(TicketDashboardSummaryDTO.class);
     }
 
+    public AdminTicketStatsResponse getAdminStats(String userEmail) {
+        return restClient.get()
+                .uri("/api/internal/tickets/stats/admin")
+                .headers(headers -> addSecurityHeaders(headers, userEmail))
+                .retrieve()
+                .body(AdminTicketStatsResponse.class);
+    }
+
     public TicketResponseDTO[] getCustomerTickets(String userEmail) {
         return restClient.get()
                 .uri("/api/v1/tickets/my")
@@ -63,7 +73,7 @@ public class TicketClient {
                 .body(TicketMessageResponseDTO[].class);
     }
     
-    private void addSecurityHeaders(org.springframework.http.HttpHeaders headers, String userEmail) {
+    private void addSecurityHeaders(HttpHeaders headers, String userEmail) {
         headers.add(HEADER_USER_EMAIL, userEmail);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null) {

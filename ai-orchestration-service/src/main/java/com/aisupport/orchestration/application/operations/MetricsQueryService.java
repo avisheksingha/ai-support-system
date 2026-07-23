@@ -40,7 +40,7 @@ public class MetricsQueryService {
         return OperationsOverviewDTO.builder()
                 .runtime(buildRuntimeMetrics(executions))
                 .ai(buildAiMetrics(aiRecords))
-                .governance(buildGovernanceMetrics())
+                .governance(buildGovernanceMetrics(executions, aiRecords))
                 .tools(buildToolMetrics())
                 .health(buildHealthMetrics())
                 .systemInfo(buildSystemInfo())
@@ -97,11 +97,23 @@ public class MetricsQueryService {
                 .build();
     }
 
-    private OperationsOverviewDTO.GovernanceMetrics buildGovernanceMetrics() {
+    private OperationsOverviewDTO.GovernanceMetrics buildGovernanceMetrics(List<WorkflowExecutionEntity> executions, List<AiExecutionRecordEntity> aiRecords) {
+        int approvalRequests = (int) executions.stream()
+                .filter(w -> "WAITING_APPROVAL".equals(w.getState().name()))
+                .count();
+
+        int guardrailBlocks = (int) aiRecords.stream()
+                .filter(r -> "BLOCKED".equals(r.getOutcome()))
+                .count();
+
+        int policyViolations = (int) aiRecords.stream()
+                .filter(r -> "POLICY_VIOLATION".equals(r.getOutcome()))
+                .count();
+                
         return OperationsOverviewDTO.GovernanceMetrics.builder()
-                .policyViolations(0)
-                .guardrailBlocks(0)
-                .approvalRequests(0)
+                .policyViolations(policyViolations + guardrailBlocks)
+                .guardrailBlocks(guardrailBlocks)
+                .approvalRequests(approvalRequests)
                 .hourlyViolations(Collections.emptyList())
                 .build();
     }

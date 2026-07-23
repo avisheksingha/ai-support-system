@@ -3,6 +3,7 @@ package com.aisupport.orchestration.infrastructure.client;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
+import com.aisupport.common.dto.admin.AdminAnalysisStatsResponse;
 import com.aisupport.common.event.AnalysisResult;
 import com.aisupport.orchestration.domain.model.Result;
 
@@ -45,5 +46,17 @@ public class ResilientAnalysisClient implements AnalysisClient {
         log.warn("Resilience fallback triggered for fetching analysis on ticketId={}: {}",
                 ticketId, t.getMessage());
         return Result.failure("Analysis Service Unavailable (Resilience Fallback)");
+    }
+
+    @Override
+    @CircuitBreaker(name = "analysis", fallbackMethod = "getAdminStatsFallback")
+    @Retry(name = "analysis", fallbackMethod = "getAdminStatsFallback")
+    public Result<AdminAnalysisStatsResponse> getAdminStats() {
+        return defaultAnalysisClient.getAdminStats();
+    }
+
+    public Result<AdminAnalysisStatsResponse> getAdminStatsFallback(Throwable t) {
+        log.warn("Resilience fallback triggered for fetching admin analysis stats: {}", t.getMessage());
+        return Result.failure("Analysis Service Unavailable for Stats");
     }
 }

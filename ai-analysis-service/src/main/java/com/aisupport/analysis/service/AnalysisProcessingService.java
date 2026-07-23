@@ -2,6 +2,7 @@ package com.aisupport.analysis.service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Arrays;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +13,7 @@ import com.aisupport.analysis.llm.ChatProvider;
 import com.aisupport.analysis.outbox.OutboxEventService;
 import com.aisupport.analysis.repository.AnalysisResultRepository;
 import com.aisupport.common.dto.AnalysisResultDTO;
+import com.aisupport.common.event.EventType;
 import com.aisupport.common.event.SupportIntentVocabulary;
 import com.aisupport.common.event.TicketAnalyzedEvent;
 import com.aisupport.common.event.TicketCreatedEvent;
@@ -93,7 +95,7 @@ public class AnalysisProcessingService {
         outboxService.publishEvent(
         		"TICKET",
                 ticketId.toString(),
-                com.aisupport.common.event.EventType.TICKET_ANALYZED,
+                EventType.TICKET_ANALYZED,
                 analyzedEvent
         );
     }
@@ -141,7 +143,7 @@ public class AnalysisProcessingService {
                 .sentiment(entity.getSentiment())
                 .urgency(entity.getUrgency())
                 .confidenceScore(confidence)
-                .keywords(java.util.Arrays.asList(entity.getKeywords()))
+                .keywords(Arrays.asList(entity.getKeywords()))
                 .suggestedCategory(entity.getSuggestedCategory())
                 .build();
     }
