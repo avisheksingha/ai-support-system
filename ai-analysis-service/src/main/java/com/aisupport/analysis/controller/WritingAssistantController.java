@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import com.aisupport.analysis.dto.request.WritingImproveRequest;
 import com.aisupport.analysis.dto.response.WritingImproveResponse;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
+@PreAuthorize("hasAnyRole('AGENT', 'ADMIN')")
 @RequestMapping("/api/v1/analysis/writing")
 @Tag(name = "Writing Assistant", description = "Endpoints for AI-powered writing improvements")
 public class WritingAssistantController {

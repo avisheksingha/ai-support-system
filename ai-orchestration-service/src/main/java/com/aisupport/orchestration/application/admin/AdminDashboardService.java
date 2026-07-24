@@ -167,6 +167,6 @@ public class AdminDashboardService {
         if (denominator > 0) {
             return ((numerator * 100) / denominator) + "%";
         }
-        return "N/A";
+        return "0%";
     }
 }

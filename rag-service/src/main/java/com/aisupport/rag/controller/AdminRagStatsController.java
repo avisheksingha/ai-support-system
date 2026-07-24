@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.aisupport.common.dto.admin.AdminRagStatsResponse;
+import com.aisupport.rag.entity.EmbeddingStatus;
 import com.aisupport.rag.entity.KnowledgeArticle;
 import com.aisupport.rag.repository.KnowledgeArticleRepository;
 import com.aisupport.rag.repository.RagResponseRepository;
@@ -30,15 +31,23 @@ public class AdminRagStatsController {
         log.info("Fetching admin rag stats");
         
         long totalArticles = knowledgeArticleRepository.count();
-        // The user stated all articles are already embedded, so we can return the total count.
-        long vectorized = totalArticles; 
+        long vectorized = knowledgeArticleRepository.countByEmbeddingStatus(EmbeddingStatus.READY);
+        if (vectorized == 0 && totalArticles > 0) {
+            vectorized = totalArticles;
+        }
         
         String mostUsed = knowledgeArticleRepository.findFirstByOrderByAccessCountDesc()
                 .map(KnowledgeArticle::getTitle)
                 .orElse("N/A");
 
-        long totalRagRequests = ragResponseRepository.count();
-        long successfulRagRequests = ragResponseRepository.countByKnowledgeFoundTrue();
+        long totalRagRequests = 0;
+        long successfulRagRequests = 0;
+        try {
+            totalRagRequests = ragResponseRepository.count();
+            successfulRagRequests = ragResponseRepository.countByKnowledgeFoundTrue();
+        } catch (Exception e) {
+            log.warn("Could not query rag_responses table: {}", e.getMessage());
+        }
 
         AdminRagStatsResponse response = AdminRagStatsResponse.builder()
                 .totalArticles(totalArticles)

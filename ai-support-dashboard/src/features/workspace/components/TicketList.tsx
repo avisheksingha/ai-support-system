@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useTicketList } from "../hooks/useWorkspace";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, Loader2 } from "lucide-react";
 import type { TicketModel } from "@/shared/types/ticket";
@@ -39,9 +38,9 @@ export function TicketList({ selectedTicket, onSelectTicket }: TicketListProps) 
         <div className="p-4 border-b border-slate-200 bg-white">
           <div className="relative">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-            <Input 
+            <input 
               placeholder="Search by ID, name, or subject..." 
-              className="pl-9 bg-slate-50/50 border-slate-200 text-slate-800 placeholder:text-slate-400 focus-visible:ring-indigo-500 shadow-sm"
+              className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 text-sm rounded-md text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-sm transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -80,12 +79,12 @@ export function TicketList({ selectedTicket, onSelectTicket }: TicketListProps) 
             }`}
           >
             <div className="flex items-center justify-between mb-2">
-              <span className={`text-[10px] font-bold tracking-widest uppercase ${
+              <span className={`text-[10px] font-mono font-bold tracking-widest uppercase ${
                 selectedTicket === ticket.ticketNumber ? "text-indigo-600" : "text-slate-500"
               }`}>{ticket.ticketNumber}</span>
               <span className="text-[10px] font-medium text-slate-400">{ticket.updatedAt ? formatTimeAgo(ticket.updatedAt) : 'just now'}</span>
             </div>
-            <h3 className={`text-base font-semibold line-clamp-2 mb-3 leading-tight ${
+            <h3 className={`text-sm font-semibold line-clamp-2 mb-2 leading-snug ${
               selectedTicket === ticket.ticketNumber ? "text-indigo-950" : "text-slate-800 group-hover:text-slate-900"
             }`}>
               {ticket.subject}

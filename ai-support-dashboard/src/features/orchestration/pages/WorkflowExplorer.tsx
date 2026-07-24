@@ -18,7 +18,7 @@ export function WorkflowExplorer() {
   return (
     <div className="flex h-full w-full bg-[#F8FAFC] overflow-hidden text-slate-800">
       {/* Left Pane: Execution List */}
-      <div className="w-[320px] lg:w-[400px] shrink-0 border-r border-slate-200 bg-white flex flex-col z-10 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+      <div className="w-[320px] lg:w-[400px] shrink-0 border-r border-slate-200 bg-white flex flex-col z-10">
         <WorkflowList selectedId={selectedExecutionId} onSelect={setSelectedExecutionId} />
       </div>
 

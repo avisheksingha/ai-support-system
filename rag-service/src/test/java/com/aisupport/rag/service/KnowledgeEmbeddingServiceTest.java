@@ -2,7 +2,9 @@ package com.aisupport.rag.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -14,6 +16,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -21,6 +24,7 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.VectorStore;
 
+import com.aisupport.rag.entity.EmbeddingStatus;
 import com.aisupport.rag.entity.KnowledgeArticle;
 import com.aisupport.rag.repository.KnowledgeArticleRepository;
 
@@ -35,9 +39,9 @@ class KnowledgeEmbeddingServiceTest {
     private TokenTextSplitter textSplitter;
 
     @Captor
-    private org.mockito.ArgumentCaptor<List<Document>> docsCaptor;
+    private ArgumentCaptor<List<Document>> docsCaptor;
     @Captor
-    private org.mockito.ArgumentCaptor<List<Long>> idsCaptor;
+    private ArgumentCaptor<List<Long>> idsCaptor;
 
     private KnowledgeEmbeddingService embeddingService;
 
@@ -51,7 +55,7 @@ class KnowledgeEmbeddingServiceTest {
         article.setId(id);
         article.setTitle(title);
         article.setContent(content);
-        article.setEmbedded(false);
+        article.setEmbeddingStatus(EmbeddingStatus.PENDING);
         return article;
     }
 
@@ -61,7 +65,7 @@ class KnowledgeEmbeddingServiceTest {
         KnowledgeArticle shippingArticle = article(2L, "Shipping Policy", "Orders ship within 2 business days.");
         List<KnowledgeArticle> unembedded = List.of(refundArticle, shippingArticle);
 
-        when(repo.findByEmbeddedFalse()).thenReturn(unembedded);
+        when(repo.findByEmbeddingStatus(EmbeddingStatus.PENDING)).thenReturn(unembedded);
 
         List<Document> chunkedDocs = List.of(
                 Document.builder().text("Refund Policy: Refunds are processed within 5-7 business days.").build(),
@@ -83,13 +87,16 @@ class KnowledgeEmbeddingServiceTest {
 
         verify(vectorStore).add(chunkedDocs);
 
-        verify(repo).markArticlesAsEmbedded(idsCaptor.capture());
+        verify(repo).updateEmbeddingStatus(idsCaptor.capture(), eq(EmbeddingStatus.PROCESSING));
+        assertThat(idsCaptor.getValue()).containsExactly(1L, 2L);
+
+        verify(repo).updateEmbeddingStatus(idsCaptor.capture(), eq(EmbeddingStatus.READY));
         assertThat(idsCaptor.getValue()).containsExactly(1L, 2L);
     }
 
     @Test
     void embedPendingArticles_whenNoPendingArticles_shouldReturnZeroAndSkipEmbedding() {
-        when(repo.findByEmbeddedFalse()).thenReturn(List.of());
+        when(repo.findByEmbeddingStatus(EmbeddingStatus.PENDING)).thenReturn(List.of());
 
         int result = embeddingService.embedPendingArticles();
 
@@ -97,13 +104,13 @@ class KnowledgeEmbeddingServiceTest {
 
         verify(textSplitter, never()).apply(anyList());
         verify(vectorStore, never()).add(anyList());
-        verify(repo, never()).markArticlesAsEmbedded(anyList());
+        verify(repo, never()).updateEmbeddingStatus(anyList(), any(EmbeddingStatus.class));
     }
 
     @Test
-    void embedPendingArticles_whenVectorStoreAddFails_shouldPropagateAndNotMarkAsEmbedded() {
+    void embedPendingArticles_whenVectorStoreAddFails_shouldPropagateAndMarkAsFailed() {
         KnowledgeArticle refundArticle = article(1L, "Refund Policy", "Refunds are processed within 5-7 business days.");
-        when(repo.findByEmbeddedFalse()).thenReturn(List.of(refundArticle));
+        when(repo.findByEmbeddingStatus(EmbeddingStatus.PENDING)).thenReturn(List.of(refundArticle));
 
         List<Document> chunkedDocs = List.of(
                 Document.builder().text("Refund Policy: Refunds are processed within 5-7 business days.").build()
@@ -116,27 +123,36 @@ class KnowledgeEmbeddingServiceTest {
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("embedding provider unavailable");
 
-        verify(repo, never()).markArticlesAsEmbedded(anyList());
+        verify(repo).updateEmbeddingStatus(idsCaptor.capture(), eq(EmbeddingStatus.PROCESSING));
+        assertThat(idsCaptor.getValue()).containsExactly(1L);
+
+        verify(repo).updateEmbeddingStatus(idsCaptor.capture(), eq(EmbeddingStatus.FAILED));
+        assertThat(idsCaptor.getValue()).containsExactly(1L);
+
+        verify(repo, never()).updateEmbeddingStatus(anyList(), eq(EmbeddingStatus.READY));
     }
 
     @Test
-    void embedPendingArticles_whenMarkAsEmbeddedFails_shouldPropagateException() {
+    void embedPendingArticles_whenMarkAsReadyFails_shouldPropagateException() {
         KnowledgeArticle refundArticle = article(1L, "Refund Policy", "Refunds are processed within 5-7 business days.");
-        when(repo.findByEmbeddedFalse()).thenReturn(List.of(refundArticle));
+        when(repo.findByEmbeddingStatus(EmbeddingStatus.PENDING)).thenReturn(List.of(refundArticle));
 
         List<Document> chunkedDocs = List.of(
                 Document.builder().text("Refund Policy: Refunds are processed within 5-7 business days.").build()
         );
         when(textSplitter.apply(anyList())).thenReturn(chunkedDocs);
+        
         doThrow(new RuntimeException("db update failed"))
-                .when(repo).markArticlesAsEmbedded(List.of(1L));
+                .when(repo).updateEmbeddingStatus(List.of(1L), EmbeddingStatus.READY);
 
         assertThatThrownBy(() -> embeddingService.embedPendingArticles())
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("db update failed");
 
-        // Vectors were already inserted before the DB update failed —
-        // this documents the known "inconsistency window" discussed earlier.
         verify(vectorStore, times(1)).add(chunkedDocs);
+        verify(repo).updateEmbeddingStatus(List.of(1L), EmbeddingStatus.PROCESSING);
+        
+        // Ensure it rolls back to failed on exception (if handled that way)
+        verify(repo).updateEmbeddingStatus(List.of(1L), EmbeddingStatus.FAILED);
     }
 }

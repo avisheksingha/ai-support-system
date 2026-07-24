@@ -1,6 +1,7 @@
 package com.aisupport.orchestration.infrastructure.web;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
+@PreAuthorize("hasAnyRole('AGENT', 'ADMIN')")
 @RequestMapping("/api/v1/orchestration/tickets")
 @RequiredArgsConstructor
 @Slf4j

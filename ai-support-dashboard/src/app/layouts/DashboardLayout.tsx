@@ -1,6 +1,6 @@
 import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import { LogOut, LayoutDashboard, Ticket, Settings, User, Users, Bot, ExternalLink, Radio, GitMerge, ShieldCheck } from "lucide-react";
+import { LogOut, LayoutDashboard, Ticket, Settings, User, Users, Bot, ExternalLink, Radio, GitMerge, ShieldCheck, BookOpen } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { name: "Dashboard",        path: "/dashboard", icon: LayoutDashboard, roles: ["ADMIN", "CUSTOMER", "AGENT"] },
   { name: "Workspace",        path: "/tickets",   icon: Ticket,          roles: ["AGENT", "ADMIN"] },
   { name: "Workflow Explorer",path: "/workflows", icon: GitMerge,        roles: ["ADMIN", "AGENT"] },
+  { name: "Knowledge Base",   path: "/knowledge", icon: BookOpen,        roles: ["ADMIN", "AGENT"] },
   { name: "Governance",       path: "/governance",icon: ShieldCheck,     roles: ["ADMIN"] },
   { name: "My Tickets",       path: "/my-tickets",icon: Ticket,          roles: ["CUSTOMER"] },
   { name: "Users",            path: "/users",     icon: Users,           roles: ["ADMIN"] },
@@ -23,6 +24,7 @@ const BREADCRUMB_MAP: Record<string, Record<string, string>> = {
   "/dashboard": { default: "Operations Center", CUSTOMER: "My Dashboard", AGENT: "Agent Workbench" },
   "/tickets":   { default: "Ticket Workspace" },
   "/workflows": { default: "Workflow Explorer" },
+  "/knowledge": { default: "Knowledge Base" },
   "/governance":{ default: "Governance & Policies" },
   "/my-tickets":{ default: "My Tickets" },
   "/users":     { default: "User Management" },

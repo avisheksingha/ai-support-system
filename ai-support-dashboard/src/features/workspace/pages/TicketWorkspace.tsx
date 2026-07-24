@@ -1,13 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TicketList } from "../components/TicketList";
 import { TicketDetailView } from "../components/TicketDetailView";
-import { useEffect } from "react";
+import { useTicketList } from "../hooks/useWorkspace";
 import { useQueryClient } from "@tanstack/react-query";
 import { wsClient } from "@/lib/websocket";
 
 export function TicketWorkspace() {
   const [selectedTicket, setSelectedTicket] = useState<string | null>(null);
+  const { data: tickets } = useTicketList();
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (tickets && tickets.length > 0 && !selectedTicket) {
+      if (tickets[0]?.ticketNumber) {
+        setSelectedTicket(tickets[0].ticketNumber);
+      }
+    }
+  }, [tickets, selectedTicket]);
 
   useEffect(() => {
     if (!selectedTicket) return;
@@ -39,7 +48,7 @@ export function TicketWorkspace() {
   return (
     <div className="flex h-full w-full bg-[#F8FAFC] overflow-hidden text-slate-800">
       {/* Left Pane: Ticket List */}
-      <div className="w-[320px] lg:w-[380px] shrink-0 border-r border-slate-200 bg-white flex flex-col z-10 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+      <div className="w-[320px] lg:w-[400px] shrink-0 border-r border-slate-200 bg-white flex flex-col z-10">
         <TicketList selectedTicket={selectedTicket} onSelectTicket={setSelectedTicket} />
       </div>
 

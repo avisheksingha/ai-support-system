@@ -133,7 +133,8 @@ export function WorkflowList({ selectedId, onSelect }: { selectedId: string | nu
 
       <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-slate-50/30">
         {filtered.length === 0 && (
-          <div className="text-slate-400 text-center text-xs py-8">
+          <div className="text-slate-500 p-8 text-sm text-center border-2 border-dashed border-slate-200 rounded-xl mx-2 mt-4 bg-white">
+            <span className="block text-2xl mb-2">📭</span>
             No workflow executions match the criteria.
           </div>
         )}

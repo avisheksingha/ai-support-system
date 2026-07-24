@@ -9,6 +9,7 @@ import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.aisupport.rag.entity.EmbeddingStatus;
 import com.aisupport.rag.entity.KnowledgeArticle;
 import com.aisupport.rag.repository.KnowledgeArticleRepository;
 
@@ -37,10 +38,16 @@ public class KnowledgeEmbeddingService {
      */
     @Transactional
     public int embedPendingArticles() {
-        List<KnowledgeArticle> unembeddedArticles = repo.findByEmbeddedFalse();
+        List<KnowledgeArticle> unembeddedArticles = repo.findByEmbeddingStatus(EmbeddingStatus.PENDING);
         if (unembeddedArticles.isEmpty()) {
             return 0;
         }
+
+        // Mark as PROCESSING immediately
+        List<Long> articleIds = unembeddedArticles.stream()
+            .map(KnowledgeArticle::getId)
+            .toList();
+        repo.updateEmbeddingStatus(articleIds, EmbeddingStatus.PROCESSING);
 
         log.info("Loading {} un-embedded knowledge articles into vector store...", unembeddedArticles.size());
 
@@ -60,8 +67,9 @@ public class KnowledgeEmbeddingService {
 
         try {
             vectorStore.add(chunkedDocs);
-            repo.markArticlesAsEmbedded(embeddedIds);
+            repo.updateEmbeddingStatus(embeddedIds, EmbeddingStatus.READY);
         } catch (Exception ex) {
+            repo.updateEmbeddingStatus(embeddedIds, EmbeddingStatus.FAILED);
             log.error("Embedding failed after vector store insert for article IDs {}. " +
                 "Check vector_store for possible duplicates before retrying.", embeddedIds, ex);
             throw ex;

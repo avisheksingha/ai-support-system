@@ -182,7 +182,7 @@ export function AdminDashboardOverview() {
             <div className="space-y-1">
               <SidebarAction icon={Users} label="Manage Users & Roles" onClick={() => navigate("/users")} />
               <SidebarAction icon={Network} label="Routing Rules" onClick={() => {}} />
-              <SidebarAction icon={BookOpen} label="Knowledge Base" onClick={() => {}} />
+              <SidebarAction icon={BookOpen} label="Knowledge Base" onClick={() => navigate("/knowledge")} />
               <SidebarAction icon={Settings} label="AI Settings" onClick={() => navigate("/settings")} />
             </div>
           </div>
@@ -193,23 +193,23 @@ export function AdminDashboardOverview() {
             <div className="flex flex-col gap-3">
               <div className="flex justify-between items-center text-[13px]">
                 <span className="text-muted-foreground font-medium">Total Articles</span>
-                <span className="font-bold text-foreground">{isLoading ? "-" : data?.ragKnowledge.totalArticles || 0}</span>
+                <span className="font-bold text-foreground">{isLoading ? "-" : data?.ragKnowledge?.totalArticles ?? 0}</span>
               </div>
               <div className="flex justify-between items-center text-[13px]">
                 <span className="text-muted-foreground font-medium">Embedded Articles</span>
-                <span className="font-bold text-emerald-600">{isLoading ? "-" : data?.ragKnowledge.embeddedArticles || 0}</span>
+                <span className="font-bold text-emerald-600">{isLoading ? "-" : data?.ragKnowledge?.embeddedArticles ?? 0}</span>
               </div>
               <div className="flex justify-between items-center text-[13px]">
                 <span className="text-muted-foreground font-medium">Embedding Coverage</span>
-                <span className="font-bold text-emerald-600">{isLoading ? "-" : data?.ragKnowledge.embeddingCoverage || "0%"}</span>
+                <span className="font-bold text-emerald-600">{isLoading ? "-" : data?.ragKnowledge?.embeddingCoverage || "0%"}</span>
               </div>
               <div className="flex justify-between items-center text-[13px]">
                 <span className="text-muted-foreground font-medium">Knowledge Coverage</span>
-                <span className="font-bold text-blue-600">{isLoading ? "-" : data?.ragKnowledge.knowledgeCoverage || "0%"}</span>
+                <span className="font-bold text-blue-600">{isLoading ? "-" : data?.ragKnowledge?.knowledgeCoverage || "0%"}</span>
               </div>
               <div className="flex flex-col gap-1 pt-2 border-t border-border mt-1">
                 <span className="text-muted-foreground font-medium text-[13px]">Most Used Article</span>
-                <span className="font-bold text-foreground text-[13px] truncate" title={data?.ragKnowledge.mostUsedArticle || "N/A"}>{isLoading ? "-" : data?.ragKnowledge.mostUsedArticle || "N/A"}</span>
+                <span className="font-bold text-foreground text-[13px] truncate" title={data?.ragKnowledge?.mostUsedArticle || "N/A"}>{isLoading ? "-" : data?.ragKnowledge?.mostUsedArticle || "N/A"}</span>
               </div>
             </div>
           </div>

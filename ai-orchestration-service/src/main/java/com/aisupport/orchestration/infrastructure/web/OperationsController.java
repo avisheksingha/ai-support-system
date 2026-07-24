@@ -3,9 +3,9 @@ package com.aisupport.orchestration.infrastructure.web;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
+@PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/api/v1/orchestration/operations")
 @RequiredArgsConstructor
 @Slf4j
@@ -51,7 +52,7 @@ public class OperationsController {
                 .sorted(Comparator.comparing(WorkflowExecutionEntity::getCreatedAt).reversed())
                 .limit(10)
                 .map(this::toWorkflowSummaryDTO)
-                .collect(Collectors.toList());
+                .toList();
         
         OperationsDashboardResponse response = OperationsDashboardResponse.builder()
                 .overview(metricsQueryService.getOverviewMetrics(from, to))

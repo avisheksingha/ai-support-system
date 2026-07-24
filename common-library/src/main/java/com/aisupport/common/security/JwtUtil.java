@@ -1,5 +1,8 @@
 package com.aisupport.common.security;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.function.Function;
 
@@ -16,7 +19,17 @@ public class JwtUtil {
     private final SecretKey key;
 
     public JwtUtil(String secret) {
-        byte[] keyBytes = Decoders.BASE64.decode(secret);
+        byte[] keyBytes;
+        try {
+            keyBytes = Decoders.BASE64.decode(secret);
+        } catch (Exception e) {
+            try {
+                keyBytes = MessageDigest.getInstance("SHA-256")
+                        .digest(secret.getBytes(StandardCharsets.UTF_8));
+            } catch (NoSuchAlgorithmException ex) {
+                keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+            }
+        }
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
