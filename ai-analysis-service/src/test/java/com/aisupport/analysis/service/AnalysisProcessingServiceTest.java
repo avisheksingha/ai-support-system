@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -22,6 +23,7 @@ import com.aisupport.analysis.entity.AnalysisResult;
 import com.aisupport.analysis.llm.ChatProvider;
 import com.aisupport.analysis.outbox.OutboxEventService;
 import com.aisupport.analysis.repository.AnalysisResultRepository;
+import com.aisupport.common.event.EventType;
 import com.aisupport.common.event.TicketAnalyzedEvent;
 import com.aisupport.common.event.TicketCreatedEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -58,7 +60,7 @@ class AnalysisProcessingServiceTest {
 
         verify(chatProvider, never()).analyzeTicket(anyString(), anyString());
         verify(repository, never()).save(any(AnalysisResult.class));
-        verify(outboxEventService, never()).publishEvent(anyString(), anyString(), org.mockito.ArgumentMatchers.any(com.aisupport.common.event.EventType.class), any());
+        verify(outboxEventService, never()).publishEvent(anyString(), anyString(), ArgumentMatchers.any(EventType.class), any());
     }
 
     @Test
@@ -98,7 +100,7 @@ class AnalysisProcessingServiceTest {
         verify(outboxEventService).publishEvent(
                 anyString(),
                 anyString(),
-                org.mockito.ArgumentMatchers.any(com.aisupport.common.event.EventType.class),
+                ArgumentMatchers.any(EventType.class),
                 eventCaptor.capture()
         );
         TicketAnalyzedEvent published = (TicketAnalyzedEvent) eventCaptor.getValue();

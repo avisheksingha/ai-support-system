@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -141,7 +142,11 @@ class KnowledgeEmbeddingServiceTest {
                 Document.builder().text("Refund Policy: Refunds are processed within 5-7 business days.").build()
         );
         when(textSplitter.apply(anyList())).thenReturn(chunkedDocs);
-        
+
+        // The service calls updateEmbeddingStatus(PROCESSING) first — stub it so strict mode passes
+        doNothing().when(repo).updateEmbeddingStatus(List.of(1L), EmbeddingStatus.PROCESSING);
+
+        // Now stub the READY call to throw — this is the failure being tested
         doThrow(new RuntimeException("db update failed"))
                 .when(repo).updateEmbeddingStatus(List.of(1L), EmbeddingStatus.READY);
 
@@ -149,10 +154,10 @@ class KnowledgeEmbeddingServiceTest {
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("db update failed");
 
-        verify(vectorStore, times(1)).add(chunkedDocs);
         verify(repo).updateEmbeddingStatus(List.of(1L), EmbeddingStatus.PROCESSING);
-        
-        // Ensure it rolls back to failed on exception (if handled that way)
+        verify(vectorStore, times(1)).add(chunkedDocs);
+        // FAILED is always called: the catch block at line 71 of the service wraps both
+        // vectorStore.add() AND updateEmbeddingStatus(READY), so any exception triggers it
         verify(repo).updateEmbeddingStatus(List.of(1L), EmbeddingStatus.FAILED);
     }
 }
