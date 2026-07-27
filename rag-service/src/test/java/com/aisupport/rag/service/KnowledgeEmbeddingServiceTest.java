@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -24,6 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.aisupport.rag.entity.EmbeddingStatus;
 import com.aisupport.rag.entity.KnowledgeArticle;
@@ -38,6 +40,8 @@ class KnowledgeEmbeddingServiceTest {
     private VectorStore vectorStore;
     @Mock
     private TokenTextSplitter textSplitter;
+    @Mock
+    private JdbcTemplate jdbcTemplate;
 
     @Captor
     private ArgumentCaptor<List<Document>> docsCaptor;
@@ -48,7 +52,7 @@ class KnowledgeEmbeddingServiceTest {
 
     @BeforeEach
     void setUp() {
-        embeddingService = new KnowledgeEmbeddingService(repo, vectorStore, textSplitter);
+        embeddingService = new KnowledgeEmbeddingService(repo, vectorStore, textSplitter, jdbcTemplate);
     }
 
     private KnowledgeArticle article(Long id, String title, String content) {
@@ -84,9 +88,14 @@ class KnowledgeEmbeddingServiceTest {
                 .isEqualTo("Refund Policy: Refunds are processed within 5-7 business days.");
         assertThat(docsCaptor.getValue().get(0).getMetadata())
                 .containsEntry("articleId", 1L)
-                .containsEntry("title", "Refund Policy");
+                .containsEntry("title", "Refund Policy")
+                .containsEntry("category", "")
+                .containsEntry("tags", "")
+                .containsEntry("status", "DRAFT")
+                .containsEntry("embeddingStatus", "PENDING")
+                .containsEntry("version", 1L);
 
-        verify(vectorStore).add(chunkedDocs);
+        verify(vectorStore).add(anyList());
 
         verify(repo).updateEmbeddingStatus(idsCaptor.capture(), eq(EmbeddingStatus.PROCESSING));
         assertThat(idsCaptor.getValue()).containsExactly(1L, 2L);
@@ -118,7 +127,7 @@ class KnowledgeEmbeddingServiceTest {
         );
         when(textSplitter.apply(anyList())).thenReturn(chunkedDocs);
         doThrow(new RuntimeException("embedding provider unavailable"))
-                .when(vectorStore).add(chunkedDocs);
+                .when(vectorStore).add(anyList());
 
         assertThatThrownBy(() -> embeddingService.embedPendingArticles())
                 .isInstanceOf(RuntimeException.class)
@@ -155,9 +164,30 @@ class KnowledgeEmbeddingServiceTest {
                 .hasMessageContaining("db update failed");
 
         verify(repo).updateEmbeddingStatus(List.of(1L), EmbeddingStatus.PROCESSING);
-        verify(vectorStore, times(1)).add(chunkedDocs);
+        verify(vectorStore, times(1)).add(anyList());
         // FAILED is always called: the catch block at line 71 of the service wraps both
         // vectorStore.add() AND updateEmbeddingStatus(READY), so any exception triggers it
         verify(repo).updateEmbeddingStatus(List.of(1L), EmbeddingStatus.FAILED);
     }
-}
+
+    @Test
+    void syncVectorMetadata_shouldExecuteUpdate() {
+        when(jdbcTemplate.update(anyString(), anyString(), anyString(), anyString(), eq(1L), eq(10L))).thenReturn(2);
+        embeddingService.syncVectorMetadata(10L, "PUBLISHED", "Payments", List.of("tag1", "tag2"), 1L);
+        verify(jdbcTemplate).update(anyString(), eq("PUBLISHED"), eq("Payments"), eq("tag1,tag2"), eq(1L), eq(10L));
+    }
+
+    @Test
+    void deleteVectorChunks_shouldExecuteDelete() {
+        when(jdbcTemplate.update(anyString(), eq(10L))).thenReturn(2);
+        embeddingService.deleteVectorChunks(10L);
+        verify(jdbcTemplate).update(anyString(), eq(10L));
+    }
+
+    @Test
+    void syncBulkPublishMetadata_shouldExecuteUpdate() {
+        when(jdbcTemplate.update(anyString())).thenReturn(5);
+        embeddingService.syncBulkPublishMetadata();
+        verify(jdbcTemplate).update(anyString());
+    }
+}

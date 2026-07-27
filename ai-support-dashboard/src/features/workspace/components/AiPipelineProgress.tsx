@@ -79,7 +79,11 @@ export function AiPipelineProgress({ ticket, analysis, knowledge, routing, workf
           <div className="bg-slate-50 rounded p-2 border border-slate-100">
             <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Analysis Confidence</span>
             <span className="font-bold text-emerald-600">
-              {analysis?.confidenceScore ? `${((analysis.confidenceScore ?? 0) * 100).toFixed(0)}%` : "95%"}
+              {analysis?.confidenceScore 
+                ? `${((analysis.confidenceScore ?? 0) * 100).toFixed(0)}%` 
+                : ticket.aiConfidence !== undefined && ticket.aiConfidence !== null
+                  ? `${(ticket.aiConfidence > 1 ? ticket.aiConfidence : ticket.aiConfidence * 100).toFixed(0)}%`
+                  : "N/A"}
             </span>
           </div>
           <div className="bg-slate-50 rounded p-2 border border-slate-100">
@@ -112,7 +116,7 @@ export function AiPipelineProgress({ ticket, analysis, knowledge, routing, workf
           </div>
           <div className="bg-slate-50 rounded p-2 border border-slate-100">
             <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Documents Retrieved</span>
-            <span className="font-semibold text-teal-700 font-mono">{knowledge?.retrievedDocumentCount ?? 1} articles</span>
+            <span className="font-semibold text-teal-700 font-mono">{knowledge?.retrievedDocumentCount ?? knowledge?.matchedArticleTitles?.length ?? 0} articles</span>
           </div>
         </div>
       ),
@@ -126,7 +130,7 @@ export function AiPipelineProgress({ ticket, analysis, knowledge, routing, workf
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div className="bg-slate-50 rounded p-2 border border-slate-100">
             <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Support Domain</span>
-            <span className="font-semibold text-slate-800">{routing?.assignedTeam || "Account & Access Support"}</span>
+            <span className="font-semibold text-slate-800">{routing?.assignedTeam || "Unassigned"}</span>
           </div>
           <div className="bg-slate-50 rounded p-2 border border-slate-100">
             <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mb-1">SLA Target</span>
@@ -143,7 +147,7 @@ export function AiPipelineProgress({ ticket, analysis, knowledge, routing, workf
       details: (
         <div className="text-xs bg-slate-50 rounded p-2 border border-slate-100">
           <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Assigned Agent</span>
-          <span className="font-semibold text-slate-800">{ticket.assignedTo || 'Tier-2 Support Agent'}</span>
+          <span className="font-semibold text-slate-800">{(!ticket.assignedTo || ticket.assignedTo === "Unassigned" || ticket.assignedTo === routing?.assignedTeam) ? 'Unassigned' : ticket.assignedTo}</span>
         </div>
       ),
     },

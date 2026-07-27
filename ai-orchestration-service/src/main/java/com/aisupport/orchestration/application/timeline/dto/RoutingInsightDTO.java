@@ -13,4 +13,5 @@ public class RoutingInsightDTO {
     private String assignedTeam;
     private String priority;
     private Integer slaHours;
+    private String routingExplanation;
 }

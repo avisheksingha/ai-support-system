@@ -209,7 +209,7 @@ export function CustomerTicketDetailPage() {
               <div className="flex flex-col gap-4 mb-5 pb-5 border-b border-border">
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Status</span>
-                  <span className="text-sm font-medium text-foreground">{ticket.status}</span>
+                  <span className="text-sm font-medium text-foreground">{getCustomerStatusMapping(ticket.status).label}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Assigned Team</span>

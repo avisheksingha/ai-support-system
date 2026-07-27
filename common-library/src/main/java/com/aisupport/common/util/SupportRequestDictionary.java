@@ -15,9 +15,15 @@ public class SupportRequestDictionary {
             Pattern.CASE_INSENSITIVE
     );
 
-    // Regex patterns for non-support messages like "thanks" or emojis
+    // Regex patterns for common non-support words
     public static final Pattern NON_SUPPORT_PATTERN = Pattern.compile(
-            "^(thanks|thank you|thx|tysm|ty|awesome|great|cool|ok|okay|bye|goodbye|how are you\\??|what's up\\??|👍|💯|👏)\\s*[.!?,]*$", 
+            "^(thanks|thank you|thx|tysm|ty|awesome|great|cool|ok|okay)\\s*[.!?,]*$", 
+            Pattern.CASE_INSENSITIVE
+    );
+
+    // Regex patterns for additional non-support phrases and emojis
+    public static final Pattern NON_SUPPORT_EXTRA_PATTERN = Pattern.compile(
+            "^(bye|goodbye|how are you\\??|what's up\\??|👍|💯|👏)\\s*[.!?,]*$", 
             Pattern.CASE_INSENSITIVE
     );
 
@@ -39,7 +45,9 @@ public class SupportRequestDictionary {
     }
 
     public static boolean isNonSupportMessage(String text) {
-        return NON_SUPPORT_PATTERN.matcher(text.trim()).matches();
+        String trimmed = text.trim();
+        return NON_SUPPORT_PATTERN.matcher(trimmed).matches() 
+            || NON_SUPPORT_EXTRA_PATTERN.matcher(trimmed).matches();
     }
 
     public static boolean isNoise(String text) {

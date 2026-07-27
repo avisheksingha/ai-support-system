@@ -186,11 +186,11 @@ export function AiContextDrawer({
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <span className="text-[10px] text-slate-400 font-bold uppercase block mb-0.5">Support Domain</span>
-                  <span className="font-bold text-cyan-900">{routing.assignedTeam || "Account & Access Support"}</span>
+                  <span className="font-bold text-cyan-900">{routing.assignedTeam || "Unassigned"}</span>
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 font-bold uppercase block mb-0.5">Assigned Agent / Team</span>
-                  <span className="font-semibold text-slate-800">{ticket.assignedTo || "Tier-2 Escalation Team"}</span>
+                  <span className="font-semibold text-slate-800">{(!ticket.assignedTo || ticket.assignedTo === "Unassigned" || ticket.assignedTo === routing.assignedTeam) ? "Unassigned" : ticket.assignedTo}</span>
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 font-bold uppercase block mb-0.5">Routing Rule</span>

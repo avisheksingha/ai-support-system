@@ -18,7 +18,6 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -29,6 +28,8 @@ import com.aisupport.rag.exception.RagGenerationException;
 import com.aisupport.rag.outbox.OutboxEventService;
 import com.aisupport.rag.repository.KnowledgeArticleRepository;
 import com.aisupport.rag.repository.RagResponseRepository;
+import com.aisupport.rag.service.retrieval.MetadataAwareRetrievalService;
+import com.aisupport.rag.service.retrieval.RetrievalResult;
 
 @ExtendWith(MockitoExtension.class)
 class RagServiceTest {
@@ -36,7 +37,7 @@ class RagServiceTest {
     private ChatClient chatClient;
 
     @Mock
-    private QuestionAnswerAdvisor questionAnswerAdvisor;
+    private MetadataAwareRetrievalService retrievalService;
     @Mock
     private RagResponseRepository ragResponseRepository;
     @Mock
@@ -53,9 +54,11 @@ class RagServiceTest {
     @BeforeEach
     void setUp() {
         chatClient = mock(ChatClient.class, Answers.RETURNS_DEEP_STUBS);
+        when(retrievalService.retrieveAndRank(anyString()))
+                .thenReturn(RetrievalResult.empty());
         ragService = new RagService(
                 chatClient,
-                questionAnswerAdvisor,
+                retrievalService,
                 ragResponseRepository,
                 knowledgeArticleRepository,
                 outboxEventService,
@@ -69,7 +72,6 @@ class RagServiceTest {
         when(chatClient.prompt()
                 .system(anyString())
                 .user(anyString())
-                .advisors(questionAnswerAdvisor)
                 .call()
                 .content())
                 .thenReturn("Suggested response");
@@ -97,7 +99,6 @@ class RagServiceTest {
         when(chatClient.prompt()
                 .system(anyString())
                 .user(anyString())
-                .advisors(questionAnswerAdvisor)
                 .call()
                 .content())
                 .thenReturn("No relevant knowledge article found.\n");
@@ -117,7 +118,6 @@ class RagServiceTest {
         when(chatClient.prompt()
                 .system(anyString())
                 .user(anyString())
-                .advisors(questionAnswerAdvisor)
                 .call()
                 .content())
                 .thenThrow(new RuntimeException("provider down"));
@@ -130,3 +130,4 @@ class RagServiceTest {
         verify(outboxEventService, never()).publishEvent(anyString(), anyString(), ArgumentMatchers.any(EventType.class), any());
     }
 }
+

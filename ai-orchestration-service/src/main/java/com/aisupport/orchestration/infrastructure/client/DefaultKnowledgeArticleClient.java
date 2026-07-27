@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DefaultKnowledgeArticleClient implements KnowledgeArticleClient {
 
+    private static final String ARTICLES_BASE_URL = "/api/internal/rag/articles";
     private final RestClient restClient;
 
     public DefaultKnowledgeArticleClient(@Qualifier("loadBalancedRestClientBuilder") RestClient.Builder restClientBuilder,
@@ -32,7 +33,7 @@ public class DefaultKnowledgeArticleClient implements KnowledgeArticleClient {
     public Page<KnowledgeArticleDTO> searchArticles(ArticleSearchRequestDTO request) {
         log.info("Calling rag-service to search knowledge articles");
         RestResponsePage<KnowledgeArticleDTO> pageResponse = restClient.post()
-                .uri("/api/internal/rag/articles/search")
+                .uri(ARTICLES_BASE_URL + "/search")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(request)
                 .retrieve()
@@ -44,61 +45,65 @@ public class DefaultKnowledgeArticleClient implements KnowledgeArticleClient {
     public KnowledgeArticleDTO getArticleById(Long id) {
         log.info("Calling rag-service to get article {}", id);
         return restClient.get()
-                .uri("/api/internal/rag/articles/" + id)
+                .uri(ARTICLES_BASE_URL + "/" + id)
                 .retrieve()
                 .body(KnowledgeArticleDTO.class);
     }
 
     @Override
     public KnowledgeArticleDTO createArticle(KnowledgeArticleDTO dto) {
-        return restClient.post()
-                .uri("/api/internal/rag/articles")
+        KnowledgeArticleDTO res = restClient.post()
+                .uri(ARTICLES_BASE_URL)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(dto)
                 .retrieve()
                 .body(KnowledgeArticleDTO.class);
+        return res != null ? res : dto;
     }
 
     @Override
     public KnowledgeArticleDTO updateArticle(Long id, KnowledgeArticleDTO dto) {
-        return restClient.put()
-                .uri("/api/internal/rag/articles/" + id)
+        KnowledgeArticleDTO res = restClient.put()
+                .uri(ARTICLES_BASE_URL + "/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(dto)
                 .retrieve()
                 .body(KnowledgeArticleDTO.class);
+        return res != null ? res : dto;
     }
 
     @Override
     public void deleteArticle(Long id) {
         restClient.delete()
-                .uri("/api/internal/rag/articles/" + id)
+                .uri(ARTICLES_BASE_URL + "/" + id)
                 .retrieve()
                 .toBodilessEntity();
     }
 
     @Override
     public int syncEmbeddings() {
-        return restClient.post()
-                .uri("/api/internal/rag/articles/sync-embeddings")
+        Map<String, Integer> res = restClient.post()
+                .uri(ARTICLES_BASE_URL + "/sync-embeddings")
                 .retrieve()
-                .body(new ParameterizedTypeReference<Map<String, Integer>>() {})
-                .get("embeddedCount");
+                .body(new ParameterizedTypeReference<Map<String, Integer>>() {});
+        return res != null ? res.getOrDefault("embeddedCount", 0) : 0;
     }
 
     @Override
     public Map<String, Object> getStats() {
-        return restClient.get()
-                .uri("/api/internal/rag/articles/stats")
+        Map<String, Object> res = restClient.get()
+                .uri(ARTICLES_BASE_URL + "/stats")
                 .retrieve()
                 .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+        return res != null ? res : Collections.emptyMap();
     }
 
     @Override
     public Map<String, Object> bulkPublishDraftArticles() {
-        return restClient.post()
-                .uri("/api/internal/rag/articles/bulk-publish")
+        Map<String, Object> res = restClient.post()
+                .uri(ARTICLES_BASE_URL + "/bulk-publish")
                 .retrieve()
                 .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+        return res != null ? res : Collections.emptyMap();
     }
 }

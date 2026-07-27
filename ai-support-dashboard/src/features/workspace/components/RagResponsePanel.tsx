@@ -30,54 +30,75 @@ export function RagResponsePanel({ knowledge }: RagResponsePanelProps) {
     return summary;
   };
 
-  const knowledgeMatch = knowledge.knowledgeFound
-    ? (knowledge.retrievedDocumentCount || 0) >= 3
-      ? "HIGH"
-      : "MEDIUM"
-    : "LOW";
-
-  const getKnowledgeMatchBadge = (match: string) => {
-    switch (match) {
-      case "HIGH":
-        return <span className="px-2 py-0.5 rounded border text-[10px] font-bold uppercase bg-emerald-50 text-emerald-700 border-emerald-200">High Match</span>;
-      case "MEDIUM":
-        return <span className="px-2 py-0.5 rounded border text-[10px] font-bold uppercase bg-amber-50 text-amber-700 border-amber-200">Medium Match</span>;
-      case "LOW":
-      default:
-        return <span className="px-2 py-0.5 rounded border text-[10px] font-bold uppercase bg-slate-100 text-slate-600 border-slate-200">Low Match</span>;
+  const getArticleCategory = (category?: string, title?: string) => {
+    if (category && category !== "General" && category !== "Unknown" && category !== "None") {
+      const c = category.toLowerCase();
+      if (c.includes("identi") || c.includes("access") || c.includes("iam") || c.includes("auth") || c.includes("login")) {
+        return { label: category, style: "bg-blue-50 text-blue-700 border-blue-200" };
+      }
+      if (c.includes("bill") || c.includes("account") || c.includes("pay") || c.includes("subscrip")) {
+        return { label: category, style: "bg-emerald-50 text-emerald-700 border-emerald-200" };
+      }
+      if (c.includes("network") || c.includes("infrastruc") || c.includes("connect") || c.includes("latenc") || c.includes("core")) {
+        return { label: category, style: "bg-purple-50 text-purple-700 border-purple-200" };
+      }
+      if (c.includes("defect") || c.includes("software") || c.includes("engineer") || c.includes("bug") || c.includes("crash")) {
+        return { label: category, style: "bg-rose-50 text-rose-700 border-rose-200" };
+      }
+      return { label: category, style: "bg-indigo-50 text-indigo-700 border-indigo-200" };
     }
+    
+    const t = (title || "").toLowerCase();
+    if (t.includes("oauth") || t.includes("login") || t.includes("sso") || t.includes("auth") || t.includes("password") || t.includes("token")) {
+      return { label: "Identity & Access", style: "bg-blue-50 text-blue-700 border-blue-200" };
+    }
+    if (t.includes("bill") || t.includes("pay") || t.includes("invoice") || t.includes("subscription")) {
+      return { label: "Billing & Accounts", style: "bg-emerald-50 text-emerald-700 border-emerald-200" };
+    }
+    if (t.includes("network") || t.includes("latency") || t.includes("connect") || t.includes("api") || t.includes("timeout") || t.includes("gateway")) {
+      return { label: "Core Infrastructure", style: "bg-purple-50 text-purple-700 border-purple-200" };
+    }
+    if (t.includes("bug") || t.includes("error") || t.includes("crash") || t.includes("exception")) {
+      return { label: "Defect Resolution", style: "bg-rose-50 text-rose-700 border-rose-200" };
+    }
+    return { label: "Knowledge Article", style: "bg-slate-100 text-slate-600 border-slate-200" };
   };
 
   return (
     <div className="text-xs flex flex-col gap-3">
-      {/* Knowledge Match Badge - Prominent at top */}
-      <div className="flex items-center justify-between bg-slate-50 rounded-lg p-2.5 border border-slate-100">
-        <span className="text-[9px] font-bold uppercase text-slate-500">Knowledge Match</span>
-        <div className="flex items-center gap-1.5">
-          <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-[10px] font-bold">
-            {knowledge.retrievedDocumentCount ?? 1} Article{(knowledge.retrievedDocumentCount ?? 1) > 1 ? "s" : ""}
-          </span>
-          {getKnowledgeMatchBadge(knowledgeMatch)}
-        </div>
-      </div>
-
       {/* Matched Articles */}
-      {knowledge.matchedArticleTitles && knowledge.matchedArticleTitles.length > 0 ? (
+      {((knowledge.sources && knowledge.sources.length > 0) || (knowledge.matchedArticleTitles && knowledge.matchedArticleTitles.length > 0)) ? (
         <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-100">
-          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mb-2">Matched Articles</span>
+          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mb-2">
+            Matched Articles ({knowledge.sources?.length || knowledge.matchedArticleTitles?.length || 0})
+          </span>
           <div className="space-y-1.5">
-            {knowledge.matchedArticleTitles.map((title, i) => (
-              <div key={i} className="flex items-center justify-between p-2 bg-white border border-slate-200 rounded text-xs">
-                <span className="truncate font-medium text-slate-800 max-w-[200px]" title={title}>{title}</span>
-                <button 
-                  disabled
-                  title="Article URL unavailable"
-                  className="text-[10px] font-semibold text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-200 flex items-center gap-1 shrink-0 cursor-not-allowed"
-                >
-                  <ExternalLink className="h-3 w-3" /> Open Article
-                </button>
-              </div>
-            ))}
+            {(knowledge.sources && knowledge.sources.length > 0 ? knowledge.sources : (knowledge.matchedArticleTitles || []).map((title, id) => ({ id: String(id), title, category: undefined, similarityScore: undefined, hybridScore: undefined, vectorScore: undefined }))).map((source, i) => {
+              const cat = getArticleCategory(source.category, source.title);
+              const score = source.hybridScore ?? source.similarityScore ?? source.vectorScore;
+              return (
+                <div key={i} className="flex items-center justify-between p-2 bg-white border border-slate-200 rounded text-xs gap-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span className="truncate font-medium text-slate-800" title={source.title}>{source.title}</span>
+                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase border shrink-0 ${cat.style}`}>
+                      {cat.label}
+                    </span>
+                    {score !== undefined && score !== null && score > 0 && (
+                      <span className="text-[10px] text-slate-500 font-semibold shrink-0" title="Retrieval match score">
+                        {(score > 1 ? score : score * 100).toFixed(0)}%
+                      </span>
+                    )}
+                  </div>
+                  <button 
+                    disabled
+                    title="Article URL unavailable"
+                    className="text-[10px] font-semibold text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-200 flex items-center gap-1 shrink-0 cursor-not-allowed"
+                  >
+                    <ExternalLink className="h-3 w-3" /> Open
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
       ) : (

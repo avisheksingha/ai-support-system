@@ -2,6 +2,8 @@ package com.aisupport.rag.controller;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,8 @@ import com.aisupport.rag.dto.response.RagKnowledgeResponse;
 import com.aisupport.rag.dto.response.RagSearchResponse;
 import com.aisupport.rag.entity.RagResponse;
 import com.aisupport.rag.service.RagService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -31,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 public class InternalRagController {
 	
 	private final RagService ragService;
+	private final ObjectMapper objectMapper = new ObjectMapper();
 
     @PostMapping("/search")
     public ResponseEntity<RagSearchResponse> searchKnowledge(@Valid @RequestBody RagSearchRequest request) {
@@ -50,6 +55,7 @@ public class InternalRagController {
                 .matchedArticleTitles(ragResponse.getMatchedArticleTitles() != null
                 	? Arrays.asList(ragResponse.getMatchedArticleTitles().split(","))
                 			: Collections.emptyList())
+                .sources(parseSourceDetails(ragResponse.getSourceDetails()))
                 .build());
     }
 
@@ -63,8 +69,25 @@ public class InternalRagController {
                         .query(rag.getQuery())
                         .generatedReply(rag.getResponse())
                         .modelUsed(rag.getModel())
+                        .retrievedDocumentCount(rag.getRetrievedDocumentCount())
+                        .matchedArticleTitles(rag.getMatchedArticleTitles() != null
+                            ? Arrays.asList(rag.getMatchedArticleTitles().split(","))
+                            : Collections.emptyList())
+                        .sources(parseSourceDetails(rag.getSourceDetails()))
                         .generatedAt(rag.getCreatedAt())
                         .build()))
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    private List<Map<String, Object>> parseSourceDetails(String json) {
+        if (json == null || json.isBlank()) {
+            return Collections.emptyList();
+        }
+        try {
+            return objectMapper.readValue(json, new TypeReference<List<Map<String, Object>>>() {});
+        } catch (Exception e) {
+            log.warn("Failed to parse source details JSON", e);
+            return Collections.emptyList();
+        }
     }
 }

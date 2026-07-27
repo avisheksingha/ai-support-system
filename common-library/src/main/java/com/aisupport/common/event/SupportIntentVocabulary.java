@@ -1,6 +1,5 @@
 package com.aisupport.common.event;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,10 +19,14 @@ public class SupportIntentVocabulary {
     public static final String OUTAGE = "OUTAGE";
     public static final String GENERAL = "GENERAL";
 
-    public static final List<String> ALLOWED_INTENTS = Arrays.asList(
+    private static final List<String> ALLOWED_INTENTS = List.of(
         ACCOUNT_ACCESS, SECURITY, BILLING, SUBSCRIPTION, API, WEBHOOK, 
         PERFORMANCE, FILE_UPLOAD, DATA_PRIVACY, ESCALATION, OUTAGE, GENERAL
     );
+    
+    public static List<String> getAllowedIntents() {
+        return ALLOWED_INTENTS;
+    }
     
     private static final Map<String, String> SYNONYMS = new HashMap<>();
     
@@ -60,7 +63,7 @@ public class SupportIntentVocabulary {
         mapTo(ESCALATION, "SPEAK_TO_MANAGER", "URGENT_COMPLAINT", "UNRESOLVED_ISSUE", "LEGAL_THREAT", "COMPLAINT", "MANAGER");
         
         // OUTAGE
-        mapTo(OUTAGE, "SYSTEM_DOWN", "SERVICE_UNAVAILABLE", "CRASH", "500_ERROR", "DOWNTIME", "OUTAGE");
+        mapTo(OUTAGE, "SYSTEM_DOWN", "SERVICE_UNAVAILABLE", "CRASH", "500_ERROR", "DOWNTIME");
     }
     
     private SupportIntentVocabulary() {

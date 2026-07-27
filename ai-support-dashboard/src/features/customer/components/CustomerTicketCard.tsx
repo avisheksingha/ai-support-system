@@ -25,7 +25,7 @@ export function CustomerTicketCard({ ticket, onClick }: CustomerTicketCardProps)
         </h3>
         
         <p className="text-sm text-muted-foreground line-clamp-1 mb-4">
-          Status: {ticket.status}
+          Status: {getCustomerStatusMapping(ticket.status).label}
         </p>
         
         <MiniPipeline status={ticket.status} />

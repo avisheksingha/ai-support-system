@@ -27,4 +27,5 @@ public class TicketResponseDTO {
     private String channel;
     private String createdAt;
     private String updatedAt;
+    private Double aiConfidence;
 }

@@ -58,6 +58,24 @@ function calculateSLA(createdAt: string, slaHours?: number) {
   };
 }
 
+const getSupportDomain = (teamOrCat?: string, subject?: string) => {
+  const cat = (teamOrCat || "").toLowerCase();
+  const sub = (subject || "").toLowerCase();
+  if (cat.includes("auth") || sub.includes("oauth") || sub.includes("login") || sub.includes("security")) {
+    return "Identity & Access Management (IAM)";
+  }
+  if (cat.includes("bill") || sub.includes("pay") || sub.includes("invoice")) {
+    return "Billing & Account Services";
+  }
+  if (cat.includes("network") || sub.includes("connect") || sub.includes("latency") || cat.includes("technical")) {
+    return "Core Network & Infrastructure";
+  }
+  if (cat.includes("bug") || sub.includes("crash") || sub.includes("error")) {
+    return "Software Engineering & Defect Resolution";
+  }
+  return "Customer Support Operations";
+};
+
 export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
   const { data: ticket, isLoading: isTicketLoading } = useTicket(ticketNumber);
   const { mutate: updateStatus } = useUpdateTicketStatus();
@@ -89,6 +107,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
   const routing = workspaceData?.routing;
   const knowledge = workspaceData?.knowledge;
   const aiDecision = workspaceData?.aiDecision;
+  const aiDecisionContext = workspaceData?.aiDecisionContext;
   const workflowMetadata = workspaceData?.workflowMetadata;
   const { data: timeline, isLoading: isTimelineLoading } = useTimeline(ticket?.id);
   const { data: messages, isLoading: isMessagesLoading } = useMessages(ticket?.ticketNumber);
@@ -136,6 +155,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
                 ticket={ticket}
                 analysis={analysis}
                 routing={routing}
+                knowledge={knowledge}
               />
             </Suspense>
           </ErrorBoundary>
@@ -249,7 +269,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
 
             <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-100">
               <span className="text-[9px] font-bold uppercase text-slate-500 tracking-wider block mb-1">Support Domain</span>
-              <span className="text-xs font-semibold text-slate-700">{analysis?.suggestedCategory || 'Uncategorized'}</span>
+              <span className="text-xs font-semibold text-slate-700" title={getSupportDomain(analysis?.suggestedCategory || analysis?.intent || routing?.assignedTeam, ticket.subject)}>{getSupportDomain(analysis?.suggestedCategory || analysis?.intent || routing?.assignedTeam, ticket.subject)}</span>
             </div>
             <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-100">
               <span className="text-[9px] font-bold uppercase text-slate-500 tracking-wider block mb-1">Assigned Team</span>
@@ -257,7 +277,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
             </div>
             <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-100 col-span-2 sm:col-span-1">
               <span className="text-[9px] font-bold uppercase text-slate-500 tracking-wider block mb-1">Assigned Agent</span>
-              <span className="text-xs font-semibold text-slate-700">{ticket.assignedTo || 'Unassigned'}</span>
+              <span className="text-xs font-semibold text-slate-700">{(!ticket.assignedTo || ticket.assignedTo === "Unassigned" || ticket.assignedTo === routing?.assignedTeam) ? 'Unassigned' : ticket.assignedTo}</span>
             </div>
           </div>
 
@@ -510,10 +530,9 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
           onToggle={() => togglePanel('knowledgeBase')}
           badge={knowledge && !isWorkspaceLoading && knowledge.knowledgeFound ? (
             <div className="flex items-center gap-2">
-              <Badge className="h-6 px-2 text-[10px] font-bold bg-emerald-50 text-emerald-700 border-emerald-200">
-                {knowledge.retrievedDocumentCount ?? knowledge.matchedArticleTitles?.length ?? 0}
-              </Badge>
-              <span className="text-[11px] font-bold text-emerald-700 uppercase">High Match</span>
+              <span className="px-2.5 py-0.5 rounded border text-[10px] font-bold uppercase bg-emerald-50 text-emerald-700 border-emerald-200">
+                High Match
+              </span>
             </div>
           ) : null}
         >
@@ -547,10 +566,9 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
             onToggle={() => togglePanel('aiDecision')}
             badge={
               <div className="flex items-center gap-2">
-                <Badge className="h-6 px-2 text-[10px] font-bold bg-purple-50 text-purple-700 border-purple-200">
-                  {Math.round(aiDecision.confidence * 100)}%
-                </Badge>
-                <span className="text-[11px] font-bold text-purple-700 uppercase">Ready</span>
+                <span className="px-2.5 py-0.5 rounded border text-[10px] font-bold uppercase bg-purple-50 text-purple-700 border-purple-200">
+                  Decision Ready
+                </span>
               </div>
             }
           >
@@ -558,6 +576,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
               <Suspense fallback={<Skeleton className="h-48 w-full bg-card rounded-xl" />}>
                 <AiDecisionPanel
                   decision={aiDecision}
+                  context={aiDecisionContext}
                   onUseReply={setReplyText}
                 />
               </Suspense>

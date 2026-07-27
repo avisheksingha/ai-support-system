@@ -2,6 +2,8 @@ package com.aisupport.orchestration.application.workflow.steps;
 
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -172,22 +174,28 @@ public class FinalAiDecisionStep implements WorkflowStep {
         String assignedTeam = DEFAULT_TEAM;
 
         Object analysisObj = context.getAttribute(ATTR_ANALYSIS_RESULT);
-        if (analysisObj instanceof java.util.Map<?, ?> map && map.containsKey(FIELD_INTENT)) {
-            intent = java.util.Objects.toString(map.get(FIELD_INTENT), DEFAULT_INTENT).replace("_", " ").toLowerCase();
+        if (analysisObj instanceof com.aisupport.common.event.AnalysisResult res && res.intent() != null) {
+            intent = res.intent().replace("_", " ").toLowerCase();
+        } else if (analysisObj instanceof Map<?, ?> map && map.containsKey(FIELD_INTENT)) {
+            intent = Objects.toString(map.get(FIELD_INTENT), DEFAULT_INTENT).replace("_", " ").toLowerCase();
         }
 
         Object kcObj = context.getAttribute(ATTR_KNOWLEDGE_CONTEXT);
-        if (kcObj instanceof java.util.Map<?, ?> map && map.containsKey(FIELD_DOC_COUNT) && map.get(FIELD_DOC_COUNT) instanceof Number n) {
+        if (kcObj instanceof com.aisupport.common.event.KnowledgeContext kc && kc.retrievedDocumentCount() != null) {
+            docCount = kc.retrievedDocumentCount();
+        } else if (kcObj instanceof Map<?, ?> map && map.containsKey(FIELD_DOC_COUNT) && map.get(FIELD_DOC_COUNT) instanceof Number n) {
             docCount = n.intValue();
         }
 
         Object rdObj = context.getAttribute(ATTR_ROUTING_DECISION);
-        if (rdObj instanceof java.util.Map<?, ?> map && map.containsKey(FIELD_ASSIGN_TO_TEAM)) {
-            assignedTeam = java.util.Objects.toString(map.get(FIELD_ASSIGN_TO_TEAM), DEFAULT_TEAM);
+        if (rdObj instanceof com.aisupport.common.event.RoutingDecision rd && rd.assignToTeam() != null) {
+            assignedTeam = rd.assignToTeam();
+        } else if (rdObj instanceof Map<?, ?> map && map.containsKey(FIELD_ASSIGN_TO_TEAM)) {
+            assignedTeam = Objects.toString(map.get(FIELD_ASSIGN_TO_TEAM), DEFAULT_TEAM);
         }
 
         double confPct = confidence != null ? confidence * 100 : 85.0;
-        return String.format("Detected %s intent with high confidence (%.0f%%). Retrieved %d relevant knowledge article(s). Recommended %s routing.",
+        return String.format("Detected %s issue with high confidence (%.0f%%). Retrieved %d relevant knowledge article(s) from the Knowledge Base. Based on AI analysis and organizational routing rules, the ticket was assigned to the %s team.",
             intent, confPct, docCount, assignedTeam);
     }
 

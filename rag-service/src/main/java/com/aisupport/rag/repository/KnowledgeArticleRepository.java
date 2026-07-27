@@ -48,4 +48,8 @@ public interface KnowledgeArticleRepository extends JpaRepository<KnowledgeArtic
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE KnowledgeArticle a SET a.status = 'PUBLISHED' WHERE a.status = 'DRAFT'")
     int bulkPublishDraftArticles();
+
+    @Query("SELECT a.id FROM KnowledgeArticle a WHERE a.status = :status AND a.embeddingStatus = :embStatus AND a.id IN :ids")
+    List<Long> findIdsByStatusAndEmbeddingStatusAndIdIn(@Param("status") KnowledgeArticleStatus status, @Param("embStatus") EmbeddingStatus embStatus, @Param("ids") List<Long> ids);
 }
+

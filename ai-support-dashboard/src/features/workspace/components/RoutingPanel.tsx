@@ -7,8 +7,30 @@ interface RoutingPanelProps {
   ticket: TicketModel;
 }
 
+const getSupportDomain = (teamOrCat?: string, subject?: string) => {
+  const cat = (teamOrCat || "").toLowerCase();
+  const sub = (subject || "").toLowerCase();
+  if (cat.includes("auth") || sub.includes("oauth") || sub.includes("login") || sub.includes("security")) {
+    return "Identity & Access Management (IAM)";
+  }
+  if (cat.includes("bill") || sub.includes("pay") || sub.includes("invoice")) {
+    return "Billing & Account Services";
+  }
+  if (cat.includes("network") || sub.includes("connect") || sub.includes("latency") || cat.includes("technical")) {
+    return "Core Network & Infrastructure";
+  }
+  if (cat.includes("bug") || sub.includes("crash") || sub.includes("error")) {
+    return "Software Engineering & Defect Resolution";
+  }
+  return "Customer Support Operations";
+};
+
 export function RoutingPanel({ routing, ticket }: RoutingPanelProps) {
   const isEscalated = ticket.priority === 'CRITICAL' || ticket.priority === 'HIGH';
+  const supportDomain = getSupportDomain(routing.assignedTeam, ticket.subject);
+  const assignedAgent = (!ticket.assignedTo || ticket.assignedTo === "Unassigned" || ticket.assignedTo === routing.assignedTeam)
+    ? "Unassigned"
+    : ticket.assignedTo;
   
   return (
     <div className="text-xs space-y-3">
@@ -28,8 +50,8 @@ export function RoutingPanel({ routing, ticket }: RoutingPanelProps) {
         {/* Support Domain - Always Present */}
         <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-100 flex-1 min-w-[110px]">
           <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Support Domain</span>
-          <div className="font-semibold text-slate-800 text-[11px] truncate">
-            {routing.assignedTeam || "Account & Access Support"}
+          <div className="font-semibold text-slate-800 text-[11px] truncate" title={supportDomain}>
+            {supportDomain}
           </div>
         </div>
 
@@ -43,15 +65,13 @@ export function RoutingPanel({ routing, ticket }: RoutingPanelProps) {
           </div>
         )}
 
-        {/* Assigned Agent - Shown Only If Assigned */}
-        {ticket.assignedTo && ticket.assignedTo !== "Unassigned" && (
-          <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-100 flex-1 min-w-[110px]">
-            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Assigned Agent</span>
-            <div className="font-semibold text-slate-800 text-[11px] truncate" title={ticket.assignedTo}>
-              {ticket.assignedTo}
-            </div>
+        {/* Assigned Agent */}
+        <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-100 flex-1 min-w-[110px]">
+          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Assigned Agent</span>
+          <div className="font-semibold text-slate-800 text-[11px] truncate" title={assignedAgent}>
+            {assignedAgent}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Priority and SLA */}
@@ -78,9 +98,9 @@ export function RoutingPanel({ routing, ticket }: RoutingPanelProps) {
       {/* Routing Reason */}
       <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-100">
         <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Routing Reason</span>
-        <div className="font-medium text-slate-700 flex items-center gap-1.5">
-          <ArrowRight className="h-3 w-3 text-cyan-500" />
-          AI-based routing based on intent and urgency analysis
+        <div className="font-medium text-slate-700 flex items-start gap-1.5 leading-relaxed">
+          <ArrowRight className="h-3 w-3 text-cyan-500 mt-0.5 shrink-0" />
+          <span>{routing.routingExplanation || "AI-based routing based on intent and urgency analysis."}</span>
         </div>
       </div>
 

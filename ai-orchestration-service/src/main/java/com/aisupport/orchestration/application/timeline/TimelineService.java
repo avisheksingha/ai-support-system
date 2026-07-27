@@ -13,8 +13,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.aisupport.orchestration.application.timeline.dto.AIInsightResponse;
+import com.aisupport.orchestration.application.timeline.dto.AiDecisionContextDTO;
 import com.aisupport.orchestration.application.timeline.dto.AiDecisionDTO;
 import com.aisupport.orchestration.application.timeline.dto.KnowledgeInsightDTO;
+import com.aisupport.orchestration.application.timeline.dto.KnowledgeSourceDTO;
 import com.aisupport.orchestration.application.timeline.dto.PipelineProgressDTO;
 import com.aisupport.orchestration.application.timeline.dto.RoutingInsightDTO;
 import com.aisupport.orchestration.application.timeline.dto.TimelineEvent;
@@ -38,6 +40,7 @@ public class TimelineService {
 
 	private static final String MODEL_KEY = "model";
     private static final String DEFAULT_MODEL_ID = "unavailable";
+    private static final String DEFAULT_TEAM = "General Support";
     
     private static final String KNOWLEDGE_CONTEXT_KEY = "knowledgeContext";
     private static final String ROUTING_DECISION_KEY = "routingDecision";
@@ -178,22 +181,34 @@ public class TimelineService {
             WorkspaceDataResponse.WorkspaceDataResponseBuilder responseBuilder = WorkspaceDataResponse.builder();
 
             // --- Analysis ---
-            fetchTicketInsights(ticketId).ifPresent(responseBuilder::analysis);
+            AIInsightResponse analysis = fetchTicketInsights(ticketId).orElse(null);
+            if (analysis != null) {
+                responseBuilder.analysis(analysis);
+            }
 
             // --- Knowledge ---
+            KnowledgeInsightDTO knowledge = null;
             if (attributes.containsKey(KNOWLEDGE_CONTEXT_KEY)) {
-                responseBuilder.knowledge(mapKnowledgeInsight(attributes));
+                knowledge = mapKnowledgeInsight(attributes);
+                responseBuilder.knowledge(knowledge);
             }
 
             // --- Routing ---
+            RoutingInsightDTO routing = null;
             if (attributes.containsKey(ROUTING_DECISION_KEY)) {
-                responseBuilder.routing(mapRoutingInsight(attributes));
+                routing = mapRoutingInsight(attributes, analysis, knowledge);
+                responseBuilder.routing(routing);
             }
 
             // --- AI Decision ---
+            AiDecisionDTO aiDecision = null;
             if (attributes.containsKey(AI_DECISION_KEY)) {
-                responseBuilder.aiDecision(mapAiDecision(attributes));
+                aiDecision = mapAiDecision(attributes);
+                responseBuilder.aiDecision(aiDecision);
             }
+
+            // --- AI Decision Context (Unified Source of Truth) ---
+            responseBuilder.aiDecisionContext(buildAiDecisionContext(analysis, knowledge, routing, aiDecision));
 
             // --- Workflow Metadata ---
             responseBuilder.workflowMetadata(mapWorkflowMetadata(execution));
@@ -291,10 +306,30 @@ public class TimelineService {
                     .toList();
         }
         
+        List<KnowledgeSourceDTO> sources = Collections.emptyList();
+        Object rawSources = kc.get("sources");
+        if (rawSources instanceof List<?> sourceList) {
+            sources = sourceList.stream()
+                    .filter(Map.class::isInstance)
+                    .map(obj -> {
+                        Map<?, ?> map = (Map<?, ?>) obj;
+                        return KnowledgeSourceDTO.builder()
+                                .id(Objects.toString(map.get("id"), null))
+                                .title(Objects.toString(map.get("title"), "Unknown"))
+                                .similarityScore(map.get("similarityScore") instanceof Number n ? n.doubleValue() : null)
+                                .category(Objects.toString(map.get("category"), null))
+                                .tags(Objects.toString(map.get("tags"), null))
+                                .vectorScore(map.get("vectorScore") instanceof Number n ? n.doubleValue() : null)
+                                .hybridScore(map.get("hybridScore") instanceof Number n ? n.doubleValue() : null)
+                                .build();
+                    })
+                    .toList();
+        }
+
         return KnowledgeInsightDTO.builder()
                 .knowledgeSummary(Objects.toString(kc.get(KNOWLEDGE_SUMMARY_KEY), null))
                 .confidence(knowledgeFound ? 1.0 : 0.0)
-                .sources(Collections.emptyList())
+                .sources(sources)
                 .knowledgeFound(knowledgeFound)
                 .model(model)
                 .retrievedDocumentCount(retrievedDocumentCount)
@@ -302,17 +337,24 @@ public class TimelineService {
                 .build();
     }
 
-    private RoutingInsightDTO mapRoutingInsight(Map<String, Object> attributes) {
+    private RoutingInsightDTO mapRoutingInsight(Map<String, Object> attributes, AIInsightResponse analysis, KnowledgeInsightDTO knowledge) {
         Object rdObj = attributes.get(ROUTING_DECISION_KEY);
         if (!(rdObj instanceof Map<?, ?>)) {
             return null;
         }
         Map<?, ?> rd = (Map<?, ?>) rdObj;
 
+        String assignedTeam = Objects.toString(rd.get(ASSIGN_TO_TEAM_KEY), null);
+        String priority = rd.get(PRIORITY_KEY) != null ? rd.get(PRIORITY_KEY).toString() : null;
+        Integer slaHours = rd.get(SLA_HOURS_KEY) instanceof Number n ? n.intValue() : null;
+
+        String explanation = generateRoutingExplanation(analysis, knowledge, assignedTeam);
+
         return RoutingInsightDTO.builder()
-                .assignedTeam(Objects.toString(rd.get(ASSIGN_TO_TEAM_KEY), null))
-                .priority(rd.get(PRIORITY_KEY) != null ? rd.get(PRIORITY_KEY).toString() : null)
-                .slaHours(rd.get(SLA_HOURS_KEY) instanceof Number n ? n.intValue() : null)
+                .assignedTeam(assignedTeam)
+                .priority(priority)
+                .slaHours(slaHours)
+                .routingExplanation(explanation)
                 .build();
     }
 
@@ -351,5 +393,167 @@ public class TimelineService {
                 .routingCompleted(attributes.containsKey(ROUTING_DECISION_KEY))
                 .decisionCompleted(attributes.containsKey(AI_DECISION_KEY))
                 .build();
+    }
+
+    private AiDecisionContextDTO buildAiDecisionContext(AIInsightResponse analysis, KnowledgeInsightDTO knowledge, RoutingInsightDTO routing, AiDecisionDTO aiDecision) {
+        String[] refined = refineIntentAndCategory(analysis);
+        String intentStr = refined[0];
+        String category = refined[1];
+
+        double confidence = resolveConfidence(analysis, aiDecision);
+        int docCount = resolveDocCount(knowledge);
+        List<String> matchedArticles = knowledge != null && knowledge.getMatchedArticleTitles() != null
+                ? knowledge.getMatchedArticleTitles()
+                : Collections.emptyList();
+        String team = routing != null && routing.getAssignedTeam() != null ? routing.getAssignedTeam() : DEFAULT_TEAM;
+        boolean fallbackUsed = isFallbackUsed(knowledge);
+
+        String reason = String.format(
+            "Detected %s issue with high confidence (%.0f%%). Retrieved %d relevant knowledge article(s) from the Knowledge Base. Based on AI analysis and organizational routing rules, the ticket was assigned to the %s team.",
+            intentStr, confidence * 100, docCount, team
+        );
+
+        if (aiDecision != null && shouldUpdateDecisionReason(aiDecision.getDecisionReason())) {
+            aiDecision.setDecisionReason(reason);
+        }
+
+        String routingExpl = routing != null && routing.getRoutingExplanation() != null
+                ? routing.getRoutingExplanation()
+                : generateRoutingExplanation(analysis, knowledge, team);
+
+        return AiDecisionContextDTO.builder()
+                .intent(intentStr)
+                .category(category)
+                .confidence(confidence)
+                .retrievedArticleCount(docCount)
+                .matchedArticles(matchedArticles)
+                .routingDecision(team)
+                .decisionReason(reason)
+                .routingExplanation(routingExpl)
+                .retrievalFallbackUsed(fallbackUsed)
+                .build();
+    }
+
+    private boolean shouldUpdateDecisionReason(String reason) {
+        if (reason == null) return true;
+        return reason.contains("0 relevant knowledge article") || reason.contains(DEFAULT_MODEL_ID);
+    }
+
+    private String[] refineIntentAndCategory(AIInsightResponse analysis) {
+        String intent = analysis != null && analysis.getIntent() != null ? analysis.getIntent() : "support issue";
+        String category = analysis != null && analysis.getSuggestedCategory() != null ? analysis.getSuggestedCategory() : DEFAULT_TEAM;
+
+        if (!isSemanticOverlap(intent, category)) {
+            return new String[]{intent.replace("_", " "), category};
+        }
+
+        String lower = intent.toLowerCase();
+        if (lower.contains("auth") || lower.contains("login") || lower.contains("oauth") || lower.contains("security")) {
+            return new String[]{"Account Access & Login Verification Failure", "Identity & Access Management (IAM)"};
+        }
+        if (lower.contains("bill") || lower.contains("pay") || lower.contains("invoice")) {
+            return new String[]{"Billing Discrepancy & Payment Verification", "Billing & Account Services"};
+        }
+        if (lower.contains("network") || lower.contains("connect") || lower.contains("latency") || lower.contains("technical")) {
+            return new String[]{"Network Latency & Connectivity Troubleshooting", "Core Network & Infrastructure"};
+        }
+        if (lower.contains("bug") || lower.contains("crash") || lower.contains("error")) {
+            return new String[]{"Software Defect & Crash Investigation", "Software Engineering & Defect Resolution"};
+        }
+        return new String[]{intent.replace("_", " ") + " Inquiry", category.replace("_", " ") + " Operations"};
+    }
+
+    private boolean isSemanticOverlap(String intent, String category) {
+        return intent.equalsIgnoreCase(category)
+            || intent.toLowerCase().contains(category.toLowerCase())
+            || category.toLowerCase().contains(intent.toLowerCase());
+    }
+
+    private double resolveConfidence(AIInsightResponse analysis, AiDecisionDTO aiDecision) {
+        if (aiDecision != null && aiDecision.getConfidence() != null) {
+            return aiDecision.getConfidence();
+        }
+        if (analysis != null && analysis.getConfidenceScore() != null) {
+            return analysis.getConfidenceScore();
+        }
+        return 0.85;
+    }
+
+    private int resolveDocCount(KnowledgeInsightDTO knowledge) {
+        if (knowledge == null) return 0;
+        if (knowledge.getRetrievedDocumentCount() != null) {
+            return knowledge.getRetrievedDocumentCount();
+        }
+        if (knowledge.getMatchedArticleTitles() != null) {
+            return knowledge.getMatchedArticleTitles().size();
+        }
+        return 0;
+    }
+
+    private boolean isFallbackUsed(KnowledgeInsightDTO knowledge) {
+        if (knowledge == null || !knowledge.isKnowledgeFound()) {
+            return true;
+        }
+        return knowledge.getModel() != null && knowledge.getModel().contains("Fallback");
+    }
+
+    private String generateRoutingExplanation(AIInsightResponse analysis, KnowledgeInsightDTO knowledge, String assignedTeam) {
+        String category = resolveCategory(analysis);
+        double confidence = resolveConfidence(analysis, null);
+        String confLabel = resolveConfidenceLabel(confidence);
+        String s1 = String.format("Detected a %s-related support request with %s confidence (%.0f%%).", category, confLabel, confidence * 100);
+
+        String s2 = buildKeywordsSentence(analysis, category);
+
+        int docCount = resolveDocCount(knowledge);
+        String s3 = docCount > 0
+                ? String.format("The Metadata-Aware Retrieval Engine retrieved %d relevant Knowledge Base article(s).", docCount)
+                : "The Metadata-Aware Retrieval Engine retrieved 0 relevant Knowledge Base articles, triggering general domain routing.";
+
+        String team = assignedTeam != null ? assignedTeam : DEFAULT_TEAM;
+        boolean fallbackUsed = isFallbackUsed(knowledge);
+        String s4 = fallbackUsed
+                ? String.format("Due to retrieval fallback or routing resiliency rules, this ticket was assigned to the %s team for investigation.", team)
+                : String.format("According to the routing policy, this ticket was assigned to the %s team for initial investigation.", team);
+
+        return String.join(" ", s1, s2, s3, s4);
+    }
+
+    private String resolveCategory(AIInsightResponse analysis) {
+        if (analysis == null) return DEFAULT_TEAM;
+        if (analysis.getSuggestedCategory() != null && !analysis.getSuggestedCategory().isBlank() && !"None".equalsIgnoreCase(analysis.getSuggestedCategory())) {
+            return analysis.getSuggestedCategory();
+        }
+        if (analysis.getIntent() != null) {
+            return analysis.getIntent().replace("_", " ");
+        }
+        return DEFAULT_TEAM;
+    }
+
+    private String resolveConfidenceLabel(double confidence) {
+        if (confidence >= 0.85) return "High";
+        if (confidence >= 0.70) return "Medium";
+        return "Low";
+    }
+
+    private String buildKeywordsSentence(AIInsightResponse analysis, String category) {
+        if (analysis != null && analysis.getKeywords() != null && !analysis.getKeywords().isEmpty()) {
+            String formattedKws = formatKeywordsList(analysis.getKeywords());
+            return String.format("Keywords such as %s matched the %s category.", formattedKws, category);
+        }
+        return String.format("Analysis of intent and urgency matched the %s category.", category);
+    }
+
+    private String formatKeywordsList(List<String> keywords) {
+        if (keywords == null || keywords.isEmpty()) return "";
+        if (keywords.size() == 1) return "\"" + keywords.get(0) + "\"";
+        if (keywords.size() == 2) return "\"" + keywords.get(0) + "\" and \"" + keywords.get(1) + "\"";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < keywords.size(); i++) {
+            if (i > 0) sb.append(", ");
+            if (i == keywords.size() - 1) sb.append("and ");
+            sb.append("\"").append(keywords.get(i)).append("\"");
+        }
+        return sb.toString();
     }
 }

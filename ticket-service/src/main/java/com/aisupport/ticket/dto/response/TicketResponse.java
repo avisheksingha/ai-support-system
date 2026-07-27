@@ -70,6 +70,9 @@ public class TicketResponse {
     @Schema(description = "When the RAG response was generated")
     private Instant ragGeneratedAt;
     
+    @Schema(description = "AI confidence score", example = "0.95")
+    private Double aiConfidence;
+    
     @Schema(description = "Timestamp when the ticket was created")
     private Instant createdAt;
     

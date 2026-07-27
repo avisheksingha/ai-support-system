@@ -5,3 +5,4 @@ Please evaluate the following information (provided in the user prompt) and outp
 - "aiSummary": A 2-3 sentence summary explaining what this ticket is about and the recommended course of action based on the RAG results.
 - "suggestedReply": A draft reply to the customer, incorporating the RAG knowledge if relevant.
 - "confidence": A float between 0.0 and 1.0 representing your confidence in this decision.
+- "decisionReason": A structured explanation of the decision referencing the detected intent, number of retrieved articles, and routing team.

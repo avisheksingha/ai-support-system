@@ -1,13 +1,12 @@
 package com.aisupport.rag.service;
 
 import java.time.Instant;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.document.Document;
@@ -20,19 +19,11 @@ import com.aisupport.common.event.TicketRagResponseEvent;
 import com.aisupport.rag.entity.RagResponse;
 import com.aisupport.rag.exception.RagGenerationException;
 import com.aisupport.rag.outbox.OutboxEventService;
-/**
- * Core RAG (Retrieval-Augmented Generation) service.
- *
- * This service uses Spring AI's ChatClient with a QuestionAnswerAdvisor to:
- * 1. Accept a natural-language query (built from ticket analysis fields)
- * 2. Retrieve relevant knowledge articles from PGVector via similarity search
- * 3. Retrieve relevant documents using VectorStore (PGVector)
- * 4. Generate a grounded response using Google GenAI
- * 5. Publish a Kafka event with the response to rag_responses table
- * 6. Publish TicketRagResponseEvent via outbox
- */
 import com.aisupport.rag.repository.KnowledgeArticleRepository;
 import com.aisupport.rag.repository.RagResponseRepository;
+import com.aisupport.rag.service.retrieval.MetadataAwareRetrievalService;
+import com.aisupport.rag.service.retrieval.RetrievalResult;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,12 +34,10 @@ import lombok.extern.slf4j.Slf4j;
 public class RagService {
 	
 	private static final String NO_KNOWLEDGE_FOUND = "No relevant knowledge article found.";
-	
-	private static final String TITLE_KEY = "title";
-	private static final String UNKNOWN_TITLE = "Unknown";
 
 	private final ChatClient chatClient;
-	private final QuestionAnswerAdvisor questionAnswerAdvisor;
+
+	private final MetadataAwareRetrievalService retrievalService;
 	private final RagResponseRepository ragResponseRepository;
 	private final KnowledgeArticleRepository knowledgeArticleRepository;
 	private final OutboxEventService outboxEventService;
@@ -70,20 +59,31 @@ public class RagService {
 		log.info("Running RAG for query: {}", query);
 		
 		String response;
+		int docCount = 0;
+		String titles = null;
+		String sourceDetails = null;
 		
 		String systemPrompt = ragSystemPromptTemplate.render(
 		        Map.of("noKnowledgeFound", NO_KNOWLEDGE_FOUND));
 		
 		// Google GenAI call — can fail due to network/quota/model issues
 		try {
-		
+			RetrievalResult retrievalResult = retrievalService.retrieveAndRank(query);
+			String fullSystemPrompt = systemPrompt + "\n\nRetrieved Knowledge Base Context:\n" +
+			        (retrievalResult.formattedContext().isEmpty() ? NO_KNOWLEDGE_FOUND : retrievalResult.formattedContext());
+			
 			// RAG call — similarity search + Google GenAI generation
 	        response = chatClient.prompt()
-				.system(systemPrompt)
+				.system(fullSystemPrompt)
 	            .user(query)
-	            .advisors(questionAnswerAdvisor)
 	            .call()
 	            .content();
+	        docCount = retrievalResult.retrievedDocumentCount();
+	        titles = retrievalResult.matchedArticleTitles();
+	        sourceDetails = serializeSources(retrievalResult.documents());
+	        if (docCount > 0 && titles != null && !titles.isEmpty()) {
+	            incrementAccessCountSafe(List.of(titles.split(",")));
+	        }
 		} catch (Exception e) {
 			log.error("Google GenAI RAG generation failed for ticketId={}", ticketId, e);
 	        throw new RagGenerationException(
@@ -97,6 +97,9 @@ public class RagService {
                 .response(response)
                 .model(chatModel)
                 .knowledgeFound(isKnowledgeFound(response))
+                .retrievedDocumentCount(docCount)
+                .matchedArticleTitles(titles)
+                .sourceDetails(sourceDetails)
                 .build();
 
         ragResponseRepository.save(ragResponse);
@@ -130,14 +133,18 @@ public class RagService {
 	    String response;
 	    int docCount = 0;
 	    String titles = null;
+	    String sourceDetails = null;
 	    String systemPrompt = ragSystemPromptTemplate.render(
 	            Map.of("noKnowledgeFound", NO_KNOWLEDGE_FOUND));
 	    
 	    try {
+	        RetrievalResult retrievalResult = retrievalService.retrieveAndRank(query);
+	        String fullSystemPrompt = systemPrompt + "\n\nRetrieved Knowledge Base Context:\n" +
+	                (retrievalResult.formattedContext().isEmpty() ? NO_KNOWLEDGE_FOUND : retrievalResult.formattedContext());
+
 	        ChatResponse chatResponse = chatClient.prompt()
-	            .system(systemPrompt)
+	            .system(fullSystemPrompt)
 	            .user(query)
-	            .advisors(questionAnswerAdvisor)
 	            .call()
 	            .chatResponse();
 	            
@@ -147,31 +154,12 @@ public class RagService {
 	        }
 
 	        response = chatResponse.getResult().getOutput().getText();
+	        docCount = retrievalResult.retrievedDocumentCount();
+	        titles = retrievalResult.matchedArticleTitles();
+	        sourceDetails = serializeSources(retrievalResult.documents());
 	        
-	        // Safely retrieve and cast the documents
-	        List<Document> docs = Collections.emptyList();
-	        Object rawDocs = chatResponse.getMetadata().get(QuestionAnswerAdvisor.RETRIEVED_DOCUMENTS);
-	        
-	        if (rawDocs instanceof List<?> rawList) {
-	            docs = rawList.stream()
-	                    .filter(Document.class::isInstance)
-	                    .map(Document.class::cast)
-	                    .toList();
-	        }
-	            
-	        if (!docs.isEmpty()) {
-	            docCount = docs.size();
-	            
-	            List<String> matchedTitles = docs.stream()
-	                .map(d -> d.getMetadata().get(TITLE_KEY) != null ? d.getMetadata().get(TITLE_KEY).toString() : UNKNOWN_TITLE)
-	                .distinct()
-	                .toList();
-	                
-	            titles = String.join(",", matchedTitles);
-	            
-	            if (!matchedTitles.isEmpty()) {
-	                incrementAccessCountSafe(matchedTitles);
-	            }
+	        if (docCount > 0 && titles != null && !titles.isEmpty()) {
+	            incrementAccessCountSafe(List.of(titles.split(",")));
 	        }
 	        
 	    } catch (Exception e) {
@@ -193,6 +181,7 @@ public class RagService {
 	            .knowledgeFound(isKnowledgeFound(response))
 	            .retrievedDocumentCount(docCount)
 	            .matchedArticleTitles(titles)
+	            .sourceDetails(sourceDetails)
 	            .build();
 
 	    ragResponseRepository.save(ragResponse);
@@ -223,5 +212,29 @@ public class RagService {
 		} catch (Exception e) {
 			log.warn("Failed to increment access count for titles: {}", matchedTitles, e);
 		}
+	}
+
+	private String serializeSources(List<Document> documents) {
+	    if (documents == null || documents.isEmpty()) {
+	        return null;
+	    }
+	    try {
+	        List<Map<String, Object>> list = documents.stream().map(d -> {
+	            Map<String, Object> map = new HashMap<>();
+	            map.put("id", String.valueOf(d.getMetadata().getOrDefault("articleId", d.getId())));
+	            map.put("title", String.valueOf(d.getMetadata().getOrDefault("title", "Unknown")));
+	            map.put("category", String.valueOf(d.getMetadata().getOrDefault("category", "General")));
+	            map.put("tags", String.valueOf(d.getMetadata().getOrDefault("tags", "None")));
+	            double fallbackScore = d.getScore() != null ? d.getScore() : 0.0;
+	            map.put("similarityScore", fallbackScore);
+	            map.put("vectorScore", d.getMetadata().get("vectorScore") instanceof Number n ? n.doubleValue() : fallbackScore);
+	            map.put("hybridScore", d.getMetadata().get("hybridScore") instanceof Number n ? n.doubleValue() : fallbackScore);
+	            return map;
+	        }).toList();
+	        return new ObjectMapper().writeValueAsString(list);
+	    } catch (Exception e) {
+	        log.warn("Failed to serialize sources to JSON", e);
+	        return null;
+	    }
 	}
 }

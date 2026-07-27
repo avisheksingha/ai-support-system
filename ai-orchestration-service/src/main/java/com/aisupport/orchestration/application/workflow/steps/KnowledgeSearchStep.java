@@ -56,7 +56,7 @@ public class KnowledgeSearchStep implements WorkflowStep {
             log.info("Knowledge Retrieved KnowledgeFound={} Model={}", knowledge.knowledgeFound(), knowledge.model());
         } else {
             log.error("Failed to search knowledge: {}", result.getErrorMessage());
-            KnowledgeContext emptyContext = new KnowledgeContext("No relevant knowledge article found.", false, "Unknown", 0, Collections.emptyList());
+            KnowledgeContext emptyContext = new KnowledgeContext("No relevant knowledge article found.", false, "Unknown", 0, Collections.emptyList(), Collections.emptyList());
             context.putResource(KnowledgeContext.class, emptyContext);
             context.putAttribute("knowledgeContext", emptyContext);
         }

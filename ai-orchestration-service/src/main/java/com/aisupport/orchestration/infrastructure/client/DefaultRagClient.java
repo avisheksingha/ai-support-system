@@ -94,7 +94,7 @@ public class DefaultRagClient implements RagClient {
      */
     private KnowledgeContext buildKnowledgeContext(Map<String, Object> response) {
         if (response == null) {
-            return new KnowledgeContext(DEFAULT_ANSWER, false, UNKNOWN_MODEL, 0, Collections.emptyList());
+            return new KnowledgeContext(DEFAULT_ANSWER, false, UNKNOWN_MODEL, 0, Collections.emptyList(), Collections.emptyList());
         }
 
         // Handle both /search (answer) and /ticket/{id} (generatedReply) formats
@@ -114,7 +114,21 @@ public class DefaultRagClient implements RagClient {
                     .toList();
         }
         
-        return new KnowledgeContext(answer, knowledgeFound, model, retrievedDocumentCount, matchedArticleTitles);
+        List<Map<String, Object>> sources = Collections.emptyList();
+        Object rawSources = response.get("sources");
+        if (rawSources instanceof List<?> sourceList) {
+            sources = sourceList.stream()
+                    .filter(Map.class::isInstance)
+                    .map(DefaultRagClient::castToMap)
+                    .toList();
+        }
+        
+        return new KnowledgeContext(answer, knowledgeFound, model, retrievedDocumentCount, matchedArticleTitles, sources);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> castToMap(Object obj) {
+        return (Map<String, Object>) obj;
     }
 
     private Integer extractInteger(Map<?, ?> map, String key) {

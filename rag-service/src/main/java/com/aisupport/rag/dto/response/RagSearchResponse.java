@@ -1,6 +1,7 @@
 package com.aisupport.rag.dto.response;
 
 import java.util.List;
+import java.util.Map;
 
 import lombok.Builder;
 import lombok.Data;
@@ -13,4 +14,5 @@ public class RagSearchResponse {
     private String model;
     private Integer retrievedDocumentCount;
     private List<String> matchedArticleTitles;
+    private List<Map<String, Object>> sources;
 }

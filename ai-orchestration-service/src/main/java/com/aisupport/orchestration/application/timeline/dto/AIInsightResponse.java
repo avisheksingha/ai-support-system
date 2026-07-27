@@ -1,5 +1,7 @@
 package com.aisupport.orchestration.application.timeline.dto;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,6 +17,6 @@ public class AIInsightResponse {
     private String urgency;
     private Double confidenceScore;
     private String analysisProvider;
-    private java.util.List<String> keywords;
+    private List<String> keywords;
     private String suggestedCategory;
 }

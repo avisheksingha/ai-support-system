@@ -5,15 +5,18 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.aisupport.common.event.AnalysisResult;
 import com.aisupport.common.event.TicketAnalyzedEvent;
 import com.aisupport.routing.entity.RoutingRule;
 import com.aisupport.routing.entity.RuleExecutionHistory;
@@ -53,7 +56,7 @@ class RuleEvaluationServiceTest {
                 .build();
         when(routingRuleRepository.findActiveRulesOrderedByPriority()).thenReturn(List.of(first, second));
 
-        com.aisupport.common.event.AnalysisResult analysis = new com.aisupport.common.event.AnalysisResult(
+        AnalysisResult analysis = new AnalysisResult(
                 "PAYMENT_ISSUE", "NEGATIVE", "HIGH", 0.9, List.of("payment"), "Billing");
         TicketAnalyzedEvent event = TicketAnalyzedEvent.builder()
                 .ticketId(100L)
@@ -64,7 +67,7 @@ class RuleEvaluationServiceTest {
 
         assertThat(matched).isNotNull();
         assertThat(matched.getId()).isEqualTo(2L);
-        verify(historyRepository, times(2)).save(org.mockito.ArgumentMatchers.any(RuleExecutionHistory.class));
+        verify(historyRepository, times(2)).save(ArgumentMatchers.any(RuleExecutionHistory.class));
     }
 
     @Test
@@ -77,8 +80,8 @@ class RuleEvaluationServiceTest {
                 .build();
         when(routingRuleRepository.findActiveRulesOrderedByPriority()).thenReturn(List.of(onlyRule));
 
-        com.aisupport.common.event.AnalysisResult analysis = new com.aisupport.common.event.AnalysisResult(
-                "PAYMENT_ISSUE", "NEGATIVE", "HIGH", 0.9, java.util.Collections.emptyList(), "Billing");
+        AnalysisResult analysis = new AnalysisResult(
+                "PAYMENT_ISSUE", "NEGATIVE", "HIGH", 0.9, Collections.emptyList(), "Billing");
         TicketAnalyzedEvent event = TicketAnalyzedEvent.builder()
                 .ticketId(200L)
                 .analysis(analysis)

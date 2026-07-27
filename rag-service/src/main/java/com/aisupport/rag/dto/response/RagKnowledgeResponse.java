@@ -2,6 +2,7 @@ package com.aisupport.rag.dto.response;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,6 +19,9 @@ public class RagKnowledgeResponse {
     private String generatedReply;
     private Double similarityScore;
     private List<String> sourceDocuments;
+    private Integer retrievedDocumentCount;
+    private List<String> matchedArticleTitles;
+    private List<Map<String, Object>> sources;
     private String modelUsed;
     private Instant generatedAt;
 }

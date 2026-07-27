@@ -16,7 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
-@PreAuthorize("hasAnyRole('AGENT', 'ADMIN')")
+@PreAuthorize("hasAnyRole('CUSTOMER', 'AGENT', 'ADMIN')")
 @RequestMapping("/api/v1/analysis/writing")
 @Tag(name = "Writing Assistant", description = "Endpoints for AI-powered writing improvements")
 public class WritingAssistantController {

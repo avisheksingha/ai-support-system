@@ -14,6 +14,7 @@ public class WorkspaceDataResponse {
     private KnowledgeInsightDTO knowledge;
     private RoutingInsightDTO routing;
     private AiDecisionDTO aiDecision;
+    private AiDecisionContextDTO aiDecisionContext;
     private WorkflowMetadataDTO workflowMetadata;
     private PipelineProgressDTO pipelineProgress;
 }

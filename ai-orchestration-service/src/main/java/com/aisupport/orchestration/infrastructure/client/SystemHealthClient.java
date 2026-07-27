@@ -49,14 +49,12 @@ public class SystemHealthClient {
                         .retrieve()
                         .body(new ParameterizedTypeReference<Map<String, Object>>() {});
 
-                if (infoResponse != null && infoResponse.containsKey("app")) {
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> appInfo = (Map<String, Object>) infoResponse.get("app");
-                    if (appInfo.containsKey("version")) {
-                        version = (String) appInfo.get("version");
+                if (infoResponse != null && infoResponse.get("app") instanceof Map<?, ?> appInfo) {
+                    if (appInfo.get("version") instanceof String v) {
+                        version = v;
                     }
-                    if (appInfo.containsKey("description")) {
-                        buildVersion = (String) appInfo.get("description");
+                    if (appInfo.get("description") instanceof String d) {
+                        buildVersion = d;
                     }
                 }
             } catch (Exception e) {

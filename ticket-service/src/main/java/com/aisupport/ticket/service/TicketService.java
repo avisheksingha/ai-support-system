@@ -549,6 +549,7 @@ public class TicketService {
         if (analysis.intent() != null) ticket.setIntent(analysis.intent());
         if (analysis.sentiment() != null) ticket.setSentiment(analysis.sentiment());
         if (analysis.urgency() != null) ticket.setUrgency(analysis.urgency());
+        if (analysis.confidenceScore() != null) ticket.setAiConfidence(analysis.confidenceScore());
     }
 
     private void applyRouting(Ticket ticket, RoutingDecision routing) {

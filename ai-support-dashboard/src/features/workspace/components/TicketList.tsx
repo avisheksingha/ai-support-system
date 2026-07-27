@@ -103,10 +103,12 @@ export function TicketList({ selectedTicket, onSelectTicket }: TicketListProps) 
                 {ticket.priority}
               </Badge>
               <Badge variant="outline" className={`text-[9px] uppercase px-1.5 py-0 shadow-none font-bold ${getStatusColor(ticket.status)}`}>
-                {ticket.status}
+                {formatStatusLabel(ticket.status)}
               </Badge>
               <span className="text-[9px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200">
-                95% AI
+                {ticket.aiConfidence !== undefined && ticket.aiConfidence !== null
+                  ? `${(ticket.aiConfidence > 1 ? ticket.aiConfidence : ticket.aiConfidence * 100).toFixed(0)}% AI`
+                  : "N/A AI"}
               </span>
             </div>
           </button>
@@ -124,6 +126,11 @@ function getPriorityColor(priority: string) {
     case "LOW": return "text-blue-700 border-blue-200 bg-blue-50";
     default: return "text-slate-500 border-slate-200 bg-slate-50";
   }
+}
+
+function formatStatusLabel(status: string) {
+  if (!status) return "Unknown";
+  return status.replace(/_/g, " ").replace(/\w\S*/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
 }
 
 function getStatusColor(status: string) {

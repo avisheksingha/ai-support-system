@@ -17,6 +17,7 @@ export interface TicketModel {
   slaHours?: number;
   customerTier?: string;
   channel?: string;
+  aiConfidence?: number;
   createdAt: string;
   updatedAt: string;
 }

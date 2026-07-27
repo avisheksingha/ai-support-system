@@ -5,6 +5,8 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,7 +40,7 @@ class RoutingServiceTest {
     @Test
     void route_withMatchedRule_shouldPublishRuleDrivenEvent() {
         com.aisupport.common.event.AnalysisResult analysis = new com.aisupport.common.event.AnalysisResult(
-                "PAYMENT_ISSUE", "NEGATIVE", "HIGH", 0.9, java.util.Collections.emptyList(), "Billing");
+                "PAYMENT_ISSUE", "NEGATIVE", "HIGH", 0.9, Collections.emptyList(), "Billing");
         TicketAnalyzedEvent analyzed = TicketAnalyzedEvent.builder()
                 .ticketId(1L)
                 .analysis(analysis)
@@ -71,7 +73,7 @@ class RoutingServiceTest {
     @Test
     void route_withoutMatchedRule_shouldUseFallbackValues() {
         com.aisupport.common.event.AnalysisResult analysis = new com.aisupport.common.event.AnalysisResult(
-                "GENERAL", "NEUTRAL", "LOW", 0.0, java.util.Collections.emptyList(), "General");
+                "GENERAL", "NEUTRAL", "LOW", 0.0, Collections.emptyList(), "General");
         TicketAnalyzedEvent analyzed = TicketAnalyzedEvent.builder()
                 .ticketId(2L)
                 .analysis(analysis)

@@ -3,6 +3,7 @@ package com.aisupport.orchestration.application.timeline;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -61,7 +62,7 @@ public class TimelineMapper {
         
         if (checkpoint.getAttributesSnapshot() != null) {
             Object kcObj = checkpoint.getAttributesSnapshot().get("knowledgeContext");
-            if (kcObj instanceof java.util.Map<?, ?> kc && kc.get("model") != null) {
+            if (kcObj instanceof Map<?, ?> kc && kc.get("model") != null) {
                 model = kc.get("model").toString();
             }
         }

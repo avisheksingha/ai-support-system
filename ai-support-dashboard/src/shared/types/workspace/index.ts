@@ -14,6 +14,10 @@ export interface KnowledgeSource {
   id: string;
   title: string;
   similarityScore?: number;
+  category?: string;
+  tags?: string;
+  vectorScore?: number;
+  hybridScore?: number;
 }
 
 export interface KnowledgeModel {
@@ -30,6 +34,7 @@ export interface RoutingModel {
   assignedTeam: string;
   priority: string;
   slaHours: number;
+  routingExplanation?: string;
 }
 
 export interface AiDecisionModel {
@@ -52,13 +57,26 @@ export interface PipelineProgress {
   decisionCompleted: boolean;
 }
 
+export interface AiDecisionContextModel {
+  intent: string;
+  category: string;
+  confidence: number;
+  retrievedArticleCount: number;
+  matchedArticles: string[];
+  routingDecision: string;
+  decisionReason: string;
+  routingExplanation?: string;
+  retrievalFallbackUsed: boolean;
+}
+
 export interface WorkspaceDataResponse {
-  analysis?: AnalysisModel;
-  knowledge?: KnowledgeModel;
-  routing?: RoutingModel;
-  aiDecision?: AiDecisionModel;
-  workflowMetadata?: WorkflowMetadata;
-  pipelineProgress?: PipelineProgress;
+  analysis?: AnalysisModel | undefined;
+  knowledge?: KnowledgeModel | undefined;
+  routing?: RoutingModel | undefined;
+  aiDecision?: AiDecisionModel | undefined;
+  aiDecisionContext?: AiDecisionContextModel | undefined;
+  workflowMetadata?: WorkflowMetadata | undefined;
+  pipelineProgress?: PipelineProgress | undefined;
 }
 
 

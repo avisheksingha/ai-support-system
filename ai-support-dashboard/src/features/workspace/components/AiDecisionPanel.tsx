@@ -1,14 +1,15 @@
 import { Sparkles, Check, Copy, Edit, RefreshCw, ThumbsUp, ThumbsDown, History, Info } from "lucide-react";
 import { useState } from "react";
-import type { AiDecisionModel } from "@/shared/types/workspace";
+import type { AiDecisionModel, AiDecisionContextModel } from "@/shared/types/workspace";
 import { Button } from "@/components/ui/button";
 
 interface AiDecisionPanelProps {
   decision: AiDecisionModel;
+  context?: AiDecisionContextModel | undefined;
   onUseReply?: ((text: string) => void) | undefined;
 }
 
-export function AiDecisionPanel({ decision, onUseReply }: AiDecisionPanelProps) {
+export function AiDecisionPanel({ decision, context, onUseReply }: AiDecisionPanelProps) {
   const [copied, setCopied] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedReply, setEditedReply] = useState(decision.suggestedReply);
@@ -43,28 +44,33 @@ export function AiDecisionPanel({ decision, onUseReply }: AiDecisionPanelProps) 
     setEditedReply(regenerated);
   };
 
-  const rawConfidence = decision.confidence;
-  const confidencePct = (rawConfidence * 100).toFixed(0);
-  const confidenceBadgeLabel = rawConfidence >= 0.8 ? `High Confidence (${confidencePct}%)` : rawConfidence >= 0.6 ? `Medium Confidence (${confidencePct}%)` : `Low Confidence (${confidencePct}%)`;
-
-  const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 0.8) return "text-emerald-700 bg-emerald-50 border-emerald-200";
-    if (confidence >= 0.6) return "text-amber-700 bg-amber-50 border-amber-200";
-    return "text-red-700 bg-red-50 border-red-200";
-  };
-
   const decisionExplanation = decision.decisionReason || "Decision explanation unavailable.";
+
+  let displayIntent = context?.intent || "General Inquiry";
+  let displayCategory = context?.category || "General Support";
+
+  if (displayIntent.toLowerCase() === displayCategory.toLowerCase() || displayIntent.toLowerCase().includes(displayCategory.toLowerCase()) || displayCategory.toLowerCase().includes(displayIntent.toLowerCase())) {
+    const lower = displayIntent.toLowerCase();
+    if (lower.includes("auth") || lower.includes("login") || lower.includes("oauth") || lower.includes("security")) {
+      displayIntent = "Account Access & Login Verification Failure";
+      displayCategory = "Identity & Access Management (IAM)";
+    } else if (lower.includes("bill") || lower.includes("pay") || lower.includes("invoice")) {
+      displayIntent = "Billing Discrepancy & Payment Verification";
+      displayCategory = "Billing & Account Services";
+    } else if (lower.includes("network") || lower.includes("connect") || lower.includes("latency")) {
+      displayIntent = "Network Latency & Connectivity Troubleshooting";
+      displayCategory = "Core Network & Infrastructure";
+    } else if (lower.includes("bug") || lower.includes("crash") || lower.includes("error")) {
+      displayIntent = "Software Defect & Crash Investigation";
+      displayCategory = "Software Engineering & Defect Resolution";
+    } else {
+      displayIntent = displayIntent + " Troubleshooting";
+      displayCategory = displayCategory + " Operations";
+    }
+  }
 
   return (
     <div className="text-xs flex flex-col gap-3.5">
-      {/* Confidence Badge - Prominent at top */}
-      <div className="flex items-center justify-between bg-slate-50 rounded-lg p-2.5 border border-slate-100">
-        <span className="text-[9px] font-bold uppercase text-slate-500">AI Confidence</span>
-        <div className={`px-2.5 py-0.5 rounded-md border text-[11px] font-bold ${getConfidenceColor(decision.confidence)}`}>
-          {confidenceBadgeLabel}
-        </div>
-      </div>
-      
       {/* Compact AI Recommendation Box */}
       <div className="p-3 bg-gradient-to-r from-purple-50 to-indigo-50/60 border border-purple-100/80 rounded-lg space-y-2 text-purple-950">
         <div className="flex items-center justify-between">
@@ -81,11 +87,23 @@ export function AiDecisionPanel({ decision, onUseReply }: AiDecisionPanelProps) 
           Send resolution guide &amp; verification steps
         </div>
 
-        <div className="flex items-start gap-1.5 text-[10.5px] text-slate-600 font-medium pt-1.5 border-t border-purple-100/60">
-          <Info className="h-3.5 w-3.5 text-purple-600 shrink-0 mt-0.5" />
-          <p>
-            <strong className="text-purple-950">Decision Reason:</strong> {decisionExplanation}
-          </p>
+        <div className="space-y-2 pt-2 border-t border-purple-100/60">
+          {context ? (
+            <div className="grid grid-cols-2 gap-1.5 text-[10.5px] bg-white/70 p-2.5 rounded border border-purple-100/60 shadow-2xs font-medium">
+              <div><span className="text-slate-400 font-bold uppercase text-[9px] block">Intent</span> <span className="capitalize text-slate-700 font-semibold" title={displayIntent}>{displayIntent}</span></div>
+              <div><span className="text-slate-400 font-bold uppercase text-[9px] block">Category</span> <span className="text-slate-700 font-semibold" title={displayCategory}>{displayCategory}</span></div>
+              <div><span className="text-slate-400 font-bold uppercase text-[9px] block">Confidence</span> <span className="text-purple-700 font-bold">{(context.confidence * 100).toFixed(0)}%</span></div>
+              <div><span className="text-slate-400 font-bold uppercase text-[9px] block">Knowledge Retrieval</span> <span className="text-emerald-700 font-semibold">{context.retrievedArticleCount} matching article{context.retrievedArticleCount !== 1 ? 's' : ''}</span></div>
+              <div className="col-span-2 pt-1 border-t border-purple-50/80"><span className="text-slate-400 font-bold uppercase text-[9px] block">Routing Decision</span> <span className="text-cyan-800 font-semibold">{context.routingDecision}</span></div>
+            </div>
+          ) : null}
+
+          <div className="flex items-start gap-1.5 text-[10.5px] text-slate-600 font-medium">
+            <Info className="h-3.5 w-3.5 text-purple-600 shrink-0 mt-0.5" />
+            <p className="leading-relaxed">
+              <strong className="text-purple-950 font-bold">Decision Reason:</strong> {context?.decisionReason || decisionExplanation}
+            </p>
+          </div>
         </div>
       </div>
 

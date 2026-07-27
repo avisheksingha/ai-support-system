@@ -57,6 +57,9 @@ public class RagResponse {
     @Column(name = "matched_article_titles", columnDefinition = "TEXT")
     private String matchedArticleTitles;
     
+    @Column(name = "source_details", columnDefinition = "TEXT")
+    private String sourceDetails;
+    
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;

@@ -24,7 +24,7 @@ public class ResilientTicketClient {
     }
 
     public TicketDashboardSummaryDTO fallbackAgentSummary(String userEmail, String team, Throwable t) {
-        log.error("Ticket service unavailable. Returning empty agent dashboard summary. Error: {}", t.getMessage());
+        log.error("Ticket service unavailable for agent={} (team={}). Returning empty agent dashboard summary. Error: {}", userEmail, team, t.getMessage());
         return new TicketDashboardSummaryDTO();
     }
 }

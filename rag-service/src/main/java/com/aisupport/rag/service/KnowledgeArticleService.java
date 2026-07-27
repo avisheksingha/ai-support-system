@@ -30,8 +30,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class KnowledgeArticleService {
 
+    private static final String KEY_PUBLISHED_COUNT = "publishedCount";
+
     private final KnowledgeArticleRepository repository;
     private final KnowledgeArticleMapper mapper;
+    private final KnowledgeEmbeddingService embeddingService;
 
     @Transactional(readOnly = true)
     public Page<KnowledgeArticleDTO> searchArticles(ArticleSearchRequestDTO searchRequest) {
@@ -94,41 +97,52 @@ public class KnowledgeArticleService {
 
     @Transactional
     public KnowledgeArticleDTO updateArticle(Long id, KnowledgeArticleDTO dto) {
-        return repository.findById(id).map(existing -> {
-            // Track whether content-bearing fields actually change.
-            // Only title and content are included in embedding generation,
-            // so only changes to these fields should invalidate embeddings.
-            boolean contentChanged = false;
+        KnowledgeArticle existing = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Article not found: " + id));
 
-            if (dto.getTitle() != null) {
-                if (!dto.getTitle().equals(existing.getTitle())) {
-                    contentChanged = true;
-                }
-                existing.setTitle(dto.getTitle());
-            }
-            if (dto.getContent() != null) {
-                if (!dto.getContent().equals(existing.getContent())) {
-                    contentChanged = true;
-                }
-                existing.setContent(dto.getContent());
-            }
+        boolean contentChanged = applyUpdates(existing, dto);
+        if (contentChanged) {
+            existing.setEmbeddingStatus(EmbeddingStatus.PENDING);
+        }
 
-            // Metadata-only updates — never invalidate embeddings
-            if (dto.getCategory() != null) existing.setCategory(dto.getCategory());
-            if (dto.getTags() != null) existing.setTags(dto.getTags());
-            if (dto.getStatus() != null) existing.setStatus(dto.getStatus());
+        KnowledgeArticle saved = repository.save(existing);
+        syncIfReady(saved);
 
-            if (contentChanged) {
-                existing.setEmbeddingStatus(EmbeddingStatus.PENDING);
-            }
+        return mapper.toDto(saved);
+    }
 
-            return mapper.toDto(repository.save(existing));
-        }).orElseThrow(() -> new RuntimeException("Article not found: " + id));
+    private boolean applyUpdates(KnowledgeArticle existing, KnowledgeArticleDTO dto) {
+        boolean contentChanged = false;
+        if (dto.getTitle() != null && !dto.getTitle().equals(existing.getTitle())) {
+            existing.setTitle(dto.getTitle());
+            contentChanged = true;
+        }
+        if (dto.getContent() != null && !dto.getContent().equals(existing.getContent())) {
+            existing.setContent(dto.getContent());
+            contentChanged = true;
+        }
+
+        if (dto.getCategory() != null) existing.setCategory(dto.getCategory());
+        if (dto.getTags() != null) existing.setTags(dto.getTags());
+        if (dto.getStatus() != null) existing.setStatus(dto.getStatus());
+
+        return contentChanged;
+    }
+
+    private void syncIfReady(KnowledgeArticle saved) {
+        if (saved.getEmbeddingStatus() == EmbeddingStatus.READY) {
+            embeddingService.syncVectorMetadata(saved.getId(),
+                saved.getStatus() != null ? saved.getStatus().name() : "DRAFT",
+                saved.getCategory(),
+                saved.getTags(),
+                saved.getVersion());
+        }
     }
 
     @Transactional
     public void deleteArticle(Long id) {
         repository.deleteById(id);
+        embeddingService.deleteVectorChunks(id);
     }
 
     @Transactional(readOnly = true)
@@ -145,7 +159,7 @@ public class KnowledgeArticleService {
 
         return Map.of(
             "totalArticles", total,
-            "publishedCount", published,
+            KEY_PUBLISHED_COUNT, published,
             "draftCount", draft,
             "embeddedCount", embedded,
             "categoriesCount", categories,
@@ -158,10 +172,11 @@ public class KnowledgeArticleService {
         long draftCount = repository.countByStatus(KnowledgeArticleStatus.DRAFT);
         if (draftCount == 0) {
             log.info("No draft articles to publish.");
-            return Map.of("publishedCount", 0L, "message", "No draft articles found.");
+            return Map.of(KEY_PUBLISHED_COUNT, 0L, "message", "No draft articles found.");
         }
         int published = repository.bulkPublishDraftArticles();
-        log.info("Bulk published {} draft articles.", published);
-        return Map.of("publishedCount", (long) published, "message", published + " articles published successfully.");
+        embeddingService.syncBulkPublishMetadata();
+        log.info("Bulk published {} draft articles and synchronized vector store metadata.", published);
+        return Map.of(KEY_PUBLISHED_COUNT, (long) published, "message", published + " articles published successfully.");
     }
 }

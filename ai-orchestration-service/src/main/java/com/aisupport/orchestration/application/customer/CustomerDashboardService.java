@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -27,6 +26,14 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class CustomerDashboardService {
+
+    private static final String STATUS_NEW = "NEW";
+    private static final String STATUS_ANALYZING = "ANALYZING";
+    private static final String STATUS_ANALYZED = "ANALYZED";
+    private static final String STATUS_ASSIGNED = "ASSIGNED";
+    private static final String STATUS_IN_PROGRESS = "IN_PROGRESS";
+    private static final String STATUS_RESOLVED = "RESOLVED";
+    private static final String STATUS_CLOSED = "CLOSED";
 
     private final TicketClient ticketClient;
 
@@ -51,20 +58,20 @@ public class CustomerDashboardService {
 
         for (TicketResponseDTO t : allTickets) {
             String s = t.getStatus();
-            if (Arrays.asList("NEW", "ANALYZING", "ANALYZED", "ASSIGNED", "IN_PROGRESS").contains(s)) {
+            if (Arrays.asList(STATUS_NEW, STATUS_ANALYZING, STATUS_ANALYZED, STATUS_ASSIGNED, STATUS_IN_PROGRESS).contains(s)) {
                 openCount++;
             }
-            if (Arrays.asList("NEW", "ANALYZING", "ANALYZED").contains(s)) {
+            if (Arrays.asList(STATUS_NEW, STATUS_ANALYZING, STATUS_ANALYZED).contains(s)) {
                 waitingCount++;
             }
-            if (Arrays.asList("RESOLVED", "CLOSED").contains(s)) {
+            if (Arrays.asList(STATUS_RESOLVED, STATUS_CLOSED).contains(s)) {
                 resolvedCount++;
             }
         }
 
         List<TicketSummaryDTO> ticketSummaries = allTickets.stream()
                 .map(this::mapToSummary)
-                .collect(Collectors.toList());
+                .toList();
                 
         if (!ticketSummaries.isEmpty()) {
             latestStatus = formatStatus(ticketSummaries.get(0).getStatus());
@@ -110,7 +117,7 @@ public class CustomerDashboardService {
                         .type(m.getType())
                         .createdAt(m.getCreatedAt())
                         .build())
-                .collect(Collectors.toList());
+                .toList();
 
         TicketDetailDTO detailDTO = TicketDetailDTO.builder()
                 .ticketNumber(ticket.getTicketNumber())
@@ -171,22 +178,14 @@ public class CustomerDashboardService {
 
     private String formatStatus(String status) {
         if (status == null) return "Unknown";
-        switch (status) {
-            case "NEW":
-            case "ANALYZING":
-            case "ANALYZED":
-                return "Submitted";
-            case "ASSIGNED":
-                return "In Review";
-            case "IN_PROGRESS":
-                return "In Progress";
-            case "RESOLVED":
-                return "Resolved";
-            case "CLOSED":
-                return "Closed";
-            default:
-                return status;
-        }
+        return switch (status) {
+            case STATUS_NEW, STATUS_ANALYZING, STATUS_ANALYZED -> "Submitted";
+            case STATUS_ASSIGNED -> "In Review";
+            case STATUS_IN_PROGRESS -> "In Progress";
+            case STATUS_RESOLVED -> "Resolved";
+            case STATUS_CLOSED -> "Closed";
+            default -> status;
+        };
     }
 
     private CustomerAssistanceDTO extractAssistance(TicketResponseDTO ticket) {
