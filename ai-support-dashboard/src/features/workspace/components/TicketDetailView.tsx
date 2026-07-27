@@ -615,7 +615,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
           ) : (
             <ErrorBoundary FallbackComponent={WorkspaceErrorFallback}>
               <Suspense fallback={<Skeleton className="h-32 w-full bg-card rounded-xl" />}>
-                <RoutingPanel routing={routing} ticket={ticket} />
+                <RoutingPanel routing={routing} ticket={ticket} analysis={analysis} knowledge={knowledge} aiDecisionContext={aiDecisionContext} />
               </Suspense>
             </ErrorBoundary>
           )}
