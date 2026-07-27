@@ -36,11 +36,13 @@ This convention applies to:
 The project utilizes a dual package philosophy depending on the complexity and domain of the microservice.
 
 ### 1. The Flat Architecture (Standard Microservices)
+
 For standard domain microservices (e.g., `ticket-service`, `auth-service`, `ai-analysis-service`, `routing-service`, `rag-service`), we strictly follow a flat, simple, and immediately understandable Spring Boot architecture.
 
 **We do NOT introduce `application`, `domain`, or `infrastructure` packages in these services.**
 
 The permitted top-level packages are:
+
 - `config`: Framework configurations.
 - `controller`: REST APIs.
 - `service`: Business logic.
@@ -59,6 +61,7 @@ The permitted top-level packages are:
 *Only create packages that actually make sense for the service (e.g., no `repository` if no database exists).*
 
 ### 2. The Layered Architecture (AI Orchestration Service ONLY)
+
 Due to its unique role in coordinating complex multi-agent workflows, the `ai-orchestration-service` uses a strict feature-first Hexagonal Architecture structure:
 
 ```text
@@ -69,6 +72,7 @@ src/main/java
     ├── domain
     └── infrastructure
 ```
+
 - `config`: Framework configurations only.
 - `application`: Business orchestration, grouped by feature.
 - `domain`: Pure business concepts decoupled from technical frameworks.
@@ -109,5 +113,5 @@ src/main/java
 
 ## Architecture Freeze (V1)
 
-**The backend architecture is structurally frozen for V1.** 
+**The backend architecture is structurally frozen for V1.**
 All microservices have been fully standardized to these conventions. Avoid further architectural refactoring or introducing new package hierarchies unless there is a clear architectural justification. New features should follow the established package conventions exactly.

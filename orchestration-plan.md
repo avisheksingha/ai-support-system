@@ -7,6 +7,7 @@ This document proposes the architectural design for introducing the `ai-orchestr
 ## 1. Current Architecture Context
 
 Currently, the platform relies on **Event-Driven Choreography** over Apache Kafka:
+
 - `ticket-service` (8082) publishes `ticket-created`.
 - `ai-analysis-service` (8083) consumes `ticket-created`, performs LLM analysis, and publishes `ticket-analyzed`.
 - `routing-service` (8084) and `rag-service` (8085) both independently consume `ticket-analyzed` to route the ticket and generate a response.
@@ -18,9 +19,11 @@ Currently, the platform relies on **Event-Driven Choreography** over Apache Kafk
 We will shift from *Choreography* to an **Agentic Orchestration Model**. The new `ai-orchestration-service` (Port 8086) will act as the central AI supervisor.
 
 ### Goal
+
 To build an AI-native Orchestrator that uses an LLM (via Spring AI) with **Tool Calling** to proactively coordinate the other microservices, maintaining conversation history and context, and providing full observability into its reasoning.
 
 ### Event Flow Re-wiring
+
 1. `ticket-service` publishes `ticket-created`.
 2. **Only** the `ai-orchestration-service` consumes `ticket-created`.
 3. The existing consumers in `ai-analysis`, `routing`, and `rag` services will be disabled or re-purposed.
@@ -28,19 +31,19 @@ To build an AI-native Orchestrator that uses an LLM (via Spring AI) with **Tool 
 
 ## 3. Tool Calling & Inter-Service Communication
 
-Spring AI's `@Tool` (Function Calling) requires synchronous responses so the LLM can process the result and decide the next step. 
+Spring AI's `@Tool` (Function Calling) requires synchronous responses so the LLM can process the result and decide the next step.
 
 Since our services currently lack synchronous trigger endpoints, we will introduce **Internal REST APIs** for the orchestrator to invoke them as Tools:
 
-* **Tool 1: `analyzeTicketTool`**
-  * Makes a REST call to `ai-analysis-service:8083/api/internal/analyze`
-  * *Returns:* Sentiment, Intent, Urgency, Confidence.
-* **Tool 2: `searchKnowledgeBaseTool`**
-  * Makes a REST call to `rag-service:8085/api/internal/search`
-  * *Returns:* Vector-matched knowledge articles.
-* **Tool 3: `routeTicketTool`**
-  * Makes a REST call to `routing-service:8084/api/internal/route`
-  * *Returns:* Department assignment and SLA.
+- **Tool 1: `analyzeTicketTool`**
+  - Makes a REST call to `ai-analysis-service:8083/api/internal/analyze`
+  - *Returns:* Sentiment, Intent, Urgency, Confidence.
+- **Tool 2: `searchKnowledgeBaseTool`**
+  - Makes a REST call to `rag-service:8085/api/internal/search`
+  - *Returns:* Vector-matched knowledge articles.
+- **Tool 3: `routeTicketTool`**
+  - Makes a REST call to `routing-service:8084/api/internal/route`
+  - *Returns:* Department assignment and SLA.
 
 *Note: These internal endpoints bypass the API Gateway and are used strictly for server-to-server orchestration.*
 
