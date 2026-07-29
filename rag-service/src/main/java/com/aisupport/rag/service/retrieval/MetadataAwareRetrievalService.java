@@ -35,20 +35,41 @@ public class MetadataAwareRetrievalService {
     private static final double DEFAULT_SIMILARITY_THRESHOLD = 0.40;
     private static final int DEFAULT_FINAL_TOP_K = 5;
 
+    private record CandidateExecution(List<Document> candidates, boolean fallbackUsed, String strategy) {}
+
     public RetrievalResult retrieveAndRank(String query) {
+        long startTime = System.currentTimeMillis();
         RetrievalContext context = metadataExtractor.extract(query);
         log.debug("Executing retrieval for context: category='{}', keywords={}, intent='{}', confidence={}",
                 context.suggestedCategory(), context.keywords(), context.intent(), context.confidenceScore());
 
-        List<Document> validCandidates = fetchCandidates(context);
+        CandidateExecution exec = fetchCandidates(context);
+        List<Document> validCandidates = exec.candidates();
 
         List<Document> rankedDocs = documentRanker.rankAndSelectTopK(validCandidates, context, DEFAULT_FINAL_TOP_K);
-        log.info("Retrieval complete: selected {} top ranked documents from {} validated candidates.", rankedDocs.size(), validCandidates.size());
+        long latencyMs = System.currentTimeMillis() - startTime;
+        log.info("Retrieval complete: selected {} top ranked documents from {} validated candidates in {}ms (strategy={}).",
+                rankedDocs.size(), validCandidates.size(), latencyMs, exec.strategy());
 
-        return promptBuilder.build(rankedDocs);
+        boolean catMatched = rankedDocs.stream().anyMatch(d -> d.getMetadata().get("categoryScore") instanceof Number n && n.doubleValue() > 0);
+        boolean tagMatched = rankedDocs.stream().anyMatch(d -> d.getMetadata().get("tagScore") instanceof Number n && n.doubleValue() > 0);
+        boolean kwMatched = rankedDocs.stream().anyMatch(d -> d.getMetadata().get("matchedKeywords") != null && !d.getMetadata().get("matchedKeywords").toString().isEmpty());
+
+        RetrievalDiagnostics diagnostics = new RetrievalDiagnostics(
+                rankedDocs.size(),
+                exec.fallbackUsed(),
+                latencyMs,
+                catMatched,
+                kwMatched,
+                tagMatched,
+                context.confidenceScore() != null ? context.confidenceScore() : 0.0,
+                exec.strategy()
+        );
+
+        return promptBuilder.build(rankedDocs, diagnostics);
     }
 
-    private List<Document> fetchCandidates(RetrievalContext context) {
+    private CandidateExecution fetchCandidates(RetrievalContext context) {
         if (context.hasCategory() && context.isHighConfidence()) {
             String catFilter = String.format("status == 'PUBLISHED' && embeddingStatus == 'READY' && category == '%s'",
                     context.suggestedCategory());
@@ -56,16 +77,19 @@ public class MetadataAwareRetrievalService {
             List<Document> validCandidates = applyGovernanceFilter(catDocs);
 
             if (!validCandidates.isEmpty()) {
-                return validCandidates;
+                return new CandidateExecution(validCandidates, false, "CATEGORY_SCOPED");
             }
             log.info("Category-scoped RAG search for category '{}' returned 0 valid PUBLISHED candidates. Automatically falling back to global vector search...", context.suggestedCategory());
+            String globalFilter = "status == 'PUBLISHED' && embeddingStatus == 'READY'";
+            List<Document> globalDocs = searchVectorStoreSafe(context.cleanedQuery(), DEFAULT_CANDIDATE_TOP_K, DEFAULT_SIMILARITY_THRESHOLD, globalFilter);
+            return new CandidateExecution(applyGovernanceFilter(globalDocs), true, "GLOBAL_FALLBACK");
         } else if (!context.isHighConfidence()) {
             log.info("Low confidence score ({}) detected. Skipping strict category restriction and executing broadened global vector search.", context.confidenceScore());
         }
 
         String globalFilter = "status == 'PUBLISHED' && embeddingStatus == 'READY'";
         List<Document> globalDocs = searchVectorStoreSafe(context.cleanedQuery(), DEFAULT_CANDIDATE_TOP_K, DEFAULT_SIMILARITY_THRESHOLD, globalFilter);
-        return applyGovernanceFilter(globalDocs);
+        return new CandidateExecution(applyGovernanceFilter(globalDocs), false, "BROADER_GLOBAL");
     }
 
     private List<Document> applyGovernanceFilter(List<Document> rawCandidates) {

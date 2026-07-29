@@ -1,6 +1,7 @@
 import { ArrowRight, AlertTriangle, Target, CheckCircle2 } from "lucide-react";
 import type { RoutingModel, AnalysisModel, KnowledgeModel, AiDecisionContextModel } from "@/shared/types/workspace";
 import type { TicketModel } from "@/shared/types/ticket";
+import { formatIntent, formatTeamName } from "@/shared/utils/format";
 
 interface RoutingPanelProps {
   routing: RoutingModel;
@@ -37,11 +38,9 @@ export function RoutingPanel({ routing, ticket, analysis, knowledge, aiDecisionC
 
   // Compute dynamic decision summary data
   const rawIntent = analysis?.intent || aiDecisionContext?.intent || ticket.subject || "General Support Inquiry";
-  const displayIntent = rawIntent
-    .replace(/[-_]/g, ' ')
-    .replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+  const displayIntent = formatIntent(rawIntent);
 
-  const rawConf = analysis?.confidenceScore ?? aiDecisionContext?.confidence ?? (ticket.aiConfidence !== undefined && ticket.aiConfidence !== null ? (ticket.aiConfidence > 1 ? ticket.aiConfidence / 100 : ticket.aiConfidence) : 0.92);
+  const rawConf = analysis?.confidenceScore ?? aiDecisionContext?.confidence ?? (ticket.aiConfidence !== undefined && ticket.aiConfidence !== null ? (ticket.aiConfidence > 1 ? ticket.aiConfidence / 100 : ticket.aiConfidence) : 0);
   const confPercent = Math.round(rawConf * 100);
   const confLabel = confPercent >= 85 ? "High Confidence" : confPercent >= 60 ? "Medium Confidence" : "Low Confidence";
   const confBadgeStyle = confPercent >= 85 ? "bg-emerald-50 text-emerald-700 border-emerald-200" : confPercent >= 60 ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-rose-50 text-rose-700 border-rose-200";
@@ -72,13 +71,13 @@ export function RoutingPanel({ routing, ticket, analysis, knowledge, aiDecisionC
     : `${(routing.assignedTeam || "general_support").toLowerCase().replace(/\s+/g, '_')}_routing_rule`;
   const policyDescription = `Priority ${routing.priority} with ${routing.slaHours}h resolution SLA target`;
 
-  const teamDisplay = `${routing.assignedTeam || "General Support"} Team`;
+  const teamDisplay = formatTeamName(routing.assignedTeam);
   const backendExplanation = routing.routingExplanation || aiDecisionContext?.routingExplanation;
   const finalDecisionText = backendExplanation
     ? backendExplanation
     : isFallback
-      ? `Due to retrieval fallback rules (0 articles retrieved), this ticket was assigned to the ${routing.assignedTeam || "General Support"} team for investigation.`
-      : `According to routing policy and high confidence (${confPercent}%), this ticket was assigned to the ${routing.assignedTeam || "General Support"} team for initial investigation.`;
+      ? `Due to retrieval fallback rules (0 articles retrieved), this ticket was assigned to the ${teamDisplay} for investigation.`
+      : `According to routing policy and high confidence (${confPercent}%), this ticket was assigned to the ${teamDisplay} for initial investigation.`;
 
   return (
     <div className="text-xs space-y-3">
@@ -107,8 +106,8 @@ export function RoutingPanel({ routing, ticket, analysis, knowledge, aiDecisionC
         {routing.assignedTeam && (
           <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-100 flex-1 min-w-[110px]">
             <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Assigned Team</span>
-            <div className="font-semibold text-cyan-800 text-[11px] truncate" title={`${routing.assignedTeam} Team`}>
-              {routing.assignedTeam} Team
+            <div className="font-semibold text-cyan-800 text-[11px] break-words leading-snug" title={teamDisplay}>
+              {teamDisplay}
             </div>
           </div>
         )}
@@ -160,7 +159,7 @@ export function RoutingPanel({ routing, ticket, analysis, knowledge, aiDecisionC
           <div className="grid grid-cols-2 gap-2 bg-white p-2.5 rounded-lg border border-slate-150">
             <div>
               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Detected Intent</span>
-              <span className="font-bold text-slate-800 text-[11px] truncate block" title={displayIntent}>{displayIntent}</span>
+              <span className="font-bold text-slate-800 text-[11px] break-words leading-snug block" title={displayIntent}>{displayIntent}</span>
             </div>
             <div>
               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Confidence Score</span>

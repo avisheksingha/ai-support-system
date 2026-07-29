@@ -1,6 +1,7 @@
 import { Terminal, Activity, Clock, Hash, BrainCircuit, Network, BookOpen, AlertCircle, FileText, Cpu } from "lucide-react";
 import type { AnalysisModel, RoutingModel, KnowledgeModel } from "@/shared/types/workspace";
 import type { TicketModel } from "@/shared/types/ticket";
+import { formatTeamName } from "@/shared/utils/format";
 
 interface DiagnosticsPanelProps {
   ticket: TicketModel;
@@ -11,7 +12,7 @@ interface DiagnosticsPanelProps {
 
 export function DiagnosticsPanel({ ticket, analysis, routing, knowledge }: DiagnosticsPanelProps) {
   const retrievedCount = knowledge?.retrievedDocumentCount ?? knowledge?.matchedArticleTitles?.length ?? 0;
-  const topScore = knowledge?.sources?.[0]?.hybridScore ?? knowledge?.sources?.[0]?.similarityScore ?? knowledge?.sources?.[0]?.vectorScore ?? (retrievedCount > 0 ? 0.89 : 0);
+  const topScore = knowledge?.sources?.[0]?.hybridScore ?? knowledge?.sources?.[0]?.similarityScore ?? knowledge?.sources?.[0]?.vectorScore;
   return (
     <div className="bg-background border border-red-900/50 rounded-xl overflow-hidden mb-6">
       <div className="bg-red-950/30 border-b border-red-900/50 p-4 flex items-center justify-between">
@@ -56,7 +57,7 @@ export function DiagnosticsPanel({ ticket, analysis, routing, knowledge }: Diagn
             <div className="flex flex-col gap-3">
               <div className="grid grid-cols-2 gap-4">
                  <DataPoint label="Retrieved Articles" value={retrievedCount} />
-                 <DataPoint label="Top Similarity" value={topScore > 0 ? `${(topScore > 1 ? topScore : topScore * 100).toFixed(1)}%` : "N/A"} />
+                 <DataPoint label="Top Similarity" value={(topScore && topScore > 0) ? `${(topScore * 100).toFixed(1)}%` : "N/A"} />
               </div>
               <div>
                 <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold block mb-1">Vector Search Query</span>
@@ -74,7 +75,7 @@ export function DiagnosticsPanel({ ticket, analysis, routing, knowledge }: Diagn
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                <DataPoint label="Priority Match" value={routing.priority} />
                <DataPoint label="SLA Target" value={`${routing.slaHours}h`} />
-               <DataPoint label="Assigned Team" value={routing.assignedTeam} />
+               <DataPoint label="Assigned Team" value={formatTeamName(routing.assignedTeam)} />
             </div>
           </DiagnosticSection>
         )}

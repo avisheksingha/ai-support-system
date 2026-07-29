@@ -6,9 +6,10 @@ The RAG (Retrieval-Augmented Generation) Service is a Domain Capability Service 
 
 - **Document Embedding**: Uses Spring AI and Google GenAI to generate embeddings for knowledge base articles or past tickets.
 - **Vector Storage**: Stores embeddings in a PostgreSQL database using the `pgvector` extension.
-- **Contextual Retrieval**: Leverages the `QuestionAnswerAdvisor` pattern to retrieve relevant documents and generate accurate, context-aware answers.
+- **Metadata-Aware Retrieval Engine**: Leverages hybrid ranking (vector similarity, category, tag, and title scoring) and dynamic fallback strategies to retrieve relevant documents and generate grounded, context-aware answers.
+- **Separation of Concerns**: Encapsulates prompt construction via `RagPromptFactory` and JSON serialization via `SourceMetadataSerializer`, keeping service orchestration focused on core workflow execution.
+- **Observability & Diagnostics**: Generates rich `RetrievalDiagnostics` (retrieval latencies, fallback usage, category/tag/keyword matches, and strategy tracking) for auditability and governance, alongside distributed log tracing via Logback MDC.
 - **Interactions (REST & Kafka)**: Provides retrieval capabilities synchronously via REST (Tool Calling) for workflow execution, and listens to domain events via Kafka to trigger automated document indexing.
-- **Observability**: Utilizes a `CorrelationIdFilter` and Kafka Header extraction to ensure distributed log tracing via Logback MDC.
 
 ## Technology Stack
 

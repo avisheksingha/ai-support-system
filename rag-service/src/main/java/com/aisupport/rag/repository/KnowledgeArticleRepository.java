@@ -46,6 +46,10 @@ public interface KnowledgeArticleRepository extends JpaRepository<KnowledgeArtic
     void incrementAccessCountByTitles(@Param("titles") List<String> titles);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE KnowledgeArticle a SET a.accessCount = a.accessCount + 1, a.lastAccessedAt = CURRENT_TIMESTAMP WHERE a.id IN :ids")
+    void incrementAccessCountByIds(@Param("ids") List<Long> ids);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE KnowledgeArticle a SET a.status = 'PUBLISHED' WHERE a.status = 'DRAFT'")
     int bulkPublishDraftArticles();
 

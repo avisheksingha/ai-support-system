@@ -1,19 +1,13 @@
 import type { AnalysisModel } from "@/shared/types/workspace";
+import { formatIntent } from "@/shared/utils/format";
 
 interface AiInsightsPanelProps {
   analysis: AnalysisModel;
 }
 
 export function AiInsightsPanel({ analysis }: AiInsightsPanelProps) {
-  const rawScore = analysis.confidenceScore ?? 0;
-  const confidencePercent = (rawScore * 100).toFixed(0);
-  
-  const getConfidenceColor = (score: number) => {
-    if (score >= 0.8) return 'text-emerald-600 bg-emerald-50 border-emerald-200';
-    if (score >= 0.6) return 'text-amber-600 bg-amber-50 border-amber-200';
-    return 'text-red-600 bg-red-50 border-red-200';
-  };
-  
+
+
   const getUrgencyColor = (urgency: string) => {
     const upper = urgency.toUpperCase();
     if (upper.includes('CRITICAL') || upper.includes('HIGH')) return 'text-rose-600';
@@ -21,9 +15,8 @@ export function AiInsightsPanel({ analysis }: AiInsightsPanelProps) {
     return 'text-blue-600';
   };
 
-  const confidenceLabel = rawScore >= 0.8 ? `High (${confidencePercent}%)` : rawScore >= 0.6 ? `Medium (${confidencePercent}%)` : `Low (${confidencePercent}%)`;
 
-  let displayIntent = formatSemanticString(analysis.intent || "General Inquiry");
+  let displayIntent = formatIntent(analysis.intent || "General Inquiry");
   let displayCategory = analysis.suggestedCategory || "General Support";
 
   if (displayIntent.toLowerCase() === displayCategory.toLowerCase() || displayIntent.toLowerCase().includes(displayCategory.toLowerCase()) || displayCategory.toLowerCase().includes(displayIntent.toLowerCase())) {
@@ -48,19 +41,11 @@ export function AiInsightsPanel({ analysis }: AiInsightsPanelProps) {
 
   return (
     <div className="text-xs space-y-3">
-      {/* Confidence Badge - Prominent at top */}
-      <div className="flex items-center justify-between bg-slate-50 rounded-lg p-2.5 border border-slate-100">
-        <span className="text-[9px] font-bold uppercase text-slate-500">Analysis Confidence</span>
-        <div className={`px-2.5 py-0.5 rounded-md border text-[11px] font-bold ${getConfidenceColor(rawScore)}`}>
-          {confidenceLabel}
-        </div>
-      </div>
-
       {/* Analysis Grid */}
       <div className="grid grid-cols-2 gap-2">
         <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-100">
           <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Intent</span>
-          <div className="font-semibold text-indigo-700 truncate" title={displayIntent}>{displayIntent}</div>
+          <div className="font-semibold text-indigo-700 break-words leading-snug" title={displayIntent}>{displayIntent}</div>
         </div>
         <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-100">
           <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Sentiment</span>
@@ -72,7 +57,7 @@ export function AiInsightsPanel({ analysis }: AiInsightsPanelProps) {
         </div>
         <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-100">
           <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Category</span>
-          <div className="font-semibold text-slate-700 truncate" title={displayCategory}>{displayCategory}</div>
+          <div className="font-semibold text-slate-700 break-words leading-snug" title={displayCategory}>{displayCategory}</div>
         </div>
       </div>
 

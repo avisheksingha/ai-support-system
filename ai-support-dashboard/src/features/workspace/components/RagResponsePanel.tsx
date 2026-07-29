@@ -30,38 +30,25 @@ export function RagResponsePanel({ knowledge }: RagResponsePanelProps) {
     return summary;
   };
 
-  const getArticleCategory = (category?: string, title?: string) => {
-    if (category && category !== "General" && category !== "Unknown" && category !== "None") {
-      const c = category.toLowerCase();
-      if (c.includes("identi") || c.includes("access") || c.includes("iam") || c.includes("auth") || c.includes("login")) {
-        return { label: category, style: "bg-blue-50 text-blue-700 border-blue-200" };
-      }
-      if (c.includes("bill") || c.includes("account") || c.includes("pay") || c.includes("subscrip")) {
-        return { label: category, style: "bg-emerald-50 text-emerald-700 border-emerald-200" };
-      }
-      if (c.includes("network") || c.includes("infrastruc") || c.includes("connect") || c.includes("latenc") || c.includes("core")) {
-        return { label: category, style: "bg-purple-50 text-purple-700 border-purple-200" };
-      }
-      if (c.includes("defect") || c.includes("software") || c.includes("engineer") || c.includes("bug") || c.includes("crash")) {
-        return { label: category, style: "bg-rose-50 text-rose-700 border-rose-200" };
-      }
-      return { label: category, style: "bg-indigo-50 text-indigo-700 border-indigo-200" };
+  const getArticleCategory = (category?: string) => {
+    if (!category || category === "General" || category === "Unknown" || category === "None") {
+      return { label: "Knowledge Article", style: "bg-slate-100 text-slate-600 border-slate-200" };
     }
     
-    const t = (title || "").toLowerCase();
-    if (t.includes("oauth") || t.includes("login") || t.includes("sso") || t.includes("auth") || t.includes("password") || t.includes("token")) {
-      return { label: "Identity & Access", style: "bg-blue-50 text-blue-700 border-blue-200" };
+    const c = category.toLowerCase();
+    let style = "bg-indigo-50 text-indigo-700 border-indigo-200";
+    
+    if (c.includes("identi") || c.includes("access") || c.includes("iam") || c.includes("auth") || c.includes("login")) {
+      style = "bg-blue-50 text-blue-700 border-blue-200";
+    } else if (c.includes("bill") || c.includes("account") || c.includes("pay") || c.includes("subscrip")) {
+      style = "bg-emerald-50 text-emerald-700 border-emerald-200";
+    } else if (c.includes("network") || c.includes("infrastruc") || c.includes("connect") || c.includes("latenc") || c.includes("core")) {
+      style = "bg-purple-50 text-purple-700 border-purple-200";
+    } else if (c.includes("defect") || c.includes("software") || c.includes("engineer") || c.includes("bug") || c.includes("crash")) {
+      style = "bg-rose-50 text-rose-700 border-rose-200";
     }
-    if (t.includes("bill") || t.includes("pay") || t.includes("invoice") || t.includes("subscription")) {
-      return { label: "Billing & Accounts", style: "bg-emerald-50 text-emerald-700 border-emerald-200" };
-    }
-    if (t.includes("network") || t.includes("latency") || t.includes("connect") || t.includes("api") || t.includes("timeout") || t.includes("gateway")) {
-      return { label: "Core Infrastructure", style: "bg-purple-50 text-purple-700 border-purple-200" };
-    }
-    if (t.includes("bug") || t.includes("error") || t.includes("crash") || t.includes("exception")) {
-      return { label: "Defect Resolution", style: "bg-rose-50 text-rose-700 border-rose-200" };
-    }
-    return { label: "Knowledge Article", style: "bg-slate-100 text-slate-600 border-slate-200" };
+    
+    return { label: category, style };
   };
 
   return (
@@ -74,7 +61,7 @@ export function RagResponsePanel({ knowledge }: RagResponsePanelProps) {
           </span>
           <div className="space-y-1.5">
             {(knowledge.sources && knowledge.sources.length > 0 ? knowledge.sources : (knowledge.matchedArticleTitles || []).map((title, id) => ({ id: String(id), title, category: undefined, similarityScore: undefined, hybridScore: undefined, vectorScore: undefined }))).map((source, i) => {
-              const cat = getArticleCategory(source.category, source.title);
+              const cat = getArticleCategory(source.category);
               const score = source.hybridScore ?? source.similarityScore ?? source.vectorScore;
               return (
                 <div key={i} className="flex items-center justify-between p-2 bg-white border border-slate-200 rounded text-xs gap-2">
@@ -85,7 +72,7 @@ export function RagResponsePanel({ knowledge }: RagResponsePanelProps) {
                     </span>
                     {score !== undefined && score !== null && score > 0 && (
                       <span className="text-[10px] text-slate-500 font-semibold shrink-0" title="Retrieval match score">
-                        {(score > 1 ? score : score * 100).toFixed(0)}%
+                        {(score * 100).toFixed(0)}%
                       </span>
                     )}
                   </div>

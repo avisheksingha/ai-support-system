@@ -10,6 +10,7 @@ import org.springframework.ai.converter.BeanOutputConverter;
 
 import com.aisupport.analysis.dto.response.ParsedAnalysis;
 import com.aisupport.analysis.exception.AnalysisException;
+import com.aisupport.common.event.SupportCategoryVocabulary;
 import com.aisupport.common.event.SupportIntentVocabulary;
 
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +59,7 @@ public abstract class AbstractChatProvider implements ChatProvider {
             promptVariables.put("subject", subject == null ? "" : subject);
             promptVariables.put("message", message == null ? "" : message);
             promptVariables.put("allowedIntents", String.join(", ", SupportIntentVocabulary.getAllowedIntents()));
+            promptVariables.put("allowedCategories", String.join(", ", SupportCategoryVocabulary.getAllowedCategories()));
             promptVariables.put("format", outputConverter.getFormat());
 
             // Render the prompt with the variables

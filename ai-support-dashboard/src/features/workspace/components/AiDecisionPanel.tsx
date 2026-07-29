@@ -1,6 +1,7 @@
 import { Sparkles, Check, Copy, Edit, RefreshCw, ThumbsUp, ThumbsDown, History, Info } from "lucide-react";
 import { useState } from "react";
 import type { AiDecisionModel, AiDecisionContextModel } from "@/shared/types/workspace";
+import { formatIntent, formatTeamName } from "@/shared/utils/format";
 import { Button } from "@/components/ui/button";
 
 interface AiDecisionPanelProps {
@@ -46,7 +47,7 @@ export function AiDecisionPanel({ decision, context, onUseReply }: AiDecisionPan
 
   const decisionExplanation = decision.decisionReason || "Decision explanation unavailable.";
 
-  let displayIntent = context?.intent || "General Inquiry";
+  let displayIntent = formatIntent(context?.intent || "General Inquiry");
   let displayCategory = context?.category || "General Support";
 
   if (displayIntent.toLowerCase() === displayCategory.toLowerCase() || displayIntent.toLowerCase().includes(displayCategory.toLowerCase()) || displayCategory.toLowerCase().includes(displayIntent.toLowerCase())) {
@@ -90,11 +91,11 @@ export function AiDecisionPanel({ decision, context, onUseReply }: AiDecisionPan
         <div className="space-y-2 pt-2 border-t border-purple-100/60">
           {context ? (
             <div className="grid grid-cols-2 gap-1.5 text-[10.5px] bg-white/70 p-2.5 rounded border border-purple-100/60 shadow-2xs font-medium">
-              <div><span className="text-slate-400 font-bold uppercase text-[9px] block">Intent</span> <span className="capitalize text-slate-700 font-semibold" title={displayIntent}>{displayIntent}</span></div>
+              <div><span className="text-slate-400 font-bold uppercase text-[9px] block">Intent</span> <span className="text-slate-700 font-semibold break-words leading-snug block" title={displayIntent}>{displayIntent}</span></div>
               <div><span className="text-slate-400 font-bold uppercase text-[9px] block">Category</span> <span className="text-slate-700 font-semibold" title={displayCategory}>{displayCategory}</span></div>
               <div><span className="text-slate-400 font-bold uppercase text-[9px] block">Confidence</span> <span className="text-purple-700 font-bold">{(context.confidence * 100).toFixed(0)}%</span></div>
               <div><span className="text-slate-400 font-bold uppercase text-[9px] block">Knowledge Retrieval</span> <span className="text-emerald-700 font-semibold">{context.retrievedArticleCount} matching article{context.retrievedArticleCount !== 1 ? 's' : ''}</span></div>
-              <div className="col-span-2 pt-1 border-t border-purple-50/80"><span className="text-slate-400 font-bold uppercase text-[9px] block">Routing Decision</span> <span className="text-cyan-800 font-semibold">{context.routingDecision}</span></div>
+              <div className="col-span-2 pt-1 border-t border-purple-50/80"><span className="text-slate-400 font-bold uppercase text-[9px] block">Routing Decision</span> <span className="text-cyan-800 font-semibold">{formatTeamName(context.routingDecision)}</span></div>
             </div>
           ) : null}
 

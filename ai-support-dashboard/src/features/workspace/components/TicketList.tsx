@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Loader2 } from "lucide-react";
 import type { TicketModel } from "@/shared/types/ticket";
 import { formatTimeAgo } from "@/shared/utils/date";
+import { normalizeTicketSubject } from "@/shared/utils/format";
 
 interface TicketListProps {
   selectedTicket: string | null;
@@ -22,7 +23,7 @@ export function TicketList({ selectedTicket, onSelectTicket }: TicketListProps) 
 
   const filteredTickets = tickets?.filter((t: TicketModel) => 
     t.ticketNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    t.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    normalizeTicketSubject(t.subject).toLowerCase().includes(searchTerm.toLowerCase()) ||
     t.customerName.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
@@ -87,7 +88,7 @@ export function TicketList({ selectedTicket, onSelectTicket }: TicketListProps) 
             <h3 className={`text-sm font-semibold line-clamp-2 mb-2 leading-snug ${
               selectedTicket === ticket.ticketNumber ? "text-indigo-950" : "text-slate-800 group-hover:text-slate-900"
             }`}>
-              {ticket.subject}
+              {normalizeTicketSubject(ticket.subject)}
             </h3>
             
             <div className="space-y-1.5 mb-3">

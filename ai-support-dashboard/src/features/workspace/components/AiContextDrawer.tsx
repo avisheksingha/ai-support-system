@@ -2,6 +2,7 @@ import { X, User, BrainCircuit, BookOpen, Network, Cpu, Clock, ExternalLink } fr
 import type { TicketModel } from "@/shared/types/ticket";
 import type { AnalysisModel, RoutingModel, AiDecisionModel, KnowledgeModel, WorkflowMetadata } from "@/shared/types/workspace";
 import { formatDuration, formatTime } from "@/shared/utils/date";
+import { normalizeTicketSubject, formatIntent, formatTeamName } from "@/shared/utils/format";
 
 interface AiContextDrawerProps {
   isOpen: boolean;
@@ -92,7 +93,7 @@ export function AiContextDrawer({
             </div>
             <div className="pt-2 border-t border-slate-100 text-xs">
               <span className="text-[10px] text-slate-400 font-bold uppercase block mb-1">Customer Subject</span>
-              <p className="font-medium text-slate-800 bg-slate-50 p-2.5 rounded border border-slate-100">{ticket.subject}</p>
+              <p className="font-medium text-slate-800 bg-slate-50 p-2.5 rounded border border-slate-100">{normalizeTicketSubject(ticket.subject)}</p>
             </div>
           </div>
 
@@ -105,7 +106,7 @@ export function AiContextDrawer({
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <span className="text-[10px] text-slate-400 font-bold uppercase block mb-0.5">Intent</span>
-                  <span className="font-bold text-indigo-700">{formatSemanticString(analysis.intent)}</span>
+                  <span className="font-bold text-indigo-700 break-words leading-snug block">{formatIntent(analysis.intent)}</span>
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 font-bold uppercase block mb-0.5">Analysis Confidence</span>
@@ -186,7 +187,7 @@ export function AiContextDrawer({
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <span className="text-[10px] text-slate-400 font-bold uppercase block mb-0.5">Support Domain</span>
-                  <span className="font-bold text-cyan-900">{routing.assignedTeam || "Unassigned"}</span>
+                  <span className="font-bold text-cyan-900">{formatTeamName(routing.assignedTeam)}</span>
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 font-bold uppercase block mb-0.5">Assigned Agent / Team</span>
@@ -235,9 +236,4 @@ export function AiContextDrawer({
       </div>
     </div>
   );
-}
-
-function formatSemanticString(val: string) {
-  if (!val) return "—";
-  return val.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }

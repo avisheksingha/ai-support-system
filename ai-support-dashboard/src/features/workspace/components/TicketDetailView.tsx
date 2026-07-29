@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ErrorBoundary } from "react-error-boundary";
 import { WorkspaceErrorFallback } from "@/components/ui/ErrorFallbacks";
 import { formatTimeAgo } from "@/shared/utils/date";
+import { normalizeTicketSubject, formatTeamName, formatIntent } from "@/shared/utils/format";
 import { Button } from "@/components/ui/button";
 
 // Lazy Loaded Panels
@@ -43,10 +44,8 @@ function calculateSLA(createdAt: string, slaHours?: number) {
   if (timeLeft <= 0) {
     return { text: "Breached", percent: 100, isBreached: true };
   }
-
   const totalMs = slaHours * 60 * 60 * 1000;
-  const elapsed = now - created;
-  const percent = Math.min(100, Math.max(0, (elapsed / totalMs) * 100));
+  const percent = Math.min(100, Math.max(0, (timeLeft / totalMs) * 100));
 
   const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60));
   const minsLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
@@ -203,7 +202,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
           </div>
 
           {/* Subject */}
-          <h1 className="text-xl font-bold text-slate-900 leading-tight mb-4 break-words">{ticket.subject}</h1>
+          <h1 className="text-xl font-bold text-slate-900 leading-tight mb-4 break-words">{normalizeTicketSubject(ticket.subject)}</h1>
 
           {/* Customer Info */}
           <div className="flex items-center gap-4 mb-4 pb-4 border-b border-slate-100 flex-wrap justify-between">
@@ -248,7 +247,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
           <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4">
             <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-100">
               <span className="text-[9px] font-bold uppercase text-slate-500 tracking-wider block mb-1">Intent</span>
-              <span className="text-xs font-semibold text-indigo-700">{analysis?.intent ? formatSemanticString(analysis.intent) : 'Unknown'}</span>
+              <span className="text-xs font-semibold text-indigo-700">{analysis?.intent ? formatIntent(analysis.intent) : 'Unknown'}</span>
             </div>
 
             {/* Enhanced SLA Visualization */}
@@ -273,7 +272,7 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
             </div>
             <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-100">
               <span className="text-[9px] font-bold uppercase text-slate-500 tracking-wider block mb-1">Assigned Team</span>
-              <span className="text-xs font-semibold text-slate-700">{routing?.assignedTeam || 'Unassigned'}</span>
+              <span className="text-xs font-semibold text-slate-700">{formatTeamName(routing?.assignedTeam)}</span>
             </div>
             <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-100 col-span-2 sm:col-span-1">
               <span className="text-[9px] font-bold uppercase text-slate-500 tracking-wider block mb-1">Assigned Agent</span>
@@ -637,8 +636,4 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
       )}
     </div>
   );
-}
-
-function formatSemanticString(val: string) {
-  return val.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
 }

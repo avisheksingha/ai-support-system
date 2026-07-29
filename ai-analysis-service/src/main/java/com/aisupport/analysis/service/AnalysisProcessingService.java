@@ -14,6 +14,7 @@ import com.aisupport.analysis.outbox.OutboxEventService;
 import com.aisupport.analysis.repository.AnalysisResultRepository;
 import com.aisupport.common.dto.AnalysisResultDTO;
 import com.aisupport.common.event.EventType;
+import com.aisupport.common.event.SupportCategoryVocabulary;
 import com.aisupport.common.event.SupportIntentVocabulary;
 import com.aisupport.common.event.TicketAnalyzedEvent;
 import com.aisupport.common.event.TicketCreatedEvent;
@@ -53,6 +54,7 @@ public class AnalysisProcessingService {
         );
         
         String normalizedIntent = SupportIntentVocabulary.normalize(parsed.getIntent());
+        String normalizedCategory = SupportCategoryVocabulary.normalize(parsed.getSuggestedCategory());
         
         BigDecimal confidence = parsed.getConfidenceScore() != null
                 ? BigDecimal.valueOf(parsed.getConfidenceScore())
@@ -67,7 +69,7 @@ public class AnalysisProcessingService {
                 .keywords(parsed.getKeywords() != null
                         ? parsed.getKeywords().toArray(new String[0])
                         : new String[0])
-                .suggestedCategory(parsed.getSuggestedCategory())
+                .suggestedCategory(normalizedCategory)
                 .rawResponse(convertToJson(parsed))
                 .build();
 
@@ -82,7 +84,7 @@ public class AnalysisProcessingService {
                 defaultIfNull(parsed.getUrgency(), "LOW").toUpperCase(),
                 parsed.getConfidenceScore(),
                 parsed.getKeywords(),
-                parsed.getSuggestedCategory()
+                normalizedCategory
         );
 
         TicketAnalyzedEvent analyzedEvent = TicketAnalyzedEvent.builder()

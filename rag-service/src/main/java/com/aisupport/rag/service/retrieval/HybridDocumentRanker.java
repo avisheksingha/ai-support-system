@@ -62,6 +62,20 @@ public class HybridDocumentRanker {
             newMeta.put("vectorScore", vScore);
             newMeta.put("tagScore", tagScore);
             newMeta.put("categoryScore", cScore);
+            
+            String reason = String.format("Vector: %.2f, Category: %.2f, Tags: %.2f, Title: %.2f", vScore, cScore, tagScore, tScore);
+            newMeta.put("rankingReason", reason);
+
+            List<String> matchedWords = searchTerms.stream()
+                    .filter(term -> {
+                        String t = (doc.getMetadata().get("title") != null ? doc.getMetadata().get("title").toString() : "").toLowerCase();
+                        String tg = (doc.getMetadata().get("tags") != null ? doc.getMetadata().get("tags").toString() : "").toLowerCase();
+                        return t.contains(term.toLowerCase()) || tg.contains(term.toLowerCase());
+                    })
+                    .toList();
+            if (!matchedWords.isEmpty()) {
+                newMeta.put("matchedKeywords", String.join(", ", matchedWords));
+            }
 
             Document updatedDoc = Document.builder()
                     .id(doc.getId())

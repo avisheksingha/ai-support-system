@@ -59,6 +59,9 @@ public class RagResponse {
     
     @Column(name = "source_details", columnDefinition = "TEXT")
     private String sourceDetails;
+
+    @Column(name = "retrieval_diagnostics", columnDefinition = "TEXT")
+    private String retrievalDiagnostics;
     
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

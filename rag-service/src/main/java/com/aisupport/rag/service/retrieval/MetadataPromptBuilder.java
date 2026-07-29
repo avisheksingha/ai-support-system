@@ -17,8 +17,12 @@ public class MetadataPromptBuilder {
     private static final String DEFAULT_CATEGORY = "General";
 
     public RetrievalResult build(List<Document> documents) {
+        return build(documents, RetrievalDiagnostics.empty());
+    }
+
+    public RetrievalResult build(List<Document> documents, RetrievalDiagnostics diagnostics) {
         if (documents == null || documents.isEmpty()) {
-            return RetrievalResult.empty();
+            return new RetrievalResult(List.of(), "", 0, "", diagnostics != null ? diagnostics : RetrievalDiagnostics.empty());
         }
 
         StringBuilder sb = new StringBuilder();
@@ -53,7 +57,8 @@ public class MetadataPromptBuilder {
                 documents,
                 sb.toString(),
                 documents.size(),
-                titlesStr
+                titlesStr,
+                diagnostics != null ? diagnostics : RetrievalDiagnostics.empty()
         );
     }
 
