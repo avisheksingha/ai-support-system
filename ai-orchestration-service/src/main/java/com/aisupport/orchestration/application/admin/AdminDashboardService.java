@@ -16,6 +16,7 @@ import com.aisupport.orchestration.infrastructure.client.AuthClient;
 import com.aisupport.orchestration.infrastructure.client.RagClient;
 import com.aisupport.orchestration.infrastructure.client.SystemHealthClient;
 import com.aisupport.orchestration.infrastructure.client.TicketClient;
+import com.aisupport.orchestration.infrastructure.persistence.repository.WorkflowExecutionRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,7 @@ public class AdminDashboardService {
     private final RagClient ragClient;
     private final SystemHealthClient healthClient;
     private final AnalysisClient analysisClient;
+    private final WorkflowExecutionRepository workflowRepository;
 
     public AdminDashboardResponse getDashboard(String userEmail) {
         log.info("Aggregating admin dashboard stats for {}", userEmail);
@@ -47,10 +49,11 @@ public class AdminDashboardService {
         AdminAnalysisStatsResponse analysisStats = analysisFuture.join();
 
         List<AdminDashboardResponse.SystemHealthDTO> systemHealth = fetchSystemHealth();
+        long avgLatencyMs = computeAverageLatency();
 
         return AdminDashboardResponse.builder()
                 .platformOverview(buildPlatformOverview(ticketStats, authStats, analysisStats))
-                .aiGovernance(buildAiGovernance(ticketStats, analysisStats, ragStats))
+                .aiGovernance(buildAiGovernance(ticketStats, analysisStats, ragStats, avgLatencyMs))
                 .departmentWorkload(ticketStats.getDepartmentWorkload() != null ? ticketStats.getDepartmentWorkload() : Collections.emptyMap())
                 .routingOverview(ticketStats.getRoutingOverview() != null ? ticketStats.getRoutingOverview() : Collections.emptyMap())
                 .systemHealth(systemHealth)
@@ -135,13 +138,25 @@ public class AdminDashboardService {
                 .build();
     }
 
-    private AdminDashboardResponse.AiGovernanceDTO buildAiGovernance(AdminTicketStatsResponse ticketStats, AdminAnalysisStatsResponse analysisStats, AdminRagStatsResponse ragStats) {
+    private AdminDashboardResponse.AiGovernanceDTO buildAiGovernance(AdminTicketStatsResponse ticketStats, AdminAnalysisStatsResponse analysisStats, AdminRagStatsResponse ragStats, long avgLatencyMs) {
         return AdminDashboardResponse.AiGovernanceDTO.builder()
                 .highConfidenceRate(calculateRate(analysisStats.getHighConfidenceAnalyses(), analysisStats.getTotalAnalyses()))
                 .assignmentRate(calculateRate(ticketStats.getAssignedTickets(), ticketStats.getTotalTickets()))
                 .knowledgeCoverage(calculateRate(ragStats.getSuccessfulRagRequests(), ragStats.getTotalRagRequests()))
-                .averageLatency("N/A")
+                .averageLatency(avgLatencyMs > 0 ? avgLatencyMs + "ms" : "N/A")
                 .build();
+    }
+
+    private long computeAverageLatency() {
+        var workflows = workflowRepository.findAll();
+        long totalDurationMs = workflows.stream()
+                .filter(w -> w.getCreatedAt() != null && w.getCompletedAt() != null)
+                .mapToLong(w -> w.getCompletedAt().toEpochMilli() - w.getCreatedAt().toEpochMilli())
+                .sum();
+        long count = workflows.stream()
+                .filter(w -> w.getCreatedAt() != null && w.getCompletedAt() != null)
+                .count();
+        return count > 0 ? totalDurationMs / count : 0;
     }
 
     private AdminDashboardResponse.RagKnowledgeDTO buildRagKnowledge(AdminRagStatsResponse ragStats) {

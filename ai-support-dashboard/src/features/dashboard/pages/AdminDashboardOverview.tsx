@@ -113,15 +113,29 @@ export function AdminDashboardOverview() {
               {/* Routing Metrics */}
               <div className="bg-card border border-border rounded-xl p-5 shadow-sm flex-1">
                 <h2 className="text-sm font-semibold text-foreground mb-4">Routing Overview</h2>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                   {isLoading ? (
-                    <div className="text-sm text-muted-foreground col-span-2">Loading...</div>
+                    <div className="text-sm text-muted-foreground col-span-full">Loading...</div>
                   ) : !data?.routingOverview || Object.keys(data.routingOverview).length === 0 ? (
-                    <div className="text-sm text-muted-foreground col-span-2 italic">No routing data available.</div>
+                    <div className="text-sm text-muted-foreground col-span-full italic">No routing data available.</div>
                   ) : (
-                    Object.entries(data.routingOverview).map(([label, count]) => (
-                      <RoutingStat key={label} label={label} value={count.toString()} alert={label.toLowerCase().includes("override") && count > 0} />
-                    ))
+                    Object.entries(data.routingOverview).map(([label, count]) => {
+                      // Format labels like 'security-team Routed' to 'Security Team'
+                      const formattedLabel = label
+                        .replace(/Routed/i, "")
+                        .replace(/-/g, " ")
+                        .trim()
+                        .replace(/\b\w/g, l => l.toUpperCase());
+                      
+                      return (
+                        <RoutingStat 
+                          key={label} 
+                          label={formattedLabel} 
+                          value={count.toString()} 
+                          alert={label.toLowerCase().includes("override") && count > 0} 
+                        />
+                      );
+                    })
                   )}
                 </div>
               </div>
