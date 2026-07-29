@@ -1,4 +1,4 @@
-import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
+import { Outlet, NavLink, useNavigate, useLocation } from "react-router";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { LogOut, LayoutDashboard, Ticket, Settings, User, Users, Bot, ExternalLink, Radio, GitMerge, ShieldCheck, BookOpen } from "lucide-react";
 import {

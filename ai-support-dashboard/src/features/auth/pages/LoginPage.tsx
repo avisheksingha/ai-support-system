@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import type { ApiError } from "@/lib/api-client";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address."),

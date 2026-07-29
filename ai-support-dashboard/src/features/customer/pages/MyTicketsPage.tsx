@@ -3,7 +3,7 @@ import { useCustomerDashboard } from "../hooks/useCustomerDashboard";
 import { CustomerTicketCard } from "../components/CustomerTicketCard";
 import { CreateTicketDialog } from "../components/CreateTicketDialog";
 import { Loader2, Inbox } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 type FilterStatus = "ALL" | "OPEN" | "RESOLVED" | "CLOSED";
 

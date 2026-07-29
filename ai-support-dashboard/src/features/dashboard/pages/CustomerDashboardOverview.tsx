@@ -1,6 +1,6 @@
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { useCustomerDashboard } from "@/features/customer/hooks/useCustomerDashboard";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { Plus, Ticket, Activity, User, BookOpen, Clock, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";

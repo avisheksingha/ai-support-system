@@ -26,7 +26,7 @@ import { Bot } from "lucide-react";
 import { Network } from "lucide-react";
 import { Activity } from "lucide-react";
 import type { TicketStatus } from "@/shared/types/ticket";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 
 interface TicketDetailViewProps {

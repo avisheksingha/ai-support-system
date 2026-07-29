@@ -1,7 +1,7 @@
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { workspaceApi } from "@/features/workspace/api/workspaceApi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { 
   Activity, CheckCircle2, Inbox, Users, AlertTriangle, TrendingUp, TrendingDown, Clock,
   Calendar, Zap, Server, Cpu, Search, Sparkles, Bot, LineChart as LineChartIcon, FileText, ArrowRight, ShieldAlert, Briefcase, Layers, BrainCircuit

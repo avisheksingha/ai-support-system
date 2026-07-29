@@ -1,6 +1,6 @@
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { useAdminDashboard } from "../hooks/useAdminDashboard";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { 
   Activity, Users, Settings, Server, BrainCircuit,
   Network, ShieldCheck, Bot, BookOpen

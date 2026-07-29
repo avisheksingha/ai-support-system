@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { authApi } from "../api/authApi";
 import type { User, LoginRequest, RegisterRequest } from "@/shared/types/auth";
 import { defaultTokenManager } from "@/lib/token-manager";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 interface AuthState {
   user: User | null;

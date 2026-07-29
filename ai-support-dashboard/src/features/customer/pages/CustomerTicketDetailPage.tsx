@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router";
 import { useCustomerAddMessage, customerKeys } from "../hooks/useCustomerTickets";
 import { useCustomerTicketDetail } from "../hooks/useCustomerDashboard";
 import { formatTimeAgo, parseDate, formatTime } from "@/shared/utils/date";

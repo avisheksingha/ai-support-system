@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import { createBrowserRouter, Navigate, Outlet } from "react-router";
 import { AuthLayout } from "../layouts/AuthLayout";
 import { DashboardLayout } from "../layouts/DashboardLayout";
 import { AuthProvider } from "@/features/auth/hooks/useAuth";
