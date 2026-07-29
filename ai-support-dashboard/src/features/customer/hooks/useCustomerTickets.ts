@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { customerTicketApi } from "../api/customerTicketApi";
 import type { CreateTicketRequest } from "@/shared/types/ticket";
 import { toast } from "sonner";
+import { customerDashboardKeys } from "./useCustomerDashboard";
 
 export const customerKeys = {
   all: ["customer-tickets"] as const,
@@ -45,6 +46,7 @@ export const useCreateTicket = () => {
     mutationFn: (request: CreateTicketRequest) => customerTicketApi.createTicket(request),
     onSuccess: (newTicket) => {
       queryClient.invalidateQueries({ queryKey: customerKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: customerDashboardKeys.all });
       toast.success("Ticket Submitted", {
         description: `Your ticket ${newTicket.ticketNumber} has been created.`,
       });
