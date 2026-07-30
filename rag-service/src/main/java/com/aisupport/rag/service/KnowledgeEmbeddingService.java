@@ -62,7 +62,7 @@ public class KnowledgeEmbeddingService {
                 meta.put("category", article.getCategory() != null ? article.getCategory() : "");
                 meta.put("tags", article.getTags() != null ? String.join(",", article.getTags()) : "");
                 meta.put("status", article.getStatus() != null ? article.getStatus().name() : "DRAFT");
-                meta.put("embeddingStatus", article.getEmbeddingStatus() != null ? article.getEmbeddingStatus().name() : "PENDING");
+                meta.put("embeddingStatus", "READY");
                 meta.put("version", article.getVersion() != null ? article.getVersion() : 1L);
                 return Document.builder()
                     .text(article.getTitle() + ": " + article.getContent())
