@@ -33,38 +33,87 @@ export const useTicket = (ticketNumber: string) => {
   });
 };
 
-export const useAnalysis = (ticketId?: number) => {
+export const useWorkspaceAggregation = (ticketId?: number, ticketStatus?: TicketStatus) => {
   return useQuery({
-    queryKey: ticketId ? workspaceKeys.analysis(ticketId) : [],
-    queryFn: () => workspaceApi.getAnalysis(ticketId!),
+    queryKey: ticketId ? workspaceKeys.workspaceAggregation(ticketId) : [],
+    queryFn: () => workspaceApi.getWorkspaceAggregation(ticketId!),
     enabled: !!ticketId,
     retry: 2,
     refetchInterval: (query) => {
-      // If we already have the data, we don't need to poll anymore
-      if (query.state.data) return false;
+      // If we already have a complete response, we don't need to poll anymore
+      const data = query.state.data;
+      if (data?.analysis && data?.knowledge && data?.routing && data?.aiDecision) return false;
+      
+      // If the ticket has passed the AI phase, stop polling
+      if (ticketStatus && ["ASSIGNED", "IN_PROGRESS", "RESOLVED", "CLOSED"].includes(ticketStatus)) return false;
+      
       return 5000; // Poll faster for AI results
     }
   });
 };
 
-
-export const useRouting = (ticketId?: number) => {
+export const useMessages = (ticketNumber?: string) => {
   return useQuery({
-    queryKey: ticketId ? workspaceKeys.routing(ticketId) : [],
-    queryFn: () => workspaceApi.getRouting(ticketId!),
-    enabled: !!ticketId,
+    queryKey: ticketNumber ? ["ticket-messages", ticketNumber] : [],
+    queryFn: () => workspaceApi.getMessages(ticketNumber!),
+    enabled: !!ticketNumber,
     retry: 2,
-    refetchInterval: (query) => query.state.data ? false : 5000,
   });
 };
 
-export const useTimeline = (ticketId?: number, baseDate?: any) => {
+export const useAddMessage = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ ticketNumber, content, isInternal }: { ticketNumber: string, content: string, isInternal: boolean }) => 
+      workspaceApi.addMessage(ticketNumber, content, isInternal),
+    onSuccess: (newMessage, { ticketNumber }) => {
+      queryClient.invalidateQueries({ queryKey: ["ticket-messages", ticketNumber] });
+      toast.success(newMessage.isInternal ? "Internal note added" : "Reply sent");
+    },
+    onError: (error: any) => {
+      toast.error("Failed to send message", {
+        description: error?.response?.data?.message || "An error occurred"
+      });
+    }
+  });
+};
+
+export const useTriggerAction = () => {
+  return useMutation({
+    mutationFn: ({ ticketId, actionType, instructions }: { ticketId: number, actionType: string, instructions?: string }) => 
+      workspaceApi.triggerAction(ticketId, actionType, instructions),
+    onSuccess: (_, { actionType }) => {
+      toast.success(`Action Triggered`, {
+        description: `${actionType} has been successfully submitted.`
+      });
+    }
+  });
+};
+
+export const useTimeline = (ticketId?: number) => {
   return useQuery({
     queryKey: ticketId ? workspaceKeys.timeline(ticketId) : [],
-    queryFn: () => workspaceApi.getTimeline(ticketId!, baseDate),
+    queryFn: () => workspaceApi.getTimeline(ticketId!),
+    select: (data) => data.content,
     enabled: !!ticketId,
     retry: 2,
-    refetchInterval: 10000,
+    refetchInterval: (query) => {
+      const data = query.state.data as unknown as any;
+      const events = Array.isArray(data) ? data : data?.content;
+      
+      if (events && Array.isArray(events)) {
+        // Stop polling if a terminal outcome is reached
+        const hasTerminal = events.some((e: any) => 
+          e.outcome === "COMPLETED" || 
+          e.outcome === "FAILED" || 
+          e.outcome === "PARTIAL_SUCCESS" || 
+          e.outcome === "WAITING_APPROVAL"
+        );
+        if (hasTerminal) return false;
+      }
+      return 5000;
+    },
   });
 };
 

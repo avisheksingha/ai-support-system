@@ -34,6 +34,7 @@ jobs:
           - ai-analysis-service
           - routing-service
           - rag-service
+          - ai-orchestration-service
 
     steps:
       - name: Checkout repository

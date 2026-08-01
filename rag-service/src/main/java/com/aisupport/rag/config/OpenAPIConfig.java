@@ -2,6 +2,7 @@ package com.aisupport.rag.config;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,6 +18,9 @@ import io.swagger.v3.oas.models.servers.Server;
 @Configuration
 public class OpenAPIConfig {
 
+	@Value("${info.app.version:1.0.0}")
+	private String serviceVersion;
+
 	@Bean
 	OpenAPI customOpenAPI() {
 		
@@ -24,8 +28,8 @@ public class OpenAPIConfig {
 		
 		return new OpenAPI()
 				.info(new Info()
-						.title("RAG Service API")
-						.version("1.0.0")
+						.title("Knowledge Base (RAG) Service API")
+						.version(serviceVersion)
 						.description("Orchestration service for embedding workflow")
 						.contact(new Contact()
 								.name("AI Support Team")

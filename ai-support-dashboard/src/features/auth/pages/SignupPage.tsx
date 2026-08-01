@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
 import type { ApiError } from "@/lib/api-client";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 const signupSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters."),

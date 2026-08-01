@@ -1,6 +1,6 @@
-import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
+import { Outlet, NavLink, useNavigate, useLocation } from "react-router";
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import { LogOut, LayoutDashboard, Ticket, Settings, User, Users, Bot, ExternalLink, Radio } from "lucide-react";
+import { LogOut, LayoutDashboard, Ticket, Settings, User, Users, Bot, ExternalLink, Radio, GitMerge, ShieldCheck, BookOpen } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,16 +10,22 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const NAV_ITEMS = [
-  { name: "Dashboard",  path: "/dashboard", icon: LayoutDashboard, roles: ["ADMIN", "CUSTOMER"] },
-  { name: "Workspace",  path: "/tickets",   icon: Ticket,          roles: ["AGENT", "ADMIN"] },
-  { name: "My Tickets", path: "/my-tickets",icon: Ticket,          roles: ["CUSTOMER"] },
-  { name: "Users",      path: "/users",     icon: Users,           roles: ["ADMIN"] },
-  { name: "Settings",   path: "/settings",  icon: Settings,        roles: ["ADMIN"] },
+  { name: "Dashboard",        path: "/dashboard", icon: LayoutDashboard, roles: ["ADMIN", "CUSTOMER", "AGENT"] },
+  { name: "Workspace",        path: "/tickets",   icon: Ticket,          roles: ["AGENT", "ADMIN"] },
+  { name: "Workflow Explorer",path: "/workflows", icon: GitMerge,        roles: ["ADMIN", "AGENT"] },
+  { name: "Knowledge Base",   path: "/knowledge", icon: BookOpen,        roles: ["ADMIN", "AGENT"] },
+  { name: "Governance",       path: "/governance",icon: ShieldCheck,     roles: ["ADMIN"] },
+  { name: "My Tickets",       path: "/my-tickets",icon: Ticket,          roles: ["CUSTOMER"] },
+  { name: "Users",            path: "/users",     icon: Users,           roles: ["ADMIN"] },
+  { name: "Settings",         path: "/settings",  icon: Settings,        roles: ["ADMIN"] },
 ];
 
 const BREADCRUMB_MAP: Record<string, Record<string, string>> = {
-  "/dashboard": { default: "Operations Center", CUSTOMER: "My Dashboard" },
+  "/dashboard": { default: "Operations Center", CUSTOMER: "My Dashboard", AGENT: "Agent Workbench" },
   "/tickets":   { default: "Ticket Workspace" },
+  "/workflows": { default: "Workflow Explorer" },
+  "/knowledge": { default: "Knowledge Base" },
+  "/governance":{ default: "Governance & Policies" },
   "/my-tickets":{ default: "My Tickets" },
   "/users":     { default: "User Management" },
   "/settings":  { default: "Settings" },
@@ -119,17 +125,14 @@ export function DashboardLayout() {
         {/* User footer */}
         <div className="p-3 border-t border-border">
           <DropdownMenu>
-            {/* @ts-ignore: Radix UI asChild type incompatibility */}
-            <DropdownMenuTrigger asChild>
-              <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-card transition-colors text-left outline-none border border-transparent hover:border-border">
-                <div className="h-7 w-7 rounded bg-[#0C66E4] flex items-center justify-center text-white text-[11px] font-bold shrink-0 shadow-sm">
-                  {initials}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-foreground truncate">{displayName}</p>
-                  <p className="text-[10px] text-muted-foreground truncate">{user?.role}</p>
-                </div>
-              </button>
+            <DropdownMenuTrigger className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-card transition-colors text-left outline-none border border-transparent hover:border-border">
+              <div className="h-7 w-7 rounded bg-[#0C66E4] flex items-center justify-center text-white text-[11px] font-bold shrink-0 shadow-sm">
+                {initials}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-foreground truncate">{displayName}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{user?.role}</p>
+              </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent side="top" align="start" className="w-52 bg-background border-border text-foreground mb-1">
               <DropdownMenuItem onClick={() => navigate("/profile")} className="focus:bg-card cursor-pointer">

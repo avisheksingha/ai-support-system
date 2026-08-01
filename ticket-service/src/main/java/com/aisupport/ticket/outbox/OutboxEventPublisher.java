@@ -16,9 +16,12 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.aisupport.common.constant.Correlation;
-import com.aisupport.common.constant.HttpHeaders;
-import com.aisupport.common.constant.KafkaTopics;
+import com.aisupport.common.constants.Correlation;
+import com.aisupport.common.constants.HttpHeaders;
+import com.aisupport.common.constants.KafkaTopics;
+import com.aisupport.common.enums.OutboxStatus;
+import com.aisupport.common.event.DomainEvent;
+import com.aisupport.common.event.EventType;
 import com.aisupport.common.event.TicketCreatedEvent;
 import com.aisupport.common.exception.OutboxEventException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -40,9 +43,9 @@ public class OutboxEventPublisher {
     @Transactional
     public void publishEvents() {
         List<OutboxEvent> candidates = new ArrayList<>();
-        candidates.addAll(repository.findTop50ByStatusOrderByCreatedAtAsc(OutboxEvent.Status.PENDING));
+        candidates.addAll(repository.findTop50ByStatusOrderByCreatedAtAsc(OutboxStatus.PENDING));
         candidates.addAll(repository.findByStatusAndRetryCountLessThan(
-                OutboxEvent.Status.FAILED, OutboxEvent.MAX_RETRIES
+        		OutboxStatus.FAILED, OutboxEvent.MAX_RETRIES
         ));
         List<OutboxEvent> events = candidates.stream()
                 .sorted(Comparator.comparing(OutboxEvent::getCreatedAt))
@@ -85,10 +88,7 @@ public class OutboxEventPublisher {
             
             kafkaTemplate.send(producerRecord).get(5, TimeUnit.SECONDS);
 
-            /*kafkaTemplate.send(topic, event.getAggregateId(), payloadObject)
-            	.get(5, TimeUnit.SECONDS); // IMPORTANT → ensures Kafka ack before marking SENT */
-
-            event.setStatus(OutboxEvent.Status.SENT);
+            event.setStatus(OutboxStatus.SENT);
             event.setProcessedAt(Instant.now());
             
             log.info("Published outbox event {} to topic {}", event.getId(), topic);
@@ -119,19 +119,20 @@ public class OutboxEventPublisher {
         
 
         if (event.getRetryCount() >= OutboxEvent.MAX_RETRIES) {
-            event.setStatus(OutboxEvent.Status.DEAD);
+            event.setStatus(OutboxStatus.DEAD);
             log.error("Outbox event {} permanently failed after {} retries",
                     event.getId(), OutboxEvent.MAX_RETRIES);
         } else {
-            event.setStatus(OutboxEvent.Status.FAILED);
+            event.setStatus(OutboxStatus.FAILED);
             log.warn("Outbox event {} failed, retry {}/{}",
                     event.getId(), event.getRetryCount(), OutboxEvent.MAX_RETRIES);
         }
     }
     
-    private Object deserializePayload(String payload, String eventType) {
+    private Object deserializePayload(String payload, EventType eventType) {
         Class<?> clazz = switch (eventType) {
-            case "TicketCreatedEvent" -> TicketCreatedEvent.class;
+            case TICKET_CREATED -> TicketCreatedEvent.class;
+            case CUSTOMER_REPLY_ADDED, AGENT_REPLY_ADDED -> DomainEvent.class;
             default -> throw new OutboxEventException("Unknown event type: " + eventType);
         };
         try {
@@ -141,10 +142,10 @@ public class OutboxEventPublisher {
         }
     }
 
-    private String mapTopic(String eventType) {
-
+    private String mapTopic(EventType eventType) {
         return switch (eventType) {
-            case "TicketCreatedEvent" -> KafkaTopics.TICKET_CREATED;
+            case TICKET_CREATED -> KafkaTopics.TICKET_CREATED;
+            case CUSTOMER_REPLY_ADDED, AGENT_REPLY_ADDED -> KafkaTopics.TICKET_UPDATED;
             default -> throw new OutboxEventException("Unknown event type: " + eventType);
         };
     }

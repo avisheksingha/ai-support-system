@@ -1,9 +1,9 @@
 package com.aisupport.routing.outbox;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -16,9 +16,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.aisupport.common.constant.Correlation;
-import com.aisupport.common.constant.HttpHeaders;
-import com.aisupport.common.constant.KafkaTopics;
+import com.aisupport.common.constants.Correlation;
+import com.aisupport.common.constants.HttpHeaders;
+import com.aisupport.common.constants.KafkaTopics;
+import com.aisupport.common.event.EventType;
 import com.aisupport.common.event.TicketRoutedEvent;
 import com.aisupport.common.exception.OutboxEventException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -129,9 +130,9 @@ public class OutboxEventPublisher {
         }
     }
     
-    private Object deserializePayload(String payload, String eventType) {
+    private Object deserializePayload(String payload, EventType eventType) {
         Class<?> clazz = switch (eventType) {
-            case "TicketRoutedEvent" -> TicketRoutedEvent.class;
+            case TICKET_ROUTED -> TicketRoutedEvent.class;
             default -> throw new OutboxEventException("Unknown event type: " + eventType);
         };
         try {
@@ -141,10 +142,10 @@ public class OutboxEventPublisher {
         }
     }
     
-    private String mapTopic(String eventType) {
+    private String mapTopic(EventType eventType) {
 
     	return switch (eventType) {
-			case "TicketRoutedEvent" -> KafkaTopics.TICKET_ROUTED;
+			case TICKET_ROUTED -> KafkaTopics.TICKET_ROUTED;
 			default -> throw new OutboxEventException("Unknown event type: " + eventType);
 		};
 	}

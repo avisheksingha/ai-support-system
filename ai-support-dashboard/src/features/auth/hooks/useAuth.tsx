@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { authApi } from "../api/authApi";
 import type { User, LoginRequest, RegisterRequest } from "@/shared/types/auth";
 import { defaultTokenManager } from "@/lib/token-manager";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 interface AuthState {
   user: User | null;
@@ -40,6 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch {
           // If refetch fails (and our interceptor fails to refresh), clear tokens
           defaultTokenManager.clear();
+          queryClient.setQueryData(["currentUser"], null);
         }
       }
       setIsInitializing(false);

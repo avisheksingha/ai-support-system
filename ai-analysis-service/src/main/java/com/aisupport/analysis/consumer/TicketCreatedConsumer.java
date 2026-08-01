@@ -5,17 +5,13 @@ import java.nio.charset.StandardCharsets;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.header.Header;
 import org.slf4j.MDC;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 import com.aisupport.analysis.service.AnalysisProcessingService;
-import com.aisupport.common.constant.Correlation;
-import com.aisupport.common.constant.HttpHeaders;
-import com.aisupport.common.constant.KafkaGroups;
-import com.aisupport.common.constant.KafkaTopics;
+import com.aisupport.common.constants.Correlation;
+import com.aisupport.common.constants.HttpHeaders;
 import com.aisupport.common.event.TicketCreatedEvent;
 import com.aisupport.common.exception.TicketEventProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,10 +22,9 @@ import lombok.extern.slf4j.Slf4j;
 public class TicketCreatedConsumer {
 
     private final AnalysisProcessingService processingService;
-    private final ObjectMapper objectMapper;
     
-    @KafkaListener(topics = KafkaTopics.TICKET_CREATED, groupId = KafkaGroups.AI_ANALYSIS)
-    public void consume(ConsumerRecord<String, String> consumerRecord) {
+    // @KafkaListener(topics = KafkaTopics.TICKET_CREATED, groupId = KafkaGroups.AI_ANALYSIS)
+    public void consume(ConsumerRecord<String, TicketCreatedEvent> consumerRecord) {
     	
     	// Extract correlationId from Kafka header into MDC
     	Header correlationHeader = consumerRecord.headers().lastHeader(HttpHeaders.CORRELATION_ID);
@@ -38,10 +33,7 @@ public class TicketCreatedConsumer {
         }
 
         try {
-        	
-        	String payload = consumerRecord.value(); // extract payload
-        	
-            TicketCreatedEvent event = objectMapper.readValue(payload, TicketCreatedEvent.class);
+        	TicketCreatedEvent event = consumerRecord.value();
 
             log.info("Consumed ticket-created event: ticketId={}", event.getTicketId());
 

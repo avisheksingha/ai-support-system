@@ -6,8 +6,8 @@ import java.util.UUID;
 import org.slf4j.MDC;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.aisupport.common.constant.Correlation;
-import com.aisupport.common.constant.HttpHeaders;
+import com.aisupport.common.constants.Correlation;
+import com.aisupport.common.constants.HttpHeaders;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

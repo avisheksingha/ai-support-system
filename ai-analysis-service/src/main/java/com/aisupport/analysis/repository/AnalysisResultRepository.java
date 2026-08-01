@@ -1,22 +1,23 @@
 package com.aisupport.analysis.repository;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
 
 import com.aisupport.analysis.entity.AnalysisResult;
 
-@Repository
 public interface AnalysisResultRepository
         extends JpaRepository<AnalysisResult, Long> {
 
     Optional<AnalysisResult> findByTicketId(Long ticketId);
 
     boolean existsByTicketId(Long ticketId);
+    
+    void deleteByTicketId(Long ticketId);
 
     List<AnalysisResult> findByIntent(String intent);
 
@@ -35,4 +36,8 @@ public interface AnalysisResultRepository
         WHERE ar.urgency = :urgency
     """)
     Long countByUrgency(String urgency);
+
+    long countByConfidenceScoreGreaterThanEqual(BigDecimal confidenceScore);
+    
+    long countByCreatedAtAfter(Instant startDate);
 }

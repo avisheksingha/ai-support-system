@@ -14,14 +14,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.aisupport.analysis.chat.ChatProvider;
-import com.aisupport.analysis.dto.ParsedAnalysis;
+import com.aisupport.analysis.dto.response.ParsedAnalysis;
 import com.aisupport.analysis.entity.AnalysisResult;
+import com.aisupport.analysis.llm.ChatProvider;
 import com.aisupport.analysis.outbox.OutboxEventService;
 import com.aisupport.analysis.repository.AnalysisResultRepository;
+import com.aisupport.common.event.EventType;
 import com.aisupport.common.event.TicketAnalyzedEvent;
 import com.aisupport.common.event.TicketCreatedEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -58,7 +60,7 @@ class AnalysisProcessingServiceTest {
 
         verify(chatProvider, never()).analyzeTicket(anyString(), anyString());
         verify(repository, never()).save(any(AnalysisResult.class));
-        verify(outboxEventService, never()).publishEvent(anyString(), anyString(), anyString(), any());
+        verify(outboxEventService, never()).publishEvent(anyString(), anyString(), ArgumentMatchers.any(EventType.class), any());
     }
 
     @Test
@@ -70,7 +72,7 @@ class AnalysisProcessingServiceTest {
                 .build();
 
         ParsedAnalysis parsed = ParsedAnalysis.builder()
-                .intent("payment error")
+                .intent("completely unknown issue")
                 .sentiment(null)
                 .urgency(null)
                 .confidenceScore(null)
@@ -88,7 +90,7 @@ class AnalysisProcessingServiceTest {
         verify(repository).save(savedCaptor.capture());
         AnalysisResult saved = savedCaptor.getValue();
         assertThat(saved.getTicketId()).isEqualTo(42L);
-        assertThat(saved.getIntent()).isEqualTo("PAYMENT_ISSUE");
+        assertThat(saved.getIntent()).isEqualTo("GENERAL");
         assertThat(saved.getSentiment()).isEqualTo("NEUTRAL");
         assertThat(saved.getUrgency()).isEqualTo("LOW");
         assertThat(saved.getConfidenceScore()).isEqualByComparingTo(BigDecimal.ZERO);
@@ -98,13 +100,13 @@ class AnalysisProcessingServiceTest {
         verify(outboxEventService).publishEvent(
                 anyString(),
                 anyString(),
-                anyString(),
+                ArgumentMatchers.any(EventType.class),
                 eventCaptor.capture()
         );
         TicketAnalyzedEvent published = (TicketAnalyzedEvent) eventCaptor.getValue();
         assertThat(published.getTicketId()).isEqualTo(42L);
-        assertThat(published.getIntent()).isEqualTo("PAYMENT_ISSUE");
-        assertThat(published.getSentiment()).isEqualTo("NEUTRAL");
-        assertThat(published.getUrgency()).isEqualTo("LOW");
+        assertThat(published.getAnalysis().intent()).isEqualTo("GENERAL");
+        assertThat(published.getAnalysis().sentiment()).isEqualTo("NEUTRAL");
+        assertThat(published.getAnalysis().urgency()).isEqualTo("LOW");
     }
 }

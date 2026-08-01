@@ -10,6 +10,7 @@ export interface ApiError {
   path?: string;
   timestamp?: string;
   validationErrors?: Record<string, string>;
+  response?: any;
 }
 
 export const apiClient = axios.create({
@@ -168,6 +169,7 @@ apiClient.interceptors.response.use(
       error: (error.response?.data as any)?.error,
       path: (error.response?.data as any)?.path,
       validationErrors: (error.response?.data as any)?.validationErrors,
+      response: error.response,
     };
     
     return Promise.reject(apiError);

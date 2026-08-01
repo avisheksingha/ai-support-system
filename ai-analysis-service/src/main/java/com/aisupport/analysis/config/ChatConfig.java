@@ -8,9 +8,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.aisupport.analysis.chat.ChatProvider;
-import com.aisupport.analysis.chat.GoogleGenAiChatProvider;
-import com.aisupport.analysis.chat.OpenAiChatProvider;
+import com.aisupport.analysis.llm.ChatProvider;
+import com.aisupport.analysis.llm.GoogleGenAiChatProvider;
+import com.aisupport.analysis.llm.OpenAiChatProvider;
 
 /**
  * ChatConfig centralizes the configuration of AI providers and their ChatClient beans.

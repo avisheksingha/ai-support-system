@@ -2,11 +2,15 @@ package com.aisupport.common.event;
 
 import com.aisupport.common.enums.TicketPriority;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class TicketRoutedEvent {
 
     private Long ticketId;

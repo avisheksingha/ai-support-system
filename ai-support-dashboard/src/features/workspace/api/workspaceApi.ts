@@ -1,9 +1,9 @@
 import { apiClient } from "@/lib/api-client";
-import type { 
-  AnalysisModel, 
-  KnowledgeModel, 
-  RoutingModel,
-  TimelineEvent,
+import type {
+  TimelinePageResponse,
+  OperationsDashboardResponse,
+  WorkspaceDataResponse,
+  AgentDashboardResponse
 } from "@/shared/types/workspace";
 import type {
   TicketModel,
@@ -12,6 +12,12 @@ import type {
 } from "@/shared/types/ticket";
 
 export const workspaceApi = {
+  // Agent Dashboard API
+  getAgentDashboard: async (): Promise<AgentDashboardResponse> => {
+    const response = await apiClient.get<AgentDashboardResponse>("/orchestration/dashboard/agent");
+    return response.data;
+  },
+
   // Ticket Service
   getTickets: async (status?: string): Promise<TicketModel[]> => {
     const response = await apiClient.get<TicketModel[]>("/tickets", { params: { status } });
@@ -44,109 +50,68 @@ export const workspaceApi = {
     return response.data;
   },
 
-  // Analysis Service
-  getAnalysis: async (ticketId: number): Promise<AnalysisModel> => {
-    const response = await apiClient.get<AnalysisModel>(`/analysis/ticket/${ticketId}`);
-    return response.data;
-  },
-
-  // Mocked Knowledge Service (since it uses Kafka and lacks endpoints currently)
-  getKnowledge: async (ticketId: number): Promise<KnowledgeModel> => {
-    await new Promise(resolve => setTimeout(resolve, 600)); // simulate network delay
-    // In reality, this would fetch from RAG service via Gateway
-    return {
-      ticketId,
-      query: "Extracted from ticket analysis keywords",
-      generatedReply: "This is a placeholder RAG response. RAG generation is fully event-driven via Kafka right now. Once the Orchestration API is built, real documents will show here.",
-      similarityScore: 0.89,
-      sourceDocuments: [
-        { title: "Troubleshooting Guide", url: "#" },
-        { title: "Account Recovery", url: "#" }
-      ],
-      modelUsed: "Google GenAI text-bison",
-      generatedAt: new Date().toISOString()
-    };
-  },
-
-  // Routing Service API call (Temporary internal endpoint. Will later be consumed by orchestration-service.)
-  getRouting: async (ticketId: number): Promise<RoutingModel> => {
-    const response = await apiClient.get<RoutingModel>(`/routing/ticket/${ticketId}`);
-    return response.data;
-  },
-
-  // Mocked Timeline Events (Will be powered by Orchestrator later)
-  getTimeline: async (ticketId: number, baseDate?: any): Promise<TimelineEvent[]> => {
-    await new Promise(resolve => setTimeout(resolve, 400));
-    
-    // We import parseDate inline to avoid circular dependencies if any, but since it's just a util it's fine.
-    // Actually we can just dynamically import or use the provided logic, since I can't easily add import to the top of this file in one replace chunk.
-    let baseTime = new Date().getTime();
-    if (baseDate) {
-      // Just manually do the parseDate logic to be safe without imports
-      if (Array.isArray(baseDate)) {
-        const [y, m, d, h=0, min=0, s=0, ms=0] = baseDate;
-        baseTime = Date.UTC(y, m - 1, d, h, min, s, ms / 1000000);
-      } else if (typeof baseDate === 'string') {
-        let str = baseDate;
-        if (str.includes('T') && !str.endsWith('Z') && !str.match(/[+-]\d{2}:?\d{2}$/)) {
-          str += 'Z';
-        }
-        baseTime = new Date(str).getTime();
+  // Workspace Aggregation (Orchestrator Central Brain)
+  getWorkspaceAggregation: async (ticketId: number): Promise<WorkspaceDataResponse | null> => {
+    try {
+      const response = await apiClient.get<WorkspaceDataResponse>(`/orchestration/tickets/${ticketId}/workspace`);
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null;
       }
-    } else {
-      try {
-        const response = await apiClient.get<TicketModel>(`/tickets/id/${ticketId}`);
-        if (response.data && response.data.createdAt) {
-           const backendDate = response.data.createdAt;
-           if (Array.isArray(backendDate)) {
-             const [y, m, d, h=0, min=0, s=0, ms=0] = backendDate;
-             baseTime = Date.UTC(y, m - 1, d, h, min, s, ms / 1000000);
-           } else if (typeof backendDate === 'string') {
-             let str = backendDate;
-             if (str.includes('T') && !str.endsWith('Z') && !str.match(/[+-]\d{2}:?\d{2}$/)) {
-               str += 'Z';
-             }
-             baseTime = new Date(str).getTime();
-           }
-        }
-      } catch (e) {
-        // Ignore and fallback to current time
-      }
+      throw error;
     }
+  },
+  // Trigger AI Action
+  triggerAction: async (ticketId: number, actionType: string, instructions?: string): Promise<any> => {
+    const response = await apiClient.post(`/orchestration/tickets/${ticketId}/actions`, {
+      actionType,
+      instructions
+    });
+    return response.data;
+  },
 
-    return [
-      {
-        id: "1",
-        type: "CREATED",
-        timestamp: new Date(baseTime).toISOString(),
-        title: "Ticket Created",
-        description: "Customer submitted support request",
-        status: "completed"
-      },
-      {
-        id: "2",
-        type: "AI_ANALYSIS",
-        timestamp: new Date(baseTime + 420).toISOString(),
-        title: "AI Analysis",
-        description: "Google GenAI categorized intent and urgency",
-        status: "completed"
-      },
-      {
-        id: "3",
-        type: "KNOWLEDGE_RETRIEVED",
-        timestamp: new Date(baseTime + 600).toISOString(),
-        title: "Knowledge Base Search",
-        description: "RAG agent retrieved similar documentation",
-        status: "completed"
-      },
-      {
-        id: "4",
-        type: "ROUTING_DECISION",
-        timestamp: new Date(baseTime + 670).toISOString(),
-        title: "Rule-based Routing",
-        description: "Ticket routed to L2 Technical Support",
-        status: "completed"
-      }
-    ];
+  // Ticket Messaging
+  getMessages: async (ticketNumber: string): Promise<any[]> => {
+    const response = await apiClient.get(`/tickets/${ticketNumber}/messages`);
+    return response.data;
+  },
+  
+  addMessage: async (ticketNumber: string, content: string, isInternal: boolean): Promise<any> => {
+    const response = await apiClient.post(`/tickets/${ticketNumber}/messages`, {
+      content,
+      isInternal
+    });
+    return response.data;
+  },
+
+
+
+  // Timeline API (Routed to Orchestration Service via Gateway)
+  getTimeline: async (ticketId: number, page: number = 0, size: number = 50): Promise<TimelinePageResponse> => {
+    const response = await apiClient.get<TimelinePageResponse>(`/orchestration/tickets/${ticketId}/timeline`, {
+      params: { page, size }
+    });
+    return response.data;
+  },
+
+  // Operations Dashboard API
+  getOperationsOverview: async (params?: Record<string, any>): Promise<OperationsDashboardResponse> => {
+    const response = await apiClient.get<OperationsDashboardResponse>(`/orchestration/operations/overview`, { params });
+    return response.data;
+  },
+
+  // Workflow Explorer API
+  searchWorkflows: async (params?: Record<string, any>): Promise<TimelinePageResponse> => {
+    const response = await apiClient.get<TimelinePageResponse>(`/orchestration/workflows/search`, { params });
+    return response.data;
+  },
+
+  // Get timeline for a specific workflow execution
+  getWorkflowTimeline: async (workflowId: string, page: number = 0, size: number = 100): Promise<TimelinePageResponse> => {
+    const response = await apiClient.get<TimelinePageResponse>(`/orchestration/workflows/${workflowId}/timeline`, {
+      params: { page, size }
+    });
+    return response.data;
   }
 };

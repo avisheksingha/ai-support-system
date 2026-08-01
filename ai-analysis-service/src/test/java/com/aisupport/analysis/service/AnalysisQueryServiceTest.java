@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
@@ -72,7 +73,7 @@ class AnalysisQueryServiceTest {
         when(repository.findAll(PageRequest.of(0, 10))).thenReturn(new PageImpl<>(List.of(entity)));
         when(mapper.toDto(entity)).thenReturn(dto);
 
-        var page = service.getAllAnalyses(PageRequest.of(0, 10));
+        Page<AnalysisResultDTO> page = service.getAllAnalyses(PageRequest.of(0, 10));
         assertThat(page.getContent()).hasSize(1);
         assertThat(page.getContent().get(0).getTicketId()).isEqualTo(5L);
     }

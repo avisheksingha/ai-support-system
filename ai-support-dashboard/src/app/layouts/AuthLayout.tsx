@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet } from "react-router";
 import { Bot } from "lucide-react";
 
 export function AuthLayout() {

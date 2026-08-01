@@ -2,6 +2,7 @@ package com.aisupport.analysis.config;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,6 +18,9 @@ import io.swagger.v3.oas.models.servers.Server;
 @Configuration
 public class OpenAPIConfig {
 	
+	@Value("${info.app.version:1.0.0}")
+	private String serviceVersion;
+
 	@Bean
     OpenAPI customOpenAPI() {
 		final String securitySchemeName = "bearerAuth";
@@ -24,7 +28,7 @@ public class OpenAPIConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("AI Analysis Service API")
-                        .version("1.0.0")
+                        .version(serviceVersion)
                         .description("AI-powered ticket analysis using Google GenAI")
                         .contact(new Contact()
                                 .name("AI Support Team")

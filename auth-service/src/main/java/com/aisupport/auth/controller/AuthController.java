@@ -9,13 +9,13 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.aisupport.auth.dto.AuthResponse;
-import com.aisupport.auth.dto.LoginRequest;
-import com.aisupport.auth.dto.RefreshRequest;
-import com.aisupport.auth.dto.RegisterRequest;
-import com.aisupport.auth.dto.UserResponse;
+import com.aisupport.auth.dto.request.LoginRequest;
+import com.aisupport.auth.dto.request.RefreshRequest;
+import com.aisupport.auth.dto.request.RegisterRequest;
+import com.aisupport.auth.dto.response.AuthResponse;
+import com.aisupport.auth.dto.response.UserResponse;
 import com.aisupport.auth.service.AuthService;
-import com.aisupport.common.auth.SecurityConstants;
+import com.aisupport.common.security.SecurityConstants;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

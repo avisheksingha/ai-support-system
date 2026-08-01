@@ -8,7 +8,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
-import com.aisupport.common.auth.SecurityConstants;
+import com.aisupport.common.security.SecurityConstants;
 
 @Configuration
 public class CorsConfig {

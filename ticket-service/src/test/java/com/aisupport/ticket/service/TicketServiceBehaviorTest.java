@@ -15,8 +15,11 @@ import com.aisupport.common.enums.TicketStatus;
 import com.aisupport.common.event.TicketRoutedEvent;
 import com.aisupport.ticket.entity.Ticket;
 import com.aisupport.ticket.exception.InvalidTicketInputException;
+import com.aisupport.ticket.mapper.MessageMapper;
 import com.aisupport.ticket.mapper.TicketMapper;
+import com.aisupport.ticket.notification.WebSocketNotificationService;
 import com.aisupport.ticket.outbox.OutboxEventService;
+import com.aisupport.ticket.repository.MessageRepository;
 import com.aisupport.ticket.repository.TicketRepository;
 
 class TicketServiceBehaviorTest {
@@ -28,8 +31,19 @@ class TicketServiceBehaviorTest {
     void setUp() {
         ticketRepository = mock(TicketRepository.class);
         TicketMapper ticketMapper = mock(TicketMapper.class);
+        MessageRepository messageRepository = mock(MessageRepository.class);
+        MessageMapper messageMapper = mock(MessageMapper.class);
         OutboxEventService outboxEventService = mock(OutboxEventService.class);
-        ticketService = new TicketService(ticketRepository, ticketMapper, outboxEventService);
+        WebSocketNotificationService wsService = mock(WebSocketNotificationService.class);
+        
+        ticketService = new TicketService(
+                ticketRepository, 
+                ticketMapper, 
+                messageRepository, 
+                messageMapper, 
+                outboxEventService, 
+                wsService
+        );
     }
 
     @Test

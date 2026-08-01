@@ -6,11 +6,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.aisupport.auth.config.JwtConfig;
-import com.aisupport.auth.dto.AuthResponse;
-import com.aisupport.auth.dto.LoginRequest;
-import com.aisupport.auth.dto.RefreshRequest;
-import com.aisupport.auth.dto.RegisterRequest;
-import com.aisupport.auth.dto.UserResponse;
+import com.aisupport.auth.dto.request.LoginRequest;
+import com.aisupport.auth.dto.request.RefreshRequest;
+import com.aisupport.auth.dto.request.RegisterRequest;
+import com.aisupport.auth.dto.response.AuthResponse;
+import com.aisupport.auth.dto.response.UserResponse;
 import com.aisupport.auth.entity.LoginAudit;
 import com.aisupport.auth.entity.RefreshToken;
 import com.aisupport.auth.entity.User;

@@ -73,9 +73,12 @@ export function UserTable({ users }: UserTableProps) {
           </TableHeader>
           <TableBody>
             {users.length === 0 ? (
-              <TableRow className="border-border hover:bg-card">
-                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                  No users found matching the criteria.
+              <TableRow className="border-border hover:bg-transparent">
+                <TableCell colSpan={6} className="p-6">
+                  <div className="text-slate-500 p-8 text-sm text-center border-2 border-dashed border-slate-200 rounded-xl max-w-md mx-auto bg-white">
+                    <span className="block text-2xl mb-2">📭</span>
+                    No users found matching the criteria.
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (

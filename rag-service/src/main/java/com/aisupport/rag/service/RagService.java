@@ -1,123 +1,217 @@
 package com.aisupport.rag.service;
 
 import java.time.Instant;
-import java.util.Map;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
-import org.springframework.ai.chat.prompt.PromptTemplate;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.aisupport.common.event.EventType;
 import com.aisupport.common.event.TicketRagResponseEvent;
 import com.aisupport.rag.entity.RagResponse;
 import com.aisupport.rag.exception.RagGenerationException;
 import com.aisupport.rag.outbox.OutboxEventService;
+import com.aisupport.rag.repository.KnowledgeArticleRepository;
 import com.aisupport.rag.repository.RagResponseRepository;
+import com.aisupport.rag.service.retrieval.MetadataAwareRetrievalService;
+import com.aisupport.rag.service.retrieval.RagPromptFactory;
+import com.aisupport.rag.service.retrieval.RetrievalDiagnostics;
+import com.aisupport.rag.service.retrieval.RetrievalResult;
+import com.aisupport.rag.service.serialization.SourceMetadataSerializer;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Core RAG (Retrieval-Augmented Generation) service.
- *
- * This service uses Spring AI's ChatClient with a QuestionAnswerAdvisor to:
- * 1. Accept a natural-language query (built from ticket analysis fields)
- * 2. Retrieve relevant knowledge articles from PGVector via similarity search
- * 3. Retrieve relevant documents using VectorStore (PGVector)
- * 4. Generate a grounded response using Google GenAI
- * 5. Publish a Kafka event with the response to rag_responses table
- * 6. Publish TicketRagResponseEvent via outbox
+ * Service orchestration layer responsible for RAG response generation, persistence,
+ * and outbox event publishing.
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class RagService {
-	
-	private static final String NO_KNOWLEDGE_FOUND = "No relevant knowledge article found.";
 
-	private final ChatClient chatClient;
-	private final QuestionAnswerAdvisor questionAnswerAdvisor;
-	private final RagResponseRepository ragResponseRepository;
-	private final OutboxEventService outboxEventService;
-	private final PromptTemplate ragSystemPromptTemplate;
-	
-	@Value("${spring.ai.google.genai.chat.model}")
-	private String chatModel;
+    private final ChatClient chatClient;
+    private final MetadataAwareRetrievalService retrievalService;
+    private final RagResponseRepository ragResponseRepository;
+    private final KnowledgeArticleRepository knowledgeArticleRepository;
+    private final OutboxEventService outboxEventService;
+    private final RagPromptFactory ragPromptFactory;
+    private final SourceMetadataSerializer sourceSerializer;
 
-	/**
-	 * Generate a context-aware response for the given query using RAG.
-	 *
-	 * @param ticketId ticket identifier associated with the query
-	 * @param query the search query (typically built from ticket analysis fields)
-	 * @return the AI-generated response grounded in knowledge base context
-	 */
-	@Transactional
-	public String generateResponse(Long ticketId, String query) {
+    @Value("${spring.ai.google.genai.chat.model}")
+    private String chatModel;
 
-		log.info("Running RAG for query: {}", query);
-		
-		String response;
-		
-		String systemPrompt = ragSystemPromptTemplate.render(
-		        Map.of("noKnowledgeFound", NO_KNOWLEDGE_FOUND));
-		
-		// Google GenAI call — can fail due to network/quota/model issues
-		try {
-		
-			// RAG call — similarity search + Google GenAI generation
-	        response = chatClient.prompt()
-				.system(systemPrompt)
-	            .user(query)
-	            .advisors(questionAnswerAdvisor)
-	            .call()
-	            .content();
-		} catch (Exception e) {
-			log.error("Google GenAI RAG generation failed for ticketId={}", ticketId, e);
-	        throw new RagGenerationException(
-	                "RAG generation failed for ticketId: " + ticketId, e);
-	    } 
+    private record RagExecutionResult(
+        String response,
+        int docCount,
+        String titles,
+        String sourceDetails,
+        String retrievalDiagnostics,
+        RetrievalResult retrievalResult,
+        boolean knowledgeFound,
+        String model,
+        long totalDurationMs
+    ) {}
 
-        // Persist to rag_responses table — inside @Transactional
+    /**
+     * Executes the core retrieval, prompt construction, LLM generation, and access count updates.
+     * Consolidates logic shared between sync and async RAG workflows.
+     */
+    private RagExecutionResult executeRagWorkflow(Long ticketId, String query) {
+        long startTime = System.currentTimeMillis();
+        try {
+            RetrievalResult retrievalResult = retrievalService.retrieveAndRank(query);
+            String fullSystemPrompt = ragPromptFactory.buildFullSystemPrompt(retrievalResult);
+
+            ChatResponse chatResponse = chatClient.prompt()
+                .system(fullSystemPrompt)
+                .user(query)
+                .call()
+                .chatResponse();
+
+            if (chatResponse == null || chatResponse.getResult() == null || chatResponse.getResult().getOutput() == null) {
+                throw new IllegalStateException("Empty or null chat response received for ticketId: " + ticketId);
+            }
+
+            String response = chatResponse.getResult().getOutput().getText();
+            int docCount = retrievalResult.retrievedDocumentCount();
+            String titles = retrievalResult.matchedArticleTitles();
+            String sourceDetails = sourceSerializer.serializeSources(retrievalResult.documents());
+            String diagnosticsJson = sourceSerializer.serializeDiagnostics(retrievalResult.diagnostics());
+
+            // Derive knowledgeFound directly from RetrievalResult doc count (Objective 5)
+            boolean knowledgeFound = docCount > 0;
+
+            // Update access count using immutable Article IDs instead of titles (Objective 4)
+            List<Long> matchedIds = retrievalResult.matchedArticleIds();
+            if (knowledgeFound && !matchedIds.isEmpty()) {
+                incrementAccessCountSafeByIds(matchedIds);
+            } else if (knowledgeFound && titles != null && !titles.isEmpty()) {
+                // Backward compatibility fallback if IDs are unavailable
+                incrementAccessCountSafeByTitles(List.of(titles.split(",")));
+            }
+
+            long totalDurationMs = System.currentTimeMillis() - startTime;
+
+            // Structured logging with rich retrieval metadata (Objective 8)
+            RetrievalDiagnostics diag = retrievalResult.diagnostics();
+            log.info("RAG workflow completed for ticketId={}, docCount={}, fallbackUsed={}, retrievalLatencyMs={}, totalDurationMs={}, strategy='{}', knowledgeFound={}",
+                    ticketId, docCount, diag != null && diag.fallbackUsed(),
+                    diag != null ? diag.retrievalLatencyMs() : 0, totalDurationMs,
+                    diag != null ? diag.retrievalStrategy() : "UNKNOWN", knowledgeFound);
+
+            return new RagExecutionResult(
+                    response, docCount, titles, sourceDetails, diagnosticsJson,
+                    retrievalResult, knowledgeFound, chatModel, totalDurationMs
+            );
+        } catch (Exception e) {
+            long failDuration = System.currentTimeMillis() - startTime;
+            log.error("Google GenAI RAG generation failed for ticketId={}, durationMs={}", ticketId, failDuration, e);
+            throw new RagGenerationException("RAG generation failed for ticketId: " + ticketId, e);
+        }
+    }
+
+    /**
+     * Generate a context-aware response for the given query using RAG, persist it, and emit an event.
+     *
+     * @param ticketId ticket identifier associated with the query
+     * @param query the search query (typically built from ticket analysis fields)
+     * @return the AI-generated response grounded in knowledge base context
+     */
+    @Transactional
+    public String generateResponse(Long ticketId, String query) {
+        log.info("Running RAG for query: {}", query);
+        RagExecutionResult exec = executeRagWorkflow(ticketId, query);
+
         RagResponse ragResponse = RagResponse.builder()
                 .ticketId(ticketId)
                 .query(query)
-                .response(response)
-                .model(chatModel)
-                .knowledgeFound(isKnowledgeFound(response))
+                .response(exec.response())
+                .model(exec.model())
+                .knowledgeFound(exec.knowledgeFound())
+                .retrievedDocumentCount(exec.docCount())
+                .matchedArticleTitles(exec.titles())
+                .sourceDetails(exec.sourceDetails())
+                .retrievalDiagnostics(exec.retrievalDiagnostics())
                 .build();
 
         ragResponseRepository.save(ragResponse);
         log.info("RAG response persisted for ticketId={}", ticketId);
 
-        // Publish event via outbox so ticket-service can update the ticket — also inside @Transactional
         TicketRagResponseEvent event = TicketRagResponseEvent.builder()
                 .ticketId(ticketId)
                 .query(query)
-                .response(response)
-                .model(chatModel)
+                .response(exec.response())
+                .model(exec.model())
                 .generatedAt(Instant.now())
                 .build();
 
         outboxEventService.publishEvent(
                 "TICKET",
                 ticketId.toString(),
-                "TicketRagResponseEvent",
+                EventType.TICKET_RAG_RESPONSE_GENERATED,
                 event
         );
-
         log.info("RAG response event published for ticketId={}", ticketId);
 
-        return response;
-	}
+        return exec.response();
+    }
 
-	/**
-	 * Helper method to determine if the response indicates that relevant knowledge was found.
-	 * This is based on whether the response matches the NO_KNOWLEDGE_FOUND message.
-	 */
-	private boolean isKnowledgeFound(String response) {
-		return response != null
-			&& !NO_KNOWLEDGE_FOUND.equalsIgnoreCase(response.trim());
-	}
+    /**
+     * Synchronously generates and persists a RAG response without publishing an outbox event.
+     */
+    @Transactional
+    public RagResponse generateResponseSync(Long ticketId, String query) {
+        log.info("Running sync RAG for query: {}", query);
+        RagExecutionResult exec = executeRagWorkflow(ticketId, query);
+
+        if (ragResponseRepository.existsById(ticketId)) {
+            ragResponseRepository.deleteById(ticketId);
+        }
+
+        RagResponse ragResponse = RagResponse.builder()
+                .ticketId(ticketId)
+                .query(query)
+                .response(exec.response())
+                .model(exec.model())
+                .knowledgeFound(exec.knowledgeFound())
+                .retrievedDocumentCount(exec.docCount())
+                .matchedArticleTitles(exec.titles())
+                .sourceDetails(exec.sourceDetails())
+                .retrievalDiagnostics(exec.retrievalDiagnostics())
+                .build();
+
+        ragResponseRepository.save(ragResponse);
+        log.info("Sync RAG response persisted for ticketId={}", ticketId);
+
+        return ragResponse;
+    }
+
+    /**
+     * Retrieves the most recent RAG response for a given ticket.
+     */
+    public Optional<RagResponse> getRagResponseForTicket(Long ticketId) {
+        return ragResponseRepository.findTopByTicketIdOrderByCreatedAtDesc(ticketId);
+    }
+
+    private void incrementAccessCountSafeByIds(List<Long> matchedIds) {
+        try {
+            knowledgeArticleRepository.incrementAccessCountByIds(matchedIds);
+        } catch (Exception e) {
+            log.warn("Failed to increment access count for article IDs: {}", matchedIds, e);
+        }
+    }
+
+    private void incrementAccessCountSafeByTitles(List<String> matchedTitles) {
+        try {
+            knowledgeArticleRepository.incrementAccessCountByTitles(matchedTitles);
+        } catch (Exception e) {
+            log.warn("Failed to increment access count for titles: {}", matchedTitles, e);
+        }
+    }
 }

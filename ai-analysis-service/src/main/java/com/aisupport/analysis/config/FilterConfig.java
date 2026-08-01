@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.aisupport.analysis.filter.CorrelationIdFilter;
-import com.aisupport.common.constant.Correlation;
+import com.aisupport.common.constants.Correlation;
 
 @Configuration
 public class FilterConfig {

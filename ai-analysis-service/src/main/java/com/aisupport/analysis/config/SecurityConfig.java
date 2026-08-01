@@ -31,7 +31,7 @@ public class SecurityConfig {
 	 * Service-specific public endpoints that are accessible without authentication.
 	 */
 	private static final List<String> SERVICE_SPECIFIC_PUBLIC_ENDPOINTS = List.of(
-	        "/api/v1/webhooks/provider/callback"
+	        "/api/internal/**"
 	);
 
 	/**
@@ -88,7 +88,7 @@ public class SecurityConfig {
 	            
 	            .authorizeHttpRequests(auth -> auth
 	                    .requestMatchers(ALL_PUBLIC_ENDPOINTS).permitAll()
-	                    .requestMatchers("/api/v1/analysis/**", "/internal/**").authenticated()
+	                    .requestMatchers("/api/v1/analysis/**").authenticated()
 	                    .anyRequest().denyAll()
 	            )
 	            

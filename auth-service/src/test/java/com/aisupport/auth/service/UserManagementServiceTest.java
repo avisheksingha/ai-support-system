@@ -12,12 +12,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.aisupport.auth.dto.UserResponse;
+import com.aisupport.auth.dto.response.UserResponse;
 import com.aisupport.auth.entity.User;
-import com.aisupport.common.enums.UserRole;
 import com.aisupport.auth.mapper.UserMapper;
-import com.aisupport.auth.repository.UserRepository;
 import com.aisupport.auth.repository.RefreshTokenRepository;
+import com.aisupport.auth.repository.UserRepository;
+import com.aisupport.common.enums.UserRole;
 
 @ExtendWith(MockitoExtension.class)
 class UserManagementServiceTest {

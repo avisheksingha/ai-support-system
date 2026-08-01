@@ -1,6 +1,7 @@
 package com.aisupport.ticket.service;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -10,16 +11,31 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.aisupport.common.enums.TicketPriority;
 import com.aisupport.common.enums.TicketStatus;
+import com.aisupport.common.enums.UserRole;
+import com.aisupport.common.event.AiDecision;
+import com.aisupport.common.event.AnalysisResult;
+import com.aisupport.common.event.DomainEvent;
+import com.aisupport.common.event.EventType;
+import com.aisupport.common.event.KnowledgeContext;
+import com.aisupport.common.event.RoutingDecision;
 import com.aisupport.common.event.TicketCreatedEvent;
+import com.aisupport.common.event.TicketOrchestratedEvent;
 import com.aisupport.common.event.TicketRagResponseEvent;
 import com.aisupport.common.event.TicketRoutedEvent;
-import com.aisupport.ticket.dto.TicketRequest;
-import com.aisupport.ticket.dto.TicketResponse;
+import com.aisupport.ticket.dto.request.MessageRequest;
+import com.aisupport.ticket.dto.request.TicketRequest;
+import com.aisupport.ticket.dto.response.MessageResponse;
+import com.aisupport.ticket.dto.response.TicketDashboardSummaryResponse;
+import com.aisupport.ticket.dto.response.TicketResponse;
+import com.aisupport.ticket.entity.Message;
 import com.aisupport.ticket.entity.Ticket;
 import com.aisupport.ticket.exception.InvalidTicketInputException;
 import com.aisupport.ticket.exception.TicketNotFoundException;
+import com.aisupport.ticket.mapper.MessageMapper;
 import com.aisupport.ticket.mapper.TicketMapper;
+import com.aisupport.ticket.notification.WebSocketNotificationService;
 import com.aisupport.ticket.outbox.OutboxEventService;
+import com.aisupport.ticket.repository.MessageRepository;
 import com.aisupport.ticket.repository.TicketRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -34,10 +50,14 @@ import lombok.extern.slf4j.Slf4j;
 public class TicketService {
 
     private static final String TICKET_NOT_FOUND_MSG = "Ticket not found: ";
+    private static final String AGGREGATE_TYPE = "TICKET";
 
     private final TicketRepository ticketRepository;
     private final TicketMapper ticketMapper;
+    private final MessageRepository messageRepository;
+    private final MessageMapper messageMapper;
     private final OutboxEventService outboxEventService;
+    private final WebSocketNotificationService webSocketNotificationService;
 
     /**
      * Creates a new ticket and stores a corresponding {@code TicketCreatedEvent}
@@ -73,6 +93,9 @@ public class TicketService {
                 log.warn("Invalid user ID format: {}", userId);
             }
         }
+        
+        // AI starts immediately after creation
+        ticket.transitionTo(TicketStatus.ANALYZING);
 
         ticket = ticketRepository.save(ticket);
 
@@ -82,13 +105,14 @@ public class TicketService {
                 .ticketNumber(ticket.getTicketNumber())
                 .subject(ticket.getSubject())
                 .message(ticket.getMessage())
+                .priority(ticket.getPriority() != null ? ticket.getPriority().name() : null)
                 .createdAt(Instant.now())
                 .build();
 
         outboxEventService.publishEvent(
-                "TICKET",
+        		AGGREGATE_TYPE,
                 ticket.getId().toString(),
-                "TicketCreatedEvent",
+                EventType.TICKET_CREATED,
                 event
         );
 
@@ -110,6 +134,96 @@ public class TicketService {
                 .orElseThrow(() -> new TicketNotFoundException(
                         TICKET_NOT_FOUND_MSG + ticketNumber));
         return ticketMapper.toResponse(ticket);
+    }
+
+    /**
+     * Fetches all messages for a specific ticket.
+     */
+    @Transactional(readOnly = true)
+    public List<MessageResponse> getTicketMessages(String ticketNumber) {
+        Ticket ticket = ticketRepository.findByTicketNumber(ticketNumber)
+                .orElseThrow(() -> new TicketNotFoundException(TICKET_NOT_FOUND_MSG + ticketNumber));
+                
+        return messageRepository.findByTicketIdOrderByCreatedAtAsc(ticket.getId())
+                .stream()
+                .map(messageMapper::toResponse)
+                .toList();
+    }
+    
+    /**
+     * Fetches all public messages for a specific ticket if owned by customer.
+     */
+    @Transactional(readOnly = true)
+    public List<MessageResponse> getCustomerTicketMessages(String ticketNumber, String customerEmail) {
+        Ticket ticket = ticketRepository.findByTicketNumberAndCustomerEmail(ticketNumber, customerEmail)
+                .orElseThrow(() -> new TicketNotFoundException("Ticket not found or access denied: " + ticketNumber));
+                
+        return messageRepository.findByTicketIdOrderByCreatedAtAsc(ticket.getId())
+                .stream()
+                .filter(msg -> !msg.isInternal())
+                .map(messageMapper::toResponse)
+                .toList();
+    }
+    
+    /**
+     * Adds a new message to a ticket.
+     */
+    @Transactional
+    public MessageResponse addMessage(String ticketNumber, MessageRequest request, String userRole, String userEmail) {
+        Ticket ticket = ticketRepository.findByTicketNumber(ticketNumber)
+                .orElseThrow(() -> new TicketNotFoundException(TICKET_NOT_FOUND_MSG + ticketNumber));
+                
+        Message message = messageMapper.toEntity(request);
+        message.setTicket(ticket);
+        message.setInternal(request.isInternal());
+        
+        if (userEmail != null) {
+            message.setSenderId(userEmail);
+            String name = userEmail.contains("@") ? userEmail.substring(0, userEmail.indexOf('@')) : userEmail;
+            // capitalize first letter
+            name = name.substring(0, 1).toUpperCase() + name.substring(1);
+            message.setSenderName(name);
+        } else {
+            message.setSenderName("System");
+        }
+        
+        EventType eventType;
+        
+        // Determine type based on role/request
+        if (request.isInternal()) {
+            message.setType("INTERNAL_NOTE");
+            eventType = EventType.AGENT_REPLY_ADDED;
+        } else if (UserRole.AGENT.name().equals(userRole) || UserRole.ADMIN.name().equals(userRole)) {
+            message.setType("AGENT_MESSAGE");
+            eventType = EventType.AGENT_REPLY_ADDED;
+            
+            if (ticket.getStatus() == TicketStatus.ASSIGNED) {
+                ticket.transitionTo(TicketStatus.IN_PROGRESS); 
+            }
+        } else {
+            message.setType("CUSTOMER_MESSAGE");
+            eventType = EventType.CUSTOMER_REPLY_ADDED;
+        }
+        
+        message = messageRepository.save(message);
+        
+        MessageResponse response = messageMapper.toResponse(message);
+        
+        DomainEvent<MessageResponse> event = DomainEvent.<MessageResponse>builder()
+                .eventId(UUID.randomUUID().toString())
+                .eventType(eventType)
+                .entityType(AGGREGATE_TYPE)
+                .entityId(ticket.getId().toString())
+                .correlationId(UUID.randomUUID().toString())
+                .sourceService("ticket-service")
+                .timestamp(Instant.now())
+                .payload(response)
+                .build();
+                
+        outboxEventService.publishEvent(AGGREGATE_TYPE, ticket.getId().toString(), eventType, event);
+        webSocketNotificationService.broadcastEvent(event, ticketNumber);
+        
+        return response;
     }
 
     /**
@@ -137,6 +251,114 @@ public class TicketService {
                 .stream()
                 .map(ticketMapper::toResponse)
                 .toList();
+    }
+
+    /**
+     * Helper class for aggregating dashboard metrics.
+     */
+    private static class DashboardMetrics {
+        long critical = 0;
+        long high = 0;
+        long medium = 0;
+        long low = 0;
+        long totalWaitMs = 0;
+        long oldestTicketMs = 0;
+        long resolvedToday = 0;
+        long totalHandleMs = 0;
+        long nearSlaBreach = 0;
+        long nextSlaBreachMins = Long.MAX_VALUE;
+        long totalSlaRemainingMins = 0;
+        long activeSlaCount = 0;
+    }
+
+    /**
+     * Returns a dashboard summary for a specific agent.
+     */
+    @Transactional(readOnly = true)
+    public TicketDashboardSummaryResponse getAgentDashboardSummary(String agentId) {
+        List<Ticket> tickets = ticketRepository.findByAssignedTo(agentId);
+        DashboardMetrics metrics = new DashboardMetrics();
+        
+        Instant startOfDay = Instant.now().truncatedTo(ChronoUnit.DAYS);
+        long nowMs = Instant.now().toEpochMilli();
+
+        for (Ticket t : tickets) {
+            if (t.getStatus() == TicketStatus.RESOLVED || t.getStatus() == TicketStatus.CLOSED) {
+                processResolvedTicket(t, metrics, startOfDay);
+            } else {
+                processActiveTicket(t, metrics, nowMs);
+            }
+        }
+
+        return buildDashboardResponse(tickets.size(), metrics);
+    }
+
+    private void processResolvedTicket(Ticket t, DashboardMetrics metrics, Instant startOfDay) {
+        if (t.getUpdatedAt() != null && t.getUpdatedAt().isAfter(startOfDay)) {
+            metrics.resolvedToday++;
+            metrics.totalHandleMs += t.getUpdatedAt().toEpochMilli() - t.getCreatedAt().toEpochMilli();
+        }
+    }
+
+    private void processActiveTicket(Ticket t, DashboardMetrics metrics, long nowMs) {
+        updatePriorityCounts(t, metrics);
+        updateWaitTime(t, metrics, nowMs);
+        updateSlaMetrics(t, metrics, nowMs);
+    }
+
+    private void updatePriorityCounts(Ticket t, DashboardMetrics metrics) {
+        if (t.getPriority() == TicketPriority.CRITICAL) metrics.critical++;
+        else if (t.getPriority() == TicketPriority.HIGH) metrics.high++;
+        else if (t.getPriority() == TicketPriority.MEDIUM) metrics.medium++;
+        else metrics.low++;
+    }
+
+    private void updateWaitTime(Ticket t, DashboardMetrics metrics, long nowMs) {
+        long waitTime = nowMs - t.getCreatedAt().toEpochMilli();
+        metrics.totalWaitMs += waitTime;
+        if (waitTime > metrics.oldestTicketMs) {
+            metrics.oldestTicketMs = waitTime;
+        }
+    }
+
+    private void updateSlaMetrics(Ticket t, DashboardMetrics metrics, long nowMs) {
+        if (t.getSlaHours() != null) {
+            long targetMs = t.getCreatedAt().toEpochMilli() + (t.getSlaHours() * 3600000L);
+            long remainingMins = (targetMs - nowMs) / 60000L;
+            metrics.totalSlaRemainingMins += remainingMins;
+            metrics.activeSlaCount++;
+
+            if (remainingMins > 0 && remainingMins < metrics.nextSlaBreachMins) {
+                metrics.nextSlaBreachMins = remainingMins;
+            }
+            if (remainingMins > 0 && remainingMins < 120) { // < 2 hours
+                metrics.nearSlaBreach++;
+            }
+        }
+    }
+
+    private TicketDashboardSummaryResponse buildDashboardResponse(int totalTickets, DashboardMetrics metrics) {
+        long activeCount = totalTickets - metrics.resolvedToday;
+        Long avgWaitMins = activeCount > 0 ? (metrics.totalWaitMs / activeCount) / 60000L : null;
+        Long oldestMins = activeCount > 0 ? metrics.oldestTicketMs / 60000L : null;
+        Long avgSlaMins = metrics.activeSlaCount > 0 ? metrics.totalSlaRemainingMins / metrics.activeSlaCount : null;
+        Long avgHandleMins = metrics.resolvedToday > 0 ? (metrics.totalHandleMs / metrics.resolvedToday) / 60000L : null;
+
+        return TicketDashboardSummaryResponse.builder()
+                .assignedToday(activeCount) // roughly using active count
+                .totalAssigned(activeCount)
+                .critical(metrics.critical)
+                .high(metrics.high)
+                .medium(metrics.medium)
+                .low(metrics.low)
+                .averageWaitTimeMins(avgWaitMins)
+                .oldestTicketAgeMins(oldestMins)
+                .nearSlaBreach(metrics.nearSlaBreach)
+                .nextSlaBreachMins(metrics.nextSlaBreachMins == Long.MAX_VALUE ? null : metrics.nextSlaBreachMins)
+                .averageRemainingSlaMins(avgSlaMins)
+                .resolvedToday(metrics.resolvedToday)
+                .averageHandleTimeMins(avgHandleMins)
+                .build();
     }
 
     /**
@@ -263,6 +485,99 @@ public class TicketService {
         return ticketMapper.toResponse(ticket);
     }
     
+    @Transactional
+    public void applyOrchestratedResult(TicketOrchestratedEvent event) {
+    	
+        Ticket ticket = ticketRepository.findById(event.ticketId())
+                .orElseThrow(() -> new TicketNotFoundException(TICKET_NOT_FOUND_MSG + event.ticketId()));
+        
+        // At-least-once delivery protection
+        if (isStatusAtOrBeyondAssigned(ticket.getStatus())) {
+            log.info("Ticket {} already at status {}, skipping orchestration event",
+                    ticket.getTicketNumber(),
+                    ticket.getStatus());
+            return;
+        }
+
+        log.info(
+                "Applying orchestrated result for ticket {} (workflowExecutionId={}, correlationId={})",
+                ticket.getTicketNumber(),
+                event.metadata().workflowExecutionId(),
+                event.metadata().correlationId());
+        
+        // -------------------------
+        // AI Analysis
+        // -------------------------
+        if (event.analysis() != null) {
+            applyAnalysis(ticket, event.analysis());
+            ticket.transitionTo(TicketStatus.ANALYZED);
+        }
+
+        // -------------------------
+        // Routing
+        // -------------------------        
+        if (event.routing() != null) {
+            applyRouting(ticket, event.routing());
+            ticket.transitionTo(TicketStatus.ASSIGNED);
+        }
+
+        // -------------------------
+        // Knowledge
+        // -------------------------
+        if (event.knowledge() != null) {
+            applyKnowledge(ticket, event.knowledge());
+        }
+
+        // -------------------------
+        // AI Decision
+        // -------------------------
+        if (event.aiDecision() != null) {
+            applyAiDecision(ticket, event.aiDecision());
+        }
+
+        // Hibernate dirty checking will persist changes automatically
+        log.info(
+                "Ticket {} successfully updated. Final status={}, team={}, priority={}",
+                ticket.getTicketNumber(),
+                ticket.getStatus(),
+                ticket.getAssignedTo(),
+                ticket.getPriority());
+    }
+
+    private void applyAnalysis(Ticket ticket, AnalysisResult analysis) {
+        if (analysis == null) return;
+        if (analysis.intent() != null) ticket.setIntent(analysis.intent());
+        if (analysis.sentiment() != null) ticket.setSentiment(analysis.sentiment());
+        if (analysis.urgency() != null) ticket.setUrgency(analysis.urgency());
+        if (analysis.confidenceScore() != null) ticket.setAiConfidence(analysis.confidenceScore());
+    }
+
+    private void applyRouting(Ticket ticket, RoutingDecision routing) {
+        if (routing == null) return;
+        if (routing.assignToTeam() != null) ticket.setAssignedTo(routing.assignToTeam());
+        if (routing.priority() != null) ticket.setPriority(routing.priority());
+        if (routing.slaHours() != null) ticket.setSlaHours(routing.slaHours());
+    }
+    
+    private void applyKnowledge(Ticket ticket, KnowledgeContext knowledge) {
+
+        if (knowledge == null) {
+            return;
+        }
+
+        if (knowledge.knowledgeSummary() != null) {
+            ticket.setRagResponse(knowledge.knowledgeSummary());
+            ticket.setRagGeneratedAt(Instant.now());
+        }
+    }
+
+    private void applyAiDecision(Ticket ticket, AiDecision decision) {
+        if (decision == null) return;
+        if (decision.aiSummary() != null) ticket.setAiSummary(decision.aiSummary());
+        if (decision.suggestedReply() != null) ticket.setSuggestedReply(decision.suggestedReply());
+        if (decision.confidence() != null) ticket.setAiConfidence(decision.confidence());
+    }
+
     /**
      * Applies routing decision results received from routing-service.
      * Duplicate or out-of-order routing events are treated as no-ops.

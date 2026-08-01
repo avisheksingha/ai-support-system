@@ -5,8 +5,6 @@ export const workspaceKeys = {
   
   ticketDetail: (ticketNumber: string) => [...workspaceKeys.tickets(), "detail", ticketNumber] as const,
   
-  analysis: (ticketId: number) => [...workspaceKeys.all, "analysis", ticketId] as const,
-  knowledge: (ticketId: number) => [...workspaceKeys.all, "knowledge", ticketId] as const,
-  routing: (ticketId: number) => [...workspaceKeys.all, "routing", ticketId] as const,
+  workspaceAggregation: (ticketId: number) => [...workspaceKeys.all, "workspaceAggregation", ticketId] as const,
   timeline: (ticketId: number) => [...workspaceKeys.all, "timeline", ticketId] as const,
 };

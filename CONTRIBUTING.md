@@ -24,6 +24,7 @@ Thanks for your interest in contributing.
   - `ARCHITECTURE.md`
   - `OVERVIEW.md`
   - Service-level README files where relevant
+- **Package Structure:** The package structure is now considered stable. New features should follow the established package convention. Avoid introducing new package hierarchies unless there is a clear architectural justification.
 
 ## AI Assistance Policy
 

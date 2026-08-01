@@ -4,9 +4,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.aisupport.common.enums.TicketPriority;
+import com.aisupport.common.event.EventType;
 import com.aisupport.common.event.TicketAnalyzedEvent;
 import com.aisupport.common.event.TicketRoutedEvent;
-import com.aisupport.routing.dto.RoutingResponse;
+import com.aisupport.routing.dto.response.RoutingResponse;
 import com.aisupport.routing.entity.RoutingRule;
 import com.aisupport.routing.outbox.OutboxEventService;
 
@@ -54,19 +55,49 @@ public class RoutingService {
                 .assignToTeam(team)
                 .priority(priority)
                 .slaHours(sla)
-                .intent(event.getIntent())
-                .sentiment(event.getSentiment())
-                .urgency(event.getUrgency())
+                .intent(event.getAnalysis().intent())
+                .sentiment(event.getAnalysis().sentiment())
+                .urgency(event.getAnalysis().urgency())
                 .build();
 
         outboxService.publishEvent(
                 "TICKET",
                 ticketId.toString(),
-                "TicketRoutedEvent",
+                EventType.TICKET_ROUTED,
                 routedEvent
         );
 
         log.info("Routing completed ticketId={} team={} priority={}", ticketId, team, priority);
+    }
+
+    @Transactional
+    public TicketRoutedEvent routeSync(TicketAnalyzedEvent event) {
+        Long ticketId = event.getTicketId();
+        log.info("Running sync routing for ticketId={}", ticketId);
+
+        RoutingRule rule = ruleEvaluationService.evaluate(event);
+
+        String team = rule != null ? rule.getAssignToTeam() : "general-support";
+        TicketPriority priority = rule != null && rule.getPriorityOverride() != null
+                ? rule.getPriorityOverride()
+                : TicketPriority.MEDIUM;
+
+        Integer sla = rule != null && rule.getSlaHours() != null
+                ? rule.getSlaHours()
+                : 24;
+
+        TicketRoutedEvent routedEvent = TicketRoutedEvent.builder()
+                .ticketId(ticketId)
+                .assignToTeam(team)
+                .priority(priority)
+                .slaHours(sla)
+                .intent(event.getAnalysis().intent())
+                .sentiment(event.getAnalysis().sentiment())
+                .urgency(event.getAnalysis().urgency())
+                .build();
+
+        log.info("Sync Routing completed ticketId={} team={} priority={}", ticketId, team, priority);
+        return routedEvent;
     }
     
     /**

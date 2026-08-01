@@ -5,17 +5,17 @@ import java.nio.charset.StandardCharsets;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.header.Header;
 import org.slf4j.MDC;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
-import com.aisupport.common.constant.Correlation;
-import com.aisupport.common.constant.HttpHeaders;
-import com.aisupport.common.constant.KafkaGroups;
-import com.aisupport.common.constant.KafkaTopics;
+import com.aisupport.common.constants.Correlation;
+import com.aisupport.common.constants.HttpHeaders;
+import com.aisupport.common.constants.KafkaGroups;
+import com.aisupport.common.constants.KafkaTopics;
 import com.aisupport.common.event.TicketRagResponseEvent;
 import com.aisupport.common.exception.TicketEventProcessingException;
 import com.aisupport.ticket.service.TicketService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,13 +23,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "ticket.legacy.consumers.enabled", havingValue = "true", matchIfMissing = false)
 public class TicketRagResponseConsumer {
 
     private final TicketService ticketService;
-    private final ObjectMapper objectMapper;
 
     @KafkaListener(topics = KafkaTopics.TICKET_RAG_RESPONSE, groupId = KafkaGroups.TICKET)
-    public void consume(ConsumerRecord<String, String> consumerRecord) {
+    public void consume(ConsumerRecord<String, TicketRagResponseEvent> consumerRecord) {
 
     	// Extract correlationId from Kafka header into MDC
         Header correlationHeader = consumerRecord.headers()
@@ -40,10 +40,7 @@ public class TicketRagResponseConsumer {
         }
 
         try {
-            String payload = consumerRecord.value();
-
-            TicketRagResponseEvent event = objectMapper.readValue(
-                    payload, TicketRagResponseEvent.class);
+            TicketRagResponseEvent event = consumerRecord.value();
 
             log.info("Consumed rag-response event: ticketId={}", event.getTicketId());
 

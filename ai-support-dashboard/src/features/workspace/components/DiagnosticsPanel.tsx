@@ -1,14 +1,18 @@
 import { Terminal, Activity, Clock, Hash, BrainCircuit, Network, BookOpen, AlertCircle, FileText, Cpu } from "lucide-react";
-import type { AnalysisModel, RoutingModel } from "@/shared/types/workspace";
+import type { AnalysisModel, RoutingModel, KnowledgeModel } from "@/shared/types/workspace";
 import type { TicketModel } from "@/shared/types/ticket";
+import { formatTeamName } from "@/shared/utils/format";
 
 interface DiagnosticsPanelProps {
   ticket: TicketModel;
   analysis?: AnalysisModel | undefined;
   routing?: RoutingModel | undefined;
+  knowledge?: KnowledgeModel | undefined;
 }
 
-export function DiagnosticsPanel({ ticket, analysis, routing }: DiagnosticsPanelProps) {
+export function DiagnosticsPanel({ ticket, analysis, routing, knowledge }: DiagnosticsPanelProps) {
+  const retrievedCount = knowledge?.retrievedDocumentCount ?? knowledge?.matchedArticleTitles?.length ?? 0;
+  const topScore = knowledge?.sources?.[0]?.hybridScore ?? knowledge?.sources?.[0]?.similarityScore ?? knowledge?.sources?.[0]?.vectorScore;
   return (
     <div className="bg-background border border-red-900/50 rounded-xl overflow-hidden mb-6">
       <div className="bg-red-950/30 border-b border-red-900/50 p-4 flex items-center justify-between">
@@ -41,19 +45,19 @@ export function DiagnosticsPanel({ ticket, analysis, routing }: DiagnosticsPanel
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <DataPoint label="Provider" value={analysis?.analysisProvider || "Spring AI / OpenAI"} />
             <DataPoint label="Model" value="gpt-4o-mini" />
-            <DataPoint label="Latency" value={`${Math.floor(Math.random() * 800 + 400)} ms`} icon={<Activity />} />
-            <DataPoint label="Input Tokens" value={Math.floor(Math.random() * 200 + 50)} />
-            <DataPoint label="Output Tokens" value={Math.floor(Math.random() * 150 + 20)} />
+            <DataPoint label="Latency" value="N/A" icon={<Activity />} />
+            <DataPoint label="Input Tokens" value="N/A" />
+            <DataPoint label="Output Tokens" value="N/A" />
           </div>
         </DiagnosticSection>
 
         {/* Knowledge Retrieval */}
-        {ticket.ragResponse && (
+        {(knowledge || ticket.ragResponse) && (
           <DiagnosticSection title="RAG & Knowledge" icon={<BookOpen className="h-4 w-4 text-emerald-500" />}>
             <div className="flex flex-col gap-3">
               <div className="grid grid-cols-2 gap-4">
-                 <DataPoint label="Retrieved Articles" value={1} />
-                 <DataPoint label="Top Similarity" value={`${(0.89 * 100).toFixed(1)}%`} />
+                 <DataPoint label="Retrieved Articles" value={retrievedCount} />
+                 <DataPoint label="Top Similarity" value={(topScore && topScore > 0) ? `${(topScore * 100).toFixed(1)}%` : "N/A"} />
               </div>
               <div>
                 <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold block mb-1">Vector Search Query</span>
@@ -69,10 +73,9 @@ export function DiagnosticsPanel({ ticket, analysis, routing }: DiagnosticsPanel
         {routing && (
           <DiagnosticSection title="Routing Engine" icon={<Cpu className="h-4 w-4 text-purple-500" />}>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-               <DataPoint label="Routing Rule" value={routing.ruleName || "GENERAL_ROUTING_RULE"} />
-               <DataPoint label="Rule Version" value={routing.ruleVersion || 1} />
-               <DataPoint label="Confidence" value={`${((routing.confidenceScore || 0) * 100).toFixed(1)}%`} />
-               <DataPoint label="Department Match" value={routing.department} />
+               <DataPoint label="Priority Match" value={routing.priority} />
+               <DataPoint label="SLA Target" value={`${routing.slaHours}h`} />
+               <DataPoint label="Assigned Team" value={formatTeamName(routing.assignedTeam)} />
             </div>
           </DiagnosticSection>
         )}
@@ -93,7 +96,7 @@ export function DiagnosticsPanel({ ticket, analysis, routing }: DiagnosticsPanel
               <div>
                 <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold block mb-1">Raw LLM Response</span>
                 <pre className="text-[11px] text-muted-foreground bg-card p-3 rounded-md overflow-x-auto border border-border">
-                  {analysis?.rawResponse || JSON.stringify(analysis, null, 2)}
+                  {JSON.stringify(analysis, null, 2)}
                 </pre>
               </div>
             </div>

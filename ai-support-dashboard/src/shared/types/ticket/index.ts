@@ -14,6 +14,10 @@ export interface TicketModel {
   assignedTo?: string;
   ragResponse?: string;
   ragGeneratedAt?: string;
+  slaHours?: number;
+  customerTier?: string;
+  channel?: string;
+  aiConfidence?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -21,4 +25,5 @@ export interface TicketModel {
 export interface CreateTicketRequest {
   subject: string;
   message: string;
+  bypassSoftValidation?: boolean | undefined;
 }

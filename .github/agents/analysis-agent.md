@@ -36,7 +36,7 @@ http://localhost:8083/swagger-ui.html
 - **Query Service:** `src/main/java/com/aisupport/analysis/service/AnalysisQueryService.java`
 - **Controller (query APIs):** `src/main/java/com/aisupport/analysis/controller/AnalysisController.java`
 - **Provider Config:** `src/main/java/com/aisupport/analysis/config/ChatConfig.java`
-- **Providers:** `src/main/java/com/aisupport/analysis/chat/GeminiChatProvider.java`, `OpenAiChatProvider.java`
+- **LLMs:** `src/main/java/com/aisupport/analysis/chat/GeminiChatProvider.java`, `OpenAiChatProvider.java`
 - **Entity:** `src/main/java/com/aisupport/analysis/entity/AnalysisResult.java`
 - **Outbox:** `src/main/java/com/aisupport/analysis/outbox/OutboxEventService.java`, `OutboxEventPublisher.java`
 

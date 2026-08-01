@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import { createBrowserRouter, Navigate, Outlet } from "react-router";
 import { AuthLayout } from "../layouts/AuthLayout";
 import { DashboardLayout } from "../layouts/DashboardLayout";
 import { AuthProvider } from "@/features/auth/hooks/useAuth";
@@ -17,6 +17,9 @@ const ProfilePage = React.lazy(() => import("@/features/dashboard/pages/ProfileP
 const UsersPage = React.lazy(() => import("@/features/users/pages/UsersPage").then(module => ({ default: module.UsersPage })));
 const MyTicketsPage = React.lazy(() => import("@/features/customer/pages/MyTicketsPage").then(module => ({ default: module.MyTicketsPage })));
 const CustomerTicketDetailPage = React.lazy(() => import("@/features/customer/pages/CustomerTicketDetailPage").then(module => ({ default: module.CustomerTicketDetailPage })));
+const WorkflowExplorer = React.lazy(() => import("@/features/orchestration/pages/WorkflowExplorer").then(module => ({ default: module.WorkflowExplorer })));
+const GovernanceDashboard = React.lazy(() => import("@/features/observability/pages/GovernanceDashboard").then(module => ({ default: module.GovernanceDashboard })));
+const KnowledgeBasePage = React.lazy(() => import("@/features/knowledge/pages/KnowledgeBasePage").then(module => ({ default: module.KnowledgeBasePage })));
 import { RoleBasedLanding } from "./RoleBasedLanding";
 
 // A root boundary that injects Auth context so it has access to routing hooks
@@ -117,6 +120,30 @@ export const router = createBrowserRouter([
             element: (
               <Suspense fallback={<DashboardSkeleton />}>
                 <CustomerTicketDetailPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "workflows",
+            element: (
+              <Suspense fallback={<DashboardSkeleton />}>
+                <WorkflowExplorer />
+              </Suspense>
+            ),
+          },
+          {
+            path: "governance",
+            element: (
+              <Suspense fallback={<DashboardSkeleton />}>
+                <GovernanceDashboard />
+              </Suspense>
+            ),
+          },
+          {
+            path: "knowledge",
+            element: (
+              <Suspense fallback={<DashboardSkeleton />}>
+                <KnowledgeBasePage />
               </Suspense>
             ),
           },

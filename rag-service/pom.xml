@@ -113,16 +113,22 @@
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
         </dependency>
 
+        <!-- ================= Shared Library ================= -->
         <dependency>
             <groupId>com.aisupport</groupId>
             <artifactId>common-library</artifactId>
         </dependency>
 
-        <!-- ================= Lombok ================= -->
+        <!-- ================= Lombok & MapStruct ================= -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
         </dependency>
 
         <!-- ================= Development ================= -->

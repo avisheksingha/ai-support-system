@@ -1,0 +1,93 @@
+package com.aisupport.rag.controller;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.aisupport.rag.dto.request.RagSearchRequest;
+import com.aisupport.rag.dto.response.RagKnowledgeResponse;
+import com.aisupport.rag.dto.response.RagSearchResponse;
+import com.aisupport.rag.entity.RagResponse;
+import com.aisupport.rag.service.RagService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@RestController
+@RequestMapping(value = "/api/internal/rag", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequiredArgsConstructor
+@Slf4j
+@Tag(name = "Internal RAG", description = "Internal endpoints for orchestration service")
+public class InternalRagController {
+	
+	private final RagService ragService;
+	private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @PostMapping("/search")
+    public ResponseEntity<RagSearchResponse> searchKnowledge(@Valid @RequestBody RagSearchRequest request) {
+        
+        int queryLength = request.getQuery() != null ? request.getQuery().length() : 0;
+        log.info("Internal REST request for RAG search. ticketId={}, queryLength={}", request.getTicketId(), queryLength);
+        
+        RagResponse ragResponse = ragService.generateResponseSync(
+                request.getTicketId(), 
+                request.getQuery());
+                
+        return ResponseEntity.ok(RagSearchResponse.builder()
+                .answer(ragResponse.getResponse())
+                .knowledgeFound(ragResponse.getKnowledgeFound())
+                .model(ragResponse.getModel())
+                .retrievedDocumentCount(ragResponse.getRetrievedDocumentCount())
+                .matchedArticleTitles(ragResponse.getMatchedArticleTitles() != null
+                	? Arrays.asList(ragResponse.getMatchedArticleTitles().split(","))
+                			: Collections.emptyList())
+                .sources(parseSourceDetails(ragResponse.getSourceDetails()))
+                .build());
+    }
+
+    @GetMapping("/ticket/{ticketId}")
+    public ResponseEntity<RagKnowledgeResponse> getKnowledgeByTicketId(@PathVariable Long ticketId) {
+        log.info("Internal REST request for RAG knowledge. ticketId={}", ticketId);
+        
+        return ragService.getRagResponseForTicket(ticketId)
+                .map(rag -> ResponseEntity.ok(RagKnowledgeResponse.builder()
+                        .ticketId(rag.getTicketId())
+                        .query(rag.getQuery())
+                        .generatedReply(rag.getResponse())
+                        .modelUsed(rag.getModel())
+                        .retrievedDocumentCount(rag.getRetrievedDocumentCount())
+                        .matchedArticleTitles(rag.getMatchedArticleTitles() != null
+                            ? Arrays.asList(rag.getMatchedArticleTitles().split(","))
+                            : Collections.emptyList())
+                        .sources(parseSourceDetails(rag.getSourceDetails()))
+                        .generatedAt(rag.getCreatedAt())
+                        .build()))
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    private List<Map<String, Object>> parseSourceDetails(String json) {
+        if (json == null || json.isBlank()) {
+            return Collections.emptyList();
+        }
+        try {
+            return objectMapper.readValue(json, new TypeReference<List<Map<String, Object>>>() {});
+        } catch (Exception e) {
+            log.warn("Failed to parse source details JSON", e);
+            return Collections.emptyList();
+        }
+    }
+}

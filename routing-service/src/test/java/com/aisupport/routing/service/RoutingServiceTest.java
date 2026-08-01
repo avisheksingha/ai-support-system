@@ -5,14 +5,18 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.aisupport.common.enums.TicketPriority;
+import com.aisupport.common.event.EventType;
 import com.aisupport.common.event.TicketAnalyzedEvent;
 import com.aisupport.common.event.TicketRoutedEvent;
 import com.aisupport.routing.entity.RoutingRule;
@@ -35,11 +39,11 @@ class RoutingServiceTest {
 
     @Test
     void route_withMatchedRule_shouldPublishRuleDrivenEvent() {
+        com.aisupport.common.event.AnalysisResult analysis = new com.aisupport.common.event.AnalysisResult(
+                "PAYMENT_ISSUE", "NEGATIVE", "HIGH", 0.9, Collections.emptyList(), "Billing");
         TicketAnalyzedEvent analyzed = TicketAnalyzedEvent.builder()
                 .ticketId(1L)
-                .intent("PAYMENT_ISSUE")
-                .sentiment("NEGATIVE")
-                .urgency("HIGH")
+                .analysis(analysis)
                 .build();
 
         RoutingRule rule = RoutingRule.builder()
@@ -55,7 +59,7 @@ class RoutingServiceTest {
         verify(outboxEventService).publishEvent(
                 anyString(),
                 anyString(),
-                anyString(),
+                ArgumentMatchers.any(EventType.class),
                 payloadCaptor.capture()
         );
 
@@ -68,11 +72,11 @@ class RoutingServiceTest {
 
     @Test
     void route_withoutMatchedRule_shouldUseFallbackValues() {
+        com.aisupport.common.event.AnalysisResult analysis = new com.aisupport.common.event.AnalysisResult(
+                "GENERAL", "NEUTRAL", "LOW", 0.0, Collections.emptyList(), "General");
         TicketAnalyzedEvent analyzed = TicketAnalyzedEvent.builder()
                 .ticketId(2L)
-                .intent("GENERAL")
-                .sentiment("NEUTRAL")
-                .urgency("LOW")
+                .analysis(analysis)
                 .build();
         when(ruleEvaluationService.evaluate(analyzed)).thenReturn(null);
 
@@ -82,7 +86,7 @@ class RoutingServiceTest {
         verify(outboxEventService).publishEvent(
                 anyString(),
                 anyString(),
-                anyString(),
+                ArgumentMatchers.any(EventType.class),
                 payloadCaptor.capture()
         );
 

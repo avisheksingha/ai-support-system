@@ -35,6 +35,53 @@ test('login and navigate to dashboard for admin', async ({ page }) => {
     }
   });
 
+  // Mock admin dashboard endpoint (only GET requests)
+  await page.route('**/orchestration/dashboard/admin', async route => {
+    if (route.request().method() === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          platformOverview: {
+            ticketsToday: 12,
+            activeTickets: 5,
+            resolvedToday: 7,
+            aiProcessedToday: 10,
+            totalCustomers: 50,
+            totalAgents: 10,
+            totalAdmins: 2
+          },
+          aiGovernance: {
+            highConfidenceRate: "92%",
+            assignmentRate: "88%",
+            knowledgeCoverage: "95%",
+            averageLatency: "120ms"
+          },
+          departmentWorkload: { "Support": 5, "Billing": 3 },
+          routingOverview: { "Auto-assigned": 8, "Manual": 2 },
+          systemHealth: [],
+          ragKnowledge: {
+            totalArticles: 25,
+            embeddedArticles: 25,
+            embeddingCoverage: "100%",
+            knowledgeCoverage: "95%",
+            mostUsedArticle: "Password Reset Guide"
+          },
+          recentEvents: [],
+          myActivity: [],
+          platformInfo: {
+            platformName: "AI Support Ops",
+            platformVersion: "1.0.0",
+            buildVersion: "2026.07",
+            environment: "development"
+          }
+        })
+      });
+    } else {
+      await route.fallback();
+    }
+  });
+
   await page.goto('/auth/login');
   
   // Fill in login form
@@ -48,5 +95,5 @@ test('login and navigate to dashboard for admin', async ({ page }) => {
   await expect(page).toHaveURL(/.*dashboard/);
   
   // Verify Dashboard elements
-  await expect(page.locator('h1:has-text("Operations Center")')).toBeVisible();
+  await expect(page.locator('h1:has-text("Admin User")')).toBeVisible();
 });

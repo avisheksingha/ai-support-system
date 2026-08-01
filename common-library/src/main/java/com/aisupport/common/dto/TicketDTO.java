@@ -62,4 +62,7 @@ public class TicketDTO implements Serializable {
     @Schema(description = "SLA hours for the ticket", example = "24")
     private Integer slaHours;
 
+    @Schema(description = "AI confidence score", example = "0.95")
+    private Double aiConfidence;
+
 }
