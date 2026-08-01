@@ -4,15 +4,15 @@ This directory contains service-specific agent guides aligned with the current c
 
 ## Quick Agent Selector
 
-| Service | Agent | Port | Focus |
-|---------|-------|------|-------|
-| `api-gateway` | [API Gateway Agent](gateway-agent.md) | 8080 | Gateway routing + correlation id propagation |
-| `auth-service` | [Auth Service Agent](auth-agent.md) | 8081 | Authentication, JWT issuance, and user management |
-| `discovery-service` | [Discovery Service Agent](discovery-agent.md) | 8761 | Eureka registry and service discovery |
-| `ticket-service` | [Ticket Service Agent](ticket-agent.md) | 8082 | Ticket REST APIs, lifecycle, outbox, event consumers |
-| `ai-analysis-service` | [AI Analysis Agent](analysis-agent.md) | 8083 | Kafka consume/analyze/publish + query APIs |
-| `routing-service` | [Routing Agent](router-agent.md) | 8084 | Kafka consume, rule evaluation, outbox publish |
-| `rag-service` | [RAG Agent](rag-agent.md) | 8085 | Kafka consume, RAG generation, vector store, outbox publish |
+| Service                  | Agent                                             | Port | Focus                                                              |
+| ------------------------ | ------------------------------------------------- | ---- | ------------------------------------------------------------------ |
+| `api-gateway`            | [API Gateway Agent](gateway-agent.md)             | 8080 | Gateway routing + correlation id propagation                       |
+| `auth-service`           | [Auth Service Agent](auth-agent.md)               | 8081 | Authentication, JWT issuance, and user management                  |
+| `discovery-service`      | [Discovery Service Agent](discovery-agent.md)     | 8761 | Eureka registry and service discovery                              |
+| `ticket-service`         | [Ticket Service Agent](ticket-agent.md)           | 8082 | Ticket REST APIs, lifecycle, outbox, event consumers               |
+| `ai-analysis-service`    | [AI Analysis Agent](analysis-agent.md)            | 8083 | AI analysis + internal REST API for orchestrator                   |
+| `routing-service`        | [Routing Agent](router-agent.md)                  | 8084 | Rule evaluation + internal REST API for orchestrator               |
+| `rag-service`            | [RAG Agent](rag-agent.md)                         | 8085 | RAG generation, vector store + internal REST API for orchestrator  |
 
 ## How to Use
 
@@ -25,13 +25,13 @@ This directory contains service-specific agent guides aligned with the current c
 
 - External traffic enters via `api-gateway`.
 - Service discovery is handled by `discovery-service` (Eureka).
-- `auth-service`, `ticket-service`, and `ai-analysis-service` expose REST controllers.
-- `routing-service` and `rag-service` are currently event-driven (no public REST controllers).
-- Integration flow is outbox + Kafka topics:
-  - `ticket-created`
-  - `ticket-analyzed`
-  - `ticket-routed`
-  - `ticket-rag-response`
+- The `ai-orchestration-service` (8086) is the central AI workflow runtime. It consumes `ticket-created` events from Kafka and orchestrates the domain capability services via synchronous internal REST APIs.
+- `ai-analysis-service`, `routing-service`, and `rag-service` expose `/api/internal/**` endpoints consumed by the orchestrator. They are **not** directly event-driven for ticket processing.
+- Integration flow:
+  - `ticket-service` publishes `ticket-created` to Kafka.
+  - `ai-orchestration-service` consumes `ticket-created` and calls domain services via REST (Tool Calling).
+  - `ai-orchestration-service` publishes `ticket-orchestrated` back to Kafka.
+  - `ticket-service` consumes `ticket-orchestrated` and updates the ticket.
 
 ## Suggested Reading Order
 
@@ -52,5 +52,5 @@ This directory contains service-specific agent guides aligned with the current c
 
 ---
 
-**Last Updated:** 2026-07-05
-**Status:** Aligned with current module structure and symmetric 10-header schema.
+**Last Updated:** 2026-08-02
+**Status:** Aligned with orchestrator-based architecture (V1).
