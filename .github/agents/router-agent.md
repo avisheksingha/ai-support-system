@@ -1,10 +1,10 @@
 # Routing Service Agent
 
-**Role:** Rule-Based Ticket Router
+**Role:** Rule-Based Ticket Router (Domain Capability)
 
 **Port:** 8084
 
-**Responsibility:** Consumes analyzed ticket events, evaluates active routing rules in priority order, records rule execution history, and publishes `TicketRoutedEvent` through outbox.
+**Responsibility:** Provides deterministic ticket routing as a domain capability. Evaluates active routing rules in priority order, records rule execution history. Exposes an internal REST endpoint consumed by the `ai-orchestration-service` via Tool Calling.
 
 ## Quick Commands
 
@@ -26,27 +26,29 @@ mvn -pl routing-service -Dtest=RoutingServiceTest,RuleEvaluationServiceTest test
 
 ## Key Files
 
-- **Consumer:** `src/main/java/com/aisupport/routing/consumer/TicketAnalyzedConsumer.java`
+- **Internal Controller:** `src/main/java/com/aisupport/routing/controller/InternalRoutingController.java`
+- **Consumer (legacy):** `src/main/java/com/aisupport/routing/consumer/TicketAnalyzedConsumer.java`
 - **Routing Service:** `src/main/java/com/aisupport/routing/service/RoutingService.java`
 - **Rule Evaluation:** `src/main/java/com/aisupport/routing/service/RuleEvaluationService.java`
 - **Rule Entity:** `src/main/java/com/aisupport/routing/entity/RoutingRule.java`
 - **History Entity:** `src/main/java/com/aisupport/routing/entity/RuleExecutionHistory.java`
 - **Rule Repo:** `src/main/java/com/aisupport/routing/repository/RoutingRuleRepository.java`
 - **History Repo:** `src/main/java/com/aisupport/routing/repository/RuleExecutionHistoryRepository.java`
-- **Outbox:** `src/main/java/com/aisupport/routing/outbox/OutboxEventService.java`, `OutboxEventPublisher.java`
 
 ## Key Responsibilities & Flow
 
-1. Consume `ticket-analyzed` event.
+1. Orchestrator calls `POST /api/internal/routing/route` with analysis results.
 2. Load active rules ordered by priority.
 3. Match by intent/sentiment/urgency/keywords.
 4. Persist execution history per evaluated rule.
 5. Build routed result (team, priority, SLA fallback values when no match).
-6. Publish `TicketRoutedEvent` via outbox.
+6. Return routing decision to orchestrator.
 
 ## Current API Endpoints
 
-- `GET /api/v1/routing/ticket/{ticketId}`: Retrieves routing execution history and reasoning for a ticket. (Temporary UI endpoint)
+### Internal Endpoints (Orchestrator Only)
+
+- `POST /api/internal/routing/route` — Invoked by `ai-orchestration-service` as an AI Tool.
 
 ## Database Snapshot
 
@@ -79,20 +81,12 @@ ORDER BY executed_at DESC
 LIMIT 50;
 ```
 
-### Verify Outbox Routing Events
-```sql
-SELECT aggregate_id, event_type, status, retry_count, processed_at
-FROM outbox_events
-WHERE event_type = 'TicketRoutedEvent'
-ORDER BY created_at DESC;
-```
-
 ## Important Rules
 
+- Primary invocation is via orchestrator REST Tool Calling, not direct Kafka consumption.
 - Keep routing logic data-driven via DB rules.
 - Preserve priority ordering for deterministic evaluation.
-- Keep outbox publication for integration events.
-- Preserve correlation-id header/MDC propagation in consumer flow.
+- Preserve correlation-id header/MDC propagation in all flows.
 
 ## Environment Variables
 
@@ -100,11 +94,11 @@ None specified.
 
 ## Related Services
 
-- Consumes `ticket-analyzed` from `ai-analysis-service`
-- Produces `ticket-routed` for `ticket-service`
+- Invoked by `ai-orchestration-service` via internal REST API (Tool Calling).
+- Routing decisions are included in the `ticket-orchestrated` event published by the orchestrator.
 
 ## Debugging Tips
 
 1. No route decision: inspect active rules and exact pattern values.
 2. Unexpected fallback routing: check intent/sentiment/urgency normalization from upstream analysis.
-3. Event not reaching ticket-service: verify outbox publisher status and Kafka topic delivery.
+3. Orchestrator not receiving routing: verify internal endpoint availability and service discovery.

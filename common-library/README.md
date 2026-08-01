@@ -1,6 +1,6 @@
 # Common Library
 
-Shared module containing reusable components, DTOs, and utilities for the AI Support System microservices.
+Shared module containing reusable components, DTOs, utilities, and common configuration for the AI Support System microservices.
 
 ## Contents
 
@@ -9,6 +9,24 @@ Shared module containing reusable components, DTOs, and utilities for the AI Sup
 - **Exceptions**: Common exception classes (e.g., `ResourceNotFoundException`, `OutboxEventException`) and global error handling structures.
 - **Utilities / Constants**: Helper classes and strictly defined constants (e.g., `Correlation`, `HttpHeaders`, `KafkaTopics`, `KafkaGroups`, `DateTimeUtil`). All temporal values use `java.time.Instant` — `DateTimeUtil` provides ISO/legacy formatting, parsing, and timezone-aware display helpers.
 - **Events**: Shared event models for Kafka-based communication (e.g., `TicketCreatedEvent`, `TicketAnalyzedEvent`, `TicketRoutedEvent`).
+- **Configuration**: Centralized Spring Boot properties shared across all consuming services.
+
+## Shared Configuration
+
+Common properties are distributed via `spring.config.import` and automatically inherited by all domain microservices that depend on this library.
+
+| File                                  | Scope   | Contents                                       |
+| ------------------------------------- | ------- | ---------------------------------------------- |
+| `common-application.properties`       | All     | JPA defaults, Actuator info, OpenAPI/Swagger   |
+| `common-application-local.properties` | `local` | Actuator endpoint exposure for local dev       |
+
+Services import the base file via:
+
+```properties
+spring.config.import=classpath:common-application.properties
+```
+
+The `local` profile variant (`common-application-local.properties`) is loaded automatically by Spring Boot when the `local` profile is active.
 
 ## Usage
 

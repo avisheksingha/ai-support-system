@@ -1,10 +1,10 @@
 # RAG Service Agent
 
-**Role:** Retrieval-Augmented Response Generator
+**Role:** Retrieval-Augmented Response Generator (Domain Capability)
 
 **Port:** 8085
 
-**Responsibility:** Consumes analyzed ticket events, generates grounded responses using Spring AI (`ChatClient` + `QuestionAnswerAdvisor` + PGVector), persists responses, and publishes `TicketRagResponseEvent` through outbox.
+**Responsibility:** Provides context-aware knowledge retrieval as a domain capability. Manages the knowledge article lifecycle, vector embeddings, and RAG-grounded response generation. Exposes internal REST endpoints consumed by the `ai-orchestration-service` via Tool Calling.
 
 ## Quick Commands
 
@@ -21,39 +21,55 @@ cd rag-service && mvn spring-boot:run
 ### Run Tests
 ```bash
 mvn -pl rag-service test
-mvn -pl rag-service -Dtest=RagServiceTest test
+mvn -pl rag-service -Dtest=RagServiceTest,KnowledgeEmbeddingServiceTest,MetadataAwareRetrievalServiceTest test
 ```
 
 ## Key Files
 
-- **Consumer:** `src/main/java/com/aisupport/rag/consumer/TicketAnalyzedConsumer.java`
+- **Internal Controller:** `src/main/java/com/aisupport/rag/controller/InternalRagController.java`
+- **Admin Stats Controller:** `src/main/java/com/aisupport/rag/controller/AdminRagStatsController.java`
+- **Knowledge Article Controller:** `src/main/java/com/aisupport/rag/controller/KnowledgeArticleController.java`
+- **Consumer (legacy):** `src/main/java/com/aisupport/rag/consumer/TicketAnalyzedConsumer.java`
 - **Core Service:** `src/main/java/com/aisupport/rag/service/RagService.java`
-- **Startup Loader:** `src/main/java/com/aisupport/rag/runner/DataLoaderRunner.java`
+- **Embedding Service:** `src/main/java/com/aisupport/rag/service/KnowledgeEmbeddingService.java`
+- **Retrieval Service:** `src/main/java/com/aisupport/rag/service/retrieval/MetadataAwareRetrievalService.java`
 - **Entities:** `src/main/java/com/aisupport/rag/entity/KnowledgeArticle.java`, `RagResponse.java`
 - **Repositories:** `src/main/java/com/aisupport/rag/repository/KnowledgeArticleRepository.java`, `RagResponseRepository.java`
-- **Outbox:** `src/main/java/com/aisupport/rag/outbox/OutboxEventService.java`, `OutboxEventPublisher.java`
 - **RAG Config:** `src/main/java/com/aisupport/rag/config/RagConfig.java`, `ChatConfig.java`
 
 ## Key Responsibilities & Flow
 
-1. Consume `ticket-analyzed` event.
+1. Orchestrator calls `POST /api/internal/rag/search` with ticket context.
 2. Build query text from intent/sentiment/urgency/keywords.
-3. Call `RagService.generateResponse(...)`.
-4. `ChatClient` with `QuestionAnswerAdvisor` retrieves context from vector store.
+3. Execute metadata-aware hybrid retrieval from pgvector.
+4. Generate grounded response via `ChatClient`.
 5. Persist generated response in `rag_responses`.
-6. Publish `TicketRagResponseEvent` via outbox.
+6. Return knowledge context to orchestrator.
 
 ## Current API Endpoints
 
-N/A
+### Internal Endpoints (Orchestrator Only)
+
+- `POST /api/internal/rag/search` — Invoked by `ai-orchestration-service` as an AI Tool.
+- `GET /api/internal/rag/stats` — Admin dashboard statistics.
+
+### Internal Endpoints (Knowledge Management)
+
+- `GET /api/internal/rag/articles` — List knowledge articles (paginated).
+- `POST /api/internal/rag/articles` — Create a knowledge article.
+- `PUT /api/internal/rag/articles/{id}` — Update a knowledge article.
+- `DELETE /api/internal/rag/articles/{id}` — Delete a knowledge article.
+- `PATCH /api/internal/rag/articles/{id}/status` — Update article status (DRAFT/PUBLISHED/ARCHIVED).
 
 ## Database Snapshot
 
 ### knowledge_articles
 - `id` (Long, PK)
-- `title`
-- `content` (TEXT)
-- `embedded` (boolean)
+- `title`, `content` (TEXT), `category`, `tags`
+- `status` (DRAFT/PUBLISHED/ARCHIVED)
+- `embedding_status` (PENDING/PROCESSING/READY/FAILED)
+- `version` (optimistic lock)
+- `created_at`, `updated_at`
 
 ### rag_responses
 - `id` (Long, PK)
@@ -67,7 +83,7 @@ N/A
 
 ### Verify Knowledge Articles
 ```sql
-SELECT id, title, embedded
+SELECT id, title, status, embedding_status
 FROM knowledge_articles
 ORDER BY id;
 ```
@@ -80,20 +96,12 @@ ORDER BY created_at DESC
 LIMIT 50;
 ```
 
-### Verify Outbox Events
-```sql
-SELECT aggregate_id, event_type, status, retry_count, processed_at
-FROM outbox_events
-WHERE event_type = 'TicketRagResponseEvent'
-ORDER BY created_at DESC;
-```
-
 ## Important Rules
 
-- Keep response generation RAG-grounded using advisor context.
-- Keep cross-service publication via outbox.
-- Preserve correlation-id from consumer through logs/outbox.
-- Keep startup loader idempotent (skip if already embedded).
+- Primary invocation is via orchestrator REST Tool Calling, not direct Kafka consumption.
+- Keep response generation RAG-grounded using metadata-aware retrieval.
+- Keep embedding lifecycle idempotent (skip if already embedded).
+- Preserve correlation-id from all flows through logs.
 
 ## Environment Variables
 
@@ -105,11 +113,12 @@ ORDER BY created_at DESC;
 
 ## Related Services
 
-- Consumes `ticket-analyzed` from `ai-analysis-service`
-- Produces `ticket-rag-response` for `ticket-service`
+- Invoked by `ai-orchestration-service` via internal REST API (Tool Calling).
+- Knowledge context is included in the `ticket-orchestrated` event published by the orchestrator.
 
 ## Debugging Tips
 
-1. No useful response: confirm vector store has embedded articles.
-2. Startup reload loops: verify `embedded` flag and count query behavior.
-3. Event not delivered: inspect outbox status/retries and Kafka topic logs.
+1. No useful response: confirm vector store has embedded articles with `embedding_status = READY`.
+2. Embeddings stuck in PENDING: check `KnowledgeEmbeddingService` scheduled task logs.
+3. Orchestrator not receiving RAG results: verify internal endpoint availability and service discovery.
+4. Low relevance results: inspect retrieval strategy and hybrid ranking weights in properties.
