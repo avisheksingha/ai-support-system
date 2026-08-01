@@ -92,7 +92,7 @@ class KnowledgeEmbeddingServiceTest {
                 .containsEntry("category", "")
                 .containsEntry("tags", "")
                 .containsEntry("status", "DRAFT")
-                .containsEntry("embeddingStatus", "PENDING")
+                .containsEntry("embeddingStatus", "READY")
                 .containsEntry("version", 1L);
 
         verify(vectorStore).add(anyList());
