@@ -86,19 +86,19 @@ This project demonstrates enterprise backend engineering practices, including:
 
 ## Feature Matrix
 
-| Capability            | Description                                      |
-| --------------------- | ------------------------------------------------ |
-| Ticket Management     | Role-aware ticket lifecycle, assignment, priority, and messaging |
-| AI Sentiment Analysis | Google GenAI-powered sentiment classification    |
-| Intelligent Routing   | Rule-based routing using AI insights             |
-| Workflow Orchestration | Event-driven AI workflow runtime that composes analysis, routing, and RAG |
-| Knowledge Base        | Article management, embedding synchronization, and contextual retrieval |
-| Support Dashboard     | Role-specific customer, agent, and administrator workspaces |
-| Event Processing      | Kafka-based asynchronous workflows               |
-| Observability         | Correlation ID tracing, workflow timelines, operations, and governance views |
-| Reliability           | Outbox Pattern and Resilience4j                  |
-| Deployment            | Docker Compose infrastructure                    |
-| CI/CD                 | Automated GitHub Actions pipeline                |
+| Capability             | Description                                                                  |
+| ---------------------- | ---------------------------------------------------------------------------- |
+| Ticket Management      | Role-aware ticket lifecycle, assignment, priority, and messaging             |
+| AI Sentiment Analysis  | Google GenAI-powered sentiment classification                                |
+| Intelligent Routing    | Rule-based routing using AI insights                                         |
+| Workflow Orchestration | Event-driven AI workflow runtime that composes analysis, routing, and RAG    |
+| Knowledge Base         | Article management, embedding synchronization, and contextual retrieval      |
+| Support Dashboard      | Role-specific customer, agent, and administrator workspaces                  |
+| Event Processing       | Kafka-based asynchronous workflows                                           |
+| Observability          | Correlation ID tracing, workflow timelines, operations, and governance views |
+| Reliability            | Outbox Pattern and Resilience4j                                              |
+| Deployment             | Docker Compose infrastructure                                                |
+| CI/CD                  | Automated GitHub Actions pipeline                                            |
 
 ## Overview
 
@@ -305,18 +305,18 @@ Open the URL printed by Vite (normally `http://localhost:5173`). See the [dashbo
 
 Each service provides its own OpenAPI documentation. Available locally at:
 
-| Service     | Port | Swagger / UI             |
-| ----------- | ---: | ------------------------ |
-| Auth        | 8081 | `/swagger-ui/index.html` |
-| Ticket      | 8082 | `/swagger-ui/index.html` |
-| AI Analysis | 8083 | `/swagger-ui/index.html` |
-| Routing     | 8084 | `/swagger-ui/index.html` |
-| RAG         | 8085 | `/swagger-ui/index.html` |
-| AI Orchestration | 8086 | `/swagger-ui/index.html` |
-| Gateway     | 8080 | `/swagger-ui/index.html` (aggregated docs) |
-| Eureka      | 8761 | `/` (dashboard)          |
-| Redpanda    | 9090 | `/overview` (Kafka UI)   |
-| Support Dashboard | 5173 | Vite development server |
+| Service           | Port | Swagger / UI                               |
+| ----------------- | ---: | ------------------------------------------ |
+| Auth              | 8081 | `/swagger-ui/index.html`                   |
+| Ticket            | 8082 | `/swagger-ui/index.html`                   |
+| AI Analysis       | 8083 | `/swagger-ui/index.html`                   |
+| Routing           | 8084 | `/swagger-ui/index.html`                   |
+| RAG               | 8085 | `/swagger-ui/index.html`                   |
+| AI Orchestration  | 8086 | `/swagger-ui/index.html`                   |
+| Gateway           | 8080 | `/swagger-ui/index.html` (aggregated docs) |
+| Eureka            | 8761 | `/` (dashboard)                            |
+| Redpanda          | 9090 | `/overview` (Kafka UI)                     |
+| Support Dashboard | 5173 | Vite development server                    |
 
 ## Authentication Architecture
 
