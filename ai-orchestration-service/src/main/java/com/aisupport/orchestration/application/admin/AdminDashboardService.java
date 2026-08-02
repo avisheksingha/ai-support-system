@@ -16,6 +16,8 @@ import com.aisupport.orchestration.infrastructure.client.AuthClient;
 import com.aisupport.orchestration.infrastructure.client.RagClient;
 import com.aisupport.orchestration.infrastructure.client.SystemHealthClient;
 import com.aisupport.orchestration.infrastructure.client.TicketClient;
+import com.aisupport.orchestration.infrastructure.persistence.entity.AiExecutionRecordEntity;
+import com.aisupport.orchestration.infrastructure.persistence.repository.AiExecutionRecordRepository;
 import com.aisupport.orchestration.infrastructure.persistence.repository.WorkflowExecutionRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -32,6 +34,7 @@ public class AdminDashboardService {
     private final SystemHealthClient healthClient;
     private final AnalysisClient analysisClient;
     private final WorkflowExecutionRepository workflowRepository;
+    private final AiExecutionRecordRepository aiRecordRepository;
 
     public AdminDashboardResponse getDashboard(String userEmail) {
         log.info("Aggregating admin dashboard stats for {}", userEmail);
@@ -148,13 +151,13 @@ public class AdminDashboardService {
     }
 
     private long computeAverageLatency() {
-        var workflows = workflowRepository.findAll();
-        long totalDurationMs = workflows.stream()
-                .filter(w -> w.getCreatedAt() != null && w.getCompletedAt() != null)
-                .mapToLong(w -> w.getCompletedAt().toEpochMilli() - w.getCreatedAt().toEpochMilli())
+        var records = aiRecordRepository.findAll();
+        long totalDurationMs = records.stream()
+                .filter(r -> r.getLatencyMs() != null)
+                .mapToLong(AiExecutionRecordEntity::getLatencyMs)
                 .sum();
-        long count = workflows.stream()
-                .filter(w -> w.getCreatedAt() != null && w.getCompletedAt() != null)
+        long count = records.stream()
+                .filter(r -> r.getLatencyMs() != null)
                 .count();
         return count > 0 ? totalDurationMs / count : 0;
     }
