@@ -80,4 +80,3 @@ For technical interviews or GitHub recordings, follow this sequence to demonstra
    - Once `ticket-service` applies the orchestrated results, the UI panels populate with sentiment analysis, knowledge context, and routing decisions.
 5. **Activity Feed**: Point out the color-coded Activity Feed mapping to the orchestration workflow timeline.
 6. **Action**: Change the ticket status to `RESOLVED` and watch the Toast notification pop up, demonstrating the immediate React Query cache invalidation and UI update.
-

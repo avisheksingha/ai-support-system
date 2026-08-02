@@ -40,4 +40,3 @@ The service also consumes `ticket-analyzed` events from Kafka as a fallback asyn
 ```bash
 mvn spring-boot:run
 ```
-

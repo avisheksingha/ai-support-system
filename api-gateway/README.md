@@ -14,25 +14,25 @@ The API Gateway is the central entry point for all external client requests to t
 
 ## Route Mapping
 
-| Route Prefix             | Target Service              |
-| ------------------------ | --------------------------- |
-| `/api/v1/auth/**`        | `auth-service`              |
-| `/api/v1/tickets/**`     | `ticket-service`            |
-| `/api/v1/analysis/**`    | `ai-analysis-service`       |
-| `/api/v1/routing/**`     | `routing-service`           |
-| `/api/v1/rag/**`         | `rag-service`               |
-| `/api/v1/orchestration/**` | `ai-orchestration-service` |
-| `/ws/**`                 | `ticket-service` (WebSocket)|
+| Route Prefix               | Target Service              |
+| -------------------------- | --------------------------- |
+| `/api/v1/auth/**`          | `auth-service`              |
+| `/api/v1/tickets/**`       | `ticket-service`            |
+| `/api/v1/analysis/**`      | `ai-analysis-service`       |
+| `/api/v1/routing/**`       | `routing-service`           |
+| `/api/v1/rag/**`           | `rag-service`               |
+| `/api/v1/orchestration/**` | `ai-orchestration-service`  |
+| `/ws/**`                   | `ticket-service` (WebSocket)|
 
 > [!NOTE]
 > Internal `/api/internal/**` endpoints on domain services are **not** routed through the gateway. They are accessed directly via service discovery by the orchestrator.
 
 ## Configuration
 
-| Property          | Value   | Description                        |
-| ----------------- | ------: | ---------------------------------- |
-| Server Port       |    8080 | Port where gateway runs            |
-| Service Discovery | Enabled | Registers with and polls Eureka    |
+| Property          | Value    | Description                                 |
+| ----------------- | ------:  | ------------------------------------------- |
+| Server Port       |    8080  | Port where gateway runs                     |
+| Service Discovery | Enabled  | Registers with and polls Eureka             |
 | JWT Secret        | Required | Shared with `auth-service` via `JWT_SECRET` |
 
 ## Running Locally
@@ -46,4 +46,3 @@ mvn spring-boot:run
 ```
 
 OpenAPI UI: `http://localhost:8080/swagger-ui/index.html` (aggregated from all services)
-

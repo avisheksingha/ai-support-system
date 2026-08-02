@@ -63,4 +63,3 @@ The service consumes `ticket-analyzed` events to trigger automated document inde
 ```bash
 mvn spring-boot:run
 ```
-
