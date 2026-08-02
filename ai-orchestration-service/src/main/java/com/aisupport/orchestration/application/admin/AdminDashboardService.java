@@ -18,7 +18,6 @@ import com.aisupport.orchestration.infrastructure.client.SystemHealthClient;
 import com.aisupport.orchestration.infrastructure.client.TicketClient;
 import com.aisupport.orchestration.infrastructure.persistence.entity.AiExecutionRecordEntity;
 import com.aisupport.orchestration.infrastructure.persistence.repository.AiExecutionRecordRepository;
-import com.aisupport.orchestration.infrastructure.persistence.repository.WorkflowExecutionRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +32,6 @@ public class AdminDashboardService {
     private final RagClient ragClient;
     private final SystemHealthClient healthClient;
     private final AnalysisClient analysisClient;
-    private final WorkflowExecutionRepository workflowRepository;
     private final AiExecutionRecordRepository aiRecordRepository;
 
     public AdminDashboardResponse getDashboard(String userEmail) {
