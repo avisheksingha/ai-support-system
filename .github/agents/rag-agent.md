@@ -106,9 +106,9 @@ LIMIT 50;
 ## Environment Variables
 
 - `SPRING_PROFILES_ACTIVE`
-- `GCP_PROJECT_ID`, `GCP_LOCATION`, `GOOGLE_APPLICATION_CREDENTIALS`
-- `spring.ai.vertex.ai.gemini.chat.options.model`
-- `spring.ai.vertex.ai.embedding.options.model`
+- `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION`, `GOOGLE_APPLICATION_CREDENTIALS`
+- `spring.ai.google.genai.chat.model`
+- `spring.ai.google.genai.embedding.text.model`
 - `spring.ai.vectorstore.pgvector.dimensions`
 
 ## Related Services
