@@ -74,15 +74,16 @@ This repository is a Spring Boot 4.1.0 microservices platform for AI-powered tic
 - **api-gateway:** Spring Cloud Gateway entry point and correlation-id propagation (Port: 8080)
 - **auth-service:** Authentication, authorization, and JWT issuance (Port: 8081)
 - **ticket-service:** Ticket lifecycle, updates, and outbox publishing (Port: 8082)
-- **ai-analysis-service:** Consumes `ticket-created`, runs AI analysis, publishes `ticket-analyzed` (Port: 8083)
-- **routing-service:** Consumes `ticket-analyzed`, evaluates DB rules, publishes `ticket-routed` (Port: 8084)
-- **rag-service:** Consumes `ticket-analyzed`, runs RAG with PGVector, publishes `ticket-rag-response` (Port: 8085)
+- **ai-analysis-service:** Domain capability service providing sentiment, urgency, and intent analysis via Spring AI (Port: 8083)
+- **routing-service:** Domain capability service for deterministic ticket routing decisions (Port: 8084)
+- **rag-service:** Domain capability service providing vector embedding and contextual knowledge retrieval (Port: 8085)
+- **ai-orchestration-service:** The core AI runtime. Consumes `ticket-created`, orchestrates workflows, publishes `ticket-orchestrated` (Port: 8086)
 - **common-library:** Shared DTOs, enums, events, constants
 
 ### Service Startup Order
 1. `discovery-service`
 2. `api-gateway`
-3. Core services (parallel): `auth-service`, `ticket-service`, `ai-analysis-service`, `routing-service`, `rag-service`
+3. Core services (parallel): `auth-service`, `ticket-service`, `ai-analysis-service`, `routing-service`, `rag-service`, `ai-orchestration-service`
 
 ### API Documentation
 - Services with REST controllers expose Swagger UI at `/swagger-ui.html`.
@@ -157,9 +158,10 @@ api-gateway/          # Spring Cloud Gateway
 /auth-service/        # Authentication & JWT management
 /discovery-service/   # Eureka server
 /ticket-service/      # Ticket APIs + outbox + consumers
-/ai-analysis-service/ # Analysis consumer + query APIs + outbox
-routing-service/      # Rule evaluation + outbox (event-driven)
-rag-service/          # RAG generation + vector loading + outbox (event-driven)
+/ai-analysis-service/ # Domain capability service for AI analysis
+routing-service/      # Domain capability service for routing rules
+rag-service/          # Domain capability service for RAG retrieval
+ai-orchestration-service/ # Orchestrator runtime + workflows + dashboards
 common-library/       # Shared events/constants/enums/dtos
 aisupport-parent/     # Maven parent pom
 infra/                # docker-compose and init scripts
@@ -178,10 +180,8 @@ infra/                # docker-compose and init scripts
 1. Client authenticates via `/api/v1/auth/login` and receives JWT.
 2. `ticket-service` receives authenticated POST and creates ticket, writing `TicketCreatedEvent` to outbox.
 3. Outbox publisher emits to topic `ticket-created`.
-3. `ai-analysis-service` consumes, analyzes, and writes `TicketAnalyzedEvent` to outbox.
-4. `routing-service` and `rag-service` consume `ticket-analyzed` in parallel.
-5. `routing-service` emits `ticket-routed`; `rag-service` emits `ticket-rag-response`.
-6. `ticket-service` consumers update ticket assignment/priority/SLA and rag response.
+4. `ai-orchestration-service` consumes `ticket-created`, orchestrates analysis, routing, and RAG context via internal REST calls, and publishes a single `ticket-orchestrated` event.
+5. `ticket-service` consumes `ticket-orchestrated` and updates ticket assignment/priority/SLA and rag response.
 
 ## Common Tasks
 

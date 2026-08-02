@@ -102,11 +102,11 @@ curl "http://localhost:8083/api/v1/analysis/intent/GENERAL"
 ## Environment Variables
 
 - `SPRING_PROFILES_ACTIVE`
-- `GCP_PROJECT_ID`, `GCP_LOCATION`, `GOOGLE_APPLICATION_CREDENTIALS`
+- `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION`, `GOOGLE_APPLICATION_CREDENTIALS`
 - `OPENAI_API_KEY` (if using OpenAI)
 - `chat.provider`
-- `spring.ai.vertex.ai.gemini.chat.options.model`
-- `spring.ai.openai.chat.options.model`
+- `spring.ai.google.genai.chat.model`
+- `spring.ai.openai.chat.model`
 
 ## Related Services
 

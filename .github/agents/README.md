@@ -13,6 +13,8 @@ This directory contains service-specific agent guides aligned with the current c
 | `ai-analysis-service`    | [AI Analysis Agent](analysis-agent.md)            | 8083 | AI analysis + internal REST API for orchestrator                   |
 | `routing-service`        | [Routing Agent](router-agent.md)                  | 8084 | Rule evaluation + internal REST API for orchestrator               |
 | `rag-service`            | [RAG Agent](rag-agent.md)                         | 8085 | RAG generation, vector store + internal REST API for orchestrator  |
+| `ai-orchestration-service`| [Orchestration Agent](orchestration-agent.md)    | 8086 | Central AI workflow runtime, tool calling, and governance          |
+| `ai-support-dashboard`   | [Dashboard Agent](dashboard-agent.md)             | 5173 | GenAI Operations Console frontend UI                               |
 
 ## How to Use
 
@@ -37,11 +39,13 @@ This directory contains service-specific agent guides aligned with the current c
 
 1. [Auth Service Agent](auth-agent.md)
 2. [Ticket Service Agent](ticket-agent.md)
-3. [AI Analysis Agent](analysis-agent.md)
-4. [Routing Agent](router-agent.md)
-5. [RAG Agent](rag-agent.md)
-6. [API Gateway Agent](gateway-agent.md)
-7. [Discovery Service Agent](discovery-agent.md)
+3. [Orchestration Agent](orchestration-agent.md)
+4. [AI Analysis Agent](analysis-agent.md)
+5. [Routing Agent](router-agent.md)
+6. [RAG Agent](rag-agent.md)
+7. [API Gateway Agent](gateway-agent.md)
+8. [Discovery Service Agent](discovery-agent.md)
+9. [Dashboard Agent](dashboard-agent.md)
 
 ## Related Docs
 

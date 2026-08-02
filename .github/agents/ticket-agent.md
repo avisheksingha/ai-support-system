@@ -38,7 +38,7 @@ http://localhost:8082/swagger-ui.html
 - **Outbox Entity:** `src/main/java/com/aisupport/ticket/outbox/OutboxEvent.java`
 - **Outbox Service:** `src/main/java/com/aisupport/ticket/outbox/OutboxEventService.java`
 - **Outbox Publisher:** `src/main/java/com/aisupport/ticket/outbox/OutboxEventPublisher.java`
-- **Consumers:** `src/main/java/com/aisupport/ticket/consumer/TicketRoutedConsumer.java`, `TicketRagResponseConsumer.java`
+- **Consumers:** `src/main/java/com/aisupport/ticket/consumer/TicketOrchestratedConsumer.java` (primary), `TicketRoutedConsumer.java` (legacy), `TicketRagResponseConsumer.java` (legacy)
 
 ## Key Responsibilities & Flow
 
@@ -117,9 +117,10 @@ None specified.
 
 ## Related Services
 
-- Produces for `ai-analysis-service` via `ticket-created`
-- Consumes from `routing-service` via `ticket-routed`
-- Consumes from `rag-service` via `ticket-rag-response`
+- Produces `ticket-created` consumed by `ai-orchestration-service` (and legacy `ai-analysis-service`)
+- Consumes `ticket-orchestrated` from `ai-orchestration-service` (primary)
+- Consumes `ticket-routed` from `routing-service` (legacy)
+- Consumes `ticket-rag-response` from `rag-service` (legacy)
 
 ## Debugging Tips
 
