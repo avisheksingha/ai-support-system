@@ -9,6 +9,7 @@
 [![Deploy to AWS EC2](https://github.com/avisheksingha/ai-support-system/actions/workflows/deploy-aws.yml/badge.svg)](https://github.com/avisheksingha/ai-support-system/actions/workflows/deploy-aws.yml)
 
 <!-- Tech Stack -->
+[![Java 21](https://img.shields.io/badge/Java-21-007396?logo=openjdk&logoColor=white)]
 [![Java 21](https://img.shields.io/badge/Java-21-007396?logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/21/)
 [![Spring Boot 4](https://img.shields.io/badge/Spring_Boot-4.1.0-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 ![Spring AI](https://img.shields.io/badge/Spring%20AI-2.0.0-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
