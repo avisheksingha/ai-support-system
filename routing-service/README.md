@@ -17,14 +17,23 @@ The Routing Service is a Domain Capability Service responsible for deterministic
 
 ## API Endpoints
 
-The Routing Service currently operates entirely asynchronously via Kafka events. It does not expose standard public REST endpoints for the client.
+### Internal REST (Orchestrator Tool Calling)
+
+The routing service exposes internal endpoints consumed by `ai-orchestration-service` via tool calling. These are not routed through the API Gateway.
+
+- `POST /api/internal/routing/route`: Evaluate routing rules for a ticket given analysis context.
+- `GET /api/internal/routing/ticket/{ticketId}`: Retrieve existing routing decision for a ticket.
+
+### Kafka Consumer
+
+The service also consumes `ticket-analyzed` events from Kafka as a fallback async flow, processing them through the same routing logic.
 
 ## Configuration
 
-| Property | Value | Description |
-| ---------- | ------- | ------------- |
-| Server Port | 8084 | Port where service runs |
-| Service Discovery | Enabled | Registers with Eureka |
+| Property          | Value      | Description                 |
+| ----------------- | ---------- | --------------------------- |
+| Server Port       | 8084       | Port where service runs     |
+| Service Discovery | Enabled    | Registers with Eureka       |
 
 ## Running Locally
 

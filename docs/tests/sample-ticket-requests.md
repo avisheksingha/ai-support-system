@@ -291,6 +291,7 @@ Expected
   "message": "I accidentally entered the wrong password several times and now my account is locked. How can I regain access immediately?"
 }
 ```
+
 Expected
 
 - Intent: ACCOUNT_LOCKOUT
@@ -395,6 +396,7 @@ Expected
 - Department: Technical Support
 
 ```
+
 ## Ticket 21 - Email Notifications
 
 ```json

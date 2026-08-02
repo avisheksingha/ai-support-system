@@ -86,17 +86,19 @@ This project demonstrates enterprise backend engineering practices, including:
 
 ## Feature Matrix
 
-| Capability            | Description                                      |
-| --------------------- | ------------------------------------------------ |
-| Ticket Management     | REST-based CRUD with lifecycle management        |
-| AI Sentiment Analysis | Google GenAI-powered sentiment classification    |
-| Intelligent Routing   | Rule-based routing using AI insights             |
-| RAG                   | Context-aware knowledge retrieval using pgvector |
-| Event Processing      | Kafka-based asynchronous workflows               |
-| Observability         | Correlation ID tracing across services           |
-| Reliability           | Outbox Pattern and Resilience4j                  |
-| Deployment            | Docker Compose infrastructure                    |
-| CI/CD                 | Automated GitHub Actions pipeline                |
+| Capability             | Description                                                                  |
+| ---------------------- | ---------------------------------------------------------------------------- |
+| Ticket Management      | Role-aware ticket lifecycle, assignment, priority, and messaging             |
+| AI Sentiment Analysis  | Google GenAI-powered sentiment classification                                |
+| Intelligent Routing    | Rule-based routing using AI insights                                         |
+| Workflow Orchestration | Event-driven AI workflow runtime that composes analysis, routing, and RAG    |
+| Knowledge Base         | Article management, embedding synchronization, and contextual retrieval      |
+| Support Dashboard      | Role-specific customer, agent, and administrator workspaces                  |
+| Event Processing       | Kafka-based asynchronous workflows                                           |
+| Observability          | Correlation ID tracing, workflow timelines, operations, and governance views |
+| Reliability            | Outbox Pattern and Resilience4j                                              |
+| Deployment             | Docker Compose infrastructure                                                |
+| CI/CD                  | Automated GitHub Actions pipeline                                            |
 
 ## Overview
 
@@ -138,8 +140,9 @@ The AI Support System is a leading-edge, microservices-based ticket management p
 - **[ai-analysis-service](ai-analysis-service/README.md)**: Domain capability service for AI-powered analysis (sentiment and urgency).
 - **[routing-service](routing-service/README.md)**: Domain capability service for deterministic ticket routing decisions.
 - **[rag-service](rag-service/README.md)**: Domain capability service providing vector embedding and contextual knowledge retrieval.
+- **[ai-support-dashboard](ai-support-dashboard/README.md)**: React dashboard for customer, agent, and administrator workflows.
 - **[common-library](common-library/README.md)**: Shared models, DTOs, events, and utilities.
-- **[ai-support-marketplace](ai-support-marketplace/README.md)**: AI assistant plugins, agents, and tooling ecosystem.
+- **ai-support-marketplace**: AI assistant plugins, agents, and tooling ecosystem.
 - **[aisupport-parent](aisupport-parent/README.md)**: Central Maven POM for uniform dependency management.
 - **[infra](infra/README.md)**: Docker Compose setup for infrastructure (PostgreSQL, Kafka, pgvector, Redpanda Console).
 
@@ -212,6 +215,8 @@ cp .env.example .env
 
 > **Note:** Windows users can manually copy `.env.example` to `.env`.
 
+The current local profiles use `GOOGLE_CLOUD_PROJECT` and `GOOGLE_CLOUD_LOCATION` for Google GenAI. Authenticate with Google Application Default Credentials (`gcloud auth application-default login`) or provide `GOOGLE_APPLICATION_CREDENTIALS` in your local environment. `OPENAI_API_KEY` is only required when switching to the optional OpenAI provider.
+
 ---
 
 ### 2. Start Infrastructure
@@ -267,27 +272,51 @@ Once the infrastructure is running, start the Spring Boot microservices from you
 Recommended startup order:
 
 1. discovery-service
-2. api-gateway
-3. auth-service
-4. ticket-service
-5. ai-analysis-service
-6. routing-service
-7. rag-service
+2. auth-service
+3. ai-analysis-service
+4. routing-service
+5. rag-service
+6. ai-orchestration-service
+7. ticket-service
+8. api-gateway
+
+Run each service from its own directory, for example:
+
+```bash
+cd discovery-service
+./mvnw spring-boot:run
+```
+
+The workflow runtime must be running before tickets are created; it consumes `TicketCreatedEvent` and coordinates the downstream AI capabilities.
+
+### 6. Start the Support Dashboard (Optional)
+
+The dashboard uses the gateway at `http://localhost:8080/api/v1` by default. After the backend services are running:
+
+```bash
+cd ai-support-dashboard
+npm ci
+npm run dev
+```
+
+Open the URL printed by Vite (normally `http://localhost:5173`). See the [dashboard README](ai-support-dashboard/README.md) for environment variables, roles, and available workspaces.
 
 ## API Documentation
 
 Each service provides its own OpenAPI documentation. Available locally at:
 
-| Service     | Port | Swagger                  |
-| ----------- | ---: | ------------------------ |
-| Auth        | 8081 | `/swagger-ui/index.html` |
-| Ticket      | 8082 | `/swagger-ui/index.html` |
-| AI Analysis | 8083 | `/swagger-ui/index.html` |
-| Routing     | 8084 | `/swagger-ui/index.html` |
-| RAG         | 8085 | `/swagger-ui/index.html` |
-| Gateway     | 8080 | `/` (entrypoint)         |
-| Eureka      | 8761 | `/` (dashboard)          |
-| Redpanda    | 9090 | `/overview` (Kafka UI)   |
+| Service           | Port | Swagger / UI                               |
+| ----------------- | ---: | ------------------------------------------ |
+| Auth              | 8081 | `/swagger-ui/index.html`                   |
+| Ticket            | 8082 | `/swagger-ui/index.html`                   |
+| AI Analysis       | 8083 | `/swagger-ui/index.html`                   |
+| Routing           | 8084 | `/swagger-ui/index.html`                   |
+| RAG               | 8085 | `/swagger-ui/index.html`                   |
+| AI Orchestration  | 8086 | `/swagger-ui/index.html`                   |
+| Gateway           | 8080 | `/swagger-ui/index.html` (aggregated docs) |
+| Eureka            | 8761 | `/` (dashboard)                            |
+| Redpanda          | 9090 | `/overview` (Kafka UI)                     |
+| Support Dashboard | 5173 | Vite development server                    |
 
 ## Authentication Architecture
 
@@ -361,24 +390,41 @@ sequenceDiagram
 
 Run this end-to-end flow to demonstrate the project quickly:
 
-**1. Create a ticket through the gateway.**
+**1. Register and log in as a customer.**
+
+```bash
+curl -X POST "http://localhost:8080/api/v1/auth/register" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"demo@example.com","password":"ChangeMe123!","fullName":"Demo Customer"}'
+
+curl -X POST "http://localhost:8080/api/v1/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"demo@example.com","password":"ChangeMe123!"}'
+```
+
+Copy `accessToken` from the login response into an environment variable, for example `export ACCESS_TOKEN="<accessToken>"`.
+
+**2. Create a ticket through the gateway.**
 
 ```bash
 curl -X POST "http://localhost:8080/api/v1/tickets" \
   -H "Content-Type: application/json" \
-  -d "{\"title\":\"Payment failed\",\"description\":\"Card charged twice and order missing\",\"customerEmail\":\"demo@example.com\"}"
+  -H "Authorization: Bearer $ACCESS_TOKEN" \
+  -d '{"subject":"Payment failed","message":"Card charged twice and order missing."}'
 ```
 
-**2. Get all tickets (or inspect the created ID).**
+**3. Retrieve the customer's tickets (or inspect the returned ticket number).**
 
 ```bash
-curl "http://localhost:8080/api/v1/tickets"
+curl "http://localhost:8080/api/v1/tickets/my" \
+  -H "Authorization: Bearer $ACCESS_TOKEN"
 ```
 
-**3. Check ticket details by ID.**
+**4. Check a ticket's details by ticket number.**
 
 ```bash
-curl "http://localhost:8080/api/v1/tickets/{ticketId}"
+curl "http://localhost:8080/api/v1/tickets/my/{ticketNumber}" \
+  -H "Authorization: Bearer $ACCESS_TOKEN"
 ```
 
 ### What Happens Next?
@@ -425,8 +471,10 @@ ai-support-system/
 ├── auth-service/           # Authentication & Authorization (Port: 8081)
 ├── ticket-service/         # Ticket Management (Port: 8082)
 ├── ai-analysis-service/    # AI Analysis via Google GenAI (OpenAI optional) (Port: 8083)
-├── routing-service/        # Intelligent Routing Orchestrator (Port: 8084)
-├── rag-service/            # Contextual Knowledge Response (Port: 8085)
+├── routing-service/        # Deterministic ticket routing (Port: 8084)
+├── rag-service/            # Knowledge retrieval and embeddings (Port: 8085)
+├── ai-orchestration-service/ # AI workflow runtime (Port: 8086)
+├── ai-support-dashboard/   # React support dashboard
 ├── common-library/         # Shared DTOs, Logic, and Common Configuration
 ├── aisupport-parent/       # Maven Parent POM
 ├── infra/                  # Docker Config for DB/Kafka/Redpanda Console

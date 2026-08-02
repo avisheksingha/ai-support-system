@@ -1,16 +1,21 @@
 # Event Lifecycle
 
-Version: 1.0
+Version: 1.1
 Status: Current
-Last Updated: 2026-07-11
+Last Updated: 2026-08-02
 
-The **AI Orchestration Service** is strictly event-driven via Apache Kafka. It has no REST endpoints exposed to the frontend.
+The **AI Orchestration Service** uses Apache Kafka for event-driven workflow triggering and completion publishing. It also exposes public REST endpoints through the API Gateway for dashboards, operations, governance, knowledge-base management, and workflow timelines.
 
 ## Topic Topology
 
-- **`ticket-created`**: Emitted by `ticket-service`. Triggers the `AnalyzeWorkflowDefinition`.
-- **`ticket-analyzed`**: Emitted by the Orchestrator upon successful workflow completion. Consumed by downstream services like `routing-service` or `rag-service`.
+All topic names are defined in `common-library` via `KafkaTopics.java`.
+
+- **`ticket-created`**: Emitted by `ticket-service`. Triggers the `AnalyzeWorkflowDefinition` in the orchestrator.
+- **`ticket-analyzed`**: Emitted by `ai-analysis-service`. Consumed by `routing-service` and `rag-service` for downstream processing.
 - **`ticket-routed`**: Emitted by `routing-service`.
+- **`ticket-rag-response`**: Emitted by `rag-service`.
+- **`ticket-orchestrated`**: Emitted by `ai-orchestration-service` upon successful workflow completion. Consumed by `ticket-service` to apply the final AI analysis, routing decision, and knowledge context.
+- **`ticket-updated`**: Emitted by `ticket-service` when a ticket is modified.
 
 ## The Outbox Pattern
 

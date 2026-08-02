@@ -28,7 +28,35 @@ The RAG (Retrieval-Augmented Generation) Service is a Domain Capability Service 
 ## Prerequisites
 
 - PostgreSQL with `pgvector` installed.
-- Appropriate Google GenAI credentials configured (API Key or Google Cloud credentials).
+- Google Cloud credentials configured (`GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION`, and `GOOGLE_APPLICATION_CREDENTIALS` or Application Default Credentials via `gcloud auth application-default login`).
+
+## API Endpoints
+
+### Knowledge Article Management (`/api/internal/rag/articles`)
+
+These endpoints are consumed by `ai-orchestration-service` and are not routed through the API Gateway.
+
+- `POST /search`: Search for articles by query text.
+- `GET /{id}`: Retrieve a single article by ID.
+- `POST /`: Create a new knowledge article.
+- `PUT /{id}`: Update an existing article.
+- `DELETE /{id}`: Delete an article.
+- `POST /sync-embeddings`: Trigger embedding synchronization for articles.
+- `GET /stats`: Retrieve knowledge base statistics.
+- `POST /bulk-publish`: Publish multiple articles in bulk.
+
+### Internal RAG Retrieval (`/api/internal/rag`)
+
+- `POST /search`: Contextual retrieval query used by the orchestrator during workflow execution.
+- `GET /ticket/{ticketId}`: Retrieve existing RAG context for a ticket.
+
+### Admin Stats (`/api/internal/rag`)
+
+- `GET /stats/admin`: Retrieve admin-level RAG statistics for the dashboard.
+
+### Kafka Consumer
+
+The service consumes `ticket-analyzed` events to trigger automated document indexing and knowledge retrieval workflows.
 
 ## Running Locally
 

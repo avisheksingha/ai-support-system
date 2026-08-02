@@ -1,32 +1,47 @@
-# React + TypeScript + Vite
+# AI Support Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React and TypeScript dashboard for the AI Support System. It communicates with backend services only through the API Gateway and presents role-specific views for customers, support agents, and administrators.
 
-Currently, two official plugins are available:
+## Capabilities
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Customer workspace**: Create tickets, view owned tickets, and exchange messages with support.
+- **Agent workspace**: Browse and manage the support queue, update status and priority, assign tickets, and inspect orchestration timelines.
+- **Administrator views**: Review user administration, operational workflow metrics, governance data, and knowledge-base management.
+- **AI assistance**: Use the writing assistant and view orchestration-provided analysis, routing, and knowledge context where the signed-in role is authorized.
 
-## React Compiler
+## Prerequisites
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Node.js 20 or later
+- The API Gateway running at `http://localhost:8080`
+- Backend services required by the selected view. The orchestration features require `ai-orchestration-service` on port `8086`.
 
-## Expanding the Oxlint configuration
+## Run Locally
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm ci
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Vite prints the local URL; its default is `http://localhost:5173`.
+
+## Environment
+
+`.env.development` contains the default local settings:
+
+```properties
+VITE_API_BASE_URL=http://localhost:8080/api/v1
+VITE_REDPANDA_URL=http://localhost:9090
+```
+
+`VITE_API_BASE_URL` must include `/api/v1`, because dashboard API clients use paths relative to that prefix. `VITE_REDPANDA_URL` is used for the Kafka console link.
+
+## Useful Commands
+
+```bash
+npm run build
+npm run lint
+npm test
+npm run test:e2e
+```
+
+For implementation details and API-layer boundaries, see [FRONTEND_ARCHITECTURE.md](FRONTEND_ARCHITECTURE.md).

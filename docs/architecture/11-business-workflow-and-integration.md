@@ -1,107 +1,65 @@
-# 11. V1 Business Workflow & Integration Baseline
+# 11. Business Workflow and Integration Reference
 
-This document defines the finalized business workflow, state machine, REST mapping, and WebSocket mapping for the AI Support System (V1 Architecture Baseline).
+This document describes the currently implemented ticket workflow and the API surface exposed through the API Gateway. It is a reference for the React dashboard and external API consumers; OpenAPI remains the authoritative request/response contract for each service.
 
-## 1. Ticket Lifecycle
+## 1. Implemented Ticket Lifecycle
 
-The ticket progresses through a strict state machine, augmented by the AI Orchestration Service and Customer actions.
+The ticket status enum currently supports:
 
-1. **SUBMITTED**: The customer submits a ticket. It is stored in the `ticket-service`.
-2. **AI_ANALYSIS**: The AI Orchestrator begins analysis (intent, sentiment, urgency).
-3. **AI_RESOLUTION_CANDIDATE**: (Optional) The AI suggests a complete resolution to the Customer based on RAG. If the customer confirms it resolves their issue, the ticket transitions directly to **CLOSED** without agent involvement.
-4. **ASSIGNMENT_PENDING**: If the AI cannot resolve the issue or the customer rejects the AI resolution, the ticket awaits routing.
-5. **ASSIGNED**: The `routing-service` determines the appropriate queue/agent.
-6. **AGENT_WORKING**: An agent actively opens the ticket and begins drafting a response or running diagnostics.
-7. **WAITING_FOR_CUSTOMER**: The agent replies and awaits customer feedback or further action.
-8. **RESOLVED**: The agent provides the final solution. The issue is considered fixed.
-9. **CLOSED**: Either via auto-close rules or manual action, the ticket is archived.
-10. **REOPENED**: The customer replies to a `RESOLVED` or `CLOSED` ticket within the allowed window.
+`NEW` → `ANALYZING` → `ANALYZED` → `ASSIGNED` → `IN_PROGRESS` → `RESOLVED` → `CLOSED`
 
-## 2. Conversation Message Types
+Agents and administrators can update status, assignment, and priority. The API does not currently expose separate endpoints for auto-close, reopen, AI-draft acceptance, or workflow retry.
 
-Conversations are bi-directional and asynchronous. We define five distinct message types on the timeline:
+## 2. Processing Flow
 
-- **Customer Message**: Input originating from the end-user.
-- **Agent Message**: A verified human reply sent to the customer.
-- **AI Draft**: An unverified AI-generated response waiting for agent review.
-- **Internal Note**: A private message (`isInternal: true`) hidden from the customer but visible to agents.
-- **System Event**: A non-message chronological entry (e.g., "Ticket Assigned to Minu", "Priority Escalated to High").
+1. An authenticated customer creates a ticket through `ticket-service`.
+2. `ticket-service` persists the ticket and publishes `TicketCreatedEvent` through its transactional outbox.
+3. `ai-orchestration-service` consumes the event, obtains analysis, routing, and RAG context through internal service clients, and records workflow state and audit information.
+4. On completion, the orchestration service publishes `TicketOrchestratedEvent`; `ticket-service` applies the resulting analysis, route, and knowledge context.
 
-## 3. AI Suggestion Lifecycle
+The gateway routes all external `/api/v1/**` requests. Internal `/api/internal/**` capability endpoints are not public gateway routes.
 
-AI insights and draft responses are treated as first-class entities with human-in-the-loop oversight.
+## 3. API Mapping
 
-1. **GENERATED**: The AI Orchestrator produces a draft response based on intent and RAG knowledge.
-2. **REVIEWED**: The agent reads the draft.
-3. **EDITED**: The agent makes manual adjustments to the AI draft for accuracy or tone.
-4. **ACCEPTED**: The agent sends the (edited or unedited) AI draft to the customer.
-5. **REGENERATED**: The agent rejects the draft and prompts the AI with new context to generate a better one.
-6. **ESCALATED**: The AI detects a high-risk situation and flags the ticket for supervisor review.
-7. **EXPIRED**: A draft that has become stale due to new customer messages or significant ticket changes.
+All routes below require a valid gateway JWT unless explicitly documented as public authentication endpoints. Role annotations on the implementing controller determine authorization.
 
-## 4. Ticket Assignment Strategy and Routing
+### Authentication (`/api/v1/auth`)
 
-The `routing-service` acts deterministically based on the output of the `ai-analysis-service`.
-
-- **Tier 1 (Automated / Generalist)**: Routine queries (e.g., password reset). Can be auto-replied or assigned to a round-robin general queue.
-- **Tier 2 (Specialist)**: Complex queries identified by intent. Routed to specific department queues.
-- **VIP / High Urgency**: Escalated immediately to the priority queue. Triggers real-time alerts.
-- **Reassignment**: If an agent cannot resolve the issue, they can manually reassign it back to the pool or escalate it to a specific specialist.
-
-## 5. Auto-close and Reopen Rules
-
-- **Auto-Close**: Tickets in the `RESOLVED` state automatically transition to `CLOSED` after **72 hours** of customer inactivity.
-- **Reopen Window**: If a customer replies to a `RESOLVED` ticket within the 72-hour window, it reverts to `AGENT_WORKING`.
-- **New Ticket**: If a customer replies to a `CLOSED` ticket (post-72 hours), a new ticket is generated with a relational link to the old ticket.
-
-## 6. Notification & Real-time Event Strategy
-
-We use a hybrid approach to balance reliability and real-time responsiveness.
-
-- **REST for CRUD**: All mutations (creating tickets, updating status, adding messages) are synchronous REST calls.
-- **WebSocket / STOMP for Real-time Updates**: The frontend subscribes to STOMP topics. When the backend processes a Kafka event, it broadcasts a lightweight notification payload, invalidating the frontend cache.
-
-### Standard WebSocket Event Names
-
-- `TicketCreated`
-- `TicketAssigned`
-- `TicketUpdated`
-- `MessageAdded`
-- `AIAnalysisCompleted`
-- `WorkflowUpdated`
-- `GovernanceUpdated`
-- `NotificationCreated`
-
-*(Note: A dedicated Notification Center is reserved for future architecture expansion).*
-
-## 7. Knowledge Article Lifecycle
-
-To support accurate RAG retrieval, Knowledge Articles must follow a strict lifecycle:
-
-- **Draft** → **Published** → **Deprecated** → **Archived**
-
-## 8. API Mapping (Frontend → Backend)
+- `POST /register`, `POST /login`, and `POST /refresh` are public.
+- `POST /logout` and `GET /me` require authentication.
+- `/admin/users` endpoints require the `ADMIN` role.
 
 ### Ticket Management (`/api/v1/tickets`)
 
-- `GET /api/v1/tickets?status=...` - List tickets
-- `GET /api/v1/tickets/{id}` - Get details
-- `PATCH /api/v1/tickets/{id}` - Update status/priority
-- `POST /api/v1/tickets/{id}/messages` - Add message
+- Customers use `POST /`, `GET /my`, `GET /my/{ticketNumber}`, and the equivalent `/my/{ticketNumber}/messages` endpoints.
+- Agents and administrators use `GET /`, `GET /{ticketNumber}`, `GET /id/{id}`, status/assignment/priority PATCH endpoints, ticket-message endpoints, and `GET /summary/agent`.
+- Ticket deletion is not implemented.
 
-### Orchestration & AI (`/api/v1/orchestration`)
+### Orchestration and Context (`/api/v1/orchestration`)
 
-- `GET /api/v1/orchestration/tickets/{id}/insights` - Get AI analysis for ticket
-- `POST /api/v1/orchestration/tickets/{id}/actions` - Trigger AI action
-- `GET /api/v1/orchestration/workflows` - List active workflows
-- `GET /api/v1/orchestration/workflows/{id}` - Get workflow details
-- `GET /api/v1/orchestration/workflows/{id}/trace` - Get execution traces
-- `POST /api/v1/orchestration/workflows/{id}/retry` - Retry workflow
+- `GET /tickets/{ticketId}/timeline`, `/insights`, and `/workspace`
+- `GET /workflows/search` and `GET /workflows/{workflowId}/timeline`
+- `GET /operations/overview`
+- `GET /dashboard/admin`, `GET /dashboard/agent`, `GET /dashboard/customer`, and `GET /dashboard/customer/tickets/{ticketNumber}`
 
-### Governance (`/api/v1/governance`)
+### Knowledge Base (`/api/v1/orchestration/knowledge-base`)
 
-- `GET /api/v1/governance/metrics` - High-level KPIs
-- `GET /api/v1/governance/approvals?status=PENDING` - Review queue
-- `POST /api/v1/governance/approvals/{id}` - Approve/Reject action
-- `GET /api/v1/governance/blocked` - View guardrail blocks
-- `GET /api/v1/governance/audit-logs` - View chronological execution timeline
+- `POST /search`
+- `POST /articles`, plus `GET`, `PUT`, and `DELETE /articles/{id}`
+- `POST /articles/sync-embeddings`, `GET /stats`, and `POST /articles/bulk-publish`
+
+### Governance (`/api/v1/orchestration/governance`)
+
+- `GET /overview`
+- `GET /approval-queue`
+- `GET /blocked-requests`
+- `GET /audit-logs`
+- `GET /active-guardrails`
+
+## 4. Dashboard Integration
+
+The dashboard is a separate Vite application. It calls the gateway at `/api/v1` and uses the orchestration endpoints for role dashboards, timelines, observability, governance, and knowledge-base workflows. The dashboard's API-layer modules are the frontend integration boundary; components should not call backend services directly.
+
+## 5. Real-time Delivery
+
+The gateway forwards `/ws/**` to `ticket-service`. The dashboard currently refreshes much of its server state with TanStack Query polling. WebSocket event payloads and notification-center behavior are not a documented public contract yet and should not be assumed by API consumers.
