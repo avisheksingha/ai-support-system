@@ -54,11 +54,15 @@ graph TD
     MC -->|Resilience4j| EXT[External MCP Server]
 ```
 
-### Provider Implementations
+### Provider Implementations and Current Mode
 
-- **`github-mcp`**: External enterprise integration providing repository intelligence (search, issues, PRs).
-- **`filesystem-mcp`**: Internal workspace provider constrained strictly by a configured `allowed-paths` list. Exists solely to provide the AI safe awareness of its own repository context (architecture docs, prompts, configuration) without allowing arbitrary file access.
-- **`postgres-mcp`**: Read-only Operational Data Access provider. Exposes multiple named connections (`ticket-db`, `orchestration-db`) to provide live operational insights (ticket counts, workflow statuses) while explicitly denying any database modification via strict SQL validation layers.
+The registry has providers for GitHub, filesystem, and PostgreSQL capabilities. Real client implementations exist for these providers, but the committed `local`, `docker`, and `k8s` profiles configure all three with `mode=mock`. This keeps local development, runtime verification, and deployed sample environments deterministic and prevents unplanned external access.
+
+- **`github-mcp`**: Repository intelligence capability. Mocked by default.
+- **`filesystem-mcp`**: Workspace-aware file capability constrained by configured allowed paths. Mocked by default.
+- **`postgres-mcp`**: Read-only operational-data capability. Mocked by default.
+
+Enabling a real provider is an environment-specific deployment decision and requires its credentials, endpoint configuration, and access controls; it is not enabled by the repository defaults.
 
 ### Resilience & Observability
 

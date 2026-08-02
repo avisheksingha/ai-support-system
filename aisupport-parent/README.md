@@ -19,11 +19,13 @@ This project serves as the parent Object Model (POM) for all microservices in th
 
 ## Building the Entire Project
 
-From this directory (or the root directory), you can build all modules at once:
+From this directory, you can build all modules at once:
 
 ```bash
-mvn clean install
+./mvnw clean install
 ```
+
+From the repository root, use `./aisupport-parent/mvnw -f aisupport-parent/pom.xml clean install`.
 
 ## Modular Structure
 
@@ -36,4 +38,5 @@ The parent POM manages the following modules:
 - `ai-analysis-service`
 - `routing-service`
 - `rag-service`
+- `ai-orchestration-service`
 - `common-library`

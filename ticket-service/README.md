@@ -4,7 +4,7 @@ Microservice responsible for managing support tickets throughout their lifecycle
 
 ## Features
 
-- **CRUD Operations**: Create, read, update, and delete tickets.
+- **Role-aware Ticket Operations**: Customers create and view their own tickets; agents and administrators manage the support queue.
 - **State Machine**: Enforces strict status transition logic (e.g., `NEW` -> `ANALYZING` -> `ANALYZED` -> `ASSIGNED`).
 - **Manual & Automated Assignment**: Assign tickets to agents manually or via the Routing Service.
 - **Observability**: Implements Distributed Tracing via `CorrelationIdFilter` to propagate `X-Correlation-Id` directly into MDC for logs.
@@ -15,11 +15,27 @@ Microservice responsible for managing support tickets throughout their lifecycle
 
 ## API Endpoints
 
-- `POST /api/v1/tickets`: Create a new ticket
-- `GET /api/v1/tickets/{ticketNumber}`: Get ticket details
-- `GET /api/v1/tickets`: List all tickets (optional status filter)
-- `PATCH /api/v1/tickets/{ticketNumber}/status`: Update status
-- `PATCH /api/v1/tickets/{ticketNumber}/assign`: Assign to agent
+All endpoints are routed through the API Gateway. A valid JWT is required; authorization is enforced by role.
+
+### Customer (`CUSTOMER`)
+
+- `POST /api/v1/tickets`: Create a ticket (`subject`, `message`, optional `bypassSoftValidation`)
+- `GET /api/v1/tickets/my`: List the authenticated customer's tickets
+- `GET /api/v1/tickets/my/{ticketNumber}`: Get an owned ticket
+- `GET /api/v1/tickets/my/{ticketNumber}/messages`: Get messages for an owned ticket
+- `POST /api/v1/tickets/my/{ticketNumber}/messages`: Add a customer message
+
+### Support management (`AGENT` or `ADMIN`)
+
+- `GET /api/v1/tickets`: List tickets (optional `status`)
+- `GET /api/v1/tickets/{ticketNumber}` and `GET /api/v1/tickets/id/{id}`: Retrieve a ticket
+- `PATCH /api/v1/tickets/{ticketNumber}/status?status=...`: Update status
+- `PATCH /api/v1/tickets/{ticketNumber}/assign?assignedTo=...`: Assign an agent
+- `PATCH /api/v1/tickets/{ticketNumber}/priority?priority=...`: Update priority
+- `GET` and `POST /api/v1/tickets/{ticketNumber}/messages`: Manage ticket messages
+- `GET /api/v1/tickets/summary/agent`: Retrieve an agent/team summary
+
+Ticket deletion is not implemented.
 
 ## Configuration
 

@@ -9,7 +9,7 @@ This directory contains the infrastructure-only Docker Compose setup for the AI 
 - **Redpanda Console**: Web UI for monitoring Kafka topics, consumer groups, and messages.
 
 > [!NOTE]
-> This compose file is intentionally **infra-only**. Application services (`discovery-service`, `api-gateway`, `auth-service`, `ticket-service`, `ai-analysis-service`, `routing-service`, `rag-service`) are started separately via Eclipse or Maven.
+> This compose file is intentionally **infra-only**. Application services (`discovery-service`, `api-gateway`, `auth-service`, `ticket-service`, `ai-analysis-service`, `routing-service`, `rag-service`, `ai-orchestration-service`) are started separately via an IDE or Maven. The React dashboard is started separately with npm.
 
 ## Services
 

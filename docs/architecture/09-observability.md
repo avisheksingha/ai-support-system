@@ -8,10 +8,12 @@ Because the platform is fundamentally event-driven and AI-centric, standard REST
 
 ## 1. Dashboard APIs
 
-The system exposes two primary APIs for observability:
+The system exposes two administrator-only APIs through the AI Orchestration Service:
 
-- **`GET /api/v1/operations/overview`**: Returns aggregated analytics across logical domains (Runtime, AI, Governance, Tools, Health, SystemInfo). Supports trend data over time. Filters: `?from=`, `?to=`, `?workflowType=`, `?outcome=`, `?model=`, `?provider=`.
-- **`GET /api/v1/workflows/search`**: An explorer API that allows deep drilling into specific executions using `ticketId`, `correlationId`, or `workflowId`. Returns paginated execution details.
+- **`GET /api/v1/orchestration/operations/overview`**: Returns aggregated workflow metrics and recent executions. It accepts `from`, `to`, `workflowType`, `outcome`, `model`, and `provider` filters.
+- **`GET /api/v1/orchestration/workflows/search`**: Searches workflow timelines using `ticketId`, `correlationId`, or `workflowId`, with optional `outcome`, `from`, `to`, `page`, and `size` parameters. In the current implementation, a timeline is returned when `ticketId` is supplied; other search criteria are reserved for future expansion.
+
+Related endpoints are `GET /api/v1/orchestration/workflows/{workflowId}/timeline` and `GET /api/v1/orchestration/tickets/{ticketId}/timeline`.
 
 ## 2. Core DTOs
 

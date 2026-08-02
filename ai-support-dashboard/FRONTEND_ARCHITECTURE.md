@@ -28,12 +28,12 @@ src/
 **Why?**
 As the application scales (e.g., adding an Operations Center or Administration feature), the codebase remains localized. Developers working on the Ticket Workspace don't need to sift through global API or Hook directories; everything related to the workspace is co-located.
 
-## 2. Abstraction of Orchestration (`workspaceApi.ts`)
+## 2. Backend-Orchestration API Boundary (`workspaceApi.ts`)
 
-Instead of allowing React components to directly call the Ticket Service, Analysis Service, RAG Service, and Routing Service, we've introduced an explicit API layer: `workspaceApi.ts`.
+Instead of allowing React components to make ad hoc HTTP requests, the dashboard uses explicit feature API layers such as `workspaceApi.ts`, `knowledgeApi.ts`, and the role-dashboard APIs.
 
 **Why?**
-Currently, the backend does not have a unified Orchestration Service. The frontend `workspaceApi` temporarily acts as this orchestrator, fetching data from multiple microservices concurrently. When the backend `ai-orchestration-service` is eventually built, *only* `workspaceApi.ts` will need to change. The React components (`useWorkspace`, `AiInsightsPanel`, etc.) will remain completely untouched. This is a highly scalable enterprise pattern.
+The backend now provides `ai-orchestration-service` as the unified workflow and context boundary. The dashboard uses its `/api/v1/orchestration/**` endpoints for timelines, role dashboards, operations, governance, and knowledge-base operations, while `ticket-service` remains the source for ticket-management endpoints. Keeping these calls in API-layer modules lets components remain independent of endpoint details.
 
 ## 3. Isolated Domain Models
 

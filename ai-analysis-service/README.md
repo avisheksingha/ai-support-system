@@ -1,6 +1,6 @@
 # AI Analysis Service
 
-Domain Capability Service that uses Spring AI to analyze support tickets for sentiment, urgency, and intent. The active provider is Google GenAI (supporting both Gemini API and Vertex AI), with OpenAI available as an optional provider.
+Domain Capability Service that uses Spring AI to analyze support tickets for sentiment, urgency, and intent. The active profile uses Google Cloud project and location settings for Google GenAI; OpenAI is available as an optional provider.
 
 ## Features
 
@@ -23,19 +23,21 @@ Domain Capability Service that uses Spring AI to analyze support tickets for sen
 | Service Discovery | Enabled | Registers with Eureka |
 
 > [!IMPORTANT]
-> Set Google GenAI credentials (API Key or GCP Auth) for standard runs. OpenAI credentials are only needed if you switch provider.
+> Set Google Cloud credentials for standard runs. OpenAI credentials are only needed if you switch provider.
 
 ### Environment Variables
 
-#### Google GenAI (Gemini / Vertex AI)
+#### Google GenAI (Google Cloud)
 
-- `GCP_PROJECT_ID`: Your Google Cloud Project ID.
-- `GCP_LOCATION`: Your Google Cloud Project location (e.g., `us-central1`).
+- `GOOGLE_CLOUD_PROJECT`: Your Google Cloud Project ID.
+- `GOOGLE_CLOUD_LOCATION`: Your Google Cloud Project location (for example, `us-central1`).
 - `GOOGLE_APPLICATION_CREDENTIALS`: Path to your GCP service account JSON key file.
+
+For local development, Application Default Credentials from `gcloud auth application-default login` are also supported by the Google client libraries.
 
 #### OpenAI (Optional)
 
-- `SPRING_AI_OPENAI_API_KEY`: Your OpenAI API key.
+- `OPENAI_API_KEY`: Your OpenAI API key.
 
 ## Interfaces & Endpoints
 
@@ -50,8 +52,15 @@ Domain Capability Service that uses Spring AI to analyze support tickets for sen
 
 ### REST API
 
-- `POST /api/v1/analysis/analyze`: Analyze a ticket manually
-- `GET /api/v1/analysis/{ticketId}`: Get existing analysis
+The gateway exposes the following public analysis endpoints:
+
+- `GET /api/v1/analysis/ticket/{ticketId}`: Get analysis for a ticket
+- `GET /api/v1/analysis`: List analyses
+- `GET /api/v1/analysis/intent/{intent}`: Filter analyses by intent
+- `GET /api/v1/analysis/urgency/{urgency}`: Filter analyses by urgency
+- `POST /api/v1/analysis/writing/improve`: Improve draft text for the writing-assistant workflow
+
+`POST /api/internal/analysis/analyze` is an internal capability used by the orchestration service and is not routed through the API Gateway.
 
 ## Running Locally
 
