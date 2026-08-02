@@ -1,8 +1,8 @@
 # System Overview
 
-Version: 1.0
+Version: 1.1
 Status: Current
-Last Updated: 2026-07-11
+Last Updated: 2026-08-02
 Related Documents:
 
 - [02-runtime-architecture.md](02-runtime-architecture.md)
@@ -16,11 +16,15 @@ Early in the project's life, AI capabilities were simply endpoints invoking an L
 
 ## Services
 
-- **`ai-orchestration-service`**: The AI runtime. It interprets workflows, enforces policies, gathers context, executes AI reasoning, and invokes tools.
+- **`ai-orchestration-service`**: The AI runtime. It interprets workflows, enforces policies, gathers context, executes AI reasoning, and invokes tools. Exposes public REST APIs for dashboards, operations, governance, knowledge-base, and workflow timelines.
 - **`ticket-service`**: Manages the core domain lifecycle of tickets. Emits events when tickets are created or updated.
+- **`ai-analysis-service`**: Domain capability service providing sentiment, urgency, and intent analysis via Spring AI.
+- **`routing-service`**: Domain capability service for deterministic ticket routing decisions.
+- **`rag-service`**: Domain capability service providing vector embedding and contextual knowledge retrieval.
 - **`auth-service`**: JWT authentication and role-based access control.
-- **`api-gateway`**: Unified entry point for all external API calls.
+- **`api-gateway`**: Unified entry point for all external API calls. Routes `/api/v1/**` to backend services.
 - **`discovery-service`**: Eureka service registry.
+- **`ai-support-dashboard`**: React dashboard for customer, agent, and administrator workspaces.
 
 ## Request Lifecycle (Ticket Analysis)
 
@@ -37,5 +41,6 @@ sequenceDiagram
     TicketService->>Kafka: Publish TicketCreatedEvent
     Kafka->>Orchestrator: Consume Event
     Orchestrator->>Orchestrator: Execute Workflow
-    Orchestrator->>Kafka: Publish AnalyzedEvent
+    Orchestrator->>Kafka: Publish TicketOrchestratedEvent
+    Kafka->>TicketService: Apply AI Results
 ```

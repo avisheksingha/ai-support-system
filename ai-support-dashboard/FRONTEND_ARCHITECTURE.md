@@ -68,14 +68,16 @@ This provides automatic caching, background refetching, and simplified optimisti
 
 ## Manual Demo Script
 
-For technical interviews or GitHub recordings, follow this sequence to demonstrate the end-to-end Kafka event flow:
+For technical interviews or GitHub recordings, follow this sequence to demonstrate the end-to-end orchestrated flow:
 
 1. **Login**: Authenticate as a Support Agent (demonstrates the `auth-service` JWT flow).
 2. **Open Workspace**: Navigate to the Ticket Workspace.
-3. **Trigger Event**: Use Postman/Bruno to `POST /api/v1/tickets` through the API Gateway.
-4. **Observe Asynchronous Flow**:
-   - The Ticket List updates (via React Query refetch or Websockets).
+3. **Trigger Event**: Use Postman/Bruno to `POST /api/v1/tickets` through the API Gateway with a valid customer JWT, sending `subject` and `message`.
+4. **Observe Orchestrated Flow**:
+   - The Ticket List updates (via React Query refetch).
    - Click the new ticket. Notice the Skeleton loaders or Empty States ("Waiting for AI...").
-   - As Kafka processes the events (`ticket-created` -> `ticket-analyzed` -> `ticket-rag-response` -> `ticket-routed`), the UI panels progressively populate with semantic confidence bars, knowledge previews, and rule-based routing explanations.
-5. **Activity Feed**: Point out the color-coded Activity Feed mapping exactly to the backend microservice handoffs.
+   - The `ai-orchestration-service` consumes `ticket-created`, orchestrates analysis, routing, and RAG context via internal REST calls, and publishes a single `ticket-orchestrated` event carrying all results.
+   - Once `ticket-service` applies the orchestrated results, the UI panels populate with sentiment analysis, knowledge context, and routing decisions.
+5. **Activity Feed**: Point out the color-coded Activity Feed mapping to the orchestration workflow timeline.
 6. **Action**: Change the ticket status to `RESOLVED` and watch the Toast notification pop up, demonstrating the immediate React Query cache invalidation and UI update.
+
