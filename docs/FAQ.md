@@ -1,5 +1,29 @@
 # AI Support System - FAQ
 
+## Table of Contents
+
+- **General**
+  - [What is the AI Support System?](#what-is-the-ai-support-system)
+  - [How does the system process incoming tickets?](#how-does-the-system-process-incoming-tickets)
+- **AI and RAG**
+  - [What exactly does the AI pipeline do?](#what-exactly-does-the-ai-pipeline-do)
+  - [How does Retrieval-Augmented Generation (RAG) work in this platform?](#how-does-retrieval-augmented-generation-rag-work-in-this-platform)
+  - [How do you prevent the AI from hallucinating a response to the customer?](#how-do-you-prevent-the-ai-from-hallucinating-a-response-to-the-customer)
+  - [Is ticket routing controlled directly by the AI?](#is-ticket-routing-controlled-directly-by-the-ai)
+  - [How are LLM prompts managed?](#how-are-llm-prompts-managed)
+- **Architecture and Design Decisions**
+  - [Why use Apache Kafka instead of synchronous REST APIs for ticket ingestion?](#why-use-apache-kafka-instead-of-synchronous-rest-apis-for-ticket-ingestion)
+  - [Why use a central Orchestrator instead of event choreography?](#why-use-a-central-orchestrator-instead-of-event-choreography)
+  - [Why choose Spring AI?](#why-choose-spring-ai)
+  - [Why use PGVector instead of a dedicated vector database?](#why-use-pgvector-instead-of-a-dedicated-vector-database)
+  - [How do you monitor AI performance and costs?](#how-do-you-monitor-ai-performance-and-costs)
+  - [What happens if the LLM API goes down completely?](#what-happens-if-the-llm-api-goes-down-completely)
+- **Security & Data Integrity**
+  - [How is authentication and authorization handled?](#how-is-authentication-and-authorization-handled)
+  - [How do you guarantee reliable messaging with Kafka?](#how-do-you-guarantee-reliable-messaging-with-kafka)
+
+---
+
 ## General
 
 ### What is the AI Support System?
@@ -62,10 +86,20 @@ While dedicated vector databases (like Pinecone or Milvus) offer advanced indexi
 
 The Admin Dashboard provides real-time observability into the AI's performance. The dedicated `AiAuditService` tracks:
 
-* **Latency:** Average time taken for LLM inference.
-* **Token Usage:** Monitoring cost metrics per model to estimate spending.
-* **Guardrails:** Tracking how often the AI produces blocked or inappropriate content.
+- **Latency:** Average time taken for LLM inference.
+- **Token Usage:** Monitoring cost metrics per model to estimate spending.
+- **Guardrails:** Tracking how often the AI produces blocked or inappropriate content.
 
 ### What happens if the LLM API goes down completely?
 
 The `ai-orchestration-service` will fail to process the event. Because it's consuming from Kafka, the offset won't be committed, and the event remains safely in the queue. Meanwhile, customers can still create tickets because the `ticket-service` only depends on the local database and Kafka. Once the LLM API recovers, the Orchestrator resumes processing the backlog.
+
+## Security & Data Integrity
+
+### How is authentication and authorization handled?
+
+We use a **stateless JWT authentication** model centralized at the API Gateway. The frontend (React) receives an Access Token and a Refresh Token upon login. The API Gateway validates every incoming JWT, intentionally strips any client-supplied identity headers (to prevent spoofing), and forwards the cryptographically trusted user context to downstream backend services. This ensures backend services remain completely stateless and never receive unverified external requests.
+
+### How do you guarantee reliable messaging with Kafka?
+
+To prevent data inconsistency where a database transaction commits but the Kafka message fails to send (or vice-versa), we utilize the **Transactional Outbox Pattern**. The `ticket-service` writes both the new ticket record and the pending `TicketCreatedEvent` to the PostgreSQL database within a single local transaction. A separate background process then safely reads the outbox table and publishes the events to Kafka, guaranteeing *at-least-once* delivery without distributed transaction locks.
