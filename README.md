@@ -13,8 +13,10 @@
 [![Spring Boot 4](https://img.shields.io/badge/Spring_Boot-4.1.0-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![Spring Cloud](https://img.shields.io/badge/Spring_Cloud-2025.1.2-0ea5e9)](https://spring.io/projects/spring-cloud)
 [![Kafka](https://img.shields.io/badge/Apache_Kafka-Event_Driven-231F20?logo=apachekafka&logoColor=white)](https://kafka.apache.org/)
+[![Spring AI](https://img.shields.io/badge/Spring_AI-2.0.0-6DB33F?logo=spring&logoColor=white)](https://docs.spring.io/spring-ai/reference/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-pgvector-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![React](https://img.shields.io/badge/React-TypeScript-61DAFB?logo=react&logoColor=white)](https://react.dev/)
 
 <!-- Docs & Tools -->
 [![Architecture](https://img.shields.io/badge/Architecture-Microservices-orange)](OVERVIEW.md)
@@ -114,6 +116,16 @@ The AI Support System is a leading-edge, microservices-based ticket management p
 
 ![AI Support System Architecture](docs/architecture/architecture.png)
 
+### Demo Video
+
+![Platform Walkthrough](docs/video/demo-video.gif)
+
+> **Full walkthrough:** Customer ticket submission → Kafka event ingestion → AI sentiment analysis → RAG-powered draft → Smart routing → Admin governance dashboard.
+
+### Platform Screenshots
+
+> Detailed screenshots of all workspaces (Customer, Agent, Admin) and infrastructure are available in [docs/screenshots](docs/screenshots/).
+
 ### Technology Stack
 
 | Category          | Technology                             |
@@ -142,7 +154,7 @@ The AI Support System is a leading-edge, microservices-based ticket management p
 - **[rag-service](rag-service/README.md)**: Domain capability service providing vector embedding and contextual knowledge retrieval.
 - **[ai-support-dashboard](ai-support-dashboard/README.md)**: React dashboard for customer, agent, and administrator workflows.
 - **[common-library](common-library/README.md)**: Shared models, DTOs, events, and utilities.
-- **ai-support-marketplace**: AI assistant plugins, agents, and tooling ecosystem.
+
 - **[aisupport-parent](aisupport-parent/README.md)**: Central Maven POM for uniform dependency management.
 - **[infra](infra/README.md)**: Docker Compose setup for infrastructure (PostgreSQL, Kafka, pgvector, Redpanda Console).
 
@@ -478,7 +490,7 @@ ai-support-system/
 ├── common-library/         # Shared DTOs, Logic, and Common Configuration
 ├── aisupport-parent/       # Maven Parent POM
 ├── infra/                  # Docker Config for DB/Kafka/Redpanda Console
-├── docs/                   # Architecture diagram and visuals
+├── docs/                   # Architecture, screenshots, demo video
 ├── ARCHITECTURE.md         # Design decisions and scalability
 ├── CONTRIBUTING.md         # Contribution workflow and PR expectations
 ├── OVERVIEW.md             # Architectural end-to-end details & diagrams
@@ -513,4 +525,4 @@ Please see [SECURITY.md](SECURITY.md) for vulnerability reporting and security r
 
 ## License
 
-MIT License
+MIT License — see [LICENSE](LICENSE) for details.
