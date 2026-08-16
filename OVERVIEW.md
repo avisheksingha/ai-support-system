@@ -11,7 +11,7 @@ The AI Support System is built using a microservices architecture pattern. This 
 1. **Client / API Gateway (`api-gateway`)**: Built iteratively on Spring Cloud Gateway WebFlux, serving as the single entry point. It handles request tracing by generating a unique `X-Correlation-Id` for every incoming request and routing them to the appropriate backend microservice.
 2. **Service Registry (`discovery-service`)**: Utilizes Netflix Eureka to allow microservices to register themselves and discover each other dynamically.
 3. **Authentication (`auth-service`)**: Manages user authentication, authorization, and issues JWTs for secure access across the microservices.
-4. **Ticket Management (`ticket-service`)**: Handles the core CRUD operations for support tickets, applying state machine validations for status transitions, and persists data to PostgreSQL.
+4. **Ticket Management (`ticket-service`)**: Handles role-aware ticket creation, retrieval, status and priority updates, assignment, and messaging; it applies state-machine validations for status transitions and persists data to PostgreSQL. Ticket deletion is not implemented.
 5. **AI Workflow Runtime (`ai-orchestration-service`)**: The central orchestrator that consumes events and coordinates the AI execution lifecycle.
 6. **AI Processing (`ai-analysis-service`)**: Domain capability providing sentiment analysis, urgency detection, and intent extraction via Google GenAI.
 7. **Intelligent Routing (`routing-service`)**: Domain capability providing deterministic ticket routing decisions based on AI tags.
