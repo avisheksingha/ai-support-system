@@ -35,7 +35,7 @@ sequenceDiagram
     participant TicketService
     participant Kafka
     participant Orchestrator
-    
+
     User->>Gateway: POST /tickets
     Gateway->>TicketService: Route Request
     TicketService->>Kafka: Publish TicketCreatedEvent

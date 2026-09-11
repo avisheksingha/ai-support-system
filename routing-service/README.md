@@ -30,10 +30,10 @@ The service also consumes `ticket-analyzed` events from Kafka as a fallback asyn
 
 ## Configuration
 
-| Property          | Value      | Description                 |
-| ----------------- | ---------- | --------------------------- |
-| Server Port       | 8084       | Port where service runs     |
-| Service Discovery | Enabled    | Registers with Eureka       |
+| Property          | Value   | Description             |
+| ----------------- | ------- | ----------------------- |
+| Server Port       | 8084    | Port where service runs |
+| Service Discovery | Enabled | Registers with Eureka   |
 
 ## Running Locally
 

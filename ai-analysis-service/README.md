@@ -15,12 +15,12 @@ Domain Capability Service that uses Spring AI to analyze support tickets for sen
 
 ## Configuration
 
-| Property | Value | Description |
-| ---------- | ------- | ------------- |
-| Server Port | 8083 | Port where service runs |
-| AI Providers | Google GenAI (active), OpenAI (optional) | Supported provider options via Spring AI |
-| Database | PostgreSQL | `analysis_db` |
-| Service Discovery | Enabled | Registers with Eureka |
+| Property          | Value                                    | Description                              |
+| ----------------- | ---------------------------------------- | ---------------------------------------- |
+| Server Port       | 8083                                     | Port where service runs                  |
+| AI Providers      | Google GenAI (active), OpenAI (optional) | Supported provider options via Spring AI |
+| Database          | PostgreSQL                               | `analysis_db`                            |
+| Service Discovery | Enabled                                  | Registers with Eureka                    |
 
 > [!IMPORTANT]
 > Set Google Cloud credentials for standard runs. OpenAI credentials are only needed if you switch provider.

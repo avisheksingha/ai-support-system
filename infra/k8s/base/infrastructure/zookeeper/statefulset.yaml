@@ -1,6 +1,6 @@
 # Docker Compose -> Kubernetes mapping:
 # Maps to:
-#   services: zookeeper: image: confluentinc/cp-zookeeper:7.5.0
+#   services: zookeeper: image: confluentinc/cp-zookeeper:7.9.1
 #   environment: ZOOKEEPER_CLIENT_PORT, ZOOKEEPER_TICK_TIME, etc.
 
 apiVersion: apps/v1
@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: zookeeper
-          image: confluentinc/cp-zookeeper:7.5.0
+          image: confluentinc/cp-zookeeper:7.9.1
           ports:
             - containerPort: 2181
               name: client

@@ -27,7 +27,7 @@ public abstract class AbstractIntegrationTest {
 
     static final ConfluentKafkaContainer kafka = new ConfluentKafkaContainer(
     		DockerImageName
-    			.parse("confluentinc/cp-kafka:7.5.0")
+    			.parse("confluentinc/cp-kafka:8.3.1")
     );
 
     static {

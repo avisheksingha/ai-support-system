@@ -11,7 +11,7 @@ React and TypeScript dashboard for the AI Support System. It communicates with b
 
 ## Prerequisites
 
-- Node.js 20 or later
+- Node.js 22 (LTS) or later
 - The API Gateway running at `http://localhost:8080`
 - Backend services required by the selected view. The orchestration features require `ai-orchestration-service` on port `8086`.
 

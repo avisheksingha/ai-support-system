@@ -32,7 +32,7 @@ The system employs both synchronous and asynchronous communication:
 ```mermaid
 graph TD
     Client[Client Apps / Web] -->|HTTP/REST| API_GW[API Gateway<br>:8080]
-    
+
     API_GW -->|Route| AUTH[Auth Service<br>:8081]
     API_GW -->|Route| TS[Ticket Service<br>:8082]
     API_GW -->|Route| ORCH[AI Orchestrator<br>:8086]
@@ -53,7 +53,7 @@ graph TD
 
     TS -->|Publishes TicketCreated| Kafka[Apache Kafka<br>Message Broker]
     Kafka -->|Consumes TicketCreated| ORCH
-    
+
     ORCH -.->|Sync REST| AIS
     ORCH -.->|Sync REST| RS
     ORCH -.->|Sync REST| RAG
@@ -61,7 +61,7 @@ graph TD
     AIS -->|Calls API| ExternalAI[Google GenAI / OpenAI]
     RAG -->|Calls API| ExternalAI
     RAG <-->|Vector Search| PGV[(PostgreSQL + pgvector)]
-    
+
     ORCH -->|Publishes TicketOrchestratedEvent| Kafka
 ```
 
@@ -84,26 +84,26 @@ sequenceDiagram
     TicketSvc->>TicketSvc: Save Ticket to DB (Status: OPEN)
     TicketSvc-->>Gateway: 201 Created (Ticket ID)
     Gateway-->>Client: 201 Created
-    
+
     TicketSvc->>Kafka: Publish "TicketCreatedEvent"
     Kafka-->>OrchSvc: Consume "TicketCreatedEvent"
-    
+
     OrchSvc->>OrchSvc: Initialize Workflow Runtime
-    
+
     opt Synchronous Composition (Tool Calling)
         OrchSvc->>AISvc: Analyze Ticket Data (REST)
         AISvc->>ExternalAI: Generate Sentiment, Urgency
         ExternalAI-->>AISvc: Results
         AISvc-->>OrchSvc: Extracted Tags
-        
+
         OrchSvc->>RAGSvc: Retrieve Context (REST)
         RAGSvc->>ExternalAI: Embed & Search pgvector
         RAGSvc-->>OrchSvc: Contextual Suggestions
-        
+
         OrchSvc->>RoutingSvc: Evaluate Rules (REST)
         RoutingSvc-->>OrchSvc: Recommended Queue
     end
-    
+
     OrchSvc->>TicketSvc: PATCH /api/v1/tickets/{id}/assign (Apply Updates)
     OrchSvc->>Kafka: Publish "TicketOrchestratedEvent"
     Kafka-->>TicketSvc: Consume "TicketOrchestratedEvent"

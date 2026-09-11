@@ -10,19 +10,19 @@ The animated walkthrough below cycles through the key screens of the AI Support 
 
 The GIF presents the following screens in order:
 
-| # | Screen | What It Shows |
-| - | ------ | ------------- |
-| 1 | **Login** | JWT-authenticated sign-in with role-based access |
-| 2 | **Ticket Submission** | Customer creates a new support ticket |
-| 3 | **Customer Workspace** | Customer views their submitted tickets and statuses |
-| 4 | **Redpanda Console** | Kafka `ticket-created` event payload in real-time |
-| 5 | **Agent Queue** | Smart-routed ticket lands in the correct agent queue |
-| 6 | **AI Insights** | Sentiment (ANGRY), urgency score, and intent classification |
-| 7 | **AI Draft** | LLM-generated response draft citing knowledge articles |
-| 8 | **RAG Context** | Retrieved knowledge base articles with similarity scores |
-| 9 | **Ticket Timeline** | Full AI pipeline status from submission to resolution |
-| 10 | **Knowledge Base** | Admin view of published and draft articles |
-| 11 | **Admin Dashboard** | Operations center with AI governance metrics |
+| #   | Screen                 | What It Shows                                               |
+| --- | ---------------------- | ----------------------------------------------------------- |
+| 1   | **Login**              | JWT-authenticated sign-in with role-based access            |
+| 2   | **Ticket Submission**  | Customer creates a new support ticket                       |
+| 3   | **Customer Workspace** | Customer views their submitted tickets and statuses         |
+| 4   | **Redpanda Console**   | Kafka `ticket-created` event payload in real-time           |
+| 5   | **Agent Queue**        | Smart-routed ticket lands in the correct agent queue        |
+| 6   | **AI Insights**        | Sentiment (ANGRY), urgency score, and intent classification |
+| 7   | **AI Draft**           | LLM-generated response draft citing knowledge articles      |
+| 8   | **RAG Context**        | Retrieved knowledge base articles with similarity scores    |
+| 9   | **Ticket Timeline**    | Full AI pipeline status from submission to resolution       |
+| 10  | **Knowledge Base**     | Admin view of published and draft articles                  |
+| 11  | **Admin Dashboard**    | Operations center with AI governance metrics                |
 
 ## Recording Details
 

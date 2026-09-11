@@ -15,10 +15,10 @@ Shared module containing reusable components, DTOs, utilities, and common config
 
 Common properties are distributed via `spring.config.import` and automatically inherited by all domain microservices that depend on this library.
 
-| File                                  | Scope   | Contents                                       |
-| ------------------------------------- | ------- | ---------------------------------------------- |
-| `common-application.properties`       | All     | JPA defaults, Actuator info, OpenAPI/Swagger   |
-| `common-application-local.properties` | `local` | Actuator endpoint exposure for local dev       |
+| File                                  | Scope   | Contents                                     |
+| ------------------------------------- | ------- | -------------------------------------------- |
+| `common-application.properties`       | All     | JPA defaults, Actuator info, OpenAPI/Swagger |
+| `common-application-local.properties` | `local` | Actuator endpoint exposure for local dev     |
 
 Services import the base file via:
 

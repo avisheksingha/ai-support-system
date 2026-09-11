@@ -81,15 +81,17 @@ This repository is a Spring Boot 4.1.1 microservices platform for AI-powered tic
 - **common-library:** Shared DTOs, enums, events, constants
 
 ### Service Startup Order
+
 1. `discovery-service`
 2. `api-gateway`
 3. Core services (parallel): `auth-service`, `ticket-service`, `ai-analysis-service`, `routing-service`, `rag-service`, `ai-orchestration-service`
 
 ### API Documentation
+
 - Services with REST controllers expose Swagger UI at `/swagger-ui.html`.
 - Examples:
-  - http://localhost:8082/swagger-ui.html
-  - http://localhost:8083/swagger-ui.html
+  - <http://localhost:8082/swagger-ui.html>
+  - <http://localhost:8083/swagger-ui.html>
 
 ## Technology Stack
 
@@ -97,10 +99,12 @@ This repository is a Spring Boot 4.1.1 microservices platform for AI-powered tic
 - **Framework:** Spring Boot 4.1.1 + Spring Framework 7
 - **Microservices:** Spring Cloud 2025.1.2
 - **AI Integration:** Spring AI 2.0.0
+- **Frontend / Runtime:** Node.js 22 + React 19 + Vite
 - **Database:** PostgreSQL + PGVector
 - **Messaging:** Apache Kafka
 - **Service Discovery:** Netflix Eureka
 - **API Documentation:** SpringDoc OpenAPI 3.0.3
+- **Validation:** Jakarta Validation 3.1.1
 - **Security:** Spring Security + JWT
 - **Object Mapping:** MapStruct 1.6.3
 - **Resilience:** Resilience4j
@@ -108,11 +112,13 @@ This repository is a Spring Boot 4.1.1 microservices platform for AI-powered tic
 ## Key Conventions
 
 ### Dependency Injection & Mapping
+
 - Use constructor injection (`@RequiredArgsConstructor`) over field injection.
 - Prefer explicit Lombok annotations on entities (`@Getter/@Setter`, `@NoArgsConstructor`) unless module already uses an established pattern.
 - Use MapStruct with `componentModel = "spring"` where mapper beans are required.
 
 ### REST & Service Layer
+
 - Keep controller DTOs service-specific.
 - Use `@RestControllerAdvice` per service for domain-level error mapping.
 - Keep transactional boundaries in service layer.
@@ -120,16 +126,19 @@ This repository is a Spring Boot 4.1.1 microservices platform for AI-powered tic
 - Use `DateTimeUtil` from common-library for formatting/parsing timestamps.
 
 ### Event-Driven Communication
+
 - Use outbox flow for cross-service event publication.
 - Keep scheduler-based outbox publishers enabled where present (`@Scheduled(fixedDelay = 2000)`).
 - Preserve `X-Correlation-Id` in Kafka headers and restore it into MDC in consumers.
 
 ### API Gateway Rules
+
 - `api-gateway` is reactive (WebFlux). Do not introduce MVC stack there.
 - Other services should remain servlet-based.
 - External client entry point is gateway on port `8080`.
 
 ### AI & RAG
+
 - AI analysis uses pluggable providers (`chat.provider=google-genai|openai`) via `ChatProvider`.
 - RAG uses `QuestionAnswerAdvisor` + PGVector via Spring AI vector store.
 - Model names and provider values come from config properties, not hardcoded literals.

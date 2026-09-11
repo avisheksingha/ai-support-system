@@ -56,7 +56,7 @@ Governance is strictly decoupled from runtime business rules to ensure safe exec
 
 - **Configuration-Driven Rules:** Thresholds and triggers are driven by `@Value` properties.
 - **Policies (`AiPolicy`):** Pre-execution rules validating compliance (e.g., `ToolUsagePolicy`, `SensitiveWorkflowPolicy`).
-- **Guardrails:**  
+- **Guardrails:**
   - `PiiRedactionGuardrail` (Input redaction via regex).
   - `PromptSizeValidationGuardrail` (Input size bounding).
   - `JsonSchemaValidationGuardrail` (Output structural type-safety enforcing `AgentResponse.ResponseType`).

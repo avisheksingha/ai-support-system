@@ -21,7 +21,7 @@ sequenceDiagram
     participant ContextProvider
     participant PromptBuilder
     participant AgentRequest
-    
+
     Workflow->>AssembleContextStep: execute()
     AssembleContextStep->>ContextProvider: provide(context)
     ContextProvider-->>AssembleContextStep: Domain Context Objects

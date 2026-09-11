@@ -82,21 +82,21 @@ src/main/java
 
 ## Standard Naming Convention
 
-| Artifact | Convention | Examples | Notes |
-| ---------- | ------------ | ---------- | ------- |
-| Controllers | `<Feature>Controller` | `CustomerTicketController`, `WorkflowController` | Avoid vague names |
-| Services | `<Feature>Service` | `TicketService`, `WorkflowService` | Avoid vague names |
-| Repositories | `<Entity>Repository` | `TicketRepository`, `WorkflowRepository` | - |
-| DTOs | Explicit Names | `CreateTicketRequest`, `TicketSummaryResponse` | Avoid generic DTO names |
-| Mappers | `<Entity>Mapper` | `TicketMapper`, `WorkflowMapper` | - |
-| Providers | `<Capability>Provider` | `ConversationContextProvider`, `GithubToolProvider` | - |
-| Factories | `<Capability>Factory` | `WorkflowFactory`, `PromptFactory` | - |
-| Managers | `<Resource>Manager` | `TokenBudgetManager`, `ConnectionManager` | Reserve for lifecycle/resource management. |
-| Engines | `<Execution>Engine` | `WorkflowEngine`, `PolicyEngine` | Use only for execution engines. |
-| Executors | `<Action>Executor` | `ToolExecutor`, `WorkflowExecutor` | Use only for executing actions. Avoid generic `Executor`. |
-| Exceptions | `<Feature>Exception` | `WorkflowNotFoundException` | Avoid overly generic exception names. |
-| Interfaces | Simple Names | `WorkflowEngine`, `ToolExecutor` | Avoid prefixes or suffixes unless multiple implementations exist. |
-| Implementations | `<Name>Impl` | `WorkflowEngineImpl`, `ToolExecutorImpl` | Use `Impl` only when multiple implementations genuinely exist. |
+| Artifact        | Convention             | Examples                                            | Notes                                                             |
+| --------------- | ---------------------- | --------------------------------------------------- | ----------------------------------------------------------------- |
+| Controllers     | `<Feature>Controller`  | `CustomerTicketController`, `WorkflowController`    | Avoid vague names                                                 |
+| Services        | `<Feature>Service`     | `TicketService`, `WorkflowService`                  | Avoid vague names                                                 |
+| Repositories    | `<Entity>Repository`   | `TicketRepository`, `WorkflowRepository`            | -                                                                 |
+| DTOs            | Explicit Names         | `CreateTicketRequest`, `TicketSummaryResponse`      | Avoid generic DTO names                                           |
+| Mappers         | `<Entity>Mapper`       | `TicketMapper`, `WorkflowMapper`                    | -                                                                 |
+| Providers       | `<Capability>Provider` | `ConversationContextProvider`, `GithubToolProvider` | -                                                                 |
+| Factories       | `<Capability>Factory`  | `WorkflowFactory`, `PromptFactory`                  | -                                                                 |
+| Managers        | `<Resource>Manager`    | `TokenBudgetManager`, `ConnectionManager`           | Reserve for lifecycle/resource management.                        |
+| Engines         | `<Execution>Engine`    | `WorkflowEngine`, `PolicyEngine`                    | Use only for execution engines.                                   |
+| Executors       | `<Action>Executor`     | `ToolExecutor`, `WorkflowExecutor`                  | Use only for executing actions. Avoid generic `Executor`.         |
+| Exceptions      | `<Feature>Exception`   | `WorkflowNotFoundException`                         | Avoid overly generic exception names.                             |
+| Interfaces      | Simple Names           | `WorkflowEngine`, `ToolExecutor`                    | Avoid prefixes or suffixes unless multiple implementations exist. |
+| Implementations | `<Name>Impl`           | `WorkflowEngineImpl`, `ToolExecutorImpl`            | Use `Impl` only when multiple implementations genuinely exist.    |
 
 ## General Naming Rules
 
