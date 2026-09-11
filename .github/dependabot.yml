@@ -12,7 +12,7 @@ updates:
       interval: "weekly"
 
   # Docker Compose (Infrastructure)
-  - package-ecosystem: "docker"
+  - package-ecosystem: "docker-compose"
     directory: "/infra"
     schedule:
       interval: "weekly"
