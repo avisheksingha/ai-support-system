@@ -64,7 +64,7 @@
 
         <!-- Utilities -->
         <commons-lang3.version>3.18.0</commons-lang3.version>
-        <jakarta.validation-api.version>3.0.2</jakarta.validation-api.version>
+        <jakarta.validation-api.version>3.1.1</jakarta.validation-api.version>
 
         <!-- Build -->
         <sonar-maven-plugin.version>5.5.0.6970</sonar-maven-plugin.version>
