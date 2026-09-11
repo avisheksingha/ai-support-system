@@ -71,6 +71,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(error);
     }
     
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(
+            IllegalArgumentException ex, WebRequest request) {
+        log.warn("Invalid argument: {}", ex.getMessage());
+        ErrorResponse error = ErrorResponse.of(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                ex.getMessage(),
+                request.getDescription(false)
+        );
+        return ResponseEntity.badRequest().body(error);
+    }
+    
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericError(
             Exception ex, WebRequest request) {
