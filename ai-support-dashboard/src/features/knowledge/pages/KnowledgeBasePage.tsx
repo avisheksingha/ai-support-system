@@ -65,6 +65,9 @@ export function KnowledgeBasePage() {
 
   const { data, isLoading, isError, refetch } = useSearchArticles(searchRequest);
   const { data: statsData } = useKnowledgeStats();
+
+  const totalElements = data?.page?.totalElements ?? data?.totalElements ?? (data?.content?.length ?? 0);
+  const totalPages = data?.page?.totalPages ?? data?.totalPages ?? (totalElements > 0 ? Math.ceil(totalElements / currentSize) : 0);
   
   const createMutation = useCreateArticle();
   const updateMutation = useUpdateArticle();
@@ -375,8 +378,8 @@ export function KnowledgeBasePage() {
           {/* Global Pagination Controls */}
           <PaginationControls
             currentPage={currentPage}
-            totalPages={data?.totalPages ?? 0}
-            totalElements={data?.totalElements}
+            totalPages={totalPages}
+            totalElements={totalElements}
             pageSize={currentSize}
             entityName="articles"
             onPageChange={(page) => setSearchRequest(prev => ({ ...prev, page }))}

@@ -51,14 +51,15 @@ export function PaginationControls({
   pageSizeOptions = [10, 20, 50, 100],
   entityName = "items",
 }: PaginationControlsProps) {
-  const startItem = totalElements ? currentPage * pageSize + 1 : 0;
-  const endItem = totalElements ? Math.min((currentPage + 1) * pageSize, totalElements) : 0;
+  const hasItems = (totalElements ?? 0) > 0;
+  const startItem = hasItems ? currentPage * pageSize + 1 : 0;
+  const endItem = hasItems ? Math.min((currentPage + 1) * pageSize, totalElements!) : 0;
 
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 mt-4 border-t border-border">
       <div className="flex items-center gap-4 text-sm text-muted-foreground">
         <p>
-          {totalElements
+          {hasItems
             ? `Showing ${startItem} to ${endItem} of ${totalElements} ${entityName}`
             : `No ${entityName} found`}
         </p>
