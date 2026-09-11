@@ -1,0 +1,66 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  # Docker Compose (Infrastructure)
+  - package-ecosystem: "docker"
+    directory: "/infra"
+    schedule:
+      interval: "weekly"
+
+  # NPM (Frontend Dashboard)
+  - package-ecosystem: "npm"
+    directory: "/ai-support-dashboard"
+    schedule:
+      interval: "weekly"
+
+  # Maven (Backend Microservices and Shared Libraries)
+  - package-ecosystem: "maven"
+    directory: "/aisupport-parent"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "maven"
+    directory: "/common-library"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "maven"
+    directory: "/api-gateway"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "maven"
+    directory: "/discovery-service"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "maven"
+    directory: "/auth-service"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "maven"
+    directory: "/ai-analysis-service"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "maven"
+    directory: "/ai-orchestration-service"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "maven"
+    directory: "/rag-service"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "maven"
+    directory: "/routing-service"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "maven"
+    directory: "/ticket-service"
+    schedule:
+      interval: "weekly"
