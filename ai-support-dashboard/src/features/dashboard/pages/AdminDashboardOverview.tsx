@@ -1,5 +1,6 @@
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { useAdminDashboard } from "../hooks/useAdminDashboard";
+import { useRoutingRuleStatsQuery } from "@/features/routing/hooks/useRoutingRules";
 import { useNavigate } from "react-router";
 import { 
   Activity, Users, Settings, Server, BrainCircuit,
@@ -10,6 +11,7 @@ export function AdminDashboardOverview() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { data, isLoading } = useAdminDashboard();
+  const { data: routingStats, isLoading: isRoutingStatsLoading } = useRoutingRuleStatsQuery();
 
   return (
     <div className="h-full overflow-auto p-6 flex flex-col gap-6 bg-background">
@@ -195,7 +197,7 @@ export function AdminDashboardOverview() {
             <h2 className="text-sm font-semibold text-foreground mb-3">Administration</h2>
             <div className="space-y-1">
               <SidebarAction icon={Users} label="Manage Users & Roles" onClick={() => navigate("/users")} />
-              <SidebarAction icon={Network} label="Routing Rules" onClick={() => {}} />
+              <SidebarAction icon={Network} label="Routing Rules" onClick={() => navigate("/routing-rules")} />
               <SidebarAction icon={BookOpen} label="Knowledge Base" onClick={() => navigate("/knowledge")} />
               <SidebarAction icon={Settings} label="AI Settings" onClick={() => navigate("/settings")} />
             </div>
@@ -224,6 +226,45 @@ export function AdminDashboardOverview() {
               <div className="flex flex-col gap-1 pt-2 border-t border-border mt-1">
                 <span className="text-muted-foreground font-medium text-[13px]">Most Used Article</span>
                 <span className="font-bold text-foreground text-[13px] truncate" title={data?.ragKnowledge?.mostUsedArticle || "N/A"}>{isLoading ? "-" : data?.ragKnowledge?.mostUsedArticle || "N/A"}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Routing Rules Summary */}
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <Network className="h-4 w-4 text-blue-500" /> Routing Rules
+              </h2>
+              <button
+                onClick={() => navigate("/routing-rules")}
+                className="text-xs text-[#0C66E4] hover:underline font-medium"
+              >
+                Manage &rarr;
+              </button>
+            </div>
+            <div className="flex flex-col gap-3">
+              <div className="flex justify-between items-center text-[13px]">
+                <span className="text-muted-foreground font-medium">Total Rules</span>
+                <span className="font-bold text-foreground">{isRoutingStatsLoading ? "-" : routingStats?.totalRules ?? 0}</span>
+              </div>
+              <div className="flex justify-between items-center text-[13px]">
+                <span className="text-muted-foreground font-medium">Active Rules</span>
+                <span className="font-bold text-emerald-600">{isRoutingStatsLoading ? "-" : routingStats?.activeRules ?? 0}</span>
+              </div>
+              <div className="flex justify-between items-center text-[13px]">
+                <span className="text-muted-foreground font-medium">Target Teams</span>
+                <span className="font-bold text-purple-600">{isRoutingStatsLoading ? "-" : routingStats?.totalTeamsCount ?? 0}</span>
+              </div>
+              <div className="flex justify-between items-center text-[13px]">
+                <span className="text-muted-foreground font-medium">Rule Coverage</span>
+                <span className="font-bold text-blue-600">
+                  {routingStats?.totalRules ? `${Math.round(((routingStats.activeRules || 0) / routingStats.totalRules) * 100)}%` : "100%"}
+                </span>
+              </div>
+              <div className="flex flex-col gap-1 pt-2 border-t border-border mt-1">
+                <span className="text-muted-foreground font-medium text-[13px]">Default Fallback</span>
+                <span className="font-bold text-foreground text-[13px] truncate" title="general-support">general-support</span>
               </div>
             </div>
           </div>
