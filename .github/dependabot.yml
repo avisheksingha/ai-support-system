@@ -27,6 +27,9 @@ updates:
       dashboard-dependencies:
         patterns:
           - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   # Maven (Centralized Dependency Management in Parent POM)
   # All microservices inherit versions from aisupport-parent
