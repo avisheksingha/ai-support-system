@@ -8,7 +8,6 @@ resources:
   - namespace.yaml
   - secret.yaml
   - ../../base/infrastructure/postgres
-  - ../../base/infrastructure/zookeeper
   - ../../base/infrastructure/kafka
   - ../../base/applications/discovery-service
   - ../../base/applications/ticket-service
