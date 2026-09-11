@@ -1,6 +1,6 @@
 # Docker Compose -> Kubernetes mapping:
 # Maps to:
-#   services: kafka: image: confluentinc/cp-kafka:7.5.0
+#   services: kafka: image: confluentinc/cp-kafka:8.3.1
 #   environment: KAFKA_BROKER_ID, KAFKA_ZOOKEEPER_CONNECT, etc.
 #   depends_on: zookeeper (Kafka auto-reconnects until ZK is available)
 
@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: kafka
-          image: confluentinc/cp-kafka:7.5.0
+          image: confluentinc/cp-kafka:8.3.1
           ports:
             - containerPort: 9092
               name: internal

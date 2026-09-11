@@ -13,13 +13,13 @@ This directory contains the infrastructure-only Docker Compose setup for the AI 
 
 ## Services
 
-| Service          |  Port | Purpose                              |
-| ---------------- | ----: | ------------------------------------ |
-| PostgreSQL       |  5433 | Relational + vector database storage |
-| Zookeeper        |  2181 | Kafka coordination                   |
-| Kafka            | 29092 | Event streaming (host access)        |
-| Kafka (internal) |  9092 | Event streaming (Docker network)     |
-| Redpanda Console |  9090 | Kafka monitoring UI                  |
+| Service          |  Port | Image / Version                   | Purpose                              |
+| :--------------- | ----: | :-------------------------------- | :----------------------------------- |
+| PostgreSQL       |  5433 | `ankane/pgvector:latest`          | Relational + vector database storage |
+| Zookeeper        |  2181 | `confluentinc/cp-zookeeper:7.9.1` | Kafka coordination                   |
+| Kafka            | 29092 | `confluentinc/cp-kafka:8.3.1`     | Event streaming (host access)        |
+| Kafka (internal) |  9092 | `confluentinc/cp-kafka:8.3.1`     | Event streaming (Docker network)     |
+| Redpanda Console |  9090 | `redpandadata/console:latest`     | Kafka monitoring UI                  |
 
 ## Files
 

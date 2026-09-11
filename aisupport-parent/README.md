@@ -16,6 +16,11 @@ This project serves as the parent Object Model (POM) for all microservices in th
 - **Spring Boot**: 4.1.1
 - **Spring Cloud**: 2025.1.2
 - **Spring AI**: 2.0.0
+- **Jakarta Validation**: 3.1.1
+- **Sonar Maven Plugin**: 5.8.0
+- **MapStruct**: 1.6.3
+- **Lombok**: 1.18.46
+- **Testcontainers**: 2.0.5
 
 ## Building the Entire Project
 

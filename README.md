@@ -128,19 +128,20 @@ The AI Support System is a leading-edge, microservices-based ticket management p
 
 ### Technology Stack
 
-| Category          | Technology                             |
-| ----------------- | -------------------------------------- |
-| Language          | **Java 21**                            |
-| Framework         | **Spring Boot** 4.1.1                  |
-| Cloud             | **Spring Cloud** 2025.1.2              |
-| AI                | **Spring AI** 2.0.0 + **Google GenAI** |
-| Messaging         | **Apache Kafka**                       |
-| Database          | **PostgreSQL** + **pgvector**          |
-| Security          | **JWT** + **Spring Security**          |
-| Build             | **Maven**                              |
-| Containers        | **Docker Compose**                     |
-| CI/CD             | **GitHub Actions**                     |
-| API Documentation | **SpringDoc OpenAPI**                  |
+| Category          | Technology                               |
+| :---------------- | :--------------------------------------- |
+| Language          | **Java 21**                              |
+| Framework         | **Spring Boot** 4.1.1                    |
+| Cloud             | **Spring Cloud** 2025.1.2                |
+| AI                | **Spring AI** 2.0.0 + **Google GenAI**   |
+| Frontend          | **React 19** + **Vite** + **TypeScript** |
+| Messaging         | **Apache Kafka**                         |
+| Database          | **PostgreSQL** + **pgvector**            |
+| Security          | **JWT** + **Spring Security**            |
+| Build             | **Maven** (Java) / **npm** (Frontend)    |
+| Containers        | **Docker Compose**                       |
+| CI/CD             | **GitHub Actions**                       |
+| API Documentation | **SpringDoc OpenAPI**                    |
 
 ### Architecture & Key Components
 
@@ -189,6 +190,7 @@ Support tickets do not require synchronous AI processing before being created. E
 ### Prerequisites
 
 - Java 21+
+- Node.js 22+ (for frontend dashboard)
 - Maven 3.9+ (or use included wrapper)
 - Docker & Docker Compose (for spinning up Kafka, ZooKeeper, PostgreSQL, etc.)
 
