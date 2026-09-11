@@ -4,11 +4,12 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 import com.aisupport.routing.entity.RoutingRule;
 
-public interface RoutingRuleRepository extends JpaRepository<RoutingRule, Long> {
+public interface RoutingRuleRepository extends JpaRepository<RoutingRule, Long>, JpaSpecificationExecutor<RoutingRule> {
     
     Optional<RoutingRule> findByRuleName(String ruleName);
     
@@ -24,5 +25,10 @@ public interface RoutingRuleRepository extends JpaRepository<RoutingRule, Long> 
     @Query("SELECT COUNT(r) FROM RoutingRule r WHERE r.active = true")
     Long countActiveRules();
     
+    Long countByActive(Boolean active);
+
     boolean existsByRuleName(String ruleName);
+
+    @Query("SELECT DISTINCT r.assignToTeam FROM RoutingRule r WHERE r.assignToTeam IS NOT NULL ORDER BY r.assignToTeam")
+    List<String> findDistinctAssignToTeams();
 }

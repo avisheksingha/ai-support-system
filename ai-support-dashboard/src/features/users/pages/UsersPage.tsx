@@ -15,6 +15,9 @@ export function UsersPage() {
   
   const { data, isLoading, isError } = useUsersQuery({ page, size, ...(search ? { search } : {}) });
 
+  const totalElements = data?.page?.totalElements ?? data?.totalElements ?? (data?.content?.length ?? 0);
+  const totalPages = data?.page?.totalPages ?? data?.totalPages ?? (totalElements > 0 ? Math.ceil(totalElements / size) : 0);
+
   return (
     <div className="h-full overflow-auto p-6 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -66,8 +69,8 @@ export function UsersPage() {
           {/* Global Pagination Controls */}
           <PaginationControls
             currentPage={page}
-            totalPages={data?.totalPages ?? 0}
-            totalElements={data?.totalElements}
+            totalPages={totalPages}
+            totalElements={totalElements}
             pageSize={size}
             entityName="users"
             onPageChange={setPage}

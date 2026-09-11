@@ -29,12 +29,14 @@ class RoutingServiceTest {
     private RuleEvaluationService ruleEvaluationService;
     @Mock
     private OutboxEventService outboxEventService;
+    @Mock
+    private com.aisupport.routing.repository.RoutingRuleRepository routingRuleRepository;
 
     private RoutingService routingService;
 
     @BeforeEach
     void setUp() {
-        routingService = new RoutingService(ruleEvaluationService, outboxEventService);
+        routingService = new RoutingService(ruleEvaluationService, outboxEventService, routingRuleRepository);
     }
 
     @Test

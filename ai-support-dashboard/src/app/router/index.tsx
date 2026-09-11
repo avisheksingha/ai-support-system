@@ -20,6 +20,7 @@ const CustomerTicketDetailPage = React.lazy(() => import("@/features/customer/pa
 const WorkflowExplorer = React.lazy(() => import("@/features/orchestration/pages/WorkflowExplorer").then(module => ({ default: module.WorkflowExplorer })));
 const GovernanceDashboard = React.lazy(() => import("@/features/observability/pages/GovernanceDashboard").then(module => ({ default: module.GovernanceDashboard })));
 const KnowledgeBasePage = React.lazy(() => import("@/features/knowledge/pages/KnowledgeBasePage").then(module => ({ default: module.KnowledgeBasePage })));
+const RoutingRulesPage = React.lazy(() => import("@/features/routing/pages/RoutingRulesPage").then(module => ({ default: module.RoutingRulesPage })));
 import { RoleBasedLanding } from "./RoleBasedLanding";
 
 // A root boundary that injects Auth context so it has access to routing hooks
@@ -144,6 +145,14 @@ export const router = createBrowserRouter([
             element: (
               <Suspense fallback={<DashboardSkeleton />}>
                 <KnowledgeBasePage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "routing-rules",
+            element: (
+              <Suspense fallback={<DashboardSkeleton />}>
+                <RoutingRulesPage />
               </Suspense>
             ),
           },
