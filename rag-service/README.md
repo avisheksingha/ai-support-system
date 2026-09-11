@@ -19,11 +19,11 @@ The RAG (Retrieval-Augmented Generation) Service is a Domain Capability Service 
 
 ## Configuration
 
-| Property | Value | Description |
-| ---------- | ------- | ------------- |
-| Server Port | 8085 | Port where service runs |
-| Vector Store | PostgreSQL | Requires `pgvector` extension |
-| Service Discovery | Enabled | Registers with Eureka |
+| Property          | Value      | Description                   |
+| ----------------- | ---------- | ----------------------------- |
+| Server Port       | 8085       | Port where service runs       |
+| Vector Store      | PostgreSQL | Requires `pgvector` extension |
+| Service Discovery | Enabled    | Registers with Eureka         |
 
 ## Prerequisites
 

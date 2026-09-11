@@ -19,17 +19,17 @@ The service uses stateless JWT access tokens and server-side refresh tokens.
 
 ## API endpoints
 
-| Method | Endpoint | Access | Description |
-| --- | --- | --- | --- |
-| POST | `/api/v1/auth/register` | Public | Register a customer account |
-| POST | `/api/v1/auth/login` | Public | Authenticate and issue access and refresh tokens |
-| POST | `/api/v1/auth/refresh` | Public | Rotate a valid refresh token |
-| POST | `/api/v1/auth/logout` | Authenticated | Revoke the current user's refresh tokens |
-| GET | `/api/v1/auth/me` | Authenticated | Return the current user |
-| GET | `/api/v1/auth/admin/users` | ADMIN | List users |
-| PATCH | `/api/v1/auth/admin/users/{id}/role` | ADMIN | Update a user's role |
-| POST | `/api/v1/auth/admin/users/{id}/lock` | ADMIN | Lock an account and revoke refresh tokens |
-| POST | `/api/v1/auth/admin/users/{id}/unlock` | ADMIN | Unlock an account |
+| Method | Endpoint                               | Access        | Description                                      |
+| ------ | -------------------------------------- | ------------- | ------------------------------------------------ |
+| POST   | `/api/v1/auth/register`                | Public        | Register a customer account                      |
+| POST   | `/api/v1/auth/login`                   | Public        | Authenticate and issue access and refresh tokens |
+| POST   | `/api/v1/auth/refresh`                 | Public        | Rotate a valid refresh token                     |
+| POST   | `/api/v1/auth/logout`                  | Authenticated | Revoke the current user's refresh tokens         |
+| GET    | `/api/v1/auth/me`                      | Authenticated | Return the current user                          |
+| GET    | `/api/v1/auth/admin/users`             | ADMIN         | List users                                       |
+| PATCH  | `/api/v1/auth/admin/users/{id}/role`   | ADMIN         | Update a user's role                             |
+| POST   | `/api/v1/auth/admin/users/{id}/lock`   | ADMIN         | Lock an account and revoke refresh tokens        |
+| POST   | `/api/v1/auth/admin/users/{id}/unlock` | ADMIN         | Unlock an account                                |
 
 The role update endpoint accepts JSON such as:
 

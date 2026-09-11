@@ -87,42 +87,42 @@ Event ID                : 2bc8201a-e660-4934-8fa7-889a744237db
 
 ### Consistency Validation Queries
 
-**1. Workflow Executions**  
+**1. Workflow Executions**
 
 ```sql
-SELECT id, correlation_id, state, version 
-FROM workflow_executions 
+SELECT id, correlation_id, state, version
+FROM workflow_executions
 WHERE ticket_id = 15;
 ```
 
 *Verification:* `correlation_id` exactly matches `6bb5a100...`, state is `COMPLETED`, version is `1`.
 
-**2. Workflow Checkpoints**  
+**2. Workflow Checkpoints**
 
 ```sql
-SELECT step_name, created_at 
-FROM workflow_checkpoints 
-WHERE workflow_execution_id = 'e42a991b-7144-482f-bba3-2d251d182239' 
+SELECT step_name, created_at
+FROM workflow_checkpoints
+WHERE workflow_execution_id = 'e42a991b-7144-482f-bba3-2d251d182239'
 ORDER BY created_at ASC;
 ```
 
 *Verification:* Timestamps ascend sequentially across `Assemble Context`, `Analyze Ticket`, `Knowledge Search`, `Route Ticket`.
 
-**3. AI Execution Records**  
+**3. AI Execution Records**
 
 ```sql
-SELECT id, record_type, outcome, workflow_duration_ms 
-FROM ai_execution_records 
+SELECT id, record_type, outcome, workflow_duration_ms
+FROM ai_execution_records
 WHERE correlation_id = '6bb5a100-34fa-41c1-8840-7ac535fb1922';
 ```
 
 *Verification:* Exactly two rows (one `AGENT` with tool metrics, one `WORKFLOW` with full duration).
 
-**4. Outbox Events**  
+**4. Outbox Events**
 
 ```sql
-SELECT id, event_type, status, correlation_id 
-FROM outbox_events 
+SELECT id, event_type, status, correlation_id
+FROM outbox_events
 WHERE aggregate_id = '15';
 ```
 

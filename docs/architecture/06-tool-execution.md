@@ -21,7 +21,7 @@ sequenceDiagram
     participant Agent
     participant ToolExecutor
     participant ToolRegistry
-    
+
     Agent->>LLM: Prompt
     LLM-->>Agent: ToolCallRequest(knowledge.search)
     Agent->>ToolExecutor: execute("knowledge.search")
@@ -48,7 +48,7 @@ graph TD
     TE[Tool Executor] --> TR[Tool Registry]
     TR --> LP[Local Tool Provider]
     TR --> MP[MCP Tool Provider]
-    
+
     LP --> L[Internal Tools]
     MP --> MC[MCP Client]
     MC -->|Resilience4j| EXT[External MCP Server]

@@ -24,28 +24,28 @@
 
 ## Table of Contents
 
-| Section | Purpose |
-| --------- | ------------- |
-| [Business Problem](#business-problem) | The customer support challenges this platform is designed to solve. |
-| [Solution](#solution) | How the platform leverages AI and microservices to address those challenges. |
-| [Why This Project](#why-this-project) | Highlights the enterprise engineering practices demonstrated in this repository. |
-| [Feature Matrix](#feature-matrix) | Overview of the platform's implemented capabilities. |
-| [Overview](#overview) | High-level introduction and links to detailed architecture documentation. |
-| [Architecture](#architecture) | System architecture, technology stack, and microservice responsibilities. |
-| [Engineering Decisions](#engineering-decisions) | Design choices, trade-offs, and technology selection rationale. |
-| [Local Development](#local-development) | Prerequisites, runtime profiles, and local setup instructions. |
-| [API Documentation](#api-documentation) | Available service endpoints, Swagger locations, and local access URLs. |
-| [Authentication Architecture](#authentication-architecture) | JWT authentication model, security flow, and authorization strategy. |
-| [Sample API Flow](#sample-api-flow) | End-to-end example demonstrating request processing through the platform. |
-| [Project Structure](#project-structure) | Repository organization and purpose of each major module. |
-| [Contributing](#contributing) | Contribution workflow, coding standards, and pull request process. |
-| [Security](#security) | Security policy and responsible vulnerability disclosure process. |
-| [Community Health](#community-health) | Community guidelines, issue templates, and project governance. |
-| [License](#license) | Project licensing information. |
+| Section                                                     | Purpose                                                                          |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| [Business Problem](#business-problem)                       | The customer support challenges this platform is designed to solve.              |
+| [Solution](#solution)                                       | How the platform leverages AI and microservices to address those challenges.     |
+| [Why This Project](#why-this-project)                       | Highlights the enterprise engineering practices demonstrated in this repository. |
+| [Feature Matrix](#feature-matrix)                           | Overview of the platform's implemented capabilities.                             |
+| [Overview](#overview)                                       | High-level introduction and links to detailed architecture documentation.        |
+| [Architecture](#architecture)                               | System architecture, technology stack, and microservice responsibilities.        |
+| [Engineering Decisions](#engineering-decisions)             | Design choices, trade-offs, and technology selection rationale.                  |
+| [Local Development](#local-development)                     | Prerequisites, runtime profiles, and local setup instructions.                   |
+| [API Documentation](#api-documentation)                     | Available service endpoints, Swagger locations, and local access URLs.           |
+| [Authentication Architecture](#authentication-architecture) | JWT authentication model, security flow, and authorization strategy.             |
+| [Sample API Flow](#sample-api-flow)                         | End-to-end example demonstrating request processing through the platform.        |
+| [Project Structure](#project-structure)                     | Repository organization and purpose of each major module.                        |
+| [Contributing](#contributing)                               | Contribution workflow, coding standards, and pull request process.               |
+| [Security](#security)                                       | Security policy and responsible vulnerability disclosure process.                |
+| [Community Health](#community-health)                       | Community guidelines, issue templates, and project governance.                   |
+| [License](#license)                                         | Project licensing information.                                                   |
 
 ## Business Problem
 
-Modern customer support teams often handle hundreds or thousands of tickets across multiple channels. As ticket volumes grow, manual triage becomes increasingly difficult and introduces several operational challenges:  
+Modern customer support teams often handle hundreds or thousands of tickets across multiple channels. As ticket volumes grow, manual triage becomes increasingly difficult and introduces several operational challenges:
 
 - Urgent customer issues may not be identified quickly enough.
 - Tickets can be assigned to the wrong team or support queue.
@@ -469,7 +469,7 @@ flowchart LR
     G -.REST.-> H[AI Analysis Service]
     G -.REST.-> I[Routing Service]
     G -.REST.-> J[RAG Service]
-    
+
     G --> K[Business Events]
 ```
 

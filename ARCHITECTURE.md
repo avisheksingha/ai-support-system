@@ -96,19 +96,19 @@ GW -. Service Discovery .-> DISC
 
 ## Architecture Decision Summary
 
-| Decision | Selected Option | Alternatives Considered | Reason |
-| ----------- | ---------------- | ------------------------- | -------- |
-| Application Architecture | Microservices | Modular Monolith | Independent scaling and service isolation |
-| Communication Pattern | Event-Driven | Synchronous REST-only | Reduced coupling and improved responsiveness |
-| Message Broker | Apache Kafka | RabbitMQ, ActiveMQ | High throughput, durability, event replay capabilities |
-| AI Provider | Google GenAI (Gemini/Vertex AI) | OpenAI, Self-hosted Models | Managed infrastructure and enterprise integration |
-| Vector Storage | PostgreSQL + pgvector | Pinecone, Milvus, Weaviate | Reduced operational complexity and unified storage |
-| Service Discovery | Eureka | Static Configuration | Dynamic service registration and scaling |
-| API Entry Point | Spring Cloud Gateway | Direct Service Exposure | Centralized routing and security controls |
-| Reliability Pattern | Outbox Pattern | Direct Event Publishing | Prevents message loss during failures |
-| Resilience Strategy | Resilience4j | Custom Retry Logic | Standardized fault tolerance patterns |
-| Tracing Strategy | Correlation IDs | Service-specific logging | End-to-end request observability |
-| Consistency Strategy | Eventual Consistency | Distributed Transactions | Improved scalability and service autonomy |
+| Decision                 | Selected Option                 | Alternatives Considered    | Reason                                                 |
+| ------------------------ | ------------------------------- | -------------------------- | ------------------------------------------------------ |
+| Application Architecture | Microservices                   | Modular Monolith           | Independent scaling and service isolation              |
+| Communication Pattern    | Event-Driven                    | Synchronous REST-only      | Reduced coupling and improved responsiveness           |
+| Message Broker           | Apache Kafka                    | RabbitMQ, ActiveMQ         | High throughput, durability, event replay capabilities |
+| AI Provider              | Google GenAI (Gemini/Vertex AI) | OpenAI, Self-hosted Models | Managed infrastructure and enterprise integration      |
+| Vector Storage           | PostgreSQL + pgvector           | Pinecone, Milvus, Weaviate | Reduced operational complexity and unified storage     |
+| Service Discovery        | Eureka                          | Static Configuration       | Dynamic service registration and scaling               |
+| API Entry Point          | Spring Cloud Gateway            | Direct Service Exposure    | Centralized routing and security controls              |
+| Reliability Pattern      | Outbox Pattern                  | Direct Event Publishing    | Prevents message loss during failures                  |
+| Resilience Strategy      | Resilience4j                    | Custom Retry Logic         | Standardized fault tolerance patterns                  |
+| Tracing Strategy         | Correlation IDs                 | Service-specific logging   | End-to-end request observability                       |
+| Consistency Strategy     | Eventual Consistency            | Distributed Transactions   | Improved scalability and service autonomy              |
 
 ## Detailed Explanation of Design Decisions
 
@@ -151,17 +151,17 @@ To avoid code duplication (especially around DTOs and Kafka Event schemas), a sh
 
 ## Technology Stack and Rationale
 
-| Technology          | Usage                 | Rationale                                                                                                                                                                |
-| :------------------ | :-------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Java 21**         | Core Language         | Utilizes modern Java features like virtual threads (Project Loom) suitable for high API throughput.                                                                      |
-| **Spring Boot 4.x** | App Framework         | Rapid development, vast ecosystem, and native support for Spring Cloud patterns.                                                                                        |
-| **Spring Cloud**    | Microservices Tooling | Native integrations for Gateway and Eureka Service Discovery.                                                                                                            |
-| **Spring AI**       | AI Orchestration      | Provides a unified, provider-agnostic abstraction layer. Current active provider is Google GenAI, with OpenAI retained as an optional/fallback-ready integration.        |
-| **React 19 / Vite** | Web Console           | Modern, high-performance operations dashboard and workspace UI running on Node.js 22 LTS.                                                                               |
-| **PostgreSQL**      | Primary Database      | Robust, ACID-compliant relational storage. Reliable for ticket states and metadata.                                                                                     |
-| **pgvector**        | Vector Store          | Extension for PostgreSQL allowing efficient similarity search for the `rag-service` embeddings without needing a standalone vector DB (like Milvus or Pinecone).       |
-| **Apache Kafka**    | Event Broker          | Highly durable and scalable log-based messaging perfect for choreography-based sagas and asynchronous processing (cp-kafka 8.3.1).                                       |
-| **Resilience4j**    | Circuit Breaker       | Prevents cascading failures when a downstream service (or an external API like Google GenAI) becomes unresponsive or throws rate limit errors.                          |
+| Technology          | Usage                 | Rationale                                                                                                                                                         |
+| :------------------ | :-------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Java 21**         | Core Language         | Utilizes modern Java features like virtual threads (Project Loom) suitable for high API throughput.                                                               |
+| **Spring Boot 4.x** | App Framework         | Rapid development, vast ecosystem, and native support for Spring Cloud patterns.                                                                                  |
+| **Spring Cloud**    | Microservices Tooling | Native integrations for Gateway and Eureka Service Discovery.                                                                                                     |
+| **Spring AI**       | AI Orchestration      | Provides a unified, provider-agnostic abstraction layer. Current active provider is Google GenAI, with OpenAI retained as an optional/fallback-ready integration. |
+| **React 19 / Vite** | Web Console           | Modern, high-performance operations dashboard and workspace UI running on Node.js 22 LTS.                                                                         |
+| **PostgreSQL**      | Primary Database      | Robust, ACID-compliant relational storage. Reliable for ticket states and metadata.                                                                               |
+| **pgvector**        | Vector Store          | Extension for PostgreSQL allowing efficient similarity search for the `rag-service` embeddings without needing a standalone vector DB (like Milvus or Pinecone).  |
+| **Apache Kafka**    | Event Broker          | Highly durable and scalable log-based messaging perfect for choreography-based sagas and asynchronous processing (cp-kafka 8.3.1).                                |
+| **Resilience4j**    | Circuit Breaker       | Prevents cascading failures when a downstream service (or an external API like Google GenAI) becomes unresponsive or throws rate limit errors.                    |
 
 ## Scalability and Performance Considerations
 

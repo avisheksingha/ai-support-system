@@ -18,10 +18,10 @@ This service acts as the central registry where all microservices in the platfor
 
 ## Configuration
 
-| Property | Value | Description |
-| ---------- | ------- | ------------- |
-| Server Port | 8761 | Standard Eureka Port |
-| Dashboard | Enabled | Access UI at [http://localhost:8761](http://localhost:8761) |
+| Property    | Value   | Description                                                 |
+| ----------- | ------- | ----------------------------------------------------------- |
+| Server Port | 8761    | Standard Eureka Port                                        |
+| Dashboard   | Enabled | Access UI at [http://localhost:8761](http://localhost:8761) |
 
 ## Accessing the Dashboard
 

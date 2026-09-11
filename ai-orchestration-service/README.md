@@ -43,11 +43,11 @@ The Orchestrator utilizes synchronous REST calls (often abstracted as AI Tools) 
 
 ## Configuration
 
-| Property          | Value      | Description                 |
-| ----------------- | ---------- | --------------------------- |
-| Server Port       | 8086       | Port where service runs     |
-| Database          | PostgreSQL | `orchestration_db`          |
-| Service Discovery | Enabled    | Registers with Eureka       |
+| Property          | Value      | Description             |
+| ----------------- | ---------- | ----------------------- |
+| Server Port       | 8086       | Port where service runs |
+| Database          | PostgreSQL | `orchestration_db`      |
+| Service Discovery | Enabled    | Registers with Eureka   |
 
 ## Public REST API (via Gateway)
 

@@ -164,12 +164,12 @@ Those values are informational and intended for tracing. `correlationId` and `wo
 
 ### Outcome Values
 
-| Value | Meaning |
-| -------- | ---------- |
-| SUCCESS | Workflow completed successfully |
-| PARTIAL_SUCCESS | Workflow completed but optional capabilities failed |
-| FAILED | Workflow failed |
-| REQUIRES_APPROVAL | Awaiting manual approval |
+| Value             | Meaning                                             |
+| ----------------- | --------------------------------------------------- |
+| SUCCESS           | Workflow completed successfully                     |
+| PARTIAL_SUCCESS   | Workflow completed but optional capabilities failed |
+| FAILED            | Workflow failed                                     |
+| REQUIRES_APPROVAL | Awaiting manual approval                            |
 
 ### Nullable Sections
 

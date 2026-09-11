@@ -39,11 +39,11 @@ Ticket deletion is not implemented.
 
 ## Configuration
 
-| Property | Value | Description |
-| ---------- | ------- | ------------- |
-| Server Port | 8082 | Port where service runs |
-| Database | PostgreSQL | `ticket_db` |
-| Service Discovery | Enabled | Registers with Eureka |
+| Property          | Value      | Description             |
+| ----------------- | ---------- | ----------------------- |
+| Server Port       | 8082       | Port where service runs |
+| Database          | PostgreSQL | `ticket_db`             |
+| Service Discovery | Enabled    | Registers with Eureka   |
 
 ## Running Locally
 
