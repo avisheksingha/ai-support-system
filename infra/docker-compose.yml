@@ -22,7 +22,7 @@ services:
   # Kafka
   # ==========================================
   kafka:
-    image: confluentinc/cp-kafka:7.5.0
+    image: confluentinc/cp-kafka:8.3.1
     container_name: kafka
     depends_on:
       zookeeper:
