@@ -89,11 +89,11 @@ export function TicketDetailView({ ticketNumber }: TicketDetailViewProps) {
 
   // Collapsible panel states
   const [expandedPanels, setExpandedPanels] = useState({
-    aiAnalysis: true, // AI Analysis expanded by default
-    knowledgeBase: false,
-    aiDecision: false,
-    routing: false,
-    timeline: false,
+    aiAnalysis: true,
+    knowledgeBase: true,
+    aiDecision: true,
+    routing: true,
+    timeline: true,
   });
 
   const togglePanel = (panel: keyof typeof expandedPanels) => {
