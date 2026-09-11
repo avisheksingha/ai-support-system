@@ -55,7 +55,7 @@
 
         <!-- Libraries -->
         <mapstruct.version>1.6.3</mapstruct.version>
-        <lombok.version>1.18.46</lombok.version>
+        <lombok.version>1.18.48</lombok.version>
         <jjwt.version>0.13.0</jjwt.version>
 
         <!-- API Documentation -->
