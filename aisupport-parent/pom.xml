@@ -60,7 +60,7 @@
 
         <!-- API Documentation -->
         <springdoc-openapi.version>3.0.3</springdoc-openapi.version>
-        <swagger-annotations.version>2.2.49</swagger-annotations.version>
+        <swagger-annotations.version>2.2.55</swagger-annotations.version>
 
         <!-- Utilities -->
         <commons-lang3.version>3.18.0</commons-lang3.version>
