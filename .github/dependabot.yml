@@ -35,10 +35,3 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
-    groups:
-      spring-framework:
-        patterns:
-          - "org.springframework*"
-      dependencies:
-        patterns:
-          - "*"
