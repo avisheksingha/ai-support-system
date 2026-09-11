@@ -5,7 +5,7 @@ This directory contains the infrastructure-only Docker Compose setup for the AI 
 ## Components
 
 - **PostgreSQL + pgvector**: Databases for all backend services, including `rag-service`.
-- **Kafka / Zookeeper**: Event streaming backbone for asynchronous service communication.
+- **Kafka (KRaft mode)**: Event streaming backbone for asynchronous service communication.
 - **Redpanda Console**: Web UI for monitoring Kafka topics, consumer groups, and messages.
 
 > [!NOTE]
@@ -13,13 +13,12 @@ This directory contains the infrastructure-only Docker Compose setup for the AI 
 
 ## Services
 
-| Service          |  Port | Image / Version                   | Purpose                              |
-| :--------------- | ----: | :-------------------------------- | :----------------------------------- |
-| PostgreSQL       |  5433 | `ankane/pgvector:latest`          | Relational + vector database storage |
-| Zookeeper        |  2181 | `confluentinc/cp-zookeeper:7.9.1` | Kafka coordination                   |
-| Kafka            | 29092 | `confluentinc/cp-kafka:8.3.1`     | Event streaming (host access)        |
-| Kafka (internal) |  9092 | `confluentinc/cp-kafka:8.3.1`     | Event streaming (Docker network)     |
-| Redpanda Console |  9090 | `redpandadata/console:latest`     | Kafka monitoring UI                  |
+| Service          |  Port | Image / Version               | Purpose                              |
+| :--------------- | ----: | :---------------------------- | :----------------------------------- |
+| PostgreSQL       |  5433 | `ankane/pgvector:latest`      | Relational + vector database storage |
+| Kafka            | 29092 | `confluentinc/cp-kafka:8.3.1` | Event streaming (host access, KRaft) |
+| Kafka (internal) |  9092 | `confluentinc/cp-kafka:8.3.1` | Event streaming (Docker network)     |
+| Redpanda Console |  9090 | `redpandadata/console:latest` | Kafka monitoring UI                  |
 
 ## Files
 

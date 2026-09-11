@@ -240,8 +240,7 @@ Start the local infrastructure required by the microservices.
 This launches:
 
 - PostgreSQL + PGVector
-- Apache Kafka
-- Apache ZooKeeper
+- Apache Kafka (KRaft mode)
 - Redpanda Console (Kafka UI at <http://localhost:9090>)
 
 ```bash
