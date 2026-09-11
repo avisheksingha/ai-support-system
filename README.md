@@ -192,7 +192,7 @@ Support tickets do not require synchronous AI processing before being created. E
 - Java 21+
 - Node.js 22+ (for frontend dashboard)
 - Maven 3.9+ (or use included wrapper)
-- Docker & Docker Compose (for spinning up Kafka, ZooKeeper, PostgreSQL, etc.)
+- Docker & Docker Compose (for spinning up Kafka, PostgreSQL, pgvector, etc.)
 
 ### Runtime Profiles
 
@@ -240,8 +240,7 @@ Start the local infrastructure required by the microservices.
 This launches:
 
 - PostgreSQL + PGVector
-- Apache Kafka
-- Apache ZooKeeper
+- Apache Kafka (KRaft mode)
 - Redpanda Console (Kafka UI at <http://localhost:9090>)
 
 ```bash

@@ -160,7 +160,7 @@ To avoid code duplication (especially around DTOs and Kafka Event schemas), a sh
 | **React 19 / Vite** | Web Console           | Modern, high-performance operations dashboard and workspace UI running on Node.js 22 LTS.                                                                         |
 | **PostgreSQL**      | Primary Database      | Robust, ACID-compliant relational storage. Reliable for ticket states and metadata.                                                                               |
 | **pgvector**        | Vector Store          | Extension for PostgreSQL allowing efficient similarity search for the `rag-service` embeddings without needing a standalone vector DB (like Milvus or Pinecone).  |
-| **Apache Kafka**    | Event Broker          | Highly durable and scalable log-based messaging perfect for choreography-based sagas and asynchronous processing (cp-kafka 8.3.1).                                |
+| **Apache Kafka**    | Event Broker          | Highly durable and scalable log-based messaging perfect for choreography-based sagas and asynchronous processing (cp-kafka 8.3.1 KRaft).                          |
 | **Resilience4j**    | Circuit Breaker       | Prevents cascading failures when a downstream service (or an external API like Google GenAI) becomes unresponsive or throws rate limit errors.                    |
 
 ## Scalability and Performance Considerations
