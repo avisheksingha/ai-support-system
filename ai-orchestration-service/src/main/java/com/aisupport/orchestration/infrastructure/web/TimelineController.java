@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @PreAuthorize("hasAnyRole('AGENT', 'ADMIN')")
-@RequestMapping("/api/v1/orchestration/tickets")
+@RequestMapping("/api/v1/orchestration/tickets/{ticketId}")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Ticket Timeline", description = "Endpoints for fetching ticket-specific orchestration timelines")
@@ -29,7 +29,7 @@ public class TimelineController {
 
     private final TimelineService timelineService;
 
-    @GetMapping("/{ticketId}/timeline")
+    @GetMapping("/timeline")
     @Operation(summary = "Get ticket timeline", description = "Retrieves the orchestration timeline for a specific ticket")
     @ApiResponse(responseCode = "200", description = "Successfully retrieved ticket timeline")
     public ResponseEntity<TimelinePageResponse> getTicketTimeline(
@@ -42,7 +42,7 @@ public class TimelineController {
         return ResponseEntity.ok(response);
     }
     
-    @GetMapping("/{ticketId}/insights")
+    @GetMapping("/insights")
     @Operation(summary = "Get AI Insights", description = "Retrieves the latest AI analysis and insights for a specific ticket")
     public ResponseEntity<AIInsightResponse> getTicketInsights(@PathVariable Long ticketId) {
         log.info("Fetching AI insights for ticket: {}", ticketId);
@@ -52,7 +52,7 @@ public class TimelineController {
                 .orElse(ResponseEntity.noContent().build());
     }
     
-    @GetMapping("/{ticketId}/workspace")
+    @GetMapping("/workspace")
     @Operation(summary = "Get Workspace Data", description = "Retrieves the complete workspace overview for a ticket including analysis, knowledge, routing, AI decision, workflow metadata, and pipeline progress")
     public ResponseEntity<WorkspaceDataResponse> getWorkspaceData(@PathVariable Long ticketId) {
         log.info("Fetching workspace data for ticket: {}", ticketId);
