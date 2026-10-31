@@ -1,0 +1,409 @@
+{
+  "title": "AI Support System Overview",
+  "uid": "ai-support-overview",
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "panels": [
+    {
+      "id": 1,
+      "title": "CPU Usage",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "process_cpu_usage",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "axisPlacement": "auto"
+          },
+          "unit": "percentunit"
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "JVM Memory Used",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "jvm_memory_used_bytes",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "axisPlacement": "auto"
+          },
+          "unit": "bytes"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "JVM Threads",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "targets": [
+        {
+          "expr": "jvm_threads_live_threads",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "axisPlacement": "auto"
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Process Uptime",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "targets": [
+        {
+          "expr": "process_uptime_seconds",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "axisPlacement": "auto"
+          },
+          "unit": "s"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "HTTP Request Rate",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count[1m])) by (uri)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "axisPlacement": "auto"
+          },
+          "unit": "rps"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "HTTP Request Latency",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_sum[1m])) / sum(rate(http_server_requests_seconds_count[1m]))",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "axisPlacement": "auto"
+          },
+          "unit": "s"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "HTTP Status Distribution",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count[1m])) by (status)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "axisPlacement": "auto"
+          },
+          "unit": "rps"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "HTTP Error Rate",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{status=~\"5..\"}[1m])) by (uri)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "axisPlacement": "auto"
+          },
+          "unit": "rps"
+        }
+      }
+    },
+    {
+      "id": 9,
+      "title": "Hikari Active Connections",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 32
+      },
+      "targets": [
+        {
+          "expr": "sum(hikaricp_connections_active) by (pool)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "axisPlacement": "auto"
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 10,
+      "title": "Hikari Idle Connections",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 32
+      },
+      "targets": [
+        {
+          "expr": "sum(hikaricp_connections_idle) by (pool)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "axisPlacement": "auto"
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 11,
+      "title": "LLM Request Latency",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 40
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(spring_ai_chat_client_duration_seconds_sum[1m])) / sum(rate(spring_ai_chat_client_duration_seconds_count[1m]))",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "axisPlacement": "auto"
+          },
+          "unit": "s"
+        }
+      }
+    },
+    {
+      "id": 12,
+      "title": "LLM Request Count",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 40
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(spring_ai_chat_client_duration_seconds_count[1m])) by (model)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "axisPlacement": "auto"
+          },
+          "unit": "rps"
+        }
+      }
+    },
+    {
+      "id": 13,
+      "title": "Workflow Duration",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 48
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(workflow_duration_seconds_sum[1m])) / sum(rate(workflow_duration_seconds_count[1m]))",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "axisPlacement": "auto"
+          },
+          "unit": "s"
+        }
+      }
+    },
+    {
+      "id": 14,
+      "title": "Workflow Executions",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 48
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(workflow_duration_seconds_count[1m])) by (workflowId)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "axisPlacement": "auto"
+          },
+          "unit": "rps"
+        }
+      }
+    },
+    {
+      "id": 15,
+      "title": "MCP Discovery Latency",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 56
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(mcp_discovery_latency_seconds_sum[1m])) / sum(rate(mcp_discovery_latency_seconds_count[1m]))",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "axisPlacement": "auto"
+          },
+          "unit": "s"
+        }
+      }
+    },
+    {
+      "id": 16,
+      "title": "MCP Invocation Latency",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 56
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(mcp_invocation_latency_seconds_sum[1m])) / sum(rate(mcp_invocation_latency_seconds_count[1m]))",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "axisPlacement": "auto"
+          },
+          "unit": "s"
+        }
+      }
+    }
+  ],
+  "refresh": "10s"
+}

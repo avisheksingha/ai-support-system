@@ -222,9 +222,28 @@
                 <scope>import</scope>
             </dependency>
 
+            <!-- ================================================== -->
+            <!-- Observability                                      -->
+            <!-- ================================================== -->
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-registry-prometheus</artifactId>
+            </dependency>
+
         </dependencies>
 
     </dependencyManagement>
+
+    <!-- ========================================================== -->
+    <!-- Global Dependencies                                        -->
+    <!-- ========================================================== -->
+    <dependencies>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+    </dependencies>
+
 
     <!-- ========================================================== -->
     <!-- Build Configuration                                        -->

@@ -17,7 +17,8 @@ public final class CommonSecurityEndpoints {
             "/swagger-ui.html",
             "/v3/api-docs/**",
             "/actuator/health",
-            "/actuator/info"
+            "/actuator/info",
+            "/actuator/prometheus"
     );
 
     private CommonSecurityEndpoints() {
