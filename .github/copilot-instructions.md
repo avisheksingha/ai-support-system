@@ -1,6 +1,6 @@
 # Copilot Instructions for AI Support System
 
-This repository is a Spring Boot 4.1.1 microservices platform for AI-powered ticket management, using Spring AI with Gemini/OpenAI providers, service discovery, and event-driven workflows via Kafka.
+This repository is a Spring Boot 4.1.2 microservices platform for AI-powered ticket management, using Spring AI with Gemini/OpenAI providers, service discovery, and event-driven workflows via Kafka.
 
 ## Build, Test, and Lint Commands
 
@@ -96,14 +96,14 @@ This repository is a Spring Boot 4.1.1 microservices platform for AI-powered tic
 ## Technology Stack
 
 - **Language:** Java 21
-- **Framework:** Spring Boot 4.1.1 + Spring Framework 7
-- **Microservices:** Spring Cloud 2025.1.2
-- **AI Integration:** Spring AI 2.0.0
-- **Frontend / Runtime:** Node.js 22 + React 19 + Vite
+- **Framework:** Spring Boot 4.1.2 + Spring Framework 7
+- **Microservices:** Spring Cloud 2025.1.4
+- **AI Integration:** Spring AI 2.0.2
+- **Frontend / Runtime:** Node.js 22 + React 19.3 + Vite 8.3 + TypeScript 7 + Tailwind CSS 4.3
 - **Database:** PostgreSQL + PGVector
 - **Messaging:** Apache Kafka
 - **Service Discovery:** Netflix Eureka
-- **API Documentation:** SpringDoc OpenAPI 3.0.3
+- **API Documentation:** SpringDoc OpenAPI 3.2.0
 - **Validation:** Jakarta Validation 3.1.1
 - **Security:** Spring Security + JWT
 - **Object Mapping:** MapStruct 1.6.3

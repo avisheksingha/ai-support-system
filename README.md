@@ -10,10 +10,10 @@
 
 <!-- Tech Stack -->
 [![Java 21](https://img.shields.io/badge/Java-21-007396?logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/21/)
-[![Spring Boot 4](https://img.shields.io/badge/Spring_Boot-4.1.1-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
-[![Spring Cloud](https://img.shields.io/badge/Spring_Cloud-2025.1.2-0ea5e9)](https://spring.io/projects/spring-cloud)
+[![Spring Boot 4](https://img.shields.io/badge/Spring_Boot-4.1.2-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Spring Cloud](https://img.shields.io/badge/Spring_Cloud-2025.1.4-0ea5e9)](https://spring.io/projects/spring-cloud)
 [![Kafka](https://img.shields.io/badge/Apache_Kafka-Event_Driven-231F20?logo=apachekafka&logoColor=white)](https://kafka.apache.org/)
-[![Spring AI](https://img.shields.io/badge/Spring_AI-2.0.0-6DB33F?logo=spring&logoColor=white)](https://docs.spring.io/spring-ai/reference/)
+[![Spring AI](https://img.shields.io/badge/Spring_AI-2.0.2-6DB33F?logo=spring&logoColor=white)](https://docs.spring.io/spring-ai/reference/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-pgvector-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 [![React](https://img.shields.io/badge/React-TypeScript-61DAFB?logo=react&logoColor=white)](https://react.dev/)
@@ -131,17 +131,18 @@ The AI Support System is a leading-edge, microservices-based ticket management p
 | Category          | Technology                               |
 | :---------------- | :--------------------------------------- |
 | Language          | **Java 21**                              |
-| Framework         | **Spring Boot** 4.1.1                    |
-| Cloud             | **Spring Cloud** 2025.1.2                |
-| AI                | **Spring AI** 2.0.0 + **Google GenAI**   |
-| Frontend          | **React 19** + **Vite** + **TypeScript** |
+| Framework         | **Spring Boot** 4.1.2                    |
+| Cloud             | **Spring Cloud** 2025.1.4                |
+| AI                | **Spring AI** 2.0.2 + **Google GenAI**   |
+| Frontend          | **React 19.3** + **Vite 8.3** + **TypeScript 7** |
+| CSS               | **Tailwind CSS** 4.3 + **PostCSS** 8.5   |
 | Messaging         | **Apache Kafka**                         |
 | Database          | **PostgreSQL** + **pgvector**            |
 | Security          | **JWT** + **Spring Security**            |
 | Build             | **Maven** (Java) / **npm** (Frontend)    |
 | Containers        | **Docker Compose**                       |
 | CI/CD             | **GitHub Actions**                       |
-| API Documentation | **SpringDoc OpenAPI**                    |
+| API Documentation | **SpringDoc OpenAPI** 3.2.0              |
 
 ### Architecture & Key Components
 

@@ -9,7 +9,7 @@ Domain Capability Service that uses Spring AI to analyze support tickets for sen
 - Determines Urgency (LOW, MEDIUM, HIGH, CRITICAL)
 - Identifies User Intent (TECHNICAL, BILLING, etc.)
 - Auto-tagging with keywords
-- Built on **Spring Boot 4.1.1** and **Spring AI**
+- Built on **Spring Boot 4.1.2** and **Spring AI 2.0.2**
 - Active AI provider: **Google GenAI (Gemini/Vertex AI)**
 - Optional provider support: **OpenAI**
 

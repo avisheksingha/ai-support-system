@@ -157,7 +157,7 @@ To avoid code duplication (especially around DTOs and Kafka Event schemas), a sh
 | **Spring Boot 4.x** | App Framework         | Rapid development, vast ecosystem, and native support for Spring Cloud patterns.                                                                                  |
 | **Spring Cloud**    | Microservices Tooling | Native integrations for Gateway and Eureka Service Discovery.                                                                                                     |
 | **Spring AI**       | AI Orchestration      | Provides a unified, provider-agnostic abstraction layer. Current active provider is Google GenAI, with OpenAI retained as an optional/fallback-ready integration. |
-| **React 19 / Vite** | Web Console           | Modern, high-performance operations dashboard and workspace UI running on Node.js 22 LTS.                                                                         |
+| **React 19.3 / Vite 8.3 / TypeScript 7** | Web Console | Operations dashboard and workspace UI running on Node.js 22 LTS, styled with Tailwind CSS 4.3. |
 | **PostgreSQL**      | Primary Database      | Robust, ACID-compliant relational storage. Reliable for ticket states and metadata.                                                                               |
 | **pgvector**        | Vector Store          | Extension for PostgreSQL allowing efficient similarity search for the `rag-service` embeddings without needing a standalone vector DB (like Milvus or Pinecone).  |
 | **Apache Kafka**    | Event Broker          | Highly durable and scalable log-based messaging perfect for choreography-based sagas and asynchronous processing (cp-kafka 8.3.1 KRaft).                          |
